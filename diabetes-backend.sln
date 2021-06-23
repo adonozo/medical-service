@@ -7,6 +7,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{62F37995-0617-44D1-A609-CA0E20831A81}"
 ProjectSection(SolutionItems) = preProject
 	api\swagger.yaml = api\swagger.yaml
+	api\medication.json = api\medication.json
+	api\patient.json = api\patient.json
+	api\patientTreatmentDossage.json = api\patientTreatmentDossage.json
 EndProjectSection
 EndProject
 Global

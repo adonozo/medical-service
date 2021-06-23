@@ -1,0 +1,16 @@
+{
+  "id": "3ca91535-8f78-4bc8-b8ca-f95b21d23c8c",
+  "patientId": "fb85c38d-5ea5-4263-ba00-3b9528d4c4b3",
+  "date": "2021-06-20T13:49:51.141Z",
+  "nextAppointment": "2021-07-15T13:49:51.141Z",
+  "medication": [
+    {
+      "medicationId": "92be6243-8e85-46b1-aa96-c9948ebbed99",
+      "dose": "5",
+      "doseUnit": "grams",
+      "frequency": "FREQ=DAILY;INTERVAL=1;COUNT=14",
+      "indications": "Inject one dose at least one hour before a meal.",
+      "createReminder": true
+    }
+  ]
+}

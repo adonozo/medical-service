@@ -1,0 +1,10 @@
+{
+  "id": "92be6243-8e85-46b1-aa96-c9948ebbed99",
+  "name": "Exenatide",
+  "brandNames": [
+    "Byetta",
+    "Bydureon"
+  ],
+  "description": "Binds to, and activates, the GLP-1 receptor to increase insulin secretion, suppresses glucagon secretion, and slows gastric emptying.",
+  "drugAdministrationRoute": "Injection"
+}
