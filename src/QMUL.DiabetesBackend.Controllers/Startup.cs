@@ -1,16 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using QMUL.DiabetesBackend.DataInterfaces;
+using QMUL.DiabetesBackend.DataMemory;
+using QMUL.DiabetesBackend.ServiceImpl.Implementations;
+using QMUL.DiabetesBackend.ServiceInterfaces;
 
 namespace QMUL.DiabetesBackend.Api
 {
@@ -31,6 +28,14 @@ namespace QMUL.DiabetesBackend.Api
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "QMUL.DiabetesBackend.Controllers", Version = "v1"});
             });
+
+            services.AddSingleton<IMedicationDao, MedicationMemory>();
+            services.AddSingleton<IPatientDao, PatientMemory>();
+            services.AddSingleton<ITreatmentDosageDao, TreatmentMemory>();
+
+            services.AddSingleton<IMedicationService, MedicationService>();
+            services.AddSingleton<IPatientService, PatientService>();
+            services.AddSingleton<ITreatmentService, TreatmentService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
