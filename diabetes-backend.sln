@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.Servic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.DataInterfaces", "src\QMUL.DiabetesBackend.DataInterfaces\QMUL.DiabetesBackend.DataInterfaces.csproj", "{194EAA1E-F28C-472F-8557-16AED3E8E2FB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.DataMemory", "src\QMUL.DiabetesBackend.DataMemory\QMUL.DiabetesBackend.DataMemory.csproj", "{ABC4062D-EFB2-460A-9889-59AD451703F8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{194EAA1E-F28C-472F-8557-16AED3E8E2FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{194EAA1E-F28C-472F-8557-16AED3E8E2FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{194EAA1E-F28C-472F-8557-16AED3E8E2FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABC4062D-EFB2-460A-9889-59AD451703F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABC4062D-EFB2-460A-9889-59AD451703F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABC4062D-EFB2-460A-9889-59AD451703F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABC4062D-EFB2-460A-9889-59AD451703F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C} = {D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}
@@ -62,5 +68,6 @@ Global
 		{B2D6EC04-3C34-4FB7-B441-483D72481861} = {0D53E1E1-5854-4061-AEF2-5C9EEAD95091}
 		{3EC47315-091C-4843-8DB3-748898CB66CF} = {0D53E1E1-5854-4061-AEF2-5C9EEAD95091}
 		{194EAA1E-F28C-472F-8557-16AED3E8E2FB} = {EAD4DE48-A301-46FE-ACA5-F5FAFF2C2D77}
+		{ABC4062D-EFB2-460A-9889-59AD451703F8} = {EAD4DE48-A301-46FE-ACA5-F5FAFF2C2D77}
 	EndGlobalSection
 EndGlobal

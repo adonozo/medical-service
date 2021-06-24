@@ -6,5 +6,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     public interface IPatientDao
     {
         public List<Patient> GetPatients();
+
+        public Patient CreatePatient(Patient newPatient);
     }
 }
