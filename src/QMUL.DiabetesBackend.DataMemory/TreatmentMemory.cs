@@ -6,7 +6,7 @@ using QMUL.DiabetesBackend.Model;
 
 namespace QMUL.DiabetesBackend.DataMemory
 {
-    public class TreatmentMemory : ITreatmentDosage
+    public class TreatmentMemory : ITreatmentDosageDao
     {
         private readonly List<PatientTreatmentDosage> treatments;
 

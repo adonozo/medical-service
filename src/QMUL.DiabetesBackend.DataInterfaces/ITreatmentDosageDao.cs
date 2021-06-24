@@ -4,7 +4,7 @@ using QMUL.DiabetesBackend.Model;
 
 namespace QMUL.DiabetesBackend.DataInterfaces
 {
-    public interface ITreatmentDosage
+    public interface ITreatmentDosageDao
     {
         public List<PatientTreatmentDosage> GetPatientTreatments(Guid patientId);
 
