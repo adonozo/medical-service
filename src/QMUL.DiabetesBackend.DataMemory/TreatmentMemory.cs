@@ -10,9 +10,33 @@ namespace QMUL.DiabetesBackend.DataMemory
     {
         private readonly List<PatientTreatmentDosage> treatments;
 
+        private readonly List<PatientTreatmentDosage> sampleTreatments = new()
+        {
+            new PatientTreatmentDosage
+            {
+                Id = Guid.Parse("3ca91535-8f78-4bc8-b8ca-f95b21d23c8c"),
+                PatientId = Guid.Parse("fb85c38d-5ea5-4263-ba00-3b9528d4c4b3"),
+                Date = DateTime.Now,
+                NextAppointment = DateTime.Now.AddDays(14),
+                Medication = new ()
+                {
+                    new MedicationDosage
+                    {
+                        Id = Guid.Parse("abba836c-2103-44e9-ac6b-823d886a5ddf"),
+                        MedicationId = Guid.Parse("92be6243-8e85-46b1-aa96-c9948ebbed99"),
+                        Dose = "5",
+                        DoseUnit = "grams",
+                        Frequency = "FREQ=DAILY;INTERVAL=1;COUNT=14",
+                        Indications = "Inject one dose at least one hour before a meal.",
+                        CreateReminder = true
+                    }
+                }
+            }
+        };
+
         public TreatmentMemory()
         {
-            this.treatments = new List<PatientTreatmentDosage>();
+            this.treatments = sampleTreatments;
         }
 
         public List<PatientTreatmentDosage> GetPatientTreatments(Guid patientId)
