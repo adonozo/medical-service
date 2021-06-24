@@ -12,6 +12,8 @@ ProjectSection(SolutionItems) = preProject
 	api\patientTreatmentDossage.json = api\patientTreatmentDossage.json
 EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.Model", "src\QMUL.DiabetesBackend.Model\QMUL.DiabetesBackend.Model.csproj", "{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,8 +24,13 @@ Global
 		{33741820-EF05-4C64-827B-6013480930D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{33741820-EF05-4C64-827B-6013480930D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{33741820-EF05-4C64-827B-6013480930D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{33741820-EF05-4C64-827B-6013480930D8} = {D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}
+		{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C} = {D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}
 	EndGlobalSection
 EndGlobal
