@@ -17,27 +17,27 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 
         public PatientTreatmentDosage CreateTreatment(PatientTreatmentDosage newTreatment)
         {
-            throw new NotImplementedException();
+            return this.treatmentDao.CreatePatientTreatment(newTreatment);
         }
 
         public PatientTreatmentDosage GetSinglePatientTreatment(Guid treatmentId)
         {
-            throw new NotImplementedException();
+            return this.treatmentDao.GetSinglePatientTreatment(treatmentId);
         }
 
         public List<PatientTreatmentDosage> GetPatientTreatments(Guid patientId)
         {
-            throw new NotImplementedException();
+            return this.treatmentDao.GetPatientTreatments(patientId);
         }
 
         public PatientTreatmentDosage UpdatePatientTreatment(Guid treatmentId, PatientTreatmentDosage treatment)
         {
-            throw new NotImplementedException();
+            return this.treatmentDao.UpdateTreatment(treatment);
         }
 
         public bool DeletePatientTreatment(Guid treatmentId)
         {
-            throw new NotImplementedException();
+            return this.treatmentDao.DeletePatientTreatment(treatmentId);
         }
     }
 }

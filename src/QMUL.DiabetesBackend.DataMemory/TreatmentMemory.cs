@@ -41,7 +41,7 @@ namespace QMUL.DiabetesBackend.DataMemory
 
         public List<PatientTreatmentDosage> GetPatientTreatments(Guid patientId)
         {
-            return this.treatments.FindAll(treatment => treatment.Id.Equals(patientId));
+            return this.treatments.FindAll(treatment => treatment.PatientId.Equals(patientId));
         }
 
         public PatientTreatmentDosage GetSinglePatientTreatment(Guid treatmentId)
