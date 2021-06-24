@@ -20,7 +20,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             throw new NotImplementedException();
         }
 
-        public PatientTreatmentDosage GetSinglePatientTreatment(PatientTreatmentDosage treatment)
+        public PatientTreatmentDosage GetSinglePatientTreatment(Guid treatmentId)
         {
             throw new NotImplementedException();
         }

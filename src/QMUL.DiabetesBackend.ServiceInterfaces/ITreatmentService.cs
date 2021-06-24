@@ -8,7 +8,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
     {
         public PatientTreatmentDosage CreateTreatment(PatientTreatmentDosage newTreatment);
 
-        public PatientTreatmentDosage GetSinglePatientTreatment(PatientTreatmentDosage treatment);
+        public PatientTreatmentDosage GetSinglePatientTreatment(Guid treatmentId);
 
         public List<PatientTreatmentDosage> GetPatientTreatments(Guid patientId);
 
