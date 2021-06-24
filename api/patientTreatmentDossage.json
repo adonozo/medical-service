@@ -5,6 +5,7 @@
   "nextAppointment": "2021-07-15T13:49:51.141Z",
   "medication": [
     {
+      "id": "abba836c-2103-44e9-ac6b-823d886a5ddf",
       "medicationId": "92be6243-8e85-46b1-aa96-c9948ebbed99",
       "dose": "5",
       "doseUnit": "grams",

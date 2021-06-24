@@ -349,27 +349,32 @@ definitions:
       medication:
         type: "array"
         items:
-          type: "object"
-          properties:
-            medicationId:
-              type: "string"
-              example: "92be6243-8e85-46b1-aa96-c9948ebbed99"
-            dose:
-              type: "string"
-              example: "5"
-            doseUnit:
-              type: "string"
-              example: "grams"
-            frequency:
-              type: "string"
-              description: "RRULE based string. Should be valid against Alexa rules"
-              example: "FREQ=DAILY;INTERVAL=1;COUNT=14"
-            indications:
-              type: "string"
-              example: "Inject one dose at least one hour before a meal."
-            createReminder:
-              type: "boolean"
-              example: true
+          $ref: "#/definitions/MedicationDosage"
+  MedicationDosage:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        example: "abba836c-2103-44e9-ac6b-823d886a5ddf"
+      medicationId:
+        type: "string"
+        example: "92be6243-8e85-46b1-aa96-c9948ebbed99"
+      dose:
+        type: "string"
+        example: "5"
+      doseUnit:
+        type: "string"
+        example: "grams"
+      frequency:
+        type: "string"
+        description: "RRULE based string. Should be valid against Alexa rules"
+        example: "FREQ=DAILY;INTERVAL=1;COUNT=14"
+      indications:
+        type: "string"
+        example: "Inject one dose at least one hour before a meal."
+      createReminder:
+        type: "boolean"
+        example: true
   Order:
     type: "object"
     properties:
