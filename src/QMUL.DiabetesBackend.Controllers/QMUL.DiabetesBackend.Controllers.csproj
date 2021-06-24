@@ -9,4 +9,11 @@
         <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\QMUL.DiabetesBackend.DataInterfaces\QMUL.DiabetesBackend.DataInterfaces.csproj" />
+      <ProjectReference Include="..\QMUL.DiabetesBackend.DataMemory\QMUL.DiabetesBackend.DataMemory.csproj" />
+      <ProjectReference Include="..\QMUL.DiabetesBackend.ServiceImpl\QMUL.DiabetesBackend.ServiceImpl.csproj" />
+      <ProjectReference Include="..\QMUL.DiabetesBackend.ServiceInterfaces\QMUL.DiabetesBackend.ServiceInterfaces.csproj" />
+    </ItemGroup>
+
 </Project>
