@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using QMUL.DiabetesBackend.Model;
 
-namespace QMUL.DiabetesBackend.Service
+namespace QMUL.DiabetesBackend.ServiceInterfaces
 {
     public interface IMedicationService
     {

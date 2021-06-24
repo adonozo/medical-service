@@ -29,7 +29,7 @@ namespace QMUL.DiabetesBackend.Api
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo {Title = "QMUL.DiabetesBackend.Api", Version = "v1"});
+                c.SwaggerDoc("v1", new OpenApiInfo {Title = "QMUL.DiabetesBackend.Controllers", Version = "v1"});
             });
         }
 
@@ -40,7 +40,7 @@ namespace QMUL.DiabetesBackend.Api
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "QMUL.DiabetesBackend.Api v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "QMUL.DiabetesBackend.Controllers v1"));
             }
 
             app.UseHttpsRedirection();

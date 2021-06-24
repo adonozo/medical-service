@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <RootNamespace>QMUL.DiabetesBackend.Service</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\QMUL.DiabetesBackend.Model\QMUL.DiabetesBackend.Model.csproj" />
+    </ItemGroup>
+
+</Project>
