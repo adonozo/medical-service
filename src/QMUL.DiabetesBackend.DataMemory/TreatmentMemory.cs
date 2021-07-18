@@ -18,9 +18,9 @@ namespace QMUL.DiabetesBackend.DataMemory
                 PatientId = Guid.Parse("fb85c38d-5ea5-4263-ba00-3b9528d4c4b3"),
                 Date = DateTime.Now,
                 NextAppointment = DateTime.Now.AddDays(14),
-                Medication = new ()
+                Medication = new List<MedicationDosage>
                 {
-                    new MedicationDosage
+                    new()
                     {
                         Id = Guid.Parse("abba836c-2103-44e9-ac6b-823d886a5ddf"),
                         MedicationId = Guid.Parse("92be6243-8e85-46b1-aa96-c9948ebbed99"),

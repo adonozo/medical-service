@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using QMUL.DiabetesBackend.Model;
@@ -12,6 +13,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     {
         private readonly IPatientService patientService;
         private readonly ILogger<PatientController> logger;
+        private static string jsonEcho = string.Empty;
 
         public PatientController(IPatientService patientService, ILogger<PatientController> logger)
         {
@@ -36,5 +38,21 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             this.logger.LogDebug($"Patient created with ID: ${createdPatient.Id.ToString()}");
             return this.Ok(createdPatient);
         }
+
+        [HttpPost]
+        [Route("echo")]
+        public IActionResult SaveJsonEcho([FromBody] object jsonObject)
+        {
+            this.logger.LogDebug("Echoing a message");
+            jsonEcho = JsonSerializer.Serialize(jsonObject);
+            return this.Accepted();
+        }
+
+        [HttpGet]
+        [Route("echo")]
+        public ActionResult<string> GetJsonEcho()
+        {
+            return this.Ok(jsonEcho);
+        } 
     }
 }
