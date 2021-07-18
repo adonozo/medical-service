@@ -32,6 +32,8 @@ namespace QMUL.DiabetesBackend.Api
             services.AddSingleton<IMedicationDao, MedicationMemory>();
             services.AddSingleton<IPatientDao, PatientMemory>();
             services.AddSingleton<ITreatmentDosageDao, TreatmentMemory>();
+            services.AddSingleton<IMedicationRequestDao, MedicationRequestMemory>();
+            services.AddSingleton<IServiceRequestDao, ServiceRequestMemory>();
 
             services.AddSingleton<IMedicationService, MedicationService>();
             services.AddSingleton<IPatientService, PatientService>();
