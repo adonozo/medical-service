@@ -1,10 +1,60 @@
 {
+  "resourceType": "Medication",
   "id": "92be6243-8e85-46b1-aa96-c9948ebbed99",
-  "name": "Exenatide",
-  "brandNames": [
-    "Byetta",
-    "Bydureon"
-  ],
-  "description": "Binds to, and activates, the GLP-1 receptor to increase insulin secretion, suppresses glucagon secretion, and slows gastric emptying.",
-  "drugAdministrationRoute": "Injection"
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "400621001",
+        "display": "Lorazepam 2mg/ml injection solution 1ml vial (product)"
+      }
+    ]
+  },
+  "form": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "385219001",
+        "display": "Injection solution (qualifier value)"
+      }
+    ]
+  },
+  "amount": {
+    "numerator": {
+      "value": 1,
+      "unit": "ml",
+      "system": "http://unitsofmeasure.org",
+      "code": "ml"
+    },
+    "denominator": {
+      "value": 1,
+      "system": "http://terminology.hl7.org/CodeSystem/medicationknowledge-package-type",
+      "code": "vial"
+    }
+  },
+  "ingredient": [
+    {
+      "itemCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "387106007",
+            "display": "Lorazepam (substance)"
+          }
+        ]
+      },
+      "strength": {
+        "numerator": {
+          "value": 2,
+          "system": "http://unitsofmeasure.org",
+          "code": "mg"
+        },
+        "denominator": {
+          "value": 1,
+          "system": "http://unitsofmeasure.org",
+          "code": "mL"
+        }
+      }
+    }
+  ]
 }

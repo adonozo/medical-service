@@ -1,0 +1,18 @@
+{
+  "timing": {
+    "boundsPeriod":{
+      "start":"2021-07-01",
+      "end":"2021-07-31"
+    },
+    "period":1,
+    "periodUnit":"d",
+    "frequency":1,
+    "when":[
+      "ACM"
+    ],
+    "dayOfWeek":[
+      "mon",
+      "sun"
+    ]
+  }
+}

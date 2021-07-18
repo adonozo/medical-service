@@ -1,0 +1,37 @@
+{
+  "resourceType": "ServiceRequest",
+  "id": "0507447e-7e69-4e8a-89b5-4012791ecb9b",
+  "status": "active",
+  "intent": "plan",
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "36048009",
+        "display": " Glucose measurement"
+      }
+    ]
+  },
+  "subject": {
+    "reference": "Patient/fb85c38d-5ea5-4263-ba00-3b9528d4c4b3"
+  },
+  "occurrenceTiming": {
+    "repeat": {
+      "boundsPeriod":{
+        "start":"2021-07-01",
+        "end":"2021-07-31"
+      },
+      "period":1,
+      "periodUnit":"d",
+      "frequency":1,
+      "when":[
+        "ACM"
+      ],
+      "dayOfWeek":[
+        "mon",
+        "sun"
+      ]
+    }
+  },
+  "patientInstruction": "Measure your blood glucose before meals."
+}
