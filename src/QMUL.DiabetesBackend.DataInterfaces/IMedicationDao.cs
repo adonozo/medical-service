@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using QMUL.DiabetesBackend.Model;
+using Hl7.Fhir.Model;
 
 namespace QMUL.DiabetesBackend.DataInterfaces
 {

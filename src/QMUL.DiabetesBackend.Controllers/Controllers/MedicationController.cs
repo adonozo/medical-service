@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.ServiceInterfaces;
 
 namespace QMUL.DiabetesBackend.Api.Controllers

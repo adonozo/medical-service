@@ -3,24 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.DataInterfaces;
-using Medication = QMUL.DiabetesBackend.Model.Medication;
 
 namespace QMUL.DiabetesBackend.DataMemory
 {
     public class MedicationMemory : IMedicationDao
     {
         #region SampleData
-        private readonly List<Medication> sampleMedications = new()
-        {
-            new Medication
-            {
-                Id = Guid.Parse("92be6243-8e85-46b1-aa96-c9948ebbed99"),
-                Name = "Exenatide",
-                Description = "Binds to, and activates, the GLP-1 receptor to increase insulin secretion, suppresses glucagon secretion, and slows gastric emptying.",
-                DrugAdministrationRoute = "Injection",
-                BrandNames = new List<string> {"Byetta", "Bydureon"}
-            }
-        };
+        private readonly List<Hl7.Fhir.Model.Medication> sampleMedications = new() { };
 
         public static List<Hl7.Fhir.Model.Medication> Medications = new()
         {
@@ -87,6 +76,11 @@ namespace QMUL.DiabetesBackend.DataMemory
             }
         };
         #endregion
+
+        public MedicationMemory()
+        {
+            this.sampleMedications = Medications;
+        }
 
         public List<Medication> GetMedicationList()
         {
