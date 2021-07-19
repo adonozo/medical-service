@@ -34,10 +34,15 @@ namespace QMUL.DiabetesBackend.Api
             services.AddSingleton<ITreatmentDosageDao, TreatmentMemory>();
             services.AddSingleton<IMedicationRequestDao, MedicationRequestMemory>();
             services.AddSingleton<IServiceRequestDao, ServiceRequestMemory>();
+            services.AddSingleton<IMedicationRequestDao, MedicationRequestMemory>();
+            services.AddSingleton<ICarePlanDao, CarePlanMemory>();
 
             services.AddSingleton<IMedicationService, MedicationService>();
             services.AddSingleton<IPatientService, PatientService>();
             services.AddSingleton<ITreatmentService, TreatmentService>();
+            services.AddSingleton<IMedicationRequestService, MedicationRequestService>();
+            services.AddSingleton<IServiceRequestService, ServiceRequestService>();
+            services.AddSingleton<ICarePlanService, CarePlanService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
