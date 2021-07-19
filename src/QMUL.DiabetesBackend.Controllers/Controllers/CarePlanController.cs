@@ -9,7 +9,7 @@ using QMUL.DiabetesBackend.ServiceInterfaces;
 namespace QMUL.DiabetesBackend.Api.Controllers
 {
     [ApiController]
-    [Route("carePlan/")]
+    [Route("carePlans/")]
     public class CarePlanController : ControllerBase
     {
         private readonly ICarePlanService carePlanService;

@@ -4,7 +4,7 @@ using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using QMUL.DiabetesBackend.ServiceImpl.Implementations;
+using QMUL.DiabetesBackend.ServiceInterfaces;
 
 namespace QMUL.DiabetesBackend.Api.Controllers
 {
@@ -12,10 +12,10 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     [Route("medicationRequests/")]
     public class MedicationRequestController : ControllerBase
     {
-        private readonly MedicationRequestService medicationRequestService;
+        private readonly IMedicationRequestService medicationRequestService;
         private readonly ILogger<MedicationRequestController> logger;
 
-        public MedicationRequestController(ILogger<MedicationRequestController> logger, MedicationRequestService medicationRequestService)
+        public MedicationRequestController(ILogger<MedicationRequestController> logger, IMedicationRequestService medicationRequestService)
         {
             this.logger = logger;
             this.medicationRequestService = medicationRequestService;

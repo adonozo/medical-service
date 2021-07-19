@@ -21,7 +21,7 @@ namespace QMUL.DiabetesBackend.DataMemory
                 {
                     ElementId = "fb85c38d-5ea5-4263-ba00-3b9528d4c4b3",
                     Display = "John Doe",
-                    Reference = "patients/fb85c38d-5ea5-4263-ba00-3b9528d4c4b3"
+                    Reference = "/patients/fb85c38d-5ea5-4263-ba00-3b9528d4c4b3"
                 },
                 Note = new List<Annotation>
                 {

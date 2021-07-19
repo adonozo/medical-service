@@ -18,7 +18,7 @@ namespace QMUL.DiabetesBackend.DataMemory
                 Intent = CarePlan.CarePlanIntent.Plan,
                 Subject = new ResourceReference
                 {
-                    Reference = "patient/fb85c38d-5ea5-4263-ba00-3b9528d4c4b3",
+                    Reference = "/patients/fb85c38d-5ea5-4263-ba00-3b9528d4c4b3",
                     Display = "John Doe",
                     ElementId = "fb85c38d-5ea5-4263-ba00-3b9528d4c4b3"
                 },
@@ -35,7 +35,7 @@ namespace QMUL.DiabetesBackend.DataMemory
                     {
                         Reference = new ResourceReference
                         {
-                            Reference = "medicationRequest/3ca91535-8f78-4bc8-b8ca-f95b21d23c8c",
+                            Reference = "/medicationRequests/3ca91535-8f78-4bc8-b8ca-f95b21d23c8c",
                             Type = nameof(MedicationRequest),
                             ElementId = "3ca91535-8f78-4bc8-b8ca-f95b21d23c8c"
                         },
@@ -49,7 +49,7 @@ namespace QMUL.DiabetesBackend.DataMemory
                     {
                         Reference = new ResourceReference
                         {
-                            Reference = "serviceRequest/0507447e-7e69-4e8a-89b5-4012791ecb9b",
+                            Reference = "/serviceRequests/0507447e-7e69-4e8a-89b5-4012791ecb9b",
                             Type = nameof(ServiceRequest),
                             ElementId = "0507447e-7e69-4e8a-89b5-4012791ecb9b"
                         },
