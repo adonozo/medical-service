@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using QMUL.DiabetesBackend.Model;
@@ -37,6 +39,55 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             var createdPatient = this.patientService.CreatePatient(newPatient);
             this.logger.LogDebug($"Patient created with ID: ${createdPatient.Id.ToString()}");
             return this.Ok(createdPatient);
+        }
+
+        [HttpGet]
+        [Route("{idOrEmail}")]
+        public IActionResult GetPatient([FromRoute] string idOrEmail)
+        {
+            try
+            {
+                var result = this.patientService.GetPatient(idOrEmail);
+                return this.Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError($"Error getting Patient: {idOrEmail}", exception);
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpGet]
+        [Route("{idOrEmail}/carePlans")]
+        public IActionResult GetPatientCarePlans([FromRoute] string idOrEmail)
+        {
+            try
+            {
+                var result = this.patientService.GetPatientCarePlans(idOrEmail);
+                return this.Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError($"Error getting Patient: {idOrEmail}", exception);
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpGet]
+        [Route("patients/{id}/alexa")]
+        public IActionResult GetAlexaRequest([FromQuery] string type, [FromQuery] DateTime date, [FromQuery] string timing)
+        {
+            throw new NotImplementedException();
         }
 
         [HttpPost]

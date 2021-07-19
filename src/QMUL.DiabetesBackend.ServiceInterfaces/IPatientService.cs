@@ -1,5 +1,6 @@
 using System.Collections.Generic;
-using QMUL.DiabetesBackend.Model;
+using Hl7.Fhir.Model;
+using Patient = QMUL.DiabetesBackend.Model.Patient;
 
 namespace QMUL.DiabetesBackend.ServiceInterfaces
 {
@@ -8,5 +9,9 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         public List<Patient> GetPatientList();
 
         public Patient CreatePatient(Patient newPatient);
+
+        public Patient GetPatient(string idOrEmail);
+
+        public List<CarePlan> GetPatientCarePlans(string patientIdOrEmail);
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.Model;
 
@@ -37,6 +38,11 @@ namespace QMUL.DiabetesBackend.DataMemory
             newPatient.Id = Guid.NewGuid();
             this.patients.Add(newPatient);
             return newPatient;
+        }
+
+        public Patient GetPatientByIdOrEmail(string idOrEmail)
+        {
+            return this.patients.FirstOrDefault(patient => patient.Id.ToString().Equals(idOrEmail) || patient.Email.Equals(idOrEmail));
         }
     }
 }

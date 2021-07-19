@@ -8,5 +8,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         public List<Patient> GetPatients();
 
         public Patient CreatePatient(Patient newPatient);
+
+        public Patient GetPatientByIdOrEmail(string idOrEmail);
     }
 }
