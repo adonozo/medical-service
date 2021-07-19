@@ -43,7 +43,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 return this.medicationRequestDao.DeleteMedicationRequest(id);
             }
 
-            return false;
+            throw new KeyNotFoundException();
         }
     }
 }
