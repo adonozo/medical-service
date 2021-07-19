@@ -1,9 +1,10 @@
 {
-  "id":"1234",
+  "id":"5bca2a9e-c3eb-4e60-a66a-9931f892b123",
   "intent":"plan",
   "subject":{
-    "id":"12344",
-    "display":"John Doe"
+    "reference":"patient/fb85c38d-5ea5-4263-ba00-3b9528d4c4b3",
+    "display":"John Doe",
+    "id": "fb85c38d-5ea5-4263-ba00-3b9528d4c4b3"
   },
   "period":{
     "start":"2021-07-01",

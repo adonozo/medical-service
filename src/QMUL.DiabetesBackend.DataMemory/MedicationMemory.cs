@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.DataInterfaces;
@@ -9,9 +8,9 @@ namespace QMUL.DiabetesBackend.DataMemory
     public class MedicationMemory : IMedicationDao
     {
         #region SampleData
-        private readonly List<Hl7.Fhir.Model.Medication> sampleMedications = new() { };
+        private readonly List<Medication> sampleMedications;
 
-        public static List<Hl7.Fhir.Model.Medication> Medications = new()
+        public static readonly List<Medication> Medications = new()
         {
             new()
             {
@@ -40,7 +39,7 @@ namespace QMUL.DiabetesBackend.DataMemory
                         }
                     }
                 },
-                Ingredient = new List<Hl7.Fhir.Model.Medication.IngredientComponent>
+                Ingredient = new List<Medication.IngredientComponent>
                 {
                     new()
                     {
@@ -48,7 +47,7 @@ namespace QMUL.DiabetesBackend.DataMemory
                         {
                             Coding = new List<Coding>
                             {
-                                new Coding
+                                new()
                                 {
                                     System = "http://snomed.info/sct",
                                     Code = "325072002",
@@ -79,17 +78,17 @@ namespace QMUL.DiabetesBackend.DataMemory
 
         public MedicationMemory()
         {
-            this.sampleMedications = Medications;
+            sampleMedications = Medications;
         }
 
         public List<Medication> GetMedicationList()
         {
-            return this.sampleMedications;
+            return sampleMedications;
         }
 
-        public Medication GetSingleMedication(Guid id)
+        public Medication GetSingleMedication(string id)
         {
-            return this.sampleMedications.FirstOrDefault(medication => medication.Id.Equals(id));
+            return sampleMedications.FirstOrDefault(medication => medication.Id.Equals(id));
         }
     }
 }
