@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,11 +24,11 @@ namespace QMUL.DiabetesBackend.Api.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public IActionResult GetMedicationRequest([FromRoute] string id)
+        public async Task<IActionResult> GetMedicationRequest([FromRoute] string id)
         {
             try
             {
-                var result = this.medicationRequestService.GetMedicationRequest(id);
+                var result = await this.medicationRequestService.GetMedicationRequest(id);
                 return this.Ok(result);
             }
             catch (KeyNotFoundException)
@@ -43,11 +44,11 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateMedicationRequest([FromBody] MedicationRequest request)
+        public async Task<IActionResult> CreateMedicationRequest([FromBody] MedicationRequest request)
         {
             try
             {
-                var result = this.medicationRequestService.CreateMedicationRequest(request);
+                var result = await this.medicationRequestService.CreateMedicationRequest(request);
                 return this.Ok(result);
             }
             catch (Exception exception)
@@ -59,11 +60,11 @@ namespace QMUL.DiabetesBackend.Api.Controllers
 
         [HttpPut]
         [Route("{id}")]
-        public IActionResult UpdateMedicationRequest([FromRoute] string id, [FromBody] MedicationRequest request)
+        public async Task<IActionResult> UpdateMedicationRequest([FromRoute] string id, [FromBody] MedicationRequest request)
         {
             try
             {
-                var result = this.medicationRequestService.UpdateMedicationRequest(id, request);
+                var result = await this.medicationRequestService.UpdateMedicationRequest(id, request);
                 return this.Accepted(result);
             }
             catch (KeyNotFoundException)
@@ -80,11 +81,11 @@ namespace QMUL.DiabetesBackend.Api.Controllers
 
         [HttpDelete]
         [Route("{id}")]
-        public IActionResult DeleteMedicationRequest([FromRoute] string id)
+        public async Task<IActionResult> DeleteMedicationRequest([FromRoute] string id)
         {
             try
             {
-                this.medicationRequestService.DeleteMedicationRequest(id);
+                await this.medicationRequestService.DeleteMedicationRequest(id);
                 return this.NoContent();
             }
             catch (KeyNotFoundException)

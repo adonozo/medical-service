@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.Model.Enums;
+using Task = System.Threading.Tasks.Task;
 
 namespace QMUL.DiabetesBackend.DataMemory
 {
@@ -179,14 +181,14 @@ namespace QMUL.DiabetesBackend.DataMemory
         };
         #endregion
         
-        public MedicationRequest CreateMedicationRequest(MedicationRequest newRequest)
+        public Task<MedicationRequest> CreateMedicationRequest(MedicationRequest newRequest)
         {
             newRequest.Id = Guid.NewGuid().ToString();
             this.sampleRequests.Add(newRequest);
-            return newRequest;
+            return Task.FromResult(newRequest);
         }
 
-        public MedicationRequest UpdateMedicationRequest(string id, MedicationRequest actualRequest)
+        public Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest actualRequest)
         {
             var index = this.sampleRequests.FindIndex(0, medication => medication.Id.Equals(id));
             if (index < 0)
@@ -196,52 +198,54 @@ namespace QMUL.DiabetesBackend.DataMemory
             }
 
             this.sampleRequests[index] = actualRequest;
-            return actualRequest;
+            return Task.FromResult(actualRequest);
         }
 
-        public MedicationRequest GetMedicationRequest(string id)
+        public Task<MedicationRequest> GetMedicationRequest(string id)
         {
-            return this.sampleRequests.FirstOrDefault(medication => medication.Id.Equals(id));
+            var result = this.sampleRequests.FirstOrDefault(medication => medication.Id.Equals(id));
+            return Task.FromResult(result);
         }
 
-        public List<MedicationRequest> GetMedicationRequestFor(string patientId, DateTime dateTime,
+        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime,
             int intervalMin = 10)
         {
             var resultsForPatient = this.sampleRequests.FindAll(medicationRequest =>
                 medicationRequest.Subject.ElementId.Equals(patientId)); // Medication requests for the patient
-            return (from request in resultsForPatient
+            var result = (from request in resultsForPatient
                 from dosage in request.DosageInstruction
                 where TimingBetween(dosage.Timing,
                     dateTime,
                     intervalMin)
                 select request).ToList();
+            return Task.FromResult(result);
         }
 
-        public List<MedicationRequest> GetMedicationRequestFor(string patientId, DateTime dateTime, Timing.EventTiming timing)
+        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime, Timing.EventTiming timing)
         {
             throw new NotImplementedException();
         }
 
-        public List<MedicationRequest> GetMedicationRequestFor(string patientId, DateTime startTime, DateTime endTime)
+        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime startTime, DateTime endTime)
         {
             throw new NotImplementedException();
         }
 
-        public List<MedicationRequest> GetNextMedicationRequestFor(string patientId)
+        public Task<List<MedicationRequest>> GetNextMedicationRequestFor(string patientId)
         {
             throw new NotImplementedException();
         }
 
-        public bool DeleteMedicationRequest(string id)
+        public Task<bool> DeleteMedicationRequest(string id)
         {
             var index = this.sampleRequests.FindIndex(0, medication => medication.Id.Equals(id));
             if (index < 0)
             {
-                return false;
+                return Task.FromResult(false);
             }
             
             this.sampleRequests.RemoveAt(index);
-            return true;
+            return Task.FromResult(true);
         }
 
         private static bool TimingBetween(Timing timing, DateTime consultedDateTime, int intervalMin)

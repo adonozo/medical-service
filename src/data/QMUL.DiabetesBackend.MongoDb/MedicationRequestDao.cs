@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using MongoDB.Driver;
 using QMUL.DiabetesBackend.DataInterfaces;
@@ -18,42 +19,42 @@ namespace QMUL.DiabetesBackend.MongoDb
             this.medicationRequestCollection = this.Database.GetCollection<MongoMedicationRequest>(CollectionName);
         }
 
-        public MedicationRequest CreateMedicationRequest(MedicationRequest newRequest)
+        public Task<MedicationRequest> CreateMedicationRequest(MedicationRequest newRequest)
         {
             throw new NotImplementedException();
         }
 
-        public MedicationRequest UpdateMedicationRequest(string id, MedicationRequest actualRequest)
+        public Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest actualRequest)
         {
             throw new NotImplementedException();
         }
 
-        public MedicationRequest GetMedicationRequest(string id)
+        public Task<MedicationRequest> GetMedicationRequest(string id)
         {
             throw new NotImplementedException();
         }
 
-        public List<MedicationRequest> GetMedicationRequestFor(string patientId, DateTime dateTime, int intervalMin = 10)
+        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime, int intervalMin = 10)
         {
             throw new NotImplementedException();
         }
 
-        public List<MedicationRequest> GetMedicationRequestFor(string patientId, DateTime dateTime, Timing.EventTiming timing)
+        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime, Timing.EventTiming timing)
         {
             throw new NotImplementedException();
         }
 
-        public List<MedicationRequest> GetMedicationRequestFor(string patientId, DateTime startTime, DateTime endTime)
+        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime startTime, DateTime endTime)
         {
             throw new NotImplementedException();
         }
 
-        public List<MedicationRequest> GetNextMedicationRequestFor(string patientId)
+        public Task<List<MedicationRequest>> GetNextMedicationRequestFor(string patientId)
         {
             throw new NotImplementedException();
         }
 
-        public bool DeleteMedicationRequest(string id)
+        public Task<bool> DeleteMedicationRequest(string id)
         {
             throw new NotImplementedException();
         }

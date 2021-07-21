@@ -1,15 +1,16 @@
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 
 namespace QMUL.DiabetesBackend.ServiceInterfaces
 {
     public interface IMedicationRequestService
     {
-        public MedicationRequest CreateMedicationRequest(MedicationRequest request);
+        public Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request);
 
-        public MedicationRequest GetMedicationRequest(string id);
+        public Task<MedicationRequest> GetMedicationRequest(string id);
 
-        public MedicationRequest UpdateMedicationRequest(string id, MedicationRequest request);
+        public Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest request);
 
-        public bool DeleteMedicationRequest(string id);
+        public Task<bool> DeleteMedicationRequest(string id);
     }
 }
