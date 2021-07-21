@@ -8,6 +8,6 @@ namespace QMUL.DiabetesBackend.MongoDb.Models
         
         public string Code { get; set; }
         
-        public int Value { get; set; }
+        public decimal Value { get; set; }
     }
 }

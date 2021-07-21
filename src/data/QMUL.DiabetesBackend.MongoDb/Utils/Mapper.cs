@@ -154,30 +154,48 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
 
         public static MongoDosageInstruction ToMongoDosageInstruction(this Dosage dosage)
         {
-            var startTime = (dosage.Timing.Repeat.Bounds as Period)?.Start;
-            var endTime = (dosage.Timing.Repeat.Bounds as Period)?.End;
-            var whenList = from eventTiming in dosage.Timing.Repeat.When
-                where eventTiming != null
-                select eventTiming.ToString();
-            var daysOfWeek = from day in dosage.Timing.Repeat.DayOfWeek
-                where day != null
-                select day.ToString();
-            return new MongoDosageInstruction
+            return new()
             {
                 Sequence = dosage.Sequence ?? 0,
                 Text = dosage.Text,
-                Timing = new MongoTiming
-                {
-                    Frequency = dosage.Timing.Repeat.Frequency ?? 0,
-                    Period = dosage.Timing.Repeat.Period ?? 0,
-                    PeriodUnit = dosage.Timing.Repeat.PeriodUnit?.ToString(),
-                    Offset = dosage.Timing.Repeat.Offset ?? 0,
-                    PeriodStartTime = DateTime.Parse(startTime ?? string.Empty),
-                    PeriodEndTime = DateTime.Parse(endTime ?? string.Empty),
-                    When = whenList,
-                    DaysOfWeek = daysOfWeek,
-                    TimesOfDay = dosage.Timing.Repeat.TimeOfDay.Select(time => time.ToString())
-                }
+                Timing = dosage.Timing.ToMongoTiming(),
+                DoseAndRate = dosage.DoseAndRate.Select(ToMongoQuantity) 
+            };
+        }
+
+        public static MongoTiming ToMongoTiming(this Timing timing)
+        {
+            var startTime = (timing.Repeat.Bounds as Period)?.Start;
+            var endTime = (timing.Repeat.Bounds as Period)?.End;
+            var whenList = from eventTiming in timing.Repeat.When
+                where eventTiming != null
+                select eventTiming.ToString();
+            var daysOfWeek = from day in timing.Repeat.DayOfWeek
+                where day != null
+                select day.ToString();
+
+            return new MongoTiming
+            {
+                Frequency = timing.Repeat.Frequency ?? 0,
+                Period = timing.Repeat.Period ?? 0,
+                PeriodUnit = timing.Repeat.PeriodUnit?.ToString(),
+                Offset = timing.Repeat.Offset ?? 0,
+                PeriodStartTime = DateTime.Parse(startTime ?? string.Empty),
+                PeriodEndTime = DateTime.Parse(endTime ?? string.Empty),
+                When = whenList,
+                DaysOfWeek = daysOfWeek,
+                TimesOfDay = timing.Repeat.TimeOfDay.Select(time => time.ToString())
+            };
+        }
+
+        public static MongoQuantity ToMongoQuantity(this Dosage.DoseAndRateComponent dose)
+        {
+            return new()
+            {
+                Value = ((Quantity) dose.Dose).Value ?? 0,
+                System = ((Quantity) dose.Dose).System,
+                Unit = ((Quantity) dose.Dose).Unit,
+                Code = ((Quantity) dose.Dose).Code
             };
         }
     }
