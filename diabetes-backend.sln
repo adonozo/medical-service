@@ -15,6 +15,7 @@ ProjectSection(SolutionItems) = preProject
 	api\timingOther.json = api\timingOther.json
 	api\medicationRequest.json = api\medicationRequest.json
 	api\carePlan.json = api\carePlan.json
+	api\medicationRequest-oral.json = api\medicationRequest-oral.json
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.Model", "src\QMUL.DiabetesBackend.Model\QMUL.DiabetesBackend.Model.csproj", "{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C}"
