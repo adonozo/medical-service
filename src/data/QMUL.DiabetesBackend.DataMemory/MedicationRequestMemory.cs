@@ -207,13 +207,14 @@ namespace QMUL.DiabetesBackend.DataMemory
         public List<MedicationRequest> GetMedicationRequestFor(string patientId, DateTime dateTime,
             int intervalMin = 10)
         {
-            var result = this.sampleRequests.FindAll(medicationRequest =>
+            var resultsForPatient = this.sampleRequests.FindAll(medicationRequest =>
                 medicationRequest.Subject.ElementId.Equals(patientId)); // Medication requests for the patient
-            // result = result.FindAll(medicationRequest =>
-            //     medicationRequest.DosageInstruction.FindAll(dosage => TimingBetween(dosage.Timing, dateTime, intervalMin)));
-            // return result;
-            // TODO This use case is still too complex due to "exact time" definitions... Better start with full day events, and move to Mongo 
-            throw new NotImplementedException();
+            return (from request in resultsForPatient
+                from dosage in request.DosageInstruction
+                where TimingBetween(dosage.Timing,
+                    dateTime,
+                    intervalMin)
+                select request).ToList();
         }
 
         public List<MedicationRequest> GetMedicationRequestFor(string patientId, DateTime dateTime, Timing.EventTiming timing)
@@ -245,11 +246,13 @@ namespace QMUL.DiabetesBackend.DataMemory
 
         private static bool TimingBetween(Timing timing, DateTime consultedDateTime, int intervalMin)
         {
+            // Medication request has a period
             if (timing.Repeat.Bounds is not Period period || !timing.Event.Any())
             {
                 return false;
             }
 
+            // Consulted date is between period dates
             var timingStart = DateTime.Parse(period.Start);
             var timingEnd = DateTime.Parse(period.End);
 
@@ -258,10 +261,15 @@ namespace QMUL.DiabetesBackend.DataMemory
                 return false;
             }
 
-            foreach (var timeEvent in timing.Event)
+            // Consulted dateTime is between medication request times
+            foreach (var timeEvent in timing.Repeat.TimeOfDay)
             {
-                var eventDateTime = DateTime.Parse(timeEvent);
-                // return consultedDateTime
+                var medicationDateTime = DateTime.Parse($"{consultedDateTime:yyyy-MM-dd}T{timeEvent}");
+                if (consultedDateTime.Ticks > medicationDateTime.AddMinutes(intervalMin * -1).Ticks &&
+                    consultedDateTime.Ticks < medicationDateTime.AddMinutes(10).Ticks)
+                {
+                    return true;
+                }
             }
 
             return false;
