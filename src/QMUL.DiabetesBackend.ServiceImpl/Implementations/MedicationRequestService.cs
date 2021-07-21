@@ -16,7 +16,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 
         public MedicationRequest CreateMedicationRequest(MedicationRequest request)
         {
-            return this.medicationRequestDao.CreatMedicationRequest(request);
+            return this.medicationRequestDao.CreateMedicationRequest(request);
         }
 
         public MedicationRequest GetMedicationRequest(string id)

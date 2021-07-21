@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using QMUL.DiabetesBackend.Model;
+using QMUL.DiabetesBackend.Model.Enums;
 using QMUL.DiabetesBackend.ServiceInterfaces;
+using Patient = QMUL.DiabetesBackend.Model.Patient;
 
 namespace QMUL.DiabetesBackend.Api.Controllers
 {
@@ -84,9 +86,17 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpGet]
-        [Route("patients/{id}/alexa")]
-        public IActionResult GetAlexaRequest([FromQuery] string type, [FromQuery] DateTime date, [FromQuery] string timing)
+        [Route("patients/{emailOrId}/alexa")]
+        public IActionResult GetAlexaRequest([FromRoute] string emailOrId, [FromQuery] AlexaRequestType type,
+            [FromQuery] DateTime date,
+            [FromQuery] AlexaRequestTime requestTime,
+            [FromQuery] Timing.EventTiming timing = Timing.EventTiming.MORN)
         {
+            /* TODO
+             make a requestTime -> rangeTime/eventTime converter
+             implement methods to look for medicationRequests / serviceRequests / carePlans / appointments
+             decide the alexa interface: use FHIR or custom models?                 
+             */
             throw new NotImplementedException();
         }
 
