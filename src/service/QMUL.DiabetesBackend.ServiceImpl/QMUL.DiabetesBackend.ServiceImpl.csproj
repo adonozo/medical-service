@@ -5,8 +5,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\QMUL.DiabetesBackend.DataInterfaces\QMUL.DiabetesBackend.DataInterfaces.csproj" />
-      <ProjectReference Include="..\QMUL.DiabetesBackend.Model\QMUL.DiabetesBackend.Model.csproj" />
+      <ProjectReference Include="..\..\data\QMUL.DiabetesBackend.DataInterfaces\QMUL.DiabetesBackend.DataInterfaces.csproj" />
+      <ProjectReference Include="..\..\QMUL.DiabetesBackend.Model\QMUL.DiabetesBackend.Model.csproj" />
       <ProjectReference Include="..\QMUL.DiabetesBackend.ServiceInterfaces\QMUL.DiabetesBackend.ServiceInterfaces.csproj" />
     </ItemGroup>
 
