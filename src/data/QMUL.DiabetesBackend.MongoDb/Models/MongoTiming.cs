@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace QMUL.DiabetesBackend.MongoDb.Models
 {
@@ -22,8 +23,10 @@ namespace QMUL.DiabetesBackend.MongoDb.Models
         /// </summary>
         public IEnumerable<string> TimesOfDay { get; set; }
         
+        [BsonDateTimeOptions]
         public DateTime PeriodStartTime { get; set; }
         
+        [BsonDateTimeOptions]
         public DateTime PeriodEndTime { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using MongoDB.Driver;
@@ -20,14 +21,24 @@ namespace QMUL.DiabetesBackend.MongoDb
             this.medicationRequestCollection = this.Database.GetCollection<MongoMedicationRequest>(CollectionName);
         }
 
-        public Task<MedicationRequest> CreateMedicationRequest(MedicationRequest newRequest)
+        public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest newRequest)
         {
-            throw new NotImplementedException();
+            var mongoRequest = newRequest.ToMongoMedicationRequest();
+            mongoRequest.CreatedAt = DateTime.UtcNow;
+            await this.medicationRequestCollection.InsertOneAsync(mongoRequest);
+            return await this.GetMedicationRequest(mongoRequest.Id);
         }
 
-        public Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest actualRequest)
+        public async Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest actualRequest)
         {
-            throw new NotImplementedException();
+            var mongoRequest = actualRequest.ToMongoMedicationRequest();
+            var result = await this.medicationRequestCollection.ReplaceOneAsync(request => request.Id == id, mongoRequest);
+            if (result.IsAcknowledged)
+            {
+                return await this.GetMedicationRequest(id);
+            }
+
+            throw new InvalidOperationException($"there was an error updating the Medication Request {id}");
         }
 
         public async Task<MedicationRequest> GetMedicationRequest(string id)
@@ -37,9 +48,24 @@ namespace QMUL.DiabetesBackend.MongoDb
             return result?.ToMedicationRequest();
         }
 
-        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime, int intervalMin = 10)
+        public async Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime, int intervalMin = 10)
         {
-            throw new NotImplementedException();
+            var startRange = dateTime.AddMinutes(intervalMin);
+            var endRange = dateTime.AddMinutes(intervalMin);
+            var timeCompare = new Func<string, bool>(time =>
+            {
+                var dateCompare = DateTime.Parse($"{dateTime:yyyy-MM-dd}T{time}");
+                return dateCompare > startRange && dateCompare < endRange;
+            });
+            var cursor =
+                await this.medicationRequestCollection.FindAsync(request =>
+                    request.PatientReference.ReferenceId == patientId &&
+                    request.DosageInstructions.Any(instruction =>
+                        instruction.Timing.TimesOfDay.Any(time => timeCompare(time))));
+            var requestList = await cursor.ToListAsync();
+            
+            // TODO still need to consider day of week
+            return requestList.Select(mongo => mongo.ToMedicationRequest()).ToList();
         }
 
         public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime, Timing.EventTiming timing)
@@ -47,9 +73,18 @@ namespace QMUL.DiabetesBackend.MongoDb
             throw new NotImplementedException();
         }
 
-        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime startTime, DateTime endTime)
+        public async Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime)
         {
-            throw new NotImplementedException();
+            var timeCompare = new Func<MongoTiming, bool>(timing =>
+                dateTime > timing.PeriodStartTime && dateTime < timing.PeriodEndTime);
+            var cursor =
+                await this.medicationRequestCollection.FindAsync(request =>
+                    request.PatientReference.ReferenceId == patientId &&
+                    request.DosageInstructions.Any(instruction => timeCompare(instruction.Timing)));
+            var requestList = await cursor.ToListAsync();
+            
+            // TODO still need to consider day of week
+            return requestList.Select(mongo => mongo.ToMedicationRequest()).ToList();
         }
 
         public Task<List<MedicationRequest>> GetNextMedicationRequestFor(string patientId)
@@ -59,8 +94,8 @@ namespace QMUL.DiabetesBackend.MongoDb
 
         public async Task<bool> DeleteMedicationRequest(string id)
         {
-            await this.medicationRequestCollection.DeleteOneAsync(request => request.Id == id);
-            return true;
+            var result = await this.medicationRequestCollection.DeleteOneAsync(request => request.Id == id);
+            return result.IsAcknowledged;
         }
     }
 }

@@ -21,7 +21,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="dateTime">The date and time to look for</param>
         /// <param name="intervalMin">Offset minutes to look for. E.g., if dateTime is 12:30, will look between 12:20 and 12:40</param>
         /// <returns>The patient's medication list for that period of time</returns>
-        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime, int intervalMin = 10);
+        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime, int intervalMin);
 
         /// <summary>
         /// Get the list of medications the patient needs to take at a timing event for a certain date
@@ -34,13 +34,13 @@ namespace QMUL.DiabetesBackend.DataInterfaces
             Timing.EventTiming timing);
         
         /// <summary>
-        /// Get the list of medications the patient needs to take at a range of dates
+        /// Get the list of medications the patient needs to take at a range of dates. Should be used for all-day queries
         /// </summary>
         /// <param name="patientId">The patient's user ID, not email</param>
         /// <param name="startTime">The start time interval</param>
         /// <param name="endTime">The end time interval</param>
         /// <returns>The patient's medication list for that period of time</returns>
-        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime startTime, DateTime endTime);
+        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime startTime);
         
         /// <summary>
         /// Gets the next set of medications for the patient to take. Close time medications should be gathered, e.g., 

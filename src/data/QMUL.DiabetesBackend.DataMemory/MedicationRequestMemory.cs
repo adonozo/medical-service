@@ -226,7 +226,7 @@ namespace QMUL.DiabetesBackend.DataMemory
             throw new NotImplementedException();
         }
 
-        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime startTime, DateTime endTime)
+        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime)
         {
             throw new NotImplementedException();
         }
