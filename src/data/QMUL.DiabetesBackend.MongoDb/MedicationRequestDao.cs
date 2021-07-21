@@ -6,6 +6,7 @@ using MongoDB.Driver;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.MongoDb.Models;
+using QMUL.DiabetesBackend.MongoDb.Utils;
 
 namespace QMUL.DiabetesBackend.MongoDb
 {
@@ -29,9 +30,11 @@ namespace QMUL.DiabetesBackend.MongoDb
             throw new NotImplementedException();
         }
 
-        public Task<MedicationRequest> GetMedicationRequest(string id)
+        public async Task<MedicationRequest> GetMedicationRequest(string id)
         {
-            throw new NotImplementedException();
+            var cursorResult = await this.medicationRequestCollection.FindAsync(request => request.Id == id);
+            var result = cursorResult.FirstOrDefault();
+            return result?.ToMedicationRequest();
         }
 
         public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime, int intervalMin = 10)
@@ -54,9 +57,10 @@ namespace QMUL.DiabetesBackend.MongoDb
             throw new NotImplementedException();
         }
 
-        public Task<bool> DeleteMedicationRequest(string id)
+        public async Task<bool> DeleteMedicationRequest(string id)
         {
-            throw new NotImplementedException();
+            await this.medicationRequestCollection.DeleteOneAsync(request => request.Id == id);
+            return true;
         }
     }
 }

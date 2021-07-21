@@ -7,7 +7,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Models
     {
         public int Frequency { get; set; }
         
-        public int Period { get; set; }
+        public decimal Period { get; set; }
         
         public string PeriodUnit { get; set; }
         
@@ -17,6 +17,9 @@ namespace QMUL.DiabetesBackend.MongoDb.Models
         
         public IEnumerable<string> DaysOfWeek { get; set; }
         
+        /// <summary>
+        /// Can be used to hold other meal times i.e., snack. This processing should be done in its respective service.
+        /// </summary>
         public IEnumerable<string> TimesOfDay { get; set; }
         
         public DateTime PeriodStartTime { get; set; }
