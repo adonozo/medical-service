@@ -15,9 +15,9 @@ namespace QMUL.DiabetesBackend.MongoDb.Models
         
         public int Offset { get; set; }
         
-        public IEnumerable<string> DayOfWeek { get; set; }
+        public IEnumerable<string> DaysOfWeek { get; set; }
         
-        public IEnumerable<string> TimeOfDay { get; set; }
+        public IEnumerable<string> TimesOfDay { get; set; }
         
         public DateTime PeriodStartTime { get; set; }
         

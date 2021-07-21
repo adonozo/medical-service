@@ -13,17 +13,17 @@ namespace QMUL.DiabetesBackend.MongoDb.Models
         
         public string Priority { get; set; }
         
-        public MongoReference ReferencePatient { get; set; }
+        public string Status { get; set; }
+
+        public string Note { get; set; }
+        
+        public DateTime CreatedAt { get; set; }
+        
+        public MongoReference PatientReference { get; set; }
         
         public MongoReference MedicationReference { get; set; }
         
         public MongoReference RequesterReference { get; set; }
-        
-        public string Status { get; set; }
-
-        public DateTime CreatedAt { get; set; }
-        
-        public string Note { get; set; }
         
         public IEnumerable<MongoDosageInstruction> DosageInstructions { get; set; }
     }

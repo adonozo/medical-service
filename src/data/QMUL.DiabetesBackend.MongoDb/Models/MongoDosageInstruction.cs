@@ -11,6 +11,6 @@ namespace QMUL.DiabetesBackend.MongoDb.Models
         
         public MongoTiming Timing { get; set; }
         
-        public IEnumerable<MongoCoding> DoseAndRate { get; set; }
+        public IEnumerable<MongoQuantity> DoseAndRate { get; set; }
     }
 }

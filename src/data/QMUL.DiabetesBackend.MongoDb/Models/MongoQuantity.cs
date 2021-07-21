@@ -1,6 +1,6 @@
 namespace QMUL.DiabetesBackend.MongoDb.Models
 {
-    public class MongoCoding
+    public class MongoQuantity
     {
         public string System { get; set; }
         
@@ -8,6 +8,6 @@ namespace QMUL.DiabetesBackend.MongoDb.Models
         
         public string Code { get; set; }
         
-        public string Value { get; set; }
+        public int Value { get; set; }
     }
 }
