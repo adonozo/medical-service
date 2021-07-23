@@ -98,11 +98,12 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
             };
         }
 
-        public static MongoHealthEvent ToMongoCustomResource(this HealthEvent healthEvent)
+        public static MongoHealthEvent ToMongoHealthEvent(this HealthEvent healthEvent)
         {
             return new MongoHealthEvent
             {
                 Id = healthEvent.Id,
+                PatientId = healthEvent.PatientId,
                 EventDateTime = healthEvent.EventDateTime,
                 Resource = healthEvent.Resource
             };

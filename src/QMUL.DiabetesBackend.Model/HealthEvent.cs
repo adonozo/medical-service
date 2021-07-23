@@ -9,6 +9,8 @@ namespace QMUL.DiabetesBackend.Model
     {
         public string Id { get; set; }
         
+        public string PatientId { get; set; }
+        
         public DateTime EventDateTime { get; set; }
         
         public CustomResource Resource { get; set; }
