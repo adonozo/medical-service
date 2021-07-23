@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.Model;
@@ -25,6 +26,12 @@ namespace QMUL.DiabetesBackend.MongoDb
         {
             var mongoRequest = newRequest.ToMongoMedicationRequest();
             mongoRequest.CreatedAt = DateTime.UtcNow;
+            mongoRequest.DosageInstructions = mongoRequest.DosageInstructions.Select(dose =>
+            {
+                dose.Id = ObjectId.GenerateNewId().ToString();
+                return dose;
+            });
+            
             await this.medicationRequestCollection.InsertOneAsync(mongoRequest);
             return await this.GetMedicationRequest(mongoRequest.Id);
         }

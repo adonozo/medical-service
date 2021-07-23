@@ -61,6 +61,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
         {
             return new()
             {
+                ElementId = instruction.Id,
                 Sequence = instruction.Sequence,
                 Text = instruction.Text,
                 Timing = instruction.Timing.ToTiming(),

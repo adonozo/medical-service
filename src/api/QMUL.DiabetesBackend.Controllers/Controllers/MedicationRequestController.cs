@@ -51,13 +51,11 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             {
                 var parser = new FhirJsonParser(new ParserSettings
                     {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
-                var serializer = new FhirJsonSerializer();
                 try
                 {
                     var parsedRequest = await parser.ParseAsync<MedicationRequest>(request.ToString());
                     var result = await this.medicationRequestService.CreateMedicationRequest(parsedRequest);
-                    var serialized = await serializer.SerializeToStringAsync(result);
-                    return this.Ok(serialized);
+                    return this.Ok(result.ToJObject());
                 }
                 catch (Exception exception)
                 {
