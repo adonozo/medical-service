@@ -6,8 +6,8 @@ namespace QMUL.DiabetesBackend.Model.Enums
     {
         [EnumMember(Value = "medication")] Medication,
         [EnumMember(Value = "insulin")] Insulin,
-        [EnumMember(Value = "glucose")]Glucose,
-        [EnumMember(Value = "appointment")]Appointment,
-        [EnumMember(Value = "carePlan")]CarePlan,
+        [EnumMember(Value = "glucose")] Glucose,
+        [EnumMember(Value = "appointment")] Appointment,
+        [EnumMember(Value = "carePlan")] CarePlan,
     }
 }

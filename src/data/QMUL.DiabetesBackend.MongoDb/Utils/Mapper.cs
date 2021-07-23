@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
+using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.MongoDb.Models;
 using static System.Enum;
 
@@ -94,6 +95,16 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 System = ((Quantity) dose.Dose).System,
                 Unit = ((Quantity) dose.Dose).Unit,
                 Code = ((Quantity) dose.Dose).Code
+            };
+        }
+
+        public static MongoHealthEvent ToMongoCustomResource(this HealthEvent healthEvent)
+        {
+            return new MongoHealthEvent
+            {
+                Id = healthEvent.Id,
+                EventDateTime = healthEvent.EventDateTime,
+                Resource = healthEvent.Resource
             };
         }
     }
