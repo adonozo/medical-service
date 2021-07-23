@@ -15,14 +15,20 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.medicationRequestDao = medicationRequestDao;
         }
 
-        public Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
+        public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
         {
-            return this.medicationRequestDao.CreateMedicationRequest(request);
+            return await this.medicationRequestDao.CreateMedicationRequest(request);
         }
 
-        public Task<MedicationRequest> GetMedicationRequest(string id)
+        public async Task<MedicationRequest> GetMedicationRequest(string id)
         {
-            return this.medicationRequestDao.GetMedicationRequest(id);
+            var result = await this.medicationRequestDao.GetMedicationRequest(id);
+            if (result == null)
+            {
+                throw new KeyNotFoundException();
+            }
+
+            return result;
         }
 
         public Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest request)

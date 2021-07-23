@@ -79,6 +79,10 @@
       ],
       "timing": {
         "repeat": {
+          "boundsPeriod" : {
+            "start": "2021-07-01",
+            "end": "2021-07-31"
+          },
           "frequency": 1,
           "period": 1,
           "periodUnit": "d"
@@ -138,6 +142,10 @@
       ],
       "timing": {
         "repeat": {
+          "boundsPeriod" : {
+            "start": "2021-07-01",
+            "end": "2021-07-31"
+          },
           "frequency": 4,
           "period": 1,
           "periodUnit": "d"

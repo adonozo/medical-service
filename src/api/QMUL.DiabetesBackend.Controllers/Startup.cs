@@ -3,9 +3,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.DataMemory;
+using QMUL.DiabetesBackend.Model;
+using QMUL.DiabetesBackend.MongoDb;
 using QMUL.DiabetesBackend.ServiceImpl.Implementations;
 using QMUL.DiabetesBackend.ServiceInterfaces;
 
@@ -23,18 +26,21 @@ namespace QMUL.DiabetesBackend.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "QMUL.DiabetesBackend.Controllers", Version = "v1"});
             });
 
+            services.Configure<MongoDatabaseSettings>(Configuration.GetSection(nameof(MongoDatabaseSettings)));
             services.AddSingleton<IMedicationDao, MedicationMemory>();
             services.AddSingleton<IPatientDao, PatientMemory>();
             services.AddSingleton<ITreatmentDosageDao, TreatmentMemory>();
-            services.AddSingleton<IMedicationRequestDao, MedicationRequestMemory>();
+            // services.AddSingleton<IMedicationRequestDao, MedicationRequestMemory>();
             services.AddSingleton<IServiceRequestDao, ServiceRequestMemory>();
-            services.AddSingleton<IMedicationRequestDao, MedicationRequestMemory>();
+            services.AddSingleton<IDatabaseSettings>(sp =>
+                sp.GetRequiredService<IOptions<MongoDatabaseSettings>>().Value);
+            services.AddSingleton<IMedicationRequestDao, MedicationRequestDao>();
             services.AddSingleton<ICarePlanDao, CarePlanMemory>();
 
             services.AddSingleton<IMedicationService, MedicationService>();

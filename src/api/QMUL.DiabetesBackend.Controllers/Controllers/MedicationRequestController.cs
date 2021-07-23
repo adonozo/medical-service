@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -29,7 +30,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             try
             {
                 var result = await this.medicationRequestService.GetMedicationRequest(id);
-                return this.Ok(result);
+                return this.Ok(result.ToJObject());
             }
             catch (KeyNotFoundException)
             {
@@ -38,22 +39,35 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError($"Error getting medicationRequest with ID: {id}", exception);
+                this.logger.LogError($"Error getting medicationRequest with ID: {id}. {exception}");
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateMedicationRequest([FromBody] MedicationRequest request)
+        public async Task<IActionResult> CreateMedicationRequest([FromBody] object request)
         {
             try
             {
-                var result = await this.medicationRequestService.CreateMedicationRequest(request);
-                return this.Ok(result);
+                var parser = new FhirJsonParser(new ParserSettings
+                    {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
+                var serializer = new FhirJsonSerializer();
+                try
+                {
+                    var parsedRequest = await parser.ParseAsync<MedicationRequest>(request.ToString());
+                    var result = await this.medicationRequestService.CreateMedicationRequest(parsedRequest);
+                    var serialized = await serializer.SerializeToStringAsync(result);
+                    return this.Ok(serialized);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Couldn't parse the request");
+                    return this.BadRequest();
+                }
             }
             catch (Exception exception)
             {
-                this.logger.LogError("Error trying to create a medicationRequest", exception);
+                this.logger.LogError($"Error trying to create a medicationRequest. {exception}");
                 return this.BadRequest();
             }
         }
@@ -74,7 +88,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError($"Error updating medicationRequest with ID: {id}", exception);
+                this.logger.LogError($"Error updating medicationRequest with ID: {id}. {exception}");
                 return this.BadRequest();
             }
         }
@@ -95,7 +109,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError($"Error deleting medicationRequest with ID: {id}", exception);
+                this.logger.LogError($"Error deleting medicationRequest with ID: {id}. {exception}");
                 return this.BadRequest();
             }
         }

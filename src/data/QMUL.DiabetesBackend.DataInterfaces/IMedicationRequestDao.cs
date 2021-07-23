@@ -38,7 +38,6 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="patientId">The patient's user ID, not email</param>
         /// <param name="startTime">The start time interval</param>
-        /// <param name="endTime">The end time interval</param>
         /// <returns>The patient's medication list for that period of time</returns>
         public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime startTime);
         

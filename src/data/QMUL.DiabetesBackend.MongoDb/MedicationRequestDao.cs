@@ -14,7 +14,7 @@ namespace QMUL.DiabetesBackend.MongoDb
     public class MedicationRequestDao : BaseMongoDao, IMedicationRequestDao
     {
         private readonly IMongoCollection<MongoMedicationRequest> medicationRequestCollection;
-        private const string CollectionName = "MedicationRequest";
+        private const string CollectionName = "medicationRequest";
         
         public MedicationRequestDao(IDatabaseSettings settings) : base(settings)
         {
@@ -48,7 +48,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return result?.ToMedicationRequest();
         }
 
-        public async Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime, int intervalMin = 10)
+        public async Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime, int intervalMin)
         {
             var startRange = dateTime.AddMinutes(intervalMin);
             var endRange = dateTime.AddMinutes(intervalMin);
