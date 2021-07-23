@@ -21,10 +21,5 @@ namespace QMUL.DiabetesBackend.Model
         /// The medication name or the measurement instruction
         /// </summary>
         public string Text { get; set; }
-        
-        /// <summary>
-        /// When this occurs
-        /// </summary>
-        public CustomEventTiming EventTiming { get; set; }
     }
 }
