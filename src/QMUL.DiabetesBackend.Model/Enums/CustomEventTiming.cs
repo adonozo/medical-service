@@ -152,6 +152,6 @@ namespace QMUL.DiabetesBackend.Model.Enums
       /// At a specific time
       /// (system: http://localhost)
       /// </summary>
-      [EnumLiteral("ST", "http://localhost"), Description("ST")] ST,
+      [EnumLiteral("EXACT", "http://localhost"), Description("EXACT")] EXACT,
     }
 }
