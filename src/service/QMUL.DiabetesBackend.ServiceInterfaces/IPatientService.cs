@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Patient = QMUL.DiabetesBackend.Model.Patient;
 
@@ -6,12 +7,12 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
 {
     public interface IPatientService
     {
-        public List<Patient> GetPatientList();
+        public Task<List<Patient>> GetPatientList();
 
-        public Patient CreatePatient(Patient newPatient);
+        public Task<Patient> CreatePatient(Patient newPatient);
 
-        public Patient GetPatient(string idOrEmail);
+        public Task<Patient> GetPatient(string idOrEmail);
 
-        public List<CarePlan> GetPatientCarePlans(string patientIdOrEmail);
+        public Task<List<CarePlan>> GetPatientCarePlans(string patientIdOrEmail);
     }
 }

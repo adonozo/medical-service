@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,10 +27,10 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Patient>> GetPatients()
+        public async Task<IActionResult> GetPatients()
         {
             this.logger.LogDebug("Getting patients list");
-            var patients = this.patientService.GetPatientList();
+            var patients = await this.patientService.GetPatientList();
             this.logger.LogDebug($"Found {patients.Count} patients");
             return this.Ok(patients);
         }
@@ -86,18 +87,15 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpGet]
-        [Route("patients/{emailOrId}/alexa")]
-        public IActionResult GetAlexaRequest([FromRoute] string emailOrId, [FromQuery] AlexaRequestType type,
+        [Route("{emailOrId}/alexa")]
+        public IActionResult GetAlexaRequestWithTiming([FromRoute] string emailOrId, [FromQuery] AlexaRequestType type,
             [FromQuery] DateTime date,
-            [FromQuery] AlexaRequestTime requestTime,
+            [FromQuery] AlexaRequestTime requestTime = AlexaRequestTime.OnEvent,
             [FromQuery] Timing.EventTiming timing = Timing.EventTiming.MORN)
         {
-            /* TODO
-             make a requestTime -> rangeTime/eventTime converter
-             implement methods to look for medicationRequests / serviceRequests / carePlans / appointments
-             decide the alexa interface: use FHIR or custom models?                 
+            /* TODO implement methods to look for medicationRequests / serviceRequests / carePlans / appointments                 
              */
-            throw new NotImplementedException();
+            return this.Ok(new { emailOrId, type, date, requestTime, timing });
         }
 
         [HttpPost]

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.ServiceInterfaces;
@@ -18,17 +19,17 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.carePlanDao = carePlanDao;
         }
 
-        public List<Patient> GetPatientList()
+        public Task<List<Patient>> GetPatientList()
         {
             return this.patientDao.GetPatients();
         }
 
-        public Patient CreatePatient(Patient newPatient)
+        public Task<Patient> CreatePatient(Patient newPatient)
         {
             return this.patientDao.CreatePatient(newPatient);
         }
 
-        public Patient GetPatient(string idOrEmail)
+        public Task<Patient> GetPatient(string idOrEmail)
         {
             var result = this.patientDao.GetPatientByIdOrEmail(idOrEmail);
             if (result == null)
@@ -39,9 +40,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return result;
         }
 
-        public List<CarePlan> GetPatientCarePlans(string patientIdOrEmail)
+        public async Task<List<CarePlan>> GetPatientCarePlans(string patientIdOrEmail)
         {
-            var patient = this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
+            var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
             if (patient == null)
             {
                 throw new KeyNotFoundException();
