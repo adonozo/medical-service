@@ -2,31 +2,35 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.Model.Enums;
-using QMUL.DiabetesBackend.MongoDb.Models;
-using QMUL.DiabetesBackend.MongoDb.Utils;
 
 namespace QMUL.DiabetesBackend.MongoDb
 {
     public class MongoEventDao : BaseMongoDao, IEventDao
     {
-        private readonly IMongoCollection<MongoHealthEvent> eventCollection;
+        private readonly IMongoCollection<HealthEvent> eventCollection;
         private const string CollectionName = "healthEvent";
     
         public MongoEventDao(IDatabaseSettings settings) : base(settings)
         {
-            this.eventCollection = this.Database.GetCollection<MongoHealthEvent>(CollectionName);
+            this.eventCollection = this.Database.GetCollection<HealthEvent>(CollectionName);
         }
 
         public async Task<bool> CreateEvents(IEnumerable<HealthEvent> events)
         {
-            var mongoEvents = events.Select(item => item.ToMongoHealthEvent());
+            //var mongoEvents = events.Select(item => item.ToMongoHealthEvent());
             try
             {
-                await this.eventCollection.InsertManyAsync(mongoEvents);
+                events = events.Select(item =>
+                {
+                    item.Id = ObjectId.GenerateNewId().ToString();
+                    return item;
+                });
+                await this.eventCollection.InsertManyAsync(events);
                 return true;
             }
             catch (Exception exception)
@@ -38,8 +42,8 @@ namespace QMUL.DiabetesBackend.MongoDb
 
         public async Task<bool> UpdateEvent(string eventId, HealthEvent healthEvent)
         {
-            var mongoEvent = healthEvent.ToMongoHealthEvent();
-            var result = await this.eventCollection.ReplaceOneAsync(item => item.Id == eventId, mongoEvent);
+            // var mongoEvent = healthEvent.ToMongoHealthEvent();
+            var result = await this.eventCollection.ReplaceOneAsync(item => item.Id == eventId, healthEvent);
             if (!result.IsAcknowledged)
             {
                 throw new InvalidOperationException($"There was an error updating the event {eventId}");

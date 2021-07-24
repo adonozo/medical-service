@@ -30,7 +30,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 {
                     startDate = DateTime.Parse(bounds.Start);
                     var endDate = DateTime.Parse(bounds.End);
-                    days = (startDate - endDate).Days;
+                    days = (endDate - startDate).Days;
                     break;
                 }
                 case Duration {Code: "d"} duration:
@@ -62,7 +62,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             var events = new List<HealthEvent>();
             for (var i = 0; i < days; i++)
             {
-                events.AddRange(this.GenerateEventsOnFrequency(startDate));
+                var day = startDate.AddDays(i);
+                events.AddRange(this.GenerateEventsOnFrequency(day));
             }
 
             return events;

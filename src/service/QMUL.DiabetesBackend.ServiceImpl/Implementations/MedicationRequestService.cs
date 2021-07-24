@@ -24,7 +24,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
         {
             var newRequest = await this.medicationRequestDao.CreateMedicationRequest(request);
-            var events = this.GenerateEventsFrom(request);
+            var events = this.GenerateEventsFrom(newRequest);
             var eventsResult = await this.eventDao.CreateEvents(events);
             if (!eventsResult)
             {
@@ -78,13 +78,13 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var patientId = request.Subject.ElementId;
             var requestReference = new CustomResource
             {
-                EventReferenceId = request.Id,
                 EventType = EventType.MedicationDosage
             };
             
             foreach (var dosage in request.DosageInstruction)
             {
                 requestReference.Text = dosage.Text;
+                requestReference.EventReferenceId = dosage.ElementId;
                 var eventsGenerator = new EventsGenerator(patientId, dosage.Timing, requestReference);
                 events.AddRange(eventsGenerator.GetEvents());
             }
