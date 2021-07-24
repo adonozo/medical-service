@@ -22,7 +22,6 @@ namespace QMUL.DiabetesBackend.MongoDb
 
         public async Task<bool> CreateEvents(IEnumerable<HealthEvent> events)
         {
-            //var mongoEvents = events.Select(item => item.ToMongoHealthEvent());
             try
             {
                 events = events.Select(item =>
@@ -42,7 +41,6 @@ namespace QMUL.DiabetesBackend.MongoDb
 
         public async Task<bool> UpdateEvent(string eventId, HealthEvent healthEvent)
         {
-            // var mongoEvent = healthEvent.ToMongoHealthEvent();
             var result = await this.eventCollection.ReplaceOneAsync(item => item.Id == eventId, healthEvent);
             if (!result.IsAcknowledged)
             {

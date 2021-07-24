@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.Model.Enums;
@@ -13,19 +13,35 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         private readonly IMedicationRequestDao medicationRequestDao;
         private readonly IServiceRequestDao serviceRequestDao;
         private readonly ICarePlanDao carePlanDao;
+        private readonly IEventDao eventDao;
 
         public AlexaService(IPatientDao patientDao, IMedicationRequestDao medicationRequestDao,
-            IServiceRequestDao serviceRequestDao, ICarePlanDao carePlanDao)
+            IServiceRequestDao serviceRequestDao, ICarePlanDao carePlanDao, IEventDao eventDao)
         {
             this.patientDao = patientDao;
             this.medicationRequestDao = medicationRequestDao;
             this.serviceRequestDao = serviceRequestDao;
             this.carePlanDao = carePlanDao;
+            this.eventDao = eventDao;
         }
 
-        public List<DomainResource> ProcessRequest(string patientEmailOrId, AlexaRequestType type, DateTime dateTime, AlexaRequestTime requestTime,
-            Timing.EventTiming timing)
+        public async Task<Bundle> ProcessRequest(string patientEmailOrId, AlexaRequestType type, DateTime dateTime, AlexaRequestTime requestTime,
+            CustomEventTiming timing)
         {
+            var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
+            switch (requestTime)
+            {
+                case AlexaRequestTime.ExactTime:
+                    break;
+                case AlexaRequestTime.AllDay:
+                    break;
+                case AlexaRequestTime.OnEvent:
+                    var events = this.eventDao.GetEvents(patient.Id.ToString(), dateTime, timing);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(requestTime), requestTime, null);
+            }
+            
             throw new NotImplementedException();
         }
 

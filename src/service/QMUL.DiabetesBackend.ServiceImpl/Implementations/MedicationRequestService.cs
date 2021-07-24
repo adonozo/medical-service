@@ -83,6 +83,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             
             foreach (var dosage in request.DosageInstruction)
             {
+                requestReference.ResourceId = request.Id;
                 requestReference.Text = dosage.Text;
                 requestReference.EventReferenceId = dosage.ElementId;
                 var eventsGenerator = new EventsGenerator(patientId, dosage.Timing, requestReference);

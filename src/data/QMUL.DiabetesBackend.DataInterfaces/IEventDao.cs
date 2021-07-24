@@ -21,14 +21,14 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <summary>
         /// Deletes the event series based on a reference ID.
         /// </summary>
-        /// <param name="referenceId">The Reference ID</param>
+        /// <param name="referenceId">The Reference ID. i.e., the dosageInstruction ID from the medication request.</param>
         /// <returns>If the delete operation was successful.</returns>
         public Task<bool> DeleteEventSeries(string referenceId);
 
         /// <summary>
-        /// Gets the series of events given a reference ID.
+        /// Gets the series of events given a reference ID. For example, a dosage instruction will have its series of events
         /// </summary>
-        /// <param name="referenceId">The reference ID. i.e., Medication Request, Service Request</param>
+        /// <param name="referenceId">The reference ID. i.e., the dosageInstruction ID from the medication request.</param>
         /// <returns>The list of events</returns>
         public Task<IEnumerable<HealthEvent>> GetEvents(string referenceId);
 
