@@ -70,6 +70,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             var endDate = dateTime.Date.AddMinutes(offset);
             var timeCompare = new Func<DateTime, bool>(date => date > startDate && date < endDate);
             var result = await this.eventCollection.FindAsync(healthEvent => healthEvent.Id == patientId
+                                                                             && healthEvent.ExactTimeIsSetup
                                                                              && timeCompare(healthEvent.EventDateTime));
             return result.ToList();
         }
@@ -80,7 +81,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             var endDate = dateTime.Date;
             var timeCompare = new Func<DateTime, bool>(date => date > startDate && date < endDate);
             var result = await this.eventCollection.FindAsync(healthEvent => healthEvent.Id == patientId
-                                                                             && healthEvent.Resource.EventTiming == time
+                                                                             && healthEvent.EventTiming == time
                                                                              && timeCompare(healthEvent.EventDateTime));
             return result.ToList();
         }
