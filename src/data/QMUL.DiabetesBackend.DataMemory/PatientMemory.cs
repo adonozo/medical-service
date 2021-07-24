@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.Model;
 
@@ -28,21 +29,22 @@ namespace QMUL.DiabetesBackend.DataMemory
             this.patients = samplePatients;
         }
 
-        public List<Patient> GetPatients()
+        public Task<List<Patient>> GetPatients()
         {
-            return this.patients;
+            return Task.FromResult(this.patients);
         }
 
-        public Patient CreatePatient(Patient newPatient)
+        public Task<Patient> CreatePatient(Patient newPatient)
         {
             newPatient.Id = Guid.NewGuid();
             this.patients.Add(newPatient);
-            return newPatient;
+            return Task.FromResult(newPatient);
         }
 
-        public Patient GetPatientByIdOrEmail(string idOrEmail)
+        public Task<Patient> GetPatientByIdOrEmail(string idOrEmail)
         {
-            return this.patients.FirstOrDefault(patient => patient.Id.ToString().Equals(idOrEmail) || patient.Email.Equals(idOrEmail));
+            return Task.FromResult(this.patients.FirstOrDefault(patient =>
+                patient.Id.ToString().Equals(idOrEmail) || patient.Email.Equals(idOrEmail)));
         }
     }
 }
