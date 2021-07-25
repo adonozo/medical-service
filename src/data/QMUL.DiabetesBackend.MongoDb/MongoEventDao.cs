@@ -77,12 +77,39 @@ namespace QMUL.DiabetesBackend.MongoDb
             return result.ToList();
         }
 
-        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, DateTime dateTime, CustomEventTiming time)
+        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime dateTime,
+            int offset)
+        {
+            var startDate = dateTime.Date.AddMinutes(offset * -1);
+            var endDate = dateTime.Date.AddMinutes(offset);
+            var timeCompare = new Func<DateTime, bool>(date => date > startDate && date < endDate);
+            var result = await this.eventCollection.FindAsync(healthEvent => healthEvent.Id == patientId
+                                                                             && healthEvent.Resource.EventType == type
+                                                                             && healthEvent.ExactTimeIsSetup
+                                                                             && timeCompare(healthEvent.EventDateTime));
+            return result.ToList();
+        }
+
+        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, DateTime dateTime,
+            CustomEventTiming time)
         {
             var startDate = dateTime.Date;
             var endDate = dateTime.Date;
             var timeCompare = new Func<DateTime, bool>(date => date > startDate && date < endDate);
             var result = await this.eventCollection.FindAsync(healthEvent => healthEvent.Id == patientId
+                                                                             && healthEvent.EventTiming == time
+                                                                             && timeCompare(healthEvent.EventDateTime));
+            return result.ToList();
+        }
+
+        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime dateTime,
+            CustomEventTiming time)
+        {
+            var startDate = dateTime.Date;
+            var endDate = dateTime.Date;
+            var timeCompare = new Func<DateTime, bool>(date => date > startDate && date < endDate);
+            var result = await this.eventCollection.FindAsync(healthEvent => healthEvent.Id == patientId
+                                                                             && healthEvent.Resource.EventType == type
                                                                              && healthEvent.EventTiming == time
                                                                              && timeCompare(healthEvent.EventDateTime));
             return result.ToList();

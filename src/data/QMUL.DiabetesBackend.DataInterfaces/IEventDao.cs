@@ -42,6 +42,12 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         public Task<IEnumerable<HealthEvent>> GetEvents(string patientId, DateTime dateTime, int offset);
         
         /// <summary>
+        /// Get events for the given event type: Medication, Insulin, Measure; for a given date.
+        /// </summary>
+        /// <returns>The list of events for a given date.</returns>
+        public Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime dateTime, int offset);
+        
+        /// <summary>
         /// Gets the events for a patient given a time in the day. E.g., before breakfast, at night, etc.
         /// </summary>
         /// <param name="patientId">The patient ID</param>
@@ -49,5 +55,11 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="time">When the event happens: before breakfast, at night, etc.</param>
         /// <returns>The list of events for that date and event.</returns>
         public Task<IEnumerable<HealthEvent>> GetEvents(string patientId, DateTime dateTime, CustomEventTiming time);
+        
+        /// <summary>
+        /// Gets the events for the given type: Medication, Insulin, Measure; for a time in the day.
+        /// </summary>
+        /// <returns>The lists of events for that date and event</returns>
+        public Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime dateTime, CustomEventTiming time);
     }
 }
