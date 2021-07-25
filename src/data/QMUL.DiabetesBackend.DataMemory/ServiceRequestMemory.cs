@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.DataInterfaces;
+using Task = System.Threading.Tasks.Task;
 
 namespace QMUL.DiabetesBackend.DataMemory
 {
@@ -71,11 +73,11 @@ namespace QMUL.DiabetesBackend.DataMemory
             var index = this.sampleRequests.FindIndex(0, request => request.Id.Equals(id));
             if (index >= 0)
             {
-                this.sampleRequests[index] = actualRequest;
-                return actualRequest;
+                throw new KeyNotFoundException();
             }
 
-            throw new KeyNotFoundException();
+            this.sampleRequests[index] = actualRequest;
+            return actualRequest;
         }
 
         public bool DeleteServiceRequest(string id)
@@ -83,11 +85,16 @@ namespace QMUL.DiabetesBackend.DataMemory
             var index = this.sampleRequests.FindIndex(0, request => request.Id.Equals(id));
             if (index >= 0)
             {
-                this.sampleRequests.RemoveAt(index);
-                return true;
+                return false;
             }
 
-            return false;
+            this.sampleRequests.RemoveAt(index);
+            return true;
+        }
+
+        public Task<List<ServiceRequest>> GetServiceRequestsByIds(string[] ids)
+        {
+            return Task.FromResult(this.sampleRequests);
         }
     }
 }

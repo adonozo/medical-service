@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 
 namespace QMUL.DiabetesBackend.DataInterfaces
@@ -11,5 +13,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         public ServiceRequest UpdateServiceRequest(string id, ServiceRequest actualRequest);
 
         public bool DeleteServiceRequest(string id);
+        
+        public Task<List<ServiceRequest>> GetServiceRequestsByIds(string[] ids);
     }
 }
