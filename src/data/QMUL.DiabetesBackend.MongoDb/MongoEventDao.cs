@@ -114,5 +114,26 @@ namespace QMUL.DiabetesBackend.MongoDb
                                                                              && timeCompare(healthEvent.EventDateTime));
             return result.ToList();
         }
+
+        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, DateTime dateTime)
+        {
+            var startDate = dateTime.Date;
+            var endDate = dateTime.Date;
+            var timeCompare = new Func<DateTime, bool>(date => date > startDate && date < endDate);
+            var result = await this.eventCollection.FindAsync(healthEvent => healthEvent.Id == patientId
+                                                                             && timeCompare(healthEvent.EventDateTime));
+            return result.ToList();
+        }
+
+        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime dateTime)
+        {
+            var startDate = dateTime.Date;
+            var endDate = dateTime.Date;
+            var timeCompare = new Func<DateTime, bool>(date => date > startDate && date < endDate);
+            var result = await this.eventCollection.FindAsync(healthEvent => healthEvent.Id == patientId
+                                                                             && healthEvent.Resource.EventType == type 
+                                                                             && timeCompare(healthEvent.EventDateTime));
+            return result.ToList();
+        }
     }
 }
