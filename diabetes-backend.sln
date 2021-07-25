@@ -1,26 +1,29 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.Controllers", "src\api\QMUL.DiabetesBackend.Controllers\QMUL.DiabetesBackend.Controllers.csproj", "{33741820-EF05-4C64-827B-6013480930D8}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31515.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.Controllers", "src\api\QMUL.DiabetesBackend.Controllers\QMUL.DiabetesBackend.Controllers.csproj", "{33741820-EF05-4C64-827B-6013480930D8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{62F37995-0617-44D1-A609-CA0E20831A81}"
-ProjectSection(SolutionItems) = preProject
-	api\swagger.yaml = api\swagger.yaml
-	api\medication.json = api\medication.json
-	api\patient.json = api\patient.json
-	api\patientTreatmentDossage.json = api\patientTreatmentDossage.json
-	api\serviceRequest.json = api\serviceRequest.json
-	api\timingDaily.json = api\timingDaily.json
-	api\timingOther.json = api\timingOther.json
-	api\medicationRequest.json = api\medicationRequest.json
-	api\carePlan.json = api\carePlan.json
-	api\medicationRequest-oral.json = api\medicationRequest-oral.json
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		api\carePlan.json = api\carePlan.json
+		api\medication.json = api\medication.json
+		api\medicationRequest-oral.json = api\medicationRequest-oral.json
+		api\medicationRequest.json = api\medicationRequest.json
+		api\patient.json = api\patient.json
+		api\patientTreatmentDossage.json = api\patientTreatmentDossage.json
+		api\serviceRequest.json = api\serviceRequest.json
+		api\swagger.yaml = api\swagger.yaml
+		api\timingDaily.json = api\timingDaily.json
+		api\timingOther.json = api\timingOther.json
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.Model", "src\QMUL.DiabetesBackend.Model\QMUL.DiabetesBackend.Model.csproj", "{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.Model", "src\QMUL.DiabetesBackend.Model\QMUL.DiabetesBackend.Model.csproj", "{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.ServiceInterfaces", "src\service\QMUL.DiabetesBackend.ServiceInterfaces\QMUL.DiabetesBackend.ServiceInterfaces.csproj", "{B2D6EC04-3C34-4FB7-B441-483D72481861}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.ServiceInterfaces", "src\service\QMUL.DiabetesBackend.ServiceInterfaces\QMUL.DiabetesBackend.ServiceInterfaces.csproj", "{B2D6EC04-3C34-4FB7-B441-483D72481861}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{1127884B-0430-4CB4-83FC-AC0E562A3D74}"
 EndProject
@@ -28,13 +31,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service", "service", "{0D53
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "data", "data", "{EAD4DE48-A301-46FE-ACA5-F5FAFF2C2D77}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.ServiceImpl", "src\service\QMUL.DiabetesBackend.ServiceImpl\QMUL.DiabetesBackend.ServiceImpl.csproj", "{3EC47315-091C-4843-8DB3-748898CB66CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.ServiceImpl", "src\service\QMUL.DiabetesBackend.ServiceImpl\QMUL.DiabetesBackend.ServiceImpl.csproj", "{3EC47315-091C-4843-8DB3-748898CB66CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.DataInterfaces", "src\data\QMUL.DiabetesBackend.DataInterfaces\QMUL.DiabetesBackend.DataInterfaces.csproj", "{194EAA1E-F28C-472F-8557-16AED3E8E2FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.DataInterfaces", "src\data\QMUL.DiabetesBackend.DataInterfaces\QMUL.DiabetesBackend.DataInterfaces.csproj", "{194EAA1E-F28C-472F-8557-16AED3E8E2FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.DataMemory", "src\data\QMUL.DiabetesBackend.DataMemory\QMUL.DiabetesBackend.DataMemory.csproj", "{ABC4062D-EFB2-460A-9889-59AD451703F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.DataMemory", "src\data\QMUL.DiabetesBackend.DataMemory\QMUL.DiabetesBackend.DataMemory.csproj", "{ABC4062D-EFB2-460A-9889-59AD451703F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.MongoDb", "src\data\QMUL.DiabetesBackend.MongoDb\QMUL.DiabetesBackend.MongoDb.csproj", "{B57C5744-9B39-4CE8-BECA-D195039969F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.MongoDb", "src\data\QMUL.DiabetesBackend.MongoDb\QMUL.DiabetesBackend.MongoDb.csproj", "{B57C5744-9B39-4CE8-BECA-D195039969F0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3723FF2D-06A0-41AC-B6ED-4D0B49B3C7BC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{21BB1C52-9982-4A6A-949C-E2FE8F7CF48E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.Controllers.Tests", "test\api\QMUL.DiabetesBackend.Controllers.Tests\QMUL.DiabetesBackend.Controllers.Tests.csproj", "{072F4017-B782-4324-A49F-24520AB230CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -70,17 +79,29 @@ Global
 		{B57C5744-9B39-4CE8-BECA-D195039969F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B57C5744-9B39-4CE8-BECA-D195039969F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B57C5744-9B39-4CE8-BECA-D195039969F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{072F4017-B782-4324-A49F-24520AB230CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{072F4017-B782-4324-A49F-24520AB230CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{072F4017-B782-4324-A49F-24520AB230CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{072F4017-B782-4324-A49F-24520AB230CC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C} = {D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}
-		{1127884B-0430-4CB4-83FC-AC0E562A3D74} = {D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}
 		{33741820-EF05-4C64-827B-6013480930D8} = {1127884B-0430-4CB4-83FC-AC0E562A3D74}
+		{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C} = {D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}
+		{B2D6EC04-3C34-4FB7-B441-483D72481861} = {0D53E1E1-5854-4061-AEF2-5C9EEAD95091}
+		{1127884B-0430-4CB4-83FC-AC0E562A3D74} = {D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}
 		{0D53E1E1-5854-4061-AEF2-5C9EEAD95091} = {D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}
 		{EAD4DE48-A301-46FE-ACA5-F5FAFF2C2D77} = {D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}
-		{B2D6EC04-3C34-4FB7-B441-483D72481861} = {0D53E1E1-5854-4061-AEF2-5C9EEAD95091}
 		{3EC47315-091C-4843-8DB3-748898CB66CF} = {0D53E1E1-5854-4061-AEF2-5C9EEAD95091}
 		{194EAA1E-F28C-472F-8557-16AED3E8E2FB} = {EAD4DE48-A301-46FE-ACA5-F5FAFF2C2D77}
 		{ABC4062D-EFB2-460A-9889-59AD451703F8} = {EAD4DE48-A301-46FE-ACA5-F5FAFF2C2D77}
 		{B57C5744-9B39-4CE8-BECA-D195039969F0} = {EAD4DE48-A301-46FE-ACA5-F5FAFF2C2D77}
+		{21BB1C52-9982-4A6A-949C-E2FE8F7CF48E} = {3723FF2D-06A0-41AC-B6ED-4D0B49B3C7BC}
+		{072F4017-B782-4324-A49F-24520AB230CC} = {21BB1C52-9982-4A6A-949C-E2FE8F7CF48E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AFB29E41-36A7-4D62-BDF0-63DC00B1E467}
 	EndGlobalSection
 EndGlobal
