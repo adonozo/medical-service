@@ -13,6 +13,8 @@ namespace QMUL.DiabetesBackend.DataInterfaces
 
         public Task<MedicationRequest> GetMedicationRequest(string id);
 
+        public Task<List<MedicationRequest>> GetMedicationRequestsByIds(string[] ids);
+
         /// <summary>
         /// Get the list of medications the patient needs to take at a specific time, using an offset (in minutes) to
         /// look for.
