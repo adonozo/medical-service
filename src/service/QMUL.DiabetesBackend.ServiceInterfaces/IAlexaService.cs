@@ -15,7 +15,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// </summary>
         /// <returns>A Bundle list containing <see cref="MedicationRequest"/></returns>
         public Task<Bundle> GetMedicationRequests(string patientEmailOrId, DateTime dateTime,
-            AlexaRequestTime requestTime, CustomEventTiming timing);
+            AlexaRequestTime requestTime, CustomEventTiming timing, bool insulin);
 
         /// <summary>
         /// Gets the service requests for a given time.
