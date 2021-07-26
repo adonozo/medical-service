@@ -2,34 +2,31 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.Model.Enums;
+using QMUL.DiabetesBackend.MongoDb.Models;
+using QMUL.DiabetesBackend.MongoDb.Utils;
 
 namespace QMUL.DiabetesBackend.MongoDb
 {
     public class MongoEventDao : BaseMongoDao, IEventDao
     {
-        private readonly IMongoCollection<HealthEvent> eventCollection;
+        private readonly IMongoCollection<MongoEvent> eventCollection;
         private const string CollectionName = "healthEvent";
     
         public MongoEventDao(IDatabaseSettings settings) : base(settings)
         {
-            this.eventCollection = this.Database.GetCollection<HealthEvent>(CollectionName);
+            this.eventCollection = this.Database.GetCollection<MongoEvent>(CollectionName);
         }
 
         public async Task<bool> CreateEvents(IEnumerable<HealthEvent> events)
         {
             try
             {
-                events = events.Select(item =>
-                {
-                    item.Id = ObjectId.GenerateNewId().ToString();
-                    return item;
-                });
-                await this.eventCollection.InsertManyAsync(events);
+                var mongoEvents = events.Select(Mapper.ToMongoEvent);
+                await this.eventCollection.InsertManyAsync(mongoEvents);
                 return true;
             }
             catch (Exception exception)
@@ -41,7 +38,8 @@ namespace QMUL.DiabetesBackend.MongoDb
 
         public async Task<bool> UpdateEvent(string eventId, HealthEvent healthEvent)
         {
-            var result = await this.eventCollection.ReplaceOneAsync(item => item.Id == eventId, healthEvent);
+            var mongoEvent = healthEvent.ToMongoEvent();
+            var result = await this.eventCollection.ReplaceOneAsync(item => item.Id == eventId, mongoEvent);
             if (!result.IsAcknowledged)
             {
                 throw new InvalidOperationException($"There was an error updating the event {eventId}");
@@ -63,7 +61,8 @@ namespace QMUL.DiabetesBackend.MongoDb
         {
             var result =
                 await this.eventCollection.FindAsync(healthEvent => healthEvent.Resource.EventReferenceId == referenceId);
-            return result.ToList();
+            var events = await result.ToListAsync();
+            return events.Select(Mapper.ToHealthEvent);
         }
 
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, DateTime dateTime, int offset)
@@ -74,7 +73,8 @@ namespace QMUL.DiabetesBackend.MongoDb
             var result = await this.eventCollection.FindAsync(healthEvent => healthEvent.Id == patientId
                                                                              && healthEvent.ExactTimeIsSetup
                                                                              && timeCompare(healthEvent.EventDateTime));
-            return result.ToList();
+            var events = await result.ToListAsync();
+            return events.Select(Mapper.ToHealthEvent);
         }
 
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime dateTime,
@@ -87,7 +87,8 @@ namespace QMUL.DiabetesBackend.MongoDb
                                                                              && healthEvent.Resource.EventType == type
                                                                              && healthEvent.ExactTimeIsSetup
                                                                              && timeCompare(healthEvent.EventDateTime));
-            return result.ToList();
+            var events = await result.ToListAsync();
+            return events.Select(Mapper.ToHealthEvent);
         }
 
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, DateTime dateTime,
@@ -99,7 +100,8 @@ namespace QMUL.DiabetesBackend.MongoDb
             var result = await this.eventCollection.FindAsync(healthEvent => healthEvent.Id == patientId
                                                                              && healthEvent.EventTiming == time
                                                                              && timeCompare(healthEvent.EventDateTime));
-            return result.ToList();
+            var events = await result.ToListAsync();
+            return events.Select(Mapper.ToHealthEvent);
         }
 
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime dateTime,
@@ -112,7 +114,8 @@ namespace QMUL.DiabetesBackend.MongoDb
                                                                              && healthEvent.Resource.EventType == type
                                                                              && healthEvent.EventTiming == time
                                                                              && timeCompare(healthEvent.EventDateTime));
-            return result.ToList();
+            var events = await result.ToListAsync();
+            return events.Select(Mapper.ToHealthEvent);
         }
 
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, DateTime dateTime)
@@ -122,7 +125,8 @@ namespace QMUL.DiabetesBackend.MongoDb
             var timeCompare = new Func<DateTime, bool>(date => date > startDate && date < endDate);
             var result = await this.eventCollection.FindAsync(healthEvent => healthEvent.Id == patientId
                                                                              && timeCompare(healthEvent.EventDateTime));
-            return result.ToList();
+            var events = await result.ToListAsync();
+            return events.Select(Mapper.ToHealthEvent);
         }
 
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime dateTime)
@@ -133,7 +137,8 @@ namespace QMUL.DiabetesBackend.MongoDb
             var result = await this.eventCollection.FindAsync(healthEvent => healthEvent.Id == patientId
                                                                              && healthEvent.Resource.EventType == type 
                                                                              && timeCompare(healthEvent.EventDateTime));
-            return result.ToList();
+            var events = await result.ToListAsync();
+            return events.Select(Mapper.ToHealthEvent);
         }
     }
 }
