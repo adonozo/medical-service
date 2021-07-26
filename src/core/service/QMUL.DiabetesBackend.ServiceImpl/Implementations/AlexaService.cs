@@ -125,5 +125,23 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             uniqueIds.UnionWith(events.Select(item => item.Resource.ResourceId).ToArray());
             return await serviceRequestDao.GetServiceRequestsByIds(uniqueIds.ToArray());
         }
+        
+        public async Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming, DateTime dateTime)
+        {
+            var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
+            if (patient == null)
+            {
+                throw new KeyNotFoundException();
+            }
+
+            patient.ExactEventTimes[eventTiming] = dateTime;
+            var result = await this.patientDao.UpdatePatient(patient);
+            if (!result)
+            {
+                throw new ArgumentException("Could not update the patient's event.", nameof(eventTiming));
+            }
+
+            return await this.eventDao.UpdateEvents(patient.Id, eventTiming, dateTime);
+        }
     }
 }

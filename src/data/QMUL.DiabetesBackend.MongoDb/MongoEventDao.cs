@@ -140,5 +140,28 @@ namespace QMUL.DiabetesBackend.MongoDb
             var events = await result.ToListAsync();
             return events.Select(Mapper.ToHealthEvent);
         }
+
+        public async Task<bool> UpdateEvents(string patientId, CustomEventTiming timing, DateTime time)
+        {
+            var currentTime = DateTime.UtcNow;
+            var setTime = new Func<DateTime, DateTime>(oldTime => oldTime.Date.AddHours(time.Hour).AddMinutes(time.Minute));
+            
+            var eventsToUpdate = await this.eventCollection.FindAsync(healthEvent => healthEvent.PatientId == patientId
+                                                                && healthEvent.EventTiming == timing
+                                                                && healthEvent.EventDateTime > currentTime);
+
+            await eventsToUpdate.ForEachAsync(async healthEvent =>
+            {
+                healthEvent.EventDateTime = setTime(healthEvent.EventDateTime);
+                var updateResult = await this.eventCollection.UpdateOneAsync(item => item.Id == healthEvent.Id,
+                    Builders<MongoEvent>.Update.Set(item => item.EventDateTime, healthEvent.EventDateTime));
+                if (!updateResult.IsAcknowledged)
+                {
+                    throw new ArgumentException("Could not update the healthEvent", nameof(timing));
+                }
+            });
+            
+            return true;
+        }
     }
 }

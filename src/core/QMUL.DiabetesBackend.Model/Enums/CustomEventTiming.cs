@@ -2,6 +2,9 @@ using Hl7.Fhir.Utility;
 
 namespace QMUL.DiabetesBackend.Model.Enums
 {
+    /// <summary>
+    /// Event times in the day. E.g., morning, breakfast, evening, etc.
+    /// </summary>
     public enum CustomEventTiming
     {
         /// <summary>

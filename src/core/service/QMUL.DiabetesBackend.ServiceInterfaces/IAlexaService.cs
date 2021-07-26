@@ -32,5 +32,14 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
             AlexaRequestTime requestTime, CustomEventTiming timing);
 
         public DiagnosticReport SaveGlucoseMeasure(string patientId, DiagnosticReport report);
+        
+        /// <summary>
+        /// Updates / Adds a specific time for a event timing to the patient's list. e.g., a specific time for breakfast.  
+        /// </summary>
+        /// <param name="patientIdOrEmail">The patient's ID or email.</param>
+        /// <param name="eventTiming">The event timing to set.</param>
+        /// <param name="dateTime">The time for the event. The date is ignored.</param>
+        /// <returns>A boolean value to indicate is the update was successful.</returns>
+        public Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming, DateTime dateTime);
     }
 }
