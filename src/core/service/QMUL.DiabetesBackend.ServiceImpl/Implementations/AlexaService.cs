@@ -28,17 +28,18 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.eventDao = eventDao;
         }
 
-        public async Task<Bundle> ProcessRequest(string patientEmailOrId, AlexaRequestType type, DateTime dateTime, AlexaRequestTime requestTime,
+        public async Task<Bundle> ProcessRequest(string patientEmailOrId, AlexaRequestType type, DateTime dateTime,
+            AlexaRequestTime requestTime,
             CustomEventTiming timing)
         {
             switch (type)
             {
                 case AlexaRequestType.Medication:
-                    return await this.GetMedicationRequests(patientEmailOrId, dateTime, requestTime, timing, false);
+                    return await GetMedicationRequests(patientEmailOrId, dateTime, requestTime, timing, false);
                 case AlexaRequestType.Insulin:
-                    return await this.GetMedicationRequests(patientEmailOrId, dateTime, requestTime, timing, true);
+                    return await GetMedicationRequests(patientEmailOrId, dateTime, requestTime, timing, true);
                 case AlexaRequestType.Glucose:
-                    return await this.GetMeasurements(patientEmailOrId, dateTime, requestTime, timing);
+                    return await GetMeasurements(patientEmailOrId, dateTime, requestTime, timing);
                 case AlexaRequestType.Appointment:
                     break;
                 case AlexaRequestType.CarePlan:
@@ -46,50 +47,46 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
-            
+
             throw new NotImplementedException();
         }
 
         public async Task<Bundle> GetMedicationRequests(string patientEmailOrId, DateTime dateTime,
             AlexaRequestTime requestTime, CustomEventTiming timing, bool insulin)
         {
-            var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
+            var patient = await patientDao.GetPatientByIdOrEmail(patientEmailOrId);
             var type = insulin ? EventType.InsulinDosage : EventType.MedicationDosage;
             var events = requestTime switch
             {
-                AlexaRequestTime.ExactTime => await this.eventDao.GetEvents(patient.Id.ToString(),
-                    type, dateTime, timing),
-                AlexaRequestTime.AllDay => await this.eventDao.GetEvents(patient.Id.ToString(),
-                    type, dateTime),
-                AlexaRequestTime.OnEvent => await this.eventDao.GetEvents(patient.Id.ToString(),
-                    type, dateTime, timing),
+                AlexaRequestTime.ExactTime => await eventDao.GetEvents(patient.Id, type, dateTime, timing),
+                AlexaRequestTime.AllDay => await eventDao.GetEvents(patient.Id, type, dateTime),
+                AlexaRequestTime.OnEvent => await eventDao.GetEvents(patient.Id, type, dateTime, timing),
                 _ => throw new ArgumentOutOfRangeException(nameof(requestTime), requestTime, null)
             };
 
             var bundle = GenerateEmptyBundle();
-            var medicationRequests = await this.GetMedicationBundle(events);
+            var medicationRequests = await GetMedicationBundle(events);
             bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
                 .ToList();
             return bundle;
         }
 
-        public async Task<Bundle> GetServiceRequests(string patientEmailOrId, DateTime dateTime, AlexaRequestTime requestTime,
-            CustomEventTiming timing)
+        public async Task<Bundle> GetServiceRequests(string patientEmailOrId, DateTime dateTime,
+            AlexaRequestTime requestTime, CustomEventTiming timing)
         {
-            var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
+            var patient = await patientDao.GetPatientByIdOrEmail(patientEmailOrId);
             var events = requestTime switch
             {
-                AlexaRequestTime.ExactTime => await this.eventDao.GetEvents(patient.Id.ToString(),
-                    EventType.Measurement, dateTime, timing),
-                AlexaRequestTime.AllDay => await this.eventDao.GetEvents(patient.Id.ToString(),
-                    EventType.Measurement, dateTime),
-                AlexaRequestTime.OnEvent => await this.eventDao.GetEvents(patient.Id.ToString(),
-                    EventType.Measurement, dateTime, timing),
+                AlexaRequestTime.ExactTime => await eventDao.GetEvents(patient.Id, EventType.Measurement, dateTime,
+                    timing),
+                AlexaRequestTime.AllDay => await eventDao.GetEvents(patient.Id, EventType.Measurement, dateTime),
+                AlexaRequestTime.OnEvent => await eventDao.GetEvents(patient.Id, EventType.Measurement, dateTime,
+                    timing),
                 _ => throw new ArgumentOutOfRangeException(nameof(requestTime), requestTime, null)
             };
 
             var bundle = GenerateEmptyBundle();
-            var serviceRequests = await this.GetServiceBundle(events);
+            var serviceRequests = await GetServiceBundle(events);
             bundle.Entry = serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
                 .ToList();
             return bundle;
@@ -119,14 +116,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         {
             var uniqueIds = new HashSet<string>();
             uniqueIds.UnionWith(events.Select(item => item.Resource.ResourceId).ToArray());
-            return await this.medicationRequestDao.GetMedicationRequestsByIds(uniqueIds.ToArray());
+            return await medicationRequestDao.GetMedicationRequestsByIds(uniqueIds.ToArray());
         }
-        
+
         private async Task<List<ServiceRequest>> GetServiceBundle(IEnumerable<HealthEvent> events)
         {
             var uniqueIds = new HashSet<string>();
             uniqueIds.UnionWith(events.Select(item => item.Resource.ResourceId).ToArray());
-            return await this.serviceRequestDao.GetServiceRequestsByIds(uniqueIds.ToArray());
+            return await serviceRequestDao.GetServiceRequestsByIds(uniqueIds.ToArray());
         }
     }
 }

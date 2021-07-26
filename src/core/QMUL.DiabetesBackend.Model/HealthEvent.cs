@@ -8,7 +8,6 @@ namespace QMUL.DiabetesBackend.Model
     /// </summary>
     public class HealthEvent
     {
-        // TODO There must be a separate mongo object for this one, because of the ObjectID
         public string Id { get; set; }
         
         public string PatientId { get; set; }
