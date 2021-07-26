@@ -21,17 +21,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{62F37995-061
 		api\timingOther.json = api\timingOther.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.Model", "src\QMUL.DiabetesBackend.Model\QMUL.DiabetesBackend.Model.csproj", "{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.Model", "src\core\QMUL.DiabetesBackend.Model\QMUL.DiabetesBackend.Model.csproj", "{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.ServiceInterfaces", "src\service\QMUL.DiabetesBackend.ServiceInterfaces\QMUL.DiabetesBackend.ServiceInterfaces.csproj", "{B2D6EC04-3C34-4FB7-B441-483D72481861}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.ServiceInterfaces", "src\core\service\QMUL.DiabetesBackend.ServiceInterfaces\QMUL.DiabetesBackend.ServiceInterfaces.csproj", "{B2D6EC04-3C34-4FB7-B441-483D72481861}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{1127884B-0430-4CB4-83FC-AC0E562A3D74}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service", "service", "{0D53E1E1-5854-4061-AEF2-5C9EEAD95091}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{0D53E1E1-5854-4061-AEF2-5C9EEAD95091}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "data", "data", "{EAD4DE48-A301-46FE-ACA5-F5FAFF2C2D77}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.ServiceImpl", "src\service\QMUL.DiabetesBackend.ServiceImpl\QMUL.DiabetesBackend.ServiceImpl.csproj", "{3EC47315-091C-4843-8DB3-748898CB66CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.ServiceImpl", "src\core\service\QMUL.DiabetesBackend.ServiceImpl\QMUL.DiabetesBackend.ServiceImpl.csproj", "{3EC47315-091C-4843-8DB3-748898CB66CF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.DataInterfaces", "src\data\QMUL.DiabetesBackend.DataInterfaces\QMUL.DiabetesBackend.DataInterfaces.csproj", "{194EAA1E-F28C-472F-8557-16AED3E8E2FB}"
 EndProject
@@ -89,7 +89,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{33741820-EF05-4C64-827B-6013480930D8} = {1127884B-0430-4CB4-83FC-AC0E562A3D74}
-		{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C} = {D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}
 		{B2D6EC04-3C34-4FB7-B441-483D72481861} = {0D53E1E1-5854-4061-AEF2-5C9EEAD95091}
 		{1127884B-0430-4CB4-83FC-AC0E562A3D74} = {D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}
 		{0D53E1E1-5854-4061-AEF2-5C9EEAD95091} = {D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}
@@ -100,6 +99,7 @@ Global
 		{B57C5744-9B39-4CE8-BECA-D195039969F0} = {EAD4DE48-A301-46FE-ACA5-F5FAFF2C2D77}
 		{21BB1C52-9982-4A6A-949C-E2FE8F7CF48E} = {3723FF2D-06A0-41AC-B6ED-4D0B49B3C7BC}
 		{072F4017-B782-4324-A49F-24520AB230CC} = {21BB1C52-9982-4A6A-949C-E2FE8F7CF48E}
+		{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C} = {0D53E1E1-5854-4061-AEF2-5C9EEAD95091}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AFB29E41-36A7-4D62-BDF0-63DC00B1E467}

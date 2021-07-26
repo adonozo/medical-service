@@ -14,8 +14,8 @@
       <ProjectReference Include="..\..\data\QMUL.DiabetesBackend.DataInterfaces\QMUL.DiabetesBackend.DataInterfaces.csproj" />
       <ProjectReference Include="..\..\data\QMUL.DiabetesBackend.DataMemory\QMUL.DiabetesBackend.DataMemory.csproj" />
       <ProjectReference Include="..\..\data\QMUL.DiabetesBackend.MongoDb\QMUL.DiabetesBackend.MongoDb.csproj" />
-      <ProjectReference Include="..\..\service\QMUL.DiabetesBackend.ServiceImpl\QMUL.DiabetesBackend.ServiceImpl.csproj" />
-      <ProjectReference Include="..\..\service\QMUL.DiabetesBackend.ServiceInterfaces\QMUL.DiabetesBackend.ServiceInterfaces.csproj" />
+      <ProjectReference Include="..\..\core\service\QMUL.DiabetesBackend.ServiceImpl\QMUL.DiabetesBackend.ServiceImpl.csproj" />
+      <ProjectReference Include="..\..\core\service\QMUL.DiabetesBackend.ServiceInterfaces\QMUL.DiabetesBackend.ServiceInterfaces.csproj" />
     </ItemGroup>
 
 </Project>
