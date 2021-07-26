@@ -12,7 +12,7 @@ using QMUL.DiabetesBackend.MongoDb.Utils;
 
 namespace QMUL.DiabetesBackend.MongoDb
 {
-    public class MedicationRequestDao : BaseMongoDao, IMedicationRequestDao
+    public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     {
         private readonly IMongoCollection<MongoMedicationRequest> medicationRequestCollection;
         private const string CollectionName = "medicationRequest";

@@ -5,6 +5,7 @@ using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.MongoDb.Models;
 using static System.Enum;
+using Patient = QMUL.DiabetesBackend.Model.Patient;
 
 namespace QMUL.DiabetesBackend.MongoDb.Utils
 {
@@ -121,6 +122,34 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 EventTiming = mongoEvent.EventTiming,
                 ExactTimeIsSetup = mongoEvent.ExactTimeIsSetup,
                 Resource = mongoEvent.Resource
+            };
+        }
+
+        public static MongoPatient ToMongoPatient(this Patient patient)
+        {
+            return new()
+            {
+                Id = patient.Id,
+                Email = patient.Email,
+                AlexaUserId = patient.AlexaUserId,
+                FirstName = patient.FirstName,
+                LastName = patient.LastName,
+                ExactEventTimes = patient.ExactEventTimes,
+                ResourceStartDate = patient.ResourceStartDate,
+            };
+        }
+
+        public static Patient ToPatient(this MongoPatient patient)
+        {
+            return new()
+            {
+                Id = patient.Id,
+                Email = patient.Email,
+                AlexaUserId = patient.AlexaUserId,
+                FirstName = patient.FirstName,
+                LastName = patient.LastName,
+                ExactEventTimes = patient.ExactEventTimes,
+                ResourceStartDate = patient.ResourceStartDate,
             };
         }
     }

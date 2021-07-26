@@ -11,7 +11,7 @@ using QMUL.DiabetesBackend.MongoDb.Utils;
 
 namespace QMUL.DiabetesBackend.MongoDb
 {
-    public class MongoEventDao : BaseMongoDao, IEventDao
+    public class MongoEventDao : MongoDaoBase, IEventDao
     {
         private readonly IMongoCollection<MongoEvent> eventCollection;
         private const string CollectionName = "healthEvent";

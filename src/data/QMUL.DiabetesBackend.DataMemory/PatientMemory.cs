@@ -45,5 +45,10 @@ namespace QMUL.DiabetesBackend.DataMemory
             return Task.FromResult(this.patients.FirstOrDefault(patient =>
                 patient.Id.ToString().Equals(idOrEmail) || patient.Email.Equals(idOrEmail)));
         }
+
+        public Task<bool> UpdatePatient(Patient actualPatient)
+        {
+            return Task.FromResult(true);
+        }
     }
 }
