@@ -7,6 +7,7 @@ using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.Model.Enums;
 using QMUL.DiabetesBackend.ServiceImpl.Utils;
 using QMUL.DiabetesBackend.ServiceInterfaces;
+using Patient = QMUL.DiabetesBackend.Model.Patient;
 
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
@@ -14,17 +15,20 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     {
         private readonly IMedicationRequestDao medicationRequestDao;
         private readonly IEventDao eventDao;
+        private readonly IPatientDao patientDao;
 
-        public MedicationRequestService(IMedicationRequestDao medicationRequestDao, IEventDao eventDao)
+        public MedicationRequestService(IMedicationRequestDao medicationRequestDao, IEventDao eventDao, IPatientDao patientDao)
         {
             this.medicationRequestDao = medicationRequestDao;
             this.eventDao = eventDao;
+            this.patientDao = patientDao;
         }
 
         public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
         {
             var newRequest = await this.medicationRequestDao.CreateMedicationRequest(request);
-            var events = this.GenerateEventsFrom(newRequest);
+            var patient = await this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId);
+            var events = this.GenerateEventsFrom(newRequest, patient);
             var eventsResult = await this.eventDao.CreateEvents(events);
             if (!eventsResult)
             {
@@ -71,22 +75,22 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// Creates a list of events based on medication timings.
         /// </summary>
         /// <param name="request">The medication request</param>
-        /// <returns>A List of medications</returns>
-        private IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request)
+        /// <param name="patient">The medication request's subject</param>
+        /// <returns>A List of events for the medication request</returns>
+        private IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request, Patient patient)
         {
             var events = new List<HealthEvent>();
-            var patientId = request.Subject.ElementId;
             var requestReference = new CustomResource
             {
                 EventType = EventType.MedicationDosage
             };
-            
+
             foreach (var dosage in request.DosageInstruction)
             {
                 requestReference.ResourceId = request.Id;
                 requestReference.Text = dosage.Text;
                 requestReference.EventReferenceId = dosage.ElementId;
-                var eventsGenerator = new EventsGenerator(patientId, dosage.Timing, requestReference);
+                var eventsGenerator = new EventsGenerator(patient, dosage.Timing, requestReference);
                 events.AddRange(eventsGenerator.GetEvents());
             }
             

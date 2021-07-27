@@ -4,41 +4,42 @@ using System.Linq;
 using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.Model.Enums;
+using Patient = QMUL.DiabetesBackend.Model.Patient;
 
 namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
     public class EventsGenerator
     {
-        private readonly string patientId;
+        private readonly Patient patient;
         private readonly Timing timing;
         private readonly CustomResource referenceResource;
 
-        public EventsGenerator(string patientId, Timing timing, CustomResource referenceResource)
+        public EventsGenerator(Patient patient, Timing timing, CustomResource referenceResource)
         {
-            this.patientId = patientId;
+            this.patient = patient;
             this.timing = timing;
             this.referenceResource = referenceResource;
         }
 
-        public List<HealthEvent> GetEvents()
+        public IEnumerable<HealthEvent> GetEvents()
         {
             int days;
             DateTime startDate;
             switch (timing.Repeat.Bounds)
             {
                 case Period bounds:
-                {
-                    startDate = DateTime.Parse(bounds.Start);
-                    var endDate = DateTime.Parse(bounds.End);
-                    days = (endDate - startDate).Days;
+                    startDate = DateTime.Parse(bounds.Start).ToUniversalTime();
+                    var endDate = DateTime.Parse(bounds.End).ToUniversalTime();
+                    days = (endDate - startDate).Days + 1; // Period is end-date inclusive, thus, +1 day.
                     break;
-                }
                 case Duration {Code: "d"} duration:
                     days = duration.Value == null
                         ? throw new InvalidOperationException("Duration is not defined")
                         : (int) duration.Value;
-                    startDate = DateTime.Now;
-                    // TODO Assuming a startDate = Now; should ask user first.
+                    var startTimeExits = patient.ResourceStartDate.ContainsKey(this.referenceResource.EventReferenceId);
+                    startDate = startTimeExits
+                        ? patient.ResourceStartDate[this.referenceResource.EventReferenceId]
+                        : DateTime.UtcNow;
                     break;
                 default:
                     throw new InvalidOperationException("Dosage does not have a valid timing");
@@ -69,7 +70,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             return events;
         }
 
-        private List<HealthEvent> GenerateWeaklyEvents(int days, DateTime startDate, DaysOfWeek?[] daysOfWeek)
+        private IEnumerable<HealthEvent> GenerateWeaklyEvents(int days, DateTime startDate, DaysOfWeek?[] daysOfWeek)
         {
             var events = new List<HealthEvent>();
             for (var i = 0; i < days; i++)
@@ -84,7 +85,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             return events;
         }
 
-        private List<HealthEvent> GenerateEventsOnFrequency(DateTime date)
+        private IEnumerable<HealthEvent> GenerateEventsOnFrequency(DateTime date)
         {
             var events = new List<HealthEvent>();
             if (this.timing.Repeat.TimeOfDay.Any())
@@ -94,7 +95,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                     var eventDateTime = DateTime.Parse($"{date.Date:yyyy-MM-dd}T{time}");
                     var healthEvent = new HealthEvent
                     {
-                        PatientId = this.patientId,
+                        PatientId = this.patient.Id,
                         EventDateTime = eventDateTime,
                         ExactTimeIsSetup = true,
                         EventTiming = CustomEventTiming.EXACT,
@@ -105,15 +106,21 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             }
             else if (this.timing.Repeat.When.Any())
             {
-                // TODO still need a exact time from the patient
                 foreach (var eventTiming in this.timing.Repeat.When)
                 {
+                    var customTiming = eventTiming.ToCustomEventTiming();
+                    var valueExists = patient.ExactEventTimes.ContainsKey(customTiming);
+                    var eventDate = valueExists
+                        ? date.Date.Date
+                            .AddHours(patient.ExactEventTimes[customTiming].Hour)
+                            .AddMinutes(patient.ExactEventTimes[customTiming].Minute)
+                        : date.Date;
                     var healthEvent = new HealthEvent
                     {
-                        PatientId = this.patientId,
-                        EventDateTime = date.Date,
-                        ExactTimeIsSetup = false,
-                        EventTiming = eventTiming.ToCustomEventTiming(),
+                        PatientId = this.patient.Id,
+                        EventDateTime = eventDate,
+                        ExactTimeIsSetup = valueExists,
+                        EventTiming = customTiming,
                         Resource = this.referenceResource
                     };
                     events.Add(healthEvent);

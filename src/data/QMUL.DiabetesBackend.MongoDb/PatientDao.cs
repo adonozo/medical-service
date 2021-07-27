@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using MongoDB.Driver;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.Model;
+using QMUL.DiabetesBackend.Model.Enums;
 using QMUL.DiabetesBackend.MongoDb.Models;
 using QMUL.DiabetesBackend.MongoDb.Utils;
 
@@ -28,9 +29,9 @@ namespace QMUL.DiabetesBackend.MongoDb
 
         public async Task<Patient> CreatePatient(Patient newPatient)
         {
+            newPatient.ExactEventTimes ??= new Dictionary<CustomEventTiming, DateTime>();
+            newPatient.ResourceStartDate ??= new Dictionary<string, DateTime>();
             var mongoPatient = newPatient.ToMongoPatient();
-            mongoPatient.ExactEventTimes ??= new Dictionary<string, DateTime>();
-            mongoPatient.ResourceStartDate ??= new Dictionary<string, DateTime>();
             await this.patientCollection.InsertOneAsync(mongoPatient);
             return await this.GetPatientByIdOrEmail(mongoPatient.Id);
         }
