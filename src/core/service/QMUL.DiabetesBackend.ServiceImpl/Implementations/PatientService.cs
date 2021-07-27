@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.DataInterfaces;
-using QMUL.DiabetesBackend.Model.Enums;
 using QMUL.DiabetesBackend.ServiceInterfaces;
 using Patient = QMUL.DiabetesBackend.Model.Patient;
 
@@ -13,23 +11,21 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     {
         private readonly IPatientDao patientDao;
         private readonly ICarePlanDao carePlanDao;
-        private readonly IEventDao eventDao;
 
-        public PatientService(IPatientDao patientDao, ICarePlanDao carePlanDao, IEventDao eventDao)
+        public PatientService(IPatientDao patientDao, ICarePlanDao carePlanDao)
         {
             this.patientDao = patientDao;
             this.carePlanDao = carePlanDao;
-            this.eventDao = eventDao;
         }
 
-        public Task<List<Patient>> GetPatientList()
+        public async Task<List<Patient>> GetPatientList()
         {
-            return this.patientDao.GetPatients();
+            return await this.patientDao.GetPatients();
         }
 
-        public Task<Patient> CreatePatient(Patient newPatient)
+        public async Task<Patient> CreatePatient(Patient newPatient)
         {
-            return this.patientDao.CreatePatient(newPatient);
+            return await this.patientDao.CreatePatient(newPatient);
         }
 
         public async Task<Patient> GetPatient(string idOrEmail)

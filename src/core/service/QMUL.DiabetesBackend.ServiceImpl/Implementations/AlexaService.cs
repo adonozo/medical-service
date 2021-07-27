@@ -134,6 +134,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 throw new KeyNotFoundException();
             }
 
+            patient.ExactEventTimes ??= new Dictionary<CustomEventTiming, DateTime>();
             patient.ExactEventTimes[eventTiming] = dateTime;
             var result = await this.patientDao.UpdatePatient(patient);
             if (!result)

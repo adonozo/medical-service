@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.Model;
+using QMUL.DiabetesBackend.Model.Enums;
 using QMUL.DiabetesBackend.MongoDb.Models;
 using static System.Enum;
 using Patient = QMUL.DiabetesBackend.Model.Patient;
@@ -127,28 +128,33 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
 
         public static MongoPatient ToMongoPatient(this Patient patient)
         {
-            return new()
+            var eventTimes = patient.ExactEventTimes.ToDictionary(item => item.Key.ToString(), item => item.Value);
+
+            return new MongoPatient
             {
                 Id = patient.Id,
                 Email = patient.Email,
                 AlexaUserId = patient.AlexaUserId,
                 FirstName = patient.FirstName,
                 LastName = patient.LastName,
-                ExactEventTimes = patient.ExactEventTimes,
+                ExactEventTimes = eventTimes,
                 ResourceStartDate = patient.ResourceStartDate,
             };
         }
 
         public static Patient ToPatient(this MongoPatient patient)
         {
-            return new()
+            var eventTimes = patient.ExactEventTimes.ToDictionary(item => Parse<CustomEventTiming>(item.Key),
+                item => item.Value);
+            
+            return new Patient
             {
                 Id = patient.Id,
                 Email = patient.Email,
                 AlexaUserId = patient.AlexaUserId,
                 FirstName = patient.FirstName,
                 LastName = patient.LastName,
-                ExactEventTimes = patient.ExactEventTimes,
+                ExactEventTimes = eventTimes,
                 ResourceStartDate = patient.ResourceStartDate,
             };
         }

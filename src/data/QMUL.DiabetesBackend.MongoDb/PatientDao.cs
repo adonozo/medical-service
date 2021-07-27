@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Driver;
@@ -27,8 +28,11 @@ namespace QMUL.DiabetesBackend.MongoDb
 
         public async Task<Patient> CreatePatient(Patient newPatient)
         {
-            await this.patientCollection.InsertOneAsync(newPatient.ToMongoPatient());
-            return await this.GetPatientByIdOrEmail(newPatient.Id);
+            var mongoPatient = newPatient.ToMongoPatient();
+            mongoPatient.ExactEventTimes ??= new Dictionary<string, DateTime>();
+            mongoPatient.ResourceStartDate ??= new Dictionary<string, DateTime>();
+            await this.patientCollection.InsertOneAsync(mongoPatient);
+            return await this.GetPatientByIdOrEmail(mongoPatient.Id);
         }
 
         public async Task<Patient> GetPatientByIdOrEmail(string idOrEmail)
@@ -40,8 +44,9 @@ namespace QMUL.DiabetesBackend.MongoDb
 
         public async Task<bool> UpdatePatient(Patient actualPatient)
         {
+            var mongoPatient = actualPatient.ToMongoPatient();
             var result = await this.patientCollection.ReplaceOneAsync(patient => patient.Id == actualPatient.Id,
-                actualPatient.ToMongoPatient());
+                mongoPatient, new ReplaceOptions { IsUpsert = true });
             return result.IsAcknowledged;
         }
     }

@@ -34,7 +34,7 @@ namespace QMUL.DiabetesBackend.Api
 
             services.Configure<MongoDatabaseSettings>(Configuration.GetSection(nameof(MongoDatabaseSettings)));
             services.AddSingleton<IMedicationDao, MedicationMemory>();
-            services.AddSingleton<IPatientDao, PatientMemory>();
+            // services.AddSingleton<IPatientDao, PatientMemory>();
             services.AddSingleton<ITreatmentDosageDao, TreatmentMemory>();
             // services.AddSingleton<IMedicationRequestDao, MedicationRequestMemory>();
             services.AddSingleton<IServiceRequestDao, ServiceRequestMemory>();
@@ -43,6 +43,7 @@ namespace QMUL.DiabetesBackend.Api
             services.AddSingleton<IMedicationRequestDao, MedicationRequestDao>();
             services.AddSingleton<ICarePlanDao, CarePlanMemory>();
             services.AddSingleton<IEventDao, MongoEventDao>();
+            services.AddSingleton<IPatientDao, PatientDao>();
 
             services.AddSingleton<IMedicationService, MedicationService>();
             services.AddSingleton<IPatientService, PatientService>();
@@ -50,6 +51,7 @@ namespace QMUL.DiabetesBackend.Api
             services.AddSingleton<IMedicationRequestService, MedicationRequestService>();
             services.AddSingleton<IServiceRequestService, ServiceRequestService>();
             services.AddSingleton<ICarePlanService, CarePlanService>();
+            services.AddSingleton<IAlexaService, AlexaService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

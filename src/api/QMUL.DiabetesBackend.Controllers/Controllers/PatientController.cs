@@ -6,6 +6,7 @@ using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using QMUL.DiabetesBackend.Api.Models;
 using QMUL.DiabetesBackend.Model.Enums;
 using QMUL.DiabetesBackend.ServiceInterfaces;
 using Patient = QMUL.DiabetesBackend.Model.Patient;
@@ -17,12 +18,15 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     public class PatientController : ControllerBase
     {
         private readonly IPatientService patientService;
+        private readonly IAlexaService alexaService;
         private readonly ILogger<PatientController> logger;
         private static string jsonEcho = string.Empty;
 
-        public PatientController(IPatientService patientService, ILogger<PatientController> logger)
+        public PatientController(IPatientService patientService, IAlexaService alexaService,
+            ILogger<PatientController> logger)
         {
             this.patientService = patientService;
+            this.alexaService = alexaService;
             this.logger = logger;
         }
 
@@ -36,21 +40,21 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Patient> CreatePatient([FromBody] Patient newPatient)
+        public async Task<ActionResult<Patient>> CreatePatient([FromBody] Patient newPatient)
         {
             this.logger.LogDebug($"Creating patient: {newPatient.FirstName} {newPatient.LastName}");
-            var createdPatient = this.patientService.CreatePatient(newPatient);
-            this.logger.LogDebug($"Patient created with ID: ${createdPatient.Id.ToString()}");
+            var createdPatient = await this.patientService.CreatePatient(newPatient);
+            this.logger.LogDebug($"Patient created with ID: {createdPatient.Id}");
             return this.Ok(createdPatient);
         }
 
         [HttpGet]
         [Route("{idOrEmail}")]
-        public IActionResult GetPatient([FromRoute] string idOrEmail)
+        public async Task<IActionResult> GetPatient([FromRoute] string idOrEmail)
         {
             try
             {
-                var result = this.patientService.GetPatient(idOrEmail);
+                var result = await this.patientService.GetPatient(idOrEmail);
                 return this.Ok(result);
             }
             catch (KeyNotFoundException)
@@ -60,18 +64,18 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError($"Error getting Patient: {idOrEmail}", exception);
+                this.logger.LogError(exception, $"Error getting Patient: {idOrEmail}");
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
         [HttpGet]
         [Route("{idOrEmail}/carePlans")]
-        public IActionResult GetPatientCarePlans([FromRoute] string idOrEmail)
+        public async Task<IActionResult> GetPatientCarePlans([FromRoute] string idOrEmail)
         {
             try
             {
-                var result = this.patientService.GetPatientCarePlans(idOrEmail);
+                var result = await this.patientService.GetPatientCarePlans(idOrEmail);
                 return this.Ok(result);
             }
             catch (KeyNotFoundException)
@@ -86,9 +90,30 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
         }
 
+        [HttpPut]
+        [Route("{idOrEmail}/timing")]
+        public async Task<IActionResult> UpdatePatientTiming([FromRoute] string idOrEmail, [FromBody] PatientTimingRequest request) 
+        {
+            try
+            {
+                var result = await this.alexaService.UpsertTimingEvent(idOrEmail, request.Timing, request.DateTime);
+                return result ? this.NoContent() : this.BadRequest();
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, $"Error updating the timing for: {idOrEmail}");
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
         [HttpGet]
         [Route("{emailOrId}/alexa")]
-        public IActionResult GetAlexaRequestWithTiming([FromRoute] string emailOrId, [FromQuery] AlexaRequestType type,
+        public IActionResult GetAlexaRequest([FromRoute] string emailOrId, [FromQuery] AlexaRequestType type,
             [FromQuery] DateTime date,
             [FromQuery] AlexaRequestTime requestTime = AlexaRequestTime.OnEvent,
             [FromQuery] Timing.EventTiming timing = Timing.EventTiming.MORN)
