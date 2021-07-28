@@ -52,5 +52,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         public Task<List<MedicationRequest>> GetNextMedicationRequestFor(string patientId);
 
         public Task<bool> DeleteMedicationRequest(string id);
+        
+        public Task<MedicationRequest> GetMedicationRequestForDosage(string patientId, string dosageId);
     }
 }

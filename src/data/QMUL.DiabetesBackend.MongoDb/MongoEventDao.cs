@@ -141,7 +141,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return events.Select(Mapper.ToHealthEvent);
         }
 
-        public async Task<bool> UpdateEvents(string patientId, CustomEventTiming timing, DateTime time)
+        public async Task<bool> UpdateEventsTiming(string patientId, CustomEventTiming timing, DateTime time)
         {
             var currentTime = DateTime.UtcNow;
             var setTime = new Func<DateTime, DateTime>(oldTime => oldTime.Date.AddHours(time.Hour).AddMinutes(time.Minute));

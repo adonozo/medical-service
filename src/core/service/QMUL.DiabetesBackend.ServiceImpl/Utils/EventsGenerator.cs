@@ -20,6 +20,32 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             this.timing = timing;
             this.referenceResource = referenceResource;
         }
+        
+        /// <summary>
+        /// Creates a list of events based on medication timings.
+        /// </summary>
+        /// <param name="request">The medication request</param>
+        /// <param name="patient">The medication request's subject</param>
+        /// <returns>A List of events for the medication request</returns>
+        public static IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request, Patient patient)
+        {
+            var events = new List<HealthEvent>();
+
+            foreach (var dosage in request.DosageInstruction)
+            {
+                var requestReference = new CustomResource
+                {
+                    EventType = EventType.MedicationDosage,
+                    ResourceId = request.Id,
+                    Text = dosage.Text,
+                    EventReferenceId = dosage.ElementId
+                };
+                var eventsGenerator = new EventsGenerator(patient, dosage.Timing, requestReference);
+                events.AddRange(eventsGenerator.GetEvents());
+            }
+            
+            return events;
+        }
 
         public IEnumerable<HealthEvent> GetEvents()
         {
@@ -28,11 +54,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             switch (timing.Repeat.Bounds)
             {
                 case Period bounds:
-                    startDate = DateTime.Parse(bounds.Start).ToUniversalTime();
-                    var endDate = DateTime.Parse(bounds.End).ToUniversalTime();
+                    startDate = DateTime.Parse(bounds.Start);
+                    var endDate = DateTime.Parse(bounds.End);
                     days = (endDate - startDate).Days + 1; // Period is end-date inclusive, thus, +1 day.
                     break;
-                case Duration {Code: "d"} duration:
+                case Duration {Unit: "d"} duration:
                     days = duration.Value == null
                         ? throw new InvalidOperationException("Duration is not defined")
                         : (int) duration.Value;
@@ -111,7 +137,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                     var customTiming = eventTiming.ToCustomEventTiming();
                     var valueExists = patient.ExactEventTimes.ContainsKey(customTiming);
                     var eventDate = valueExists
-                        ? date.Date.Date
+                        ? date.Date
                             .AddHours(patient.ExactEventTimes[customTiming].Hour)
                             .AddMinutes(patient.ExactEventTimes[customTiming].Minute)
                         : date.Date;

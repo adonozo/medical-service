@@ -6,7 +6,10 @@ using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.Model.Enums;
+using QMUL.DiabetesBackend.ServiceImpl.Utils;
 using QMUL.DiabetesBackend.ServiceInterfaces;
+using Patient = QMUL.DiabetesBackend.Model.Patient;
+using Task = System.Threading.Tasks.Task;
 
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
@@ -103,6 +106,52 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             throw new NotImplementedException();
         }
 
+        public async Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming, DateTime dateTime)
+        {
+            var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
+            if (patient == null)
+            {
+                throw new KeyNotFoundException();
+            }
+
+            patient.ExactEventTimes ??= new Dictionary<CustomEventTiming, DateTime>();
+            patient.ExactEventTimes[eventTiming] = dateTime;
+            await this.UpdatePatient(patient);
+
+            return await this.eventDao.UpdateEventsTiming(patient.Id, eventTiming, dateTime);
+        }
+
+        public async Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, DateTime startDate)
+        {
+            var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
+            var medicationRequest =
+                await this.medicationRequestDao.GetMedicationRequestForDosage(patient.Id, dosageId);
+            if (medicationRequest == null)
+            {
+                throw new KeyNotFoundException();
+            }
+
+            patient.ResourceStartDate ??= new Dictionary<string, DateTime>();
+            patient.ResourceStartDate[dosageId] = startDate.Date;
+            await this.UpdatePatient(patient);
+
+            var deleteEvents = await this.eventDao.DeleteEventSeries(dosageId);
+            if (!deleteEvents)
+            {
+                throw new ArgumentException("Unable to delete events for requested dosage", nameof(dosageId));
+            }
+
+            medicationRequest = GetMedicationRequestWithSingleDosage(medicationRequest, dosageId);
+            var events = EventsGenerator.GenerateEventsFrom(medicationRequest, patient);
+            var eventsResult = await this.eventDao.CreateEvents(events);
+            if (!eventsResult)
+            {
+                throw new ArgumentException($"Unable to create events related to the dosage instruction: {dosageId}");
+            }
+
+            return true;
+        }
+        
         private static Bundle GenerateEmptyBundle()
         {
             return new()
@@ -110,6 +159,18 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 Type = Bundle.BundleType.Searchset,
                 Timestamp = DateTimeOffset.UtcNow
             };
+        }
+        
+        private static MedicationRequest GetMedicationRequestWithSingleDosage(MedicationRequest request, string dosageId)
+        {
+            var dosage = request.DosageInstruction.FirstOrDefault(dose => dose.ElementId == dosageId);
+            if (dosage == null)
+            {
+                throw new ArgumentException("Could not get the dosage from the medication request", nameof(dosageId));
+            }
+
+            request.DosageInstruction = new List<Dosage> {dosage};
+            return request;
         }
 
         private async Task<List<MedicationRequest>> GetMedicationBundle(IEnumerable<HealthEvent> events)
@@ -125,24 +186,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             uniqueIds.UnionWith(events.Select(item => item.Resource.ResourceId).ToArray());
             return await serviceRequestDao.GetServiceRequestsByIds(uniqueIds.ToArray());
         }
-        
-        public async Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming, DateTime dateTime)
+
+        private async Task UpdatePatient(Patient patient)
         {
-            var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
-            if (patient == null)
+            var updatePatientResult = await this.patientDao.UpdatePatient(patient);
+            if (!updatePatientResult)
             {
-                throw new KeyNotFoundException();
+                throw new ArgumentException("Could not update the dosage start date", nameof(patient));
             }
-
-            patient.ExactEventTimes ??= new Dictionary<CustomEventTiming, DateTime>();
-            patient.ExactEventTimes[eventTiming] = dateTime;
-            var result = await this.patientDao.UpdatePatient(patient);
-            if (!result)
-            {
-                throw new ArgumentException("Could not update the patient's event.", nameof(eventTiming));
-            }
-
-            return await this.eventDao.UpdateEvents(patient.Id, eventTiming, dateTime);
         }
     }
 }

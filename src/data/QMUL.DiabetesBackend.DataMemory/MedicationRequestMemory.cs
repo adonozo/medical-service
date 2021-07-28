@@ -253,6 +253,11 @@ namespace QMUL.DiabetesBackend.DataMemory
             return Task.FromResult(true);
         }
 
+        public Task<MedicationRequest> GetMedicationRequestForDosage(string patientId, string dosageId)
+        {
+            return Task.FromResult(this.sampleRequests[0]);
+        }
+
         private static bool TimingBetween(Timing timing, DateTime consultedDateTime, int intervalMin)
         {
             // Medication request has a period

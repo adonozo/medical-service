@@ -35,15 +35,29 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 }
             }
 
+            DataType bounds;
+            if (timing.PeriodStart != null && timing.PeriodEnd != null)
+            {
+                bounds = new Period
+                {
+                    Start = timing.PeriodStart?.ToString("o"),
+                    End = timing.PeriodEnd?.ToString("o")
+                };
+            }
+            else
+            {
+                bounds = new Duration
+                {
+                    Value = timing.DayDuration,
+                    Unit = "d"
+                };
+            }
+
             return new Timing
             {
                 Repeat = new Timing.RepeatComponent
                 {
-                    Bounds = new Period
-                    {
-                        Start = timing.PeriodStartTime.ToString("yyyy-MM-dd"),
-                        End = timing.PeriodEndTime.ToString("yyyy-MM-dd")
-                    },
+                    Bounds = bounds,
                     Frequency = timing.Frequency,
                     Period = timing.Period,
                     PeriodUnit = hasPeriodUnit ? periodUnit : null,
@@ -68,6 +82,12 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
         {
             var startTime = (timing.Repeat.Bounds as Period)?.Start;
             var endTime = (timing.Repeat.Bounds as Period)?.End;
+            var days = 0;
+            if (timing.Repeat.Bounds is Duration duration)
+            {
+                days = duration.Value != null ? (int) duration.Value : 0;
+            }
+            
             var whenList = from eventTiming in timing.Repeat.When
                 where eventTiming != null
                 select eventTiming.ToString();
@@ -80,9 +100,10 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 Frequency = timing.Repeat.Frequency ?? 0,
                 Period = timing.Repeat.Period ?? 0,
                 PeriodUnit = timing.Repeat.PeriodUnit?.ToString(),
+                DayDuration = days,
                 Offset = timing.Repeat.Offset ?? 0,
-                PeriodStartTime = DateTime.Parse(startTime ?? string.Empty),
-                PeriodEndTime = DateTime.Parse(endTime ?? string.Empty),
+                PeriodStart = startTime != null ? DateTime.Parse(startTime) : null,
+                PeriodEnd = endTime != null ? DateTime.Parse(endTime) : null,
                 When = whenList,
                 DaysOfWeek = daysOfWeek,
                 TimesOfDay = timing.Repeat.TimeOfDay.Select(time => time.ToString())

@@ -111,6 +111,28 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
         }
 
+        [HttpPut]
+        [Route("{idOrEmail}/dosage/{dosageId}/startDate")]
+        public async Task<IActionResult> UpdateDosageStartDate([FromRoute] string idOrEmail,
+            [FromRoute] string dosageId, [FromBody] PatientStartDateRequest startDate)
+        {
+            try
+            {
+                var result = await this.alexaService.UpsertDosageStartDate(idOrEmail, dosageId, startDate.StartDate);
+                return result ? this.NoContent() : this.BadRequest();
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, $"Error updating the timing for: {idOrEmail}");
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
         [HttpGet]
         [Route("{emailOrId}/alexa")]
         public IActionResult GetAlexaRequest([FromRoute] string emailOrId, [FromQuery] AlexaRequestType type,

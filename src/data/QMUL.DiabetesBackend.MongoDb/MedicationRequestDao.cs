@@ -92,7 +92,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         public async Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime)
         {
             var timeCompare = new Func<MongoTiming, bool>(timing =>
-                dateTime > timing.PeriodStartTime && dateTime < timing.PeriodEndTime);
+                dateTime > timing.PeriodStart && dateTime < timing.PeriodEnd);
             var cursor =
                 await this.medicationRequestCollection.FindAsync(request =>
                     request.PatientReference.ReferenceId == patientId &&
@@ -112,6 +112,15 @@ namespace QMUL.DiabetesBackend.MongoDb
         {
             var result = await this.medicationRequestCollection.DeleteOneAsync(request => request.Id == id);
             return result.IsAcknowledged;
+        }
+
+        public async Task<MedicationRequest> GetMedicationRequestForDosage(string patientId, string dosageId)
+        {
+            var result = this.medicationRequestCollection.Find(request =>
+                    request.PatientReference.ReferenceId == patientId
+                    && request.DosageInstructions.Any(instruction => instruction.Id == dosageId))
+                .Project(mongoPatient => mongoPatient.ToMedicationRequest());
+            return await result.FirstOrDefaultAsync();
         }
     }
 }
