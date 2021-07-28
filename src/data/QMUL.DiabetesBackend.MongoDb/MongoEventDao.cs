@@ -67,28 +67,27 @@ namespace QMUL.DiabetesBackend.MongoDb
 
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, DateTime dateTime, int offset)
         {
-            var startDate = dateTime.Date.AddMinutes(offset * -1);
-            var endDate = dateTime.Date.AddMinutes(offset);
-            var timeCompare = new Func<DateTime, bool>(date => date > startDate && date < endDate);
-            var result = await this.eventCollection.FindAsync(healthEvent => healthEvent.PatientId == patientId
-                                                                             && healthEvent.ExactTimeIsSetup
-                                                                             && timeCompare(healthEvent.EventDateTime));
-            var events = await result.ToListAsync();
-            return events.Select(Mapper.ToHealthEvent);
+            var startDate = dateTime.AddMinutes(offset * -1);
+            var endDate = dateTime.AddMinutes(offset);
+            var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
+                                                                  && healthEvent.EventDateTime > startDate
+                                                                  && healthEvent.EventDateTime < endDate)
+                .Project(mongoEvent => mongoEvent.ToHealthEvent());
+            return await result.ToListAsync();
         }
 
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime dateTime,
             int offset)
         {
-            var startDate = dateTime.Date.AddMinutes(offset * -1);
-            var endDate = dateTime.Date.AddMinutes(offset);
-            var timeCompare = new Func<DateTime, bool>(date => date > startDate && date < endDate);
-            var result = await this.eventCollection.FindAsync(healthEvent => healthEvent.PatientId == patientId
+            var startDate = dateTime.AddMinutes(offset * -1);
+            var endDate = dateTime.AddMinutes(offset);
+            var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
                                                                              && healthEvent.Resource.EventType == type
                                                                              && healthEvent.ExactTimeIsSetup
-                                                                             && timeCompare(healthEvent.EventDateTime));
-            var events = await result.ToListAsync();
-            return events.Select(Mapper.ToHealthEvent);
+                                                                             && healthEvent.EventDateTime > startDate
+                                                                             && healthEvent.EventDateTime < endDate)
+                .Project(mongoEvent => mongoEvent.ToHealthEvent());
+            return await result.ToListAsync();
         }
 
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, DateTime dateTime,
@@ -98,8 +97,8 @@ namespace QMUL.DiabetesBackend.MongoDb
             var endDate = dateTime.Date.AddDays(1);
             var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
                                                                   && healthEvent.EventTiming == time
-                                                                  && healthEvent.EventDateTime > startDate &&
-                                                                  healthEvent.EventDateTime < endDate)
+                                                                  && healthEvent.EventDateTime > startDate 
+                                                                  && healthEvent.EventDateTime < endDate)
                 .Project(mongoEvent => mongoEvent.ToHealthEvent());
             return await result.ToListAsync();
         }
@@ -112,8 +111,8 @@ namespace QMUL.DiabetesBackend.MongoDb
             var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
                                                                   && healthEvent.Resource.EventType == type
                                                                   && healthEvent.EventTiming == time
-                                                                  && healthEvent.EventDateTime > startDate &&
-                                                                  healthEvent.EventDateTime < endDate)
+                                                                  && healthEvent.EventDateTime > startDate 
+                                                                  && healthEvent.EventDateTime < endDate)
                 .Project(mongoEvent => mongoEvent.ToHealthEvent());
             return await result.ToListAsync();
         }
@@ -123,8 +122,8 @@ namespace QMUL.DiabetesBackend.MongoDb
             var startDate = dateTime.Date;
             var endDate = dateTime.Date.AddDays(1);
             var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
-                                                                  && healthEvent.EventDateTime > startDate &&
-                                                                  healthEvent.EventDateTime < endDate)
+                                                                  && healthEvent.EventDateTime > startDate
+                                                                  && healthEvent.EventDateTime < endDate)
                 .Project(mongoEvent => mongoEvent.ToHealthEvent());
             return await result.ToListAsync();
         }
@@ -135,8 +134,8 @@ namespace QMUL.DiabetesBackend.MongoDb
             var endDate = dateTime.Date.AddDays(1);
             var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
                                                                   && healthEvent.Resource.EventType == type
-                                                                  && healthEvent.EventDateTime > startDate &&
-                                                                  healthEvent.EventDateTime < endDate)
+                                                                  && healthEvent.EventDateTime > startDate 
+                                                                  && healthEvent.EventDateTime < endDate)
                 .Project(mongoEvent => mongoEvent.ToHealthEvent());
             return await result.ToListAsync();
         }

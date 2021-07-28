@@ -23,7 +23,7 @@ namespace QMUL.DiabetesBackend.Model
         public string EventReferenceId { get; set; }
 
         /// <summary>
-        /// The medication name or the measurement instruction
+        /// The medication or measurement instruction
         /// </summary>
         public string Text { get; set; }
     }

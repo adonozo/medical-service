@@ -43,7 +43,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 var eventsGenerator = new EventsGenerator(patient, dosage.Timing, requestReference);
                 events.AddRange(eventsGenerator.GetEvents());
             }
-            
+
             return events;
         }
 

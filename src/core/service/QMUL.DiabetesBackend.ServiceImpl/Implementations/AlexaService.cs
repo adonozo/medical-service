@@ -18,16 +18,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         private readonly IPatientDao patientDao;
         private readonly IMedicationRequestDao medicationRequestDao;
         private readonly IServiceRequestDao serviceRequestDao;
-        private readonly ICarePlanDao carePlanDao;
         private readonly IEventDao eventDao;
+        private const int DefaultOffset = 20; // The default offset (in minutes) when looking for exact times 
 
         public AlexaService(IPatientDao patientDao, IMedicationRequestDao medicationRequestDao,
-            IServiceRequestDao serviceRequestDao, ICarePlanDao carePlanDao, IEventDao eventDao)
+            IServiceRequestDao serviceRequestDao, IEventDao eventDao)
         {
             this.patientDao = patientDao;
             this.medicationRequestDao = medicationRequestDao;
             this.serviceRequestDao = serviceRequestDao;
-            this.carePlanDao = carePlanDao;
             this.eventDao = eventDao;
         }
 
@@ -61,7 +60,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var type = insulin ? EventType.InsulinDosage : EventType.MedicationDosage;
             var events = requestTime switch
             {
-                AlexaRequestTime.ExactTime => await eventDao.GetEvents(patient.Id, type, dateTime, timing),
+                AlexaRequestTime.ExactTime => await eventDao.GetEvents(patient.Id, type, dateTime, DefaultOffset),
                 AlexaRequestTime.AllDay => await eventDao.GetEvents(patient.Id, type, dateTime),
                 AlexaRequestTime.OnEvent => await eventDao.GetEvents(patient.Id, type, dateTime, timing),
                 _ => throw new ArgumentOutOfRangeException(nameof(requestTime), requestTime, null)
@@ -69,6 +68,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 
             var bundle = GenerateEmptyBundle();
             var medicationRequests = await GetMedicationBundle(events);
+
             bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
                 .ToList();
             return bundle;
@@ -81,7 +81,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var events = requestTime switch
             {
                 AlexaRequestTime.ExactTime => await eventDao.GetEvents(patient.Id, EventType.Measurement, dateTime,
-                    timing),
+                    DefaultOffset),
                 AlexaRequestTime.AllDay => await eventDao.GetEvents(patient.Id, EventType.Measurement, dateTime),
                 AlexaRequestTime.OnEvent => await eventDao.GetEvents(patient.Id, EventType.Measurement, dateTime,
                     timing),
@@ -175,16 +175,29 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 
         private async Task<List<MedicationRequest>> GetMedicationBundle(IEnumerable<HealthEvent> events)
         {
-            var uniqueIds = new HashSet<string>();
-            uniqueIds.UnionWith(events.Select(item => item.Resource.ResourceId).ToArray());
-            return await medicationRequestDao.GetMedicationRequestsByIds(uniqueIds.ToArray());
+            var uniqueRequestIds = new HashSet<string>();
+            var uniqueDosageIds = new HashSet<string>();
+            foreach (var item in events)
+            {
+                uniqueRequestIds.Add(item.Resource.ResourceId);
+                uniqueDosageIds.Add(item.Resource.EventReferenceId);
+            }
+            
+            var requests = await this.medicationRequestDao.GetMedicationRequestsByIds(uniqueRequestIds.ToArray());
+            foreach (var request in requests)
+            {
+                // Remove all dosages that are not in the event
+                request.DosageInstruction.RemoveAll(dose => !uniqueDosageIds.Contains(dose.ElementId));
+            }
+
+            return requests;
         }
 
         private async Task<List<ServiceRequest>> GetServiceBundle(IEnumerable<HealthEvent> events)
         {
             var uniqueIds = new HashSet<string>();
             uniqueIds.UnionWith(events.Select(item => item.Resource.ResourceId).ToArray());
-            return await serviceRequestDao.GetServiceRequestsByIds(uniqueIds.ToArray());
+            return await this.serviceRequestDao.GetServiceRequestsByIds(uniqueIds.ToArray());
         }
 
         private async Task UpdatePatient(Patient patient)
