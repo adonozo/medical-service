@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.Model;
@@ -38,8 +39,18 @@ namespace QMUL.DiabetesBackend.MongoDb
 
         public async Task<Patient> GetPatientByIdOrEmail(string idOrEmail)
         {
-            var result = this.patientCollection.Find(patient => patient.Id == idOrEmail || patient.Email == idOrEmail)
-                .Project(patient => patient.ToPatient());
+            IFindFluent<MongoPatient, Patient> result;
+            if (ObjectId.TryParse(idOrEmail, out var _))
+            {
+                result = this.patientCollection.Find(patient => patient.Id == idOrEmail)
+                    .Project(patient => patient.ToPatient());                
+            }
+            else
+            {
+                result = this.patientCollection.Find(patient => patient.Email == idOrEmail)
+                    .Project(patient => patient.ToPatient());
+            }
+            
             return await result.FirstOrDefaultAsync();
         }
 

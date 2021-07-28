@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -134,15 +134,27 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpGet]
-        [Route("{emailOrId}/alexa")]
-        public IActionResult GetAlexaRequest([FromRoute] string emailOrId, [FromQuery] AlexaRequestType type,
+        [Route("{idOrEmail}/alexa")]
+        public async Task<IActionResult> GetAlexaRequest([FromRoute] string idOrEmail, [FromQuery] AlexaRequestType type,
             [FromQuery] DateTime date,
-            [FromQuery] AlexaRequestTime requestTime = AlexaRequestTime.OnEvent,
-            [FromQuery] Timing.EventTiming timing = Timing.EventTiming.MORN)
+            [FromQuery] AlexaRequestTime requestTime = AlexaRequestTime.ExactTime,
+            [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
         {
-            /* TODO implement methods to look for medicationRequests / serviceRequests / carePlans / appointments                 
-             */
-            return this.Ok(new { emailOrId, type, date, requestTime, timing });
+            try
+            {
+                var result = await this.alexaService.ProcessRequest(idOrEmail, type, date, requestTime, timing);
+                return this.Ok(result.ToJObject());
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpPost]
