@@ -25,6 +25,8 @@ namespace QMUL.DiabetesBackend.MongoDb.Models
         
         public MongoReference RequesterReference { get; set; }
         
+        public bool IsInsulin { get; set; }
+
         public IEnumerable<MongoDosageInstruction> DosageInstructions { get; set; }
     }
 }

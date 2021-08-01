@@ -122,5 +122,15 @@ namespace QMUL.DiabetesBackend.MongoDb
                 .Project(mongoPatient => mongoPatient.ToMedicationRequest());
             return await result.FirstOrDefaultAsync();
         }
+
+        public async Task<List<MedicationRequest>> GetActiveMedicationRequests(string patientId)
+        {
+            var result = this.medicationRequestCollection.Find(request =>
+                    request.PatientReference.ReferenceId == patientId
+                    && request.Status == MedicationRequest.medicationrequestStatus.Active.ToString()
+                    && request.IsInsulin == false)
+                .Project(mongoPatient => mongoPatient.ToMedicationRequest());
+            return await result.ToListAsync();
+        }
     }
 }

@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.Model.Enums;
 using Patient = QMUL.DiabetesBackend.Model.Patient;
 
 namespace QMUL.DiabetesBackend.ServiceInterfaces
@@ -21,5 +19,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="patientIdOrEmail">The patient's email or ID.</param>
         /// <returns>The list of care plans for the patient.</returns>
         public Task<List<CarePlan>> GetPatientCarePlans(string patientIdOrEmail);
+
+        public Task<Bundle> GetActiveMedicationRequests(string patientIdOrEmail);
     }
 }

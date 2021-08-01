@@ -90,6 +90,51 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("{idOrEmail}/medicationRequests/active")]
+        public async Task<IActionResult> GetActiveMedicationRequests([FromRoute] string idOrEmail)
+        {
+            try
+            {
+                var result = await this.patientService.GetActiveMedicationRequests(idOrEmail);
+                return this.Ok(result.ToJObject());
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError($"Error getting Patient: {idOrEmail}", exception);
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpGet]
+        [Route("{idOrEmail}/alexa")]
+        public async Task<IActionResult> GetAlexaRequest([FromRoute] string idOrEmail, [FromQuery] AlexaRequestType type,
+            [FromQuery] DateTime date,
+            [FromQuery] AlexaRequestTime requestTime = AlexaRequestTime.ExactTime,
+            [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
+        {
+            try
+            {
+                var result = await this.alexaService.ProcessRequest(idOrEmail, type, date, requestTime, timing);
+                return this.Ok(result.ToJObject());
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
         [HttpPut]
         [Route("{idOrEmail}/timing")]
         public async Task<IActionResult> UpdatePatientTiming([FromRoute] string idOrEmail, [FromBody] PatientTimingRequest request) 
@@ -129,30 +174,6 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             catch (Exception exception)
             {
                 this.logger.LogError(exception, $"Error updating the timing for: {idOrEmail}");
-                return this.StatusCode(StatusCodes.Status500InternalServerError);
-            }
-        }
-
-        [HttpGet]
-        [Route("{idOrEmail}/alexa")]
-        public async Task<IActionResult> GetAlexaRequest([FromRoute] string idOrEmail, [FromQuery] AlexaRequestType type,
-            [FromQuery] DateTime date,
-            [FromQuery] AlexaRequestTime requestTime = AlexaRequestTime.ExactTime,
-            [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
-        {
-            try
-            {
-                var result = await this.alexaService.ProcessRequest(idOrEmail, type, date, requestTime, timing);
-                return this.Ok(result.ToJObject());
-            }
-            catch (KeyNotFoundException)
-            {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }

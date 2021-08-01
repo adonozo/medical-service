@@ -66,7 +66,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 _ => throw new ArgumentOutOfRangeException(nameof(requestTime), requestTime, null)
             };
 
-            var bundle = GenerateEmptyBundle();
+            var bundle = ResourceUtils.GenerateEmptyBundle();
             var medicationRequests = await GetMedicationBundle(events);
 
             bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
@@ -88,7 +88,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 _ => throw new ArgumentOutOfRangeException(nameof(requestTime), requestTime, null)
             };
 
-            var bundle = GenerateEmptyBundle();
+            var bundle = ResourceUtils.GenerateEmptyBundle();
             var serviceRequests = await GetServiceBundle(events);
             bundle.Entry = serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
                 .ToList();
@@ -150,15 +150,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             }
 
             return true;
-        }
-        
-        private static Bundle GenerateEmptyBundle()
-        {
-            return new()
-            {
-                Type = Bundle.BundleType.Searchset,
-                Timestamp = DateTimeOffset.UtcNow
-            };
         }
         
         private static MedicationRequest GetMedicationRequestWithSingleDosage(MedicationRequest request, string dosageId)

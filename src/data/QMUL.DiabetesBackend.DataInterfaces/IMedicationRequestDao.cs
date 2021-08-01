@@ -54,5 +54,13 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         public Task<bool> DeleteMedicationRequest(string id);
         
         public Task<MedicationRequest> GetMedicationRequestForDosage(string patientId, string dosageId);
+
+        /// <summary>
+        /// Gets the active medication requests for the patient, i.e., the ones that the patient needs to follow. Does
+        /// not include insulin request
+        /// </summary>
+        /// <param name="patientId">The patient's user ID, not email</param>
+        /// <returns>The list of active medication requests.</returns>
+        public Task<List<MedicationRequest>> GetActiveMedicationRequests(string patientId);
     }
 }

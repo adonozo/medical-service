@@ -13,6 +13,9 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
         {
             var hasPriority = TryParse<RequestPriority>(request.Priority, out var priority);
             var hasStatus = TryParse<MedicationRequest.medicationrequestStatus>(request.Status, out var status);
+            var insulin = request.IsInsulin
+                ? new Extension {Url = "http://diabetesreminder.com/insulin", Value = new FhirBoolean(true)}
+                : null;
 
             var result = new MedicationRequest
             {
@@ -51,7 +54,8 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                         
                     }
                 },
-                DosageInstruction = request.DosageInstructions.Select(ToDosage).ToList()
+                DosageInstruction = request.DosageInstructions.Select(ToDosage).ToList(),
+                Extension = new List<Extension> { insulin }
             };
 
             return result;
@@ -73,6 +77,13 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
 
         public static MongoMedicationRequest ToMongoMedicationRequest(this MedicationRequest request)
         {
+            var isInsulin = false;
+            var extensions = request.Extension;
+            if (extensions != null && extensions.Any(extension => extension.Url.ToLower().Contains("insulin")))
+            {
+                isInsulin = true;
+            }
+
             return new MongoMedicationRequest
             {
                 Id = request.Id,
@@ -94,6 +105,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                     ReferenceId = request.Requester.ElementId,
                     ReferenceName = request.Requester.Display
                 },
+                IsInsulin = isInsulin,
                 DosageInstructions = request.DosageInstruction.Select(ToMongoDosageInstruction)
             };
         }

@@ -11,10 +11,19 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         {
             return healthEvent.Resource.EventType switch
             {
-                EventType.MedicationDosage => new MedicationRequest { },
+                EventType.MedicationDosage => new MedicationRequest() ,
                 EventType.InsulinDosage => new MedicationRequest(),
                 EventType.Measurement => new ServiceRequest(),
-                _ => throw new ArgumentOutOfRangeException()
+                _ => throw new ArgumentOutOfRangeException(nameof(healthEvent))
+            };
+        }
+        
+        public static Bundle GenerateEmptyBundle()
+        {
+            return new()
+            {
+                Type = Bundle.BundleType.Searchset,
+                Timestamp = DateTimeOffset.UtcNow
             };
         }
     }
