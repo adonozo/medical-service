@@ -19,7 +19,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         private readonly IMedicationRequestDao medicationRequestDao;
         private readonly IServiceRequestDao serviceRequestDao;
         private readonly IEventDao eventDao;
-        private const int DefaultOffset = 20; // The default offset (in minutes) when looking for exact times 
+        private const int DefaultOffset = 20; // The default offset (in minutes) when looking for exact times
+        private const int DefaultTimingOffset = 20; // The offset for related timings. E.g., before lunch and lunch
 
         public AlexaService(IPatientDao patientDao, IMedicationRequestDao medicationRequestDao,
             IServiceRequestDao serviceRequestDao, IEventDao eventDao)
@@ -115,10 +116,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             }
 
             patient.ExactEventTimes ??= new Dictionary<CustomEventTiming, DateTime>();
-            patient.ExactEventTimes[eventTiming] = dateTime;
+            patient.ExactEventTimes = SetRelatedTimings(patient, eventTiming, dateTime);
             await this.UpdatePatient(patient);
 
-            return await this.eventDao.UpdateEventsTiming(patient.Id, eventTiming, dateTime);
+            return await this.UpdateRelatedTimingEvents(patient, eventTiming, dateTime);
         }
 
         public async Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, DateTime startDate)
@@ -164,6 +165,66 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return request;
         }
 
+        /// <summary>
+        /// Sets exact times for related timings i.e., breakfast, lunch and dinner timings. If there are no related timings,
+        /// it will set just the given timing.
+        /// </summary>
+        /// <param name="patient">The patient</param>
+        /// <param name="timing">The timing to compare</param>
+        /// <param name="dateTime">The exact time of the event</param>
+        /// <returns>The updated event times for the patient.</returns>
+        private static Dictionary<CustomEventTiming, DateTime> SetRelatedTimings(Patient patient,
+            CustomEventTiming timing, DateTime dateTime)
+        {
+            dateTime = AdjustOffsetTiming(timing, dateTime);
+            var before = dateTime.AddMinutes(DefaultTimingOffset * -1);
+            var after = dateTime.AddMinutes(DefaultTimingOffset);
+            patient.ExactEventTimes ??= new Dictionary<CustomEventTiming, DateTime>();
+            switch (timing)
+            {
+                case CustomEventTiming.CM:
+                case CustomEventTiming.ACM:
+                case CustomEventTiming.PCM:
+                    patient.ExactEventTimes[CustomEventTiming.CM] = dateTime;
+                    patient.ExactEventTimes[CustomEventTiming.ACM] = before;
+                    patient.ExactEventTimes[CustomEventTiming.PCM] = after;
+                    break;
+                case CustomEventTiming.CD:
+                case CustomEventTiming.ACD:
+                case CustomEventTiming.PCD:
+                    patient.ExactEventTimes[CustomEventTiming.CD] = dateTime;
+                    patient.ExactEventTimes[CustomEventTiming.ACD] = before;
+                    patient.ExactEventTimes[CustomEventTiming.PCD] = after;
+                    break;
+                case CustomEventTiming.CV:
+                case CustomEventTiming.ACV:
+                case CustomEventTiming.PCV:
+                    patient.ExactEventTimes[CustomEventTiming.CV] = dateTime;
+                    patient.ExactEventTimes[CustomEventTiming.ACV] = before;
+                    patient.ExactEventTimes[CustomEventTiming.PCV] = after;
+                    break;
+                default:
+                    patient.ExactEventTimes[timing] = dateTime;
+                    break;
+            }
+
+            return patient.ExactEventTimes;
+        }
+
+        private static DateTime AdjustOffsetTiming(CustomEventTiming timing, DateTime dateTime)
+        {
+            return timing switch
+            {
+                CustomEventTiming.ACM => dateTime.AddMinutes(DefaultTimingOffset),
+                CustomEventTiming.ACD => dateTime.AddMinutes(DefaultTimingOffset),
+                CustomEventTiming.ACV => dateTime.AddMinutes(DefaultTimingOffset),
+                CustomEventTiming.PCM => dateTime.AddMinutes(DefaultTimingOffset * -1),
+                CustomEventTiming.PCD => dateTime.AddMinutes(DefaultTimingOffset * -1),
+                CustomEventTiming.PCV => dateTime.AddMinutes(DefaultTimingOffset * -1),
+                _ => dateTime
+            };
+        }
+
         private async Task<List<MedicationRequest>> GetMedicationBundle(IEnumerable<HealthEvent> events)
         {
             var uniqueRequestIds = new HashSet<string>();
@@ -197,6 +258,49 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             if (!updatePatientResult)
             {
                 throw new ArgumentException("Could not update the dosage start date", nameof(patient));
+            }
+        }
+
+        /// <summary>
+        /// Updates all events related to a timing event, i.e., breakfast, lunch, and dinner.
+        /// </summary>
+        private async Task<bool> UpdateRelatedTimingEvents(Patient patient, CustomEventTiming timing, DateTime dateTime)
+        {
+            bool result;
+            switch (timing)
+            {
+                case CustomEventTiming.CM:
+                case CustomEventTiming.ACM:
+                case CustomEventTiming.PCM:
+                    result = await this.eventDao.UpdateEventsTiming(patient.Id, CustomEventTiming.CM,
+                        patient.ExactEventTimes[CustomEventTiming.CM]);
+                    result = result && await this.eventDao.UpdateEventsTiming(patient.Id, CustomEventTiming.ACM,
+                        patient.ExactEventTimes[CustomEventTiming.ACM]);
+                    result = result && await this.eventDao.UpdateEventsTiming(patient.Id, CustomEventTiming.PCM,
+                        patient.ExactEventTimes[CustomEventTiming.PCM]);
+                    return result;
+                case CustomEventTiming.CD:
+                case CustomEventTiming.ACD:
+                case CustomEventTiming.PCD:
+                    result = await this.eventDao.UpdateEventsTiming(patient.Id, CustomEventTiming.CD,
+                        patient.ExactEventTimes[CustomEventTiming.CD]);
+                    result = result && await this.eventDao.UpdateEventsTiming(patient.Id, CustomEventTiming.ACD,
+                        patient.ExactEventTimes[CustomEventTiming.ACD]);
+                    result = result && await this.eventDao.UpdateEventsTiming(patient.Id, CustomEventTiming.PCD,
+                        patient.ExactEventTimes[CustomEventTiming.PCD]);
+                    return result;
+                case CustomEventTiming.CV:
+                case CustomEventTiming.ACV:
+                case CustomEventTiming.PCV:
+                    result = await this.eventDao.UpdateEventsTiming(patient.Id, CustomEventTiming.CV,
+                        patient.ExactEventTimes[CustomEventTiming.CV]);
+                    result = result && await this.eventDao.UpdateEventsTiming(patient.Id, CustomEventTiming.ACV,
+                        patient.ExactEventTimes[CustomEventTiming.ACV]);
+                    result = result && await this.eventDao.UpdateEventsTiming(patient.Id, CustomEventTiming.PCV,
+                        patient.ExactEventTimes[CustomEventTiming.PCV]);
+                    return result;
+                default:
+                    return await this.eventDao.UpdateEventsTiming(patient.Id, timing, dateTime);
             }
         }
     }
