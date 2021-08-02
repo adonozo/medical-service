@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.Model.Enums;
@@ -25,6 +26,19 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 Type = Bundle.BundleType.Searchset,
                 Timestamp = DateTimeOffset.UtcNow
             };
+        }
+
+        public static bool IsInsulinResource(MedicationRequest request)
+        {
+            try
+            {
+                var extensions = request.Extension;
+                return extensions != null && extensions.Any(extension => extension.Url.ToLower().Contains("insulin"));
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

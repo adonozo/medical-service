@@ -30,12 +30,13 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         public static IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request, Patient patient)
         {
             var events = new List<HealthEvent>();
+            var isInsulin = ResourceUtils.IsInsulinResource(request);
 
             foreach (var dosage in request.DosageInstruction)
             {
                 var requestReference = new CustomResource
                 {
-                    EventType = EventType.MedicationDosage,
+                    EventType = isInsulin ? EventType.InsulinDosage : EventType.MedicationDosage,
                     ResourceId = request.Id,
                     Text = dosage.Text,
                     EventReferenceId = dosage.ElementId
