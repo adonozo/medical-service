@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.DataInterfaces;
+using QMUL.DiabetesBackend.ServiceImpl.Utils;
 using QMUL.DiabetesBackend.ServiceInterfaces;
 
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
@@ -9,15 +11,28 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     public class ServiceRequestService : IServiceRequestService
     {
         private readonly IServiceRequestDao serviceRequestDao;
+        private readonly IPatientDao patientDao;
+        private readonly IEventDao eventDao;
 
-        public ServiceRequestService(IServiceRequestDao serviceRequestDao)
+        public ServiceRequestService(IServiceRequestDao serviceRequestDao, IPatientDao patientDao, IEventDao eventDao)
         {
             this.serviceRequestDao = serviceRequestDao;
+            this.patientDao = patientDao;
+            this.eventDao = eventDao;
         }
 
-        public Task<ServiceRequest> CreateServiceRequest(ServiceRequest request)
+        public async Task<ServiceRequest> CreateServiceRequest(ServiceRequest request)
         {
-            return this.serviceRequestDao.CreateServiceRequest(request);
+            var serviceRequest = await this.serviceRequestDao.CreateServiceRequest(request);
+            var patient = await this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId);
+            var events = EventsGenerator.GenerateEventsFrom(request, patient);
+            var eventsResult = await this.eventDao.CreateEvents(events);
+            if (!eventsResult)
+            {
+                throw new ArgumentException($"Unable to create events related to the request: {serviceRequest.Id}");
+            }
+
+            return serviceRequest;
         }
 
         public Task<ServiceRequest> GetServiceRequest(string id)

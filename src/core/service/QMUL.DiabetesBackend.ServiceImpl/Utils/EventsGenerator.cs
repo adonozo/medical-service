@@ -14,7 +14,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         private readonly Timing timing;
         private readonly CustomResource referenceResource;
 
-        public EventsGenerator(Patient patient, Timing timing, CustomResource referenceResource)
+        private EventsGenerator(Patient patient, Timing timing, CustomResource referenceResource)
         {
             this.patient = patient;
             this.timing = timing;
@@ -48,7 +48,28 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             return events;
         }
 
-        public IEnumerable<HealthEvent> GetEvents()
+        public static IEnumerable<HealthEvent> GenerateEventsFrom(ServiceRequest request, Patient patient)
+        {
+            var events = new List<HealthEvent>();
+            var requestReference = new CustomResource
+            {
+                EventType = EventType.Measurement,
+                ResourceId = request.Id,
+                EventReferenceId = request.Id,
+                Text = request.PatientInstruction
+            };
+
+            if (request.Occurrence is not Timing timing)
+            {
+                return events;
+            }
+
+            var eventsGenerator = new EventsGenerator(patient, timing, requestReference);
+            events.AddRange(eventsGenerator.GetEvents());
+            return events;
+        }
+
+        private IEnumerable<HealthEvent> GetEvents()
         {
             int days;
             DateTime startDate;
@@ -85,7 +106,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             throw new InvalidOperationException("Dosage timing not supported yet");
         }
 
-        private List<HealthEvent> GenerateDailyEvents(int days, DateTime startDate)
+        private IEnumerable<HealthEvent> GenerateDailyEvents(int days, DateTime startDate)
         {
             var events = new List<HealthEvent>();
             for (var i = 0; i < days; i++)
