@@ -35,28 +35,28 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return serviceRequest;
         }
 
-        public Task<ServiceRequest> GetServiceRequest(string id)
+        public async Task<ServiceRequest> GetServiceRequest(string id)
         {
-            return this.serviceRequestDao.GetServiceRequest(id);
+            return await this.serviceRequestDao.GetServiceRequest(id);
         }
 
-        public Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest request)
+        public async Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest request)
         {
             var exists = this.serviceRequestDao.GetServiceRequest(id) != null;
             if (exists)
             {
-                return this.serviceRequestDao.UpdateServiceRequest(id, request);
+                return await this.serviceRequestDao.UpdateServiceRequest(id, request);
             }
 
             throw new KeyNotFoundException();
         }
 
-        public Task<bool> DeleteServiceRequest(string id)
+        public async Task<bool> DeleteServiceRequest(string id)
         {
             var exists = this.serviceRequestDao.GetServiceRequest(id) != null;
             if (exists)
             {
-                return this.serviceRequestDao.DeleteServiceRequest(id);
+                return await this.serviceRequestDao.DeleteServiceRequest(id);
             }
             
             throw new KeyNotFoundException();

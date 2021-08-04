@@ -34,20 +34,32 @@ namespace QMUL.DiabetesBackend.MongoDb
                 .Project(request => request.ToServiceRequest());
             return await result.FirstOrDefaultAsync();
         }
-
-        public Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest actualRequest)
+        
+        public async Task<List<ServiceRequest>> GetServiceRequestsByIds(string[] ids)
         {
-            throw new System.NotImplementedException();
+            var idFilter = Builders<MongoServiceRequest>.Filter
+                .In(item => item.Id, ids);
+            var cursor = this.serviceRequestCollection.Find(idFilter)
+                .Project(request => request.ToServiceRequest());
+            return await cursor.ToListAsync();
         }
 
-        public Task<bool> DeleteServiceRequest(string id)
+        public async Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest actualRequest)
         {
-            throw new System.NotImplementedException();
+            var mongoRequests = actualRequest.ToMongoServiceRequest();
+            var result = await this.serviceRequestCollection.ReplaceOneAsync(request => request.Id == id, mongoRequests);
+            if (result.IsAcknowledged)
+            {
+                return await this.GetServiceRequest(id);
+            }
+
+            throw new InvalidOperationException($"there was an error updating the Medication Request {id}");
         }
 
-        public Task<List<ServiceRequest>> GetServiceRequestsByIds(string[] ids)
+        public async Task<bool> DeleteServiceRequest(string id)
         {
-            throw new System.NotImplementedException();
+            var result = await this.serviceRequestCollection.DeleteOneAsync(request => request.Id == id);
+            return result.IsAcknowledged;
         }
     }
 }
