@@ -56,19 +56,20 @@ namespace QMUL.DiabetesBackend.DataMemory
         };
         #endregion
         
-        public ServiceRequest CreateServiceRequest(ServiceRequest newRequest)
+        public Task<ServiceRequest> CreateServiceRequest(ServiceRequest newRequest)
         {
             newRequest.Id = Guid.NewGuid().ToString();
             this.sampleRequests.Add(newRequest);
-            return newRequest;
+            return Task.FromResult(newRequest);
         }
 
-        public ServiceRequest GetServiceRequest(string id)
+        public Task<ServiceRequest> GetServiceRequest(string id)
         {
-            return this.sampleRequests.FirstOrDefault(request => request.Id.Equals(id));
+            var result = this.sampleRequests.FirstOrDefault(request => request.Id.Equals(id));
+            return Task.FromResult(result);
         }
 
-        public ServiceRequest UpdateServiceRequest(string id, ServiceRequest actualRequest)
+        public async Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest actualRequest)
         {
             var index = this.sampleRequests.FindIndex(0, request => request.Id.Equals(id));
             if (index >= 0)
@@ -80,16 +81,16 @@ namespace QMUL.DiabetesBackend.DataMemory
             return actualRequest;
         }
 
-        public bool DeleteServiceRequest(string id)
+        public Task<bool> DeleteServiceRequest(string id)
         {
             var index = this.sampleRequests.FindIndex(0, request => request.Id.Equals(id));
             if (index >= 0)
             {
-                return false;
+                return Task.FromResult(false);
             }
 
             this.sampleRequests.RemoveAt(index);
-            return true;
+            return Task.FromResult(true);
         }
 
         public Task<List<ServiceRequest>> GetServiceRequestsByIds(string[] ids)

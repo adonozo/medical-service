@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.ServiceInterfaces;
@@ -14,17 +15,17 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.serviceRequestDao = serviceRequestDao;
         }
 
-        public ServiceRequest CreateServiceRequest(ServiceRequest request)
+        public Task<ServiceRequest> CreateServiceRequest(ServiceRequest request)
         {
             return this.serviceRequestDao.CreateServiceRequest(request);
         }
 
-        public ServiceRequest GetServiceRequest(string id)
+        public Task<ServiceRequest> GetServiceRequest(string id)
         {
             return this.serviceRequestDao.GetServiceRequest(id);
         }
 
-        public ServiceRequest UpdateServiceRequest(string id, ServiceRequest request)
+        public Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest request)
         {
             var exists = this.serviceRequestDao.GetServiceRequest(id) != null;
             if (exists)
@@ -35,7 +36,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             throw new KeyNotFoundException();
         }
 
-        public bool DeleteServiceRequest(string id)
+        public Task<bool> DeleteServiceRequest(string id)
         {
             var exists = this.serviceRequestDao.GetServiceRequest(id) != null;
             if (exists)

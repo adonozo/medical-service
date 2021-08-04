@@ -6,13 +6,13 @@ namespace QMUL.DiabetesBackend.DataInterfaces
 {
     public interface IServiceRequestDao
     {
-        public ServiceRequest CreateServiceRequest(ServiceRequest newRequest);
+        public Task<ServiceRequest> CreateServiceRequest(ServiceRequest newRequest);
         
-        public ServiceRequest GetServiceRequest(string id);
+        public Task<ServiceRequest> GetServiceRequest(string id);
 
-        public ServiceRequest UpdateServiceRequest(string id, ServiceRequest actualRequest);
+        public Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest actualRequest);
 
-        public bool DeleteServiceRequest(string id);
+        public Task<bool> DeleteServiceRequest(string id);
         
         public Task<List<ServiceRequest>> GetServiceRequestsByIds(string[] ids);
     }
