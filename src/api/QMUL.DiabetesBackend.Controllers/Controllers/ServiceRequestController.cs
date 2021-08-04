@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -29,7 +30,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             try
             {
                 var result = await this.serviceRequestService.GetServiceRequest(id);
-                return this.Ok(result);
+                return this.Ok(result.ToJObject());
             }
             catch (KeyNotFoundException)
             {
@@ -44,12 +45,23 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateServiceRequest(ServiceRequest request)
+        public async Task<IActionResult> CreateServiceRequest([FromBody] object request)
         {
             try
             {
-                var result = await this.serviceRequestService.CreateServiceRequest(request);
-                return this.Ok(result);
+                var parser = new FhirJsonParser(new ParserSettings
+                    {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
+                try
+                {
+                    var parsedRequest = await parser.ParseAsync<ServiceRequest>(request.ToString());
+                    var result = await this.serviceRequestService.CreateServiceRequest(parsedRequest);
+                    return this.Ok(result.ToJObject());
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Couldn't parse the request");
+                    return this.BadRequest();
+                }
             }
             catch (Exception exception)
             {

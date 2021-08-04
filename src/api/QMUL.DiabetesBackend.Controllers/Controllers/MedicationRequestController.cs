@@ -65,7 +65,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError($"Error trying to create a medicationRequest. {exception}");
+                this.logger.LogError(exception, $"Error trying to create a medicationRequest.");
                 return this.BadRequest();
             }
         }
