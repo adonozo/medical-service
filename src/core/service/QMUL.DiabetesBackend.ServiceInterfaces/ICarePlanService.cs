@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 
 namespace QMUL.DiabetesBackend.ServiceInterfaces
@@ -8,6 +9,8 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         public CarePlan CreateCarePlan(CarePlan carePlan);
 
         public CarePlan GetCarePlan(string id);
+
+        public Task<Bundle> GetActiveCarePlans(string patientIdOrEmail);
 
         public List<CarePlan> GetCarePlanFor(string patientId);
 

@@ -74,7 +74,7 @@ namespace QMUL.DiabetesBackend.DataMemory
             return Task.FromResult(this.sampleRequests);
         }
 
-        public async Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest actualRequest)
+        public Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest actualRequest)
         {
             var index = this.sampleRequests.FindIndex(0, request => request.Id.Equals(id));
             if (index >= 0)
@@ -83,7 +83,7 @@ namespace QMUL.DiabetesBackend.DataMemory
             }
 
             this.sampleRequests[index] = actualRequest;
-            return actualRequest;
+            return Task.FromResult(actualRequest);
         }
 
         public Task<bool> DeleteServiceRequest(string id)

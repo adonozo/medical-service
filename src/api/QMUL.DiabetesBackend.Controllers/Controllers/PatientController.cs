@@ -19,15 +19,17 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     {
         private readonly IPatientService patientService;
         private readonly IAlexaService alexaService;
+        private readonly ICarePlanService carePlanService;
         private readonly ILogger<PatientController> logger;
         private static string jsonEcho = string.Empty;
 
         public PatientController(IPatientService patientService, IAlexaService alexaService,
-            ILogger<PatientController> logger)
+            ILogger<PatientController> logger, ICarePlanService carePlanService)
         {
             this.patientService = patientService;
             this.alexaService = alexaService;
             this.logger = logger;
+            this.carePlanService = carePlanService;
         }
 
         [HttpGet]
@@ -106,7 +108,28 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError($"Error getting Patient: {idOrEmail}", exception);
+                this.logger.LogError(exception, $"Error getting Patient: {idOrEmail}");
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpGet]
+        [Route("{idOrEmail}/carePlans/active")]
+        public async Task<IActionResult> GetActiveCarePlan([FromRoute] string idOrEmail)
+        {
+            try
+            {
+                var result = await this.carePlanService.GetActiveCarePlans(idOrEmail);
+                return this.Ok(result.ToJObject());
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, $"Error getting active care plans for: {idOrEmail}");
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
