@@ -69,6 +69,11 @@ namespace QMUL.DiabetesBackend.DataMemory
             return Task.FromResult(result);
         }
 
+        public Task<List<ServiceRequest>> GetActiveServiceRequests(string patientId)
+        {
+            return Task.FromResult(this.sampleRequests);
+        }
+
         public async Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest actualRequest)
         {
             var index = this.sampleRequests.FindIndex(0, request => request.Id.Equals(id));

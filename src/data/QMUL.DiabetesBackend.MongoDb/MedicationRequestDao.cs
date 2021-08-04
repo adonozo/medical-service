@@ -119,7 +119,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             var result = this.medicationRequestCollection.Find(request =>
                     request.PatientReference.ReferenceId == patientId
                     && request.DosageInstructions.Any(instruction => instruction.Id == dosageId))
-                .Project(mongoPatient => mongoPatient.ToMedicationRequest());
+                .Project(mongoRequest => mongoRequest.ToMedicationRequest());
             return await result.FirstOrDefaultAsync();
         }
 
@@ -129,7 +129,7 @@ namespace QMUL.DiabetesBackend.MongoDb
                     request.PatientReference.ReferenceId == patientId
                     && request.Status == MedicationRequest.medicationrequestStatus.Active.ToString()
                     && request.IsInsulin == false)
-                .Project(mongoPatient => mongoPatient.ToMedicationRequest());
+                .Project(mongoRequest => mongoRequest.ToMedicationRequest());
             return await result.ToListAsync();
         }
 
@@ -138,7 +138,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             var result = this.medicationRequestCollection.Find(request =>
                     request.PatientReference.ReferenceId == patientId
                     && request.Status == MedicationRequest.medicationrequestStatus.Active.ToString())
-                .Project(mongoPatient => mongoPatient.ToMedicationRequest());
+                .Project(mongoRequest => mongoRequest.ToMedicationRequest());
             return await result.ToListAsync();
         }
     }

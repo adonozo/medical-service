@@ -34,13 +34,22 @@ namespace QMUL.DiabetesBackend.MongoDb
                 .Project(request => request.ToServiceRequest());
             return await result.FirstOrDefaultAsync();
         }
-        
+
+        public async Task<List<ServiceRequest>> GetActiveServiceRequests(string patientId)
+        {
+            var result = this.serviceRequestCollection.Find(request =>
+                    request.PatientReference.ReferenceId == patientId
+                    && request.Status == RequestStatus.Active.ToString())
+                .Project(mongoServiceRequest => mongoServiceRequest.ToServiceRequest());
+            return await result.ToListAsync();
+        }
+
         public async Task<List<ServiceRequest>> GetServiceRequestsByIds(string[] ids)
         {
             var idFilter = Builders<MongoServiceRequest>.Filter
                 .In(item => item.Id, ids);
             var cursor = this.serviceRequestCollection.Find(idFilter)
-                .Project(request => request.ToServiceRequest());
+                .Project(mongoServiceRequest => mongoServiceRequest.ToServiceRequest());
             return await cursor.ToListAsync();
         }
 
