@@ -62,5 +62,12 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="patientId">The patient's user ID, not email</param>
         /// <returns>The list of active medication requests.</returns>
         public Task<List<MedicationRequest>> GetActiveMedicationRequests(string patientId);
+        
+        /// <summary>
+        /// Gets the all the active medication requests, insulin and non-insulin.
+        /// </summary>
+        /// <param name="patientId">The patient's user ID, not email</param>
+        /// <returns>The list of active medication requests.</returns>
+        public Task<List<MedicationRequest>> GetAllActiveMedicationRequests(string patientId);
     }
 }
