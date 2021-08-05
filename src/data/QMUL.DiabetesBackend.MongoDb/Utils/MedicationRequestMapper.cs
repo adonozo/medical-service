@@ -30,28 +30,14 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                     }
                 },
                 AuthoredOn = request.CreatedAt.ToString(CultureInfo.InvariantCulture),
-                Subject = new ResourceReference
-                {
-                    ElementId = request.PatientReference.ReferenceId,
-                    Display = request.PatientReference.ReferenceName,
-                    Reference = $"/patients/{request.PatientReference.ReferenceName}"
-                },
-                Requester = new ResourceReference
-                {
-                    ElementId = request.RequesterReference.ReferenceId,
-                    Display = request.RequesterReference.ReferenceName,
-                },
-                Medication = new ResourceReference
-                {
-                    ElementId  = request.MedicationReference.ReferenceId,
-                    Display = request.MedicationReference.ReferenceName,
-                },
+                Subject = request.PatientReference.ToResourceReference(),
+                Requester = request.RequesterReference.ToResourceReference(),
+                Medication = request.MedicationReference.ToResourceReference(),
                 Contained = new List<Resource>
                 {
                     new Medication
                     {
                         Id = request.MedicationReference.ReferenceId,
-                        
                     }
                 },
                 DosageInstruction = request.DosageInstructions.Select(ToDosage).ToList(),
@@ -117,7 +103,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 Sequence = dosage.Sequence ?? 0,
                 Text = dosage.Text,
                 Timing = dosage.Timing.ToMongoTiming(),
-                DoseAndRate = dosage.DoseAndRate.Select(dose => dose.ToMongoQuantity()) 
+                DoseAndRate = dosage.DoseAndRate.Where(dose => dose.Dose is Quantity).Select(dose => ((Quantity)dose.Dose).ToMongoQuantity())
             };
         }
     }

@@ -20,8 +20,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                     ReferenceId = request.Subject.ElementId,
                     ReferenceName = request.Subject.Display
                 },
-                Code = request.Code.Coding.Select(ToMongoCode).ToList(),
-                
+                Code = request.Code.Coding.Select(Mapper.ToMongoCode).ToList(),
             };
 
             if (request.Occurrence is Timing timing)
@@ -43,36 +42,12 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 Status = hasStatus ? status : null,
                 Intent = hasIntent ? intent : null,
                 PatientInstruction = request.PatientInstruction,
-                Subject = new ResourceReference
-                {
-                    ElementId = request.PatientReference.ReferenceId,
-                    Display = request.PatientReference.ReferenceName
-                },
+                Subject = request.PatientReference.ToResourceReference(),
                 Code = new CodeableConcept
                 {
-                    Coding = request.Code.Select(ToCoding).ToList()
+                    Coding = request.Code.Select(Mapper.ToCoding).ToList()
                 },
                 Occurrence = request.Occurrence?.ToTiming()
-            };
-        }
-
-        private static MongoCode ToMongoCode(this Coding code)
-        {
-            return new()
-            {
-                Display = code.Display,
-                Code = code.Code,
-                System = code.System
-            };
-        }
-
-        private static Coding ToCoding(this MongoCode code)
-        {
-            return new()
-            {
-                Display = code.Display,
-                Code = code.Code,
-                System = code.System
             };
         }
     }

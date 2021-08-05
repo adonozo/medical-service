@@ -69,13 +69,13 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
             };
         }
 
-        public static Quantity ToQuantity(this MongoQuantity doseAndRate) =>
+        public static Quantity ToQuantity(this MongoQuantity quantity) =>
             new()
             {
-                System = doseAndRate.System,
-                Code = doseAndRate.Code,
-                Unit = doseAndRate.Unit,
-                Value = doseAndRate.Value,
+                System = quantity.System,
+                Code = quantity.Code,
+                Unit = quantity.Unit,
+                Value = quantity.Value,
             };
 
         public static MongoTiming ToMongoTiming(this Timing timing)
@@ -110,14 +110,14 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
             };
         }
 
-        public static MongoQuantity ToMongoQuantity(this Dosage.DoseAndRateComponent dose)
+        public static MongoQuantity ToMongoQuantity(this Quantity dose)
         {
             return new()
             {
-                Value = ((Quantity) dose.Dose).Value ?? 0,
-                System = ((Quantity) dose.Dose).System,
-                Unit = ((Quantity) dose.Dose).Unit,
-                Code = ((Quantity) dose.Dose).Code
+                Value = dose.Value ?? 0,
+                System = dose.System,
+                Unit = dose.Unit,
+                Code = dose.Code
             };
         }
 
@@ -177,6 +177,35 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 LastName = patient.LastName,
                 ExactEventTimes = eventTimes,
                 ResourceStartDate = patient.ResourceStartDate,
+            };
+        }
+        
+        public static MongoCode ToMongoCode(this Coding code)
+        {
+            return new()
+            {
+                Display = code.Display,
+                Code = code.Code,
+                System = code.System
+            };
+        }
+
+        public static Coding ToCoding(this MongoCode code)
+        {
+            return new()
+            {
+                Display = code.Display,
+                Code = code.Code,
+                System = code.System
+            };
+        }
+
+        public static ResourceReference ToResourceReference(this MongoReference reference)
+        {
+            return new()
+            {
+                ElementId = reference.ReferenceId,
+                Display = reference.ReferenceName,
             };
         }
     }
