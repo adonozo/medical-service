@@ -210,6 +210,28 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("{idOrEmail}/observations/")]
+        public async Task<IActionResult> GetPatientObservations([FromRoute] string idOrEmail, [FromQuery] DateTime date,
+            [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
+        {
+            try
+            {
+                var result = await this.observationService.GetObservationsFor(idOrEmail, timing, date);
+                return this.Ok(result.ToJObject());
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
         [HttpPut]
         [Route("{idOrEmail}/timing")]
         public async Task<IActionResult> UpdatePatientTiming([FromRoute] string idOrEmail, [FromBody] PatientTimingRequest request) 

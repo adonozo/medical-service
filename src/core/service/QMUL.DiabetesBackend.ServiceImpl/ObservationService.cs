@@ -57,6 +57,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl
 
         public async Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime)
         {
+            if (timing == CustomEventTiming.EXACT)
+            {
+                return await this.GetObservationsFor(patientId, dateTime);
+            }
+            
             var patient = await ResourceUtils.ValidateObject(
                 () => this.patientDao.GetPatientByIdOrEmail(patientId),
                 "Unable to find patient for the Observation", new KeyNotFoundException());
