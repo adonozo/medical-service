@@ -9,6 +9,7 @@ using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.DataMemory;
 using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.MongoDb;
+using QMUL.DiabetesBackend.ServiceImpl;
 using QMUL.DiabetesBackend.ServiceImpl.Implementations;
 using QMUL.DiabetesBackend.ServiceInterfaces;
 
@@ -34,10 +35,7 @@ namespace QMUL.DiabetesBackend.Api
 
             services.Configure<MongoDatabaseSettings>(Configuration.GetSection(nameof(MongoDatabaseSettings)));
             services.AddSingleton<IMedicationDao, MedicationMemory>();
-            // services.AddSingleton<IPatientDao, PatientMemory>();
             services.AddSingleton<ITreatmentDosageDao, TreatmentMemory>();
-            // services.AddSingleton<IMedicationRequestDao, MedicationRequestMemory>();
-            // services.AddSingleton<IServiceRequestDao, ServiceRequestMemory>();
             services.AddSingleton<IDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<MongoDatabaseSettings>>().Value);
             services.AddSingleton<IMedicationRequestDao, MedicationRequestDao>();
@@ -45,6 +43,7 @@ namespace QMUL.DiabetesBackend.Api
             services.AddSingleton<IEventDao, MongoEventDao>();
             services.AddSingleton<IPatientDao, PatientDao>();
             services.AddSingleton<IServiceRequestDao, ServiceRequestDao>();
+            services.AddSingleton<IObservationDao, ObservationDao>();
 
             services.AddSingleton<IMedicationService, MedicationService>();
             services.AddSingleton<IPatientService, PatientService>();
@@ -53,6 +52,7 @@ namespace QMUL.DiabetesBackend.Api
             services.AddSingleton<IServiceRequestService, ServiceRequestService>();
             services.AddSingleton<ICarePlanService, CarePlanService>();
             services.AddSingleton<IAlexaService, AlexaService>();
+            services.AddSingleton<IObservationService, ObservationService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
