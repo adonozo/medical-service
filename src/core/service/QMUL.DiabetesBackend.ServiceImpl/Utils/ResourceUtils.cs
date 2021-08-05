@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.Model.Enums;
+using Task = System.Threading.Tasks.Task;
 
 namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
@@ -39,6 +41,17 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             {
                 return false;
             }
+        }
+
+        public static async Task<T> ValidateObject<T>(Func<Task<T>> getObjectFunction, string message, Exception exception)
+        {
+            var result = await getObjectFunction.Invoke();
+            if (result == null)
+            {
+                throw exception;
+            }
+
+            return result;
         }
     }
 }
