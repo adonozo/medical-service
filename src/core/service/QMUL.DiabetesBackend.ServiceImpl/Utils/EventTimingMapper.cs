@@ -1,7 +1,9 @@
 using System;
 using Hl7.Fhir.Model;
+using NodaTime;
 using QMUL.DiabetesBackend.Model.Enums;
-using Patient = QMUL.DiabetesBackend.Model.Patient;
+using Duration = NodaTime.Duration;
+using Instant = NodaTime.Instant;
 
 namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
@@ -57,114 +59,86 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             };
         }
 
-        public static Tuple<DateTime, DateTime> GetIntervalFromCustomEventTiming(DateTime startTime, CustomEventTiming timing)
+        public static Tuple<DateTime, DateTime> GetIntervalFromCustomEventTiming(DateTime startTime, CustomEventTiming timing, string timezone)
         {
             DateTime endTime;
+            if (startTime.Kind != DateTimeKind.Utc)
+            {
+                startTime = startTime.ToUniversalTime();
+            }
+
+            var instant = Instant.FromDateTimeUtc(startTime);
+            var timezoneInfo = DateTimeZoneProviders.Tzdb[timezone];
+            var startZonedDateTime = instant.InZone(timezoneInfo);
+            var startLocalDate = startZonedDateTime.Date.AtStartOfDayInZone(timezoneInfo);
+            
             switch (timing)
             {
                 case CustomEventTiming.MORN:
-                    startTime = startTime.Date.AddHours(6);
-                    endTime = startTime.Date.AddHours(12);
+                    startTime = startLocalDate.Plus(Duration.FromHours(6)).ToDateTimeUtc();
+                    endTime = startTime.AddHours(6);
                     break;
                 case CustomEventTiming.MORN_early:
-                    startTime = startTime.Date.AddHours(6);
-                    endTime = startTime.Date.AddHours(9);
+                    startTime = startLocalDate.Plus(Duration.FromHours(6)).ToDateTimeUtc();
+                    endTime = startTime.AddHours(3);
                     break;
                 case CustomEventTiming.MORN_late:
-                    startTime = startTime.Date.AddHours(9);
-                    endTime = startTime.Date.AddHours(12);
+                    startTime = startLocalDate.Plus(Duration.FromHours(9)).ToDateTimeUtc();
+                    endTime = startTime.AddHours(3);
                     break;
                 case CustomEventTiming.NOON:
-                    startTime = startTime.Date.AddHours(11).AddMinutes(30);
-                    endTime = startTime.Date.AddHours(12).AddMinutes(30);
+                    startTime = startLocalDate.Plus(Duration.FromHours(11)).PlusMinutes(30).ToDateTimeUtc();
+                    endTime = startTime.AddHours(1);
                     break;
                 case CustomEventTiming.AFT:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
+                    startTime = startLocalDate.Plus(Duration.FromHours(12)).ToDateTimeUtc();
+                    endTime = startTime.AddHours(6);
                     break;
                 case CustomEventTiming.AFT_early:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(15);
+                    startTime = startLocalDate.Plus(Duration.FromHours(12)).ToDateTimeUtc();
+                    endTime = startTime.AddHours(3);
                     break;
                 case CustomEventTiming.AFT_late:
-                    startTime = startTime.Date.AddHours(15);
-                    endTime = startTime.Date.AddHours(18);
+                    startTime = startLocalDate.Plus(Duration.FromHours(15)).ToDateTimeUtc();
+                    endTime = startTime.AddHours(3);
                     break;
                 case CustomEventTiming.EVE:
-                    startTime = startTime.Date.AddHours(6);
-                    endTime = startTime.Date.AddHours(9);
+                    startTime = startLocalDate.Plus(Duration.FromHours(18)).ToDateTimeUtc();
+                    endTime = startTime.AddHours(6);
                     break;
                 case CustomEventTiming.EVE_early:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
+                    startTime = startLocalDate.Plus(Duration.FromHours(18)).ToDateTimeUtc();
+                    endTime = startTime.AddHours(3);
                     break;
                 case CustomEventTiming.EVE_late:
-                    startTime = startTime.Date.AddHours(9);
-                    endTime = startTime.Date.AddHours(12);
+                    startTime = startLocalDate.Plus(Duration.FromHours(21)).ToDateTimeUtc();
+                    endTime = startTime.AddHours(3);
                     break;
                 case CustomEventTiming.NIGHT:
-                    startTime = startTime.Date.AddHours(18);
-                    endTime = startTime.Date.AddHours(30);
-                    break;
-                case CustomEventTiming.PHS:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
-                    break;
-                case CustomEventTiming.HS:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
-                    break;
-                case CustomEventTiming.WAKE:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
-                    break;
-                case CustomEventTiming.C:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
-                    break;
-                case CustomEventTiming.CM:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
-                    break;
-                case CustomEventTiming.CD:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
-                    break;
-                case CustomEventTiming.CV:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
-                    break;
-                case CustomEventTiming.AC:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
+                    startTime = startLocalDate.Plus(Duration.FromHours(18)).ToDateTimeUtc();
+                    endTime = startTime.AddHours(12);
                     break;
                 case CustomEventTiming.ACM:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
+                case CustomEventTiming.CM:
+                case CustomEventTiming.PCM:
+                    startTime = startLocalDate.Plus(Duration.FromHours(6)).ToDateTimeUtc();
+                    endTime = startTime.AddHours(5);
                     break;
                 case CustomEventTiming.ACD:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
+                case CustomEventTiming.CD:
+                case CustomEventTiming.PCD:
+                    startTime = startLocalDate.Plus(Duration.FromHours(11)).ToDateTimeUtc();
+                    endTime = startTime.AddHours(6);
                     break;
                 case CustomEventTiming.ACV:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
-                    break;
-                case CustomEventTiming.PC:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
-                    break;
-                case CustomEventTiming.PCM:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
-                    break;
-                case CustomEventTiming.PCD:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
-                    break;
+                case CustomEventTiming.CV:
                 case CustomEventTiming.PCV:
-                    startTime = startTime.Date.AddHours(12);
-                    endTime = startTime.Date.AddHours(18);
+                    startTime = startLocalDate.Plus(Duration.FromHours(17)).ToDateTimeUtc();
+                    endTime = startTime.AddHours(7);
+                    break;
+                case CustomEventTiming.ALL_DAY:
+                    startTime = startTime.Date;
+                    endTime = startTime.AddDays(1);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(timing), timing, null);

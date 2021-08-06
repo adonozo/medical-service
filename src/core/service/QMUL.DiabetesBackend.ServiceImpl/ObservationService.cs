@@ -55,7 +55,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl
             return bundle;
         }
 
-        public async Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime)
+        public async Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime, string patientTimezone = "UTC")
         {
             if (timing == CustomEventTiming.EXACT)
             {
@@ -76,7 +76,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl
             }
             else
             {
-                (start, end) = EventTimingMapper.GetIntervalFromCustomEventTiming(dateTime, timing);
+                (start, end) = EventTimingMapper.GetIntervalFromCustomEventTiming(dateTime, timing, patientTimezone);
             }
 
             var observations = await this.observationDao.GetObservationsFor(patient.Id, start, end);

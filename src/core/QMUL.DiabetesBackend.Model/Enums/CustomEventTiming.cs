@@ -5,6 +5,7 @@ namespace QMUL.DiabetesBackend.Model.Enums
     /// <summary>
     /// Event times in the day. E.g., morning, breakfast, evening, etc.
     /// </summary>
+    // ReSharper disable InconsistentNaming
     public enum CustomEventTiming
     {
         /// <summary>
@@ -156,5 +157,10 @@ namespace QMUL.DiabetesBackend.Model.Enums
       /// (system: http://localhost)
       /// </summary>
       [EnumLiteral("EXACT", "http://localhost"), Description("EXACT")] EXACT,
+      /// <summary>
+      /// At a specific time
+      /// (system: http://localhost)
+      /// </summary>
+      [EnumLiteral("ALL_DAY", "http://localhost"), Description("ALL_DAY")] ALL_DAY,
     }
 }

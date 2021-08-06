@@ -213,11 +213,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [HttpGet]
         [Route("{idOrEmail}/observations/")]
         public async Task<IActionResult> GetPatientObservations([FromRoute] string idOrEmail, [FromQuery] DateTime date,
+            [FromQuery] string timezone = "UTC",
             [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
         {
             try
             {
-                var result = await this.observationService.GetObservationsFor(idOrEmail, timing, date);
+                var result = await this.observationService.GetObservationsFor(idOrEmail, timing, date, timezone);
                 return this.Ok(result.ToJObject());
             }
             catch (KeyNotFoundException)

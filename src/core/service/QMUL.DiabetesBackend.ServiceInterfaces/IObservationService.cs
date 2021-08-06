@@ -12,7 +12,8 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         public Task<Observation> GetSingleObservation(string observationId);
 
         public Task<Bundle> GetObservationsFor(string patientId, DateTime dateTime);
-        
-        public Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime);
+
+        public Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime,
+            string patientTimezone = "UTC");
     }
 }
