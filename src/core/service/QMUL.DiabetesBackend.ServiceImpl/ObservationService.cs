@@ -43,12 +43,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl
 
         public async Task<Bundle> GetObservationsFor(string patientId, DateTime dateTime)
         {
-            await ResourceUtils.ValidateObject(
+            var patient = await ResourceUtils.ValidateObject(
                 () => this.patientDao.GetPatientByIdOrEmail(patientId),
                 "Unable to find patient for the Observation", new KeyNotFoundException());
             var startDate = dateTime.AddMinutes(DefaultOffset * -1);
             var endDate = dateTime.AddMinutes(DefaultOffset);
-            var observations = await this.observationDao.GetObservationsFor(patientId, startDate, endDate);
+            var observations = await this.observationDao.GetObservationsFor(patient.Id, startDate, endDate);
             var bundle = ResourceUtils.GenerateEmptyBundle();
             bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
                 .ToList();
@@ -79,7 +79,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl
                 (start, end) = EventTimingMapper.GetIntervalFromCustomEventTiming(dateTime, timing);
             }
 
-            var observations = await this.observationDao.GetObservationsFor(patientId, start, end);
+            var observations = await this.observationDao.GetObservationsFor(patient.Id, start, end);
             var bundle = ResourceUtils.GenerateEmptyBundle();
             bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
                 .ToList();
