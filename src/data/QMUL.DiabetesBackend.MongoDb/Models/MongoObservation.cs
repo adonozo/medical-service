@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using QMUL.DiabetesBackend.Model.Enums;
 
 namespace QMUL.DiabetesBackend.MongoDb.Models
 {
@@ -14,6 +15,8 @@ namespace QMUL.DiabetesBackend.MongoDb.Models
         public string Status { get; set; }
         
         public DateTime Issued { get; set; }
+
+        public CustomEventTiming Timing { get; set; }
         
         public MongoReference PatientReference { get; set; }
         

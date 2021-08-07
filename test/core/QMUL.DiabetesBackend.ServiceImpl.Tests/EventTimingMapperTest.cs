@@ -1,8 +1,10 @@
 using System;
 using FluentAssertions;
+using Hl7.Fhir.Model;
 using QMUL.DiabetesBackend.Model.Enums;
 using QMUL.DiabetesBackend.ServiceImpl.Utils;
 using Xunit;
+using static System.Enum;
 
 namespace QMUL.DiabetesBackend.ServiceImpl.Tests
 {
@@ -54,6 +56,40 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests
             // Assert
             start.Hour.Should().Be(6, "Default morning time is 06:00");
             end.Hour.Should().Be(12, "End hour should be 6 hours from the start time");
+        }
+
+        [Fact]
+        public void ParseTimingFromExtension_ShouldParse()
+        {
+            // Arrange
+            var extension = new Extension("http://localhost/observationTiming", new Code("ACM"));
+            var observationTiming = CustomEventTiming.EXACT;
+            
+            // Act
+            if (extension.Url.Contains("Timing") && extension.Value is Code code && TryParse<CustomEventTiming>(code.ToString(), out var temp))
+            {
+                observationTiming = temp;
+            }
+            
+            // Assert
+            observationTiming.Should().Be(CustomEventTiming.ACM);
+        }
+        
+        [Fact]
+        public void ParseTimingFromExtension_ShouldNotParse()
+        {
+            // Arrange
+            var extension = new Extension("http://localhost/observationTiming", new Code("INVALID"));
+            var observationTiming = CustomEventTiming.EXACT;
+
+            // Act
+            if (extension.Url.Contains("Timing") && extension.Value is Code code && TryParse<CustomEventTiming>(code.ToString(), out var temp))
+            {
+                observationTiming = temp;
+            }
+
+            // Assert
+            observationTiming.Should().Be(CustomEventTiming.EXACT);
         }
     }
 }

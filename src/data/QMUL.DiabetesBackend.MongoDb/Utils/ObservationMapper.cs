@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
+using QMUL.DiabetesBackend.Model.Enums;
 using QMUL.DiabetesBackend.MongoDb.Models;
 using static System.Enum;
 
@@ -12,6 +13,16 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
         public static MongoObservation ToMongoObservation(this Observation observation)
         {
             var hasQuantity = observation.Value is Quantity;
+            var observationTiming = CustomEventTiming.EXACT;
+            foreach (var extension in observation.Extension)
+            {
+                if (extension.Url.Contains("Timing") && extension.Value is Code code &&
+                    TryParse<CustomEventTiming>(code.ToString(), out var eventTiming))
+                {
+                    observationTiming = eventTiming;
+                    break;
+                }
+            }
             var patientReference = new MongoReference
             {
                 ReferenceId = observation.Subject.ElementId,
@@ -25,7 +36,8 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 Issued = observation.Issued?.UtcDateTime ?? DateTime.UtcNow,
                 Code = observation.Code.Coding.Select(Mapper.ToMongoCode).ToList(),
                 PerformerReferences = new List<MongoReference> { patientReference },
-                ValueQuantity = hasQuantity ? ((Quantity)observation.Value).ToMongoQuantity() : new MongoQuantity()
+                ValueQuantity = hasQuantity ? ((Quantity)observation.Value).ToMongoQuantity() : new MongoQuantity(),
+                Timing = observationTiming
             };
         }
 
@@ -44,7 +56,11 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 {
                     Coding = observation.Code.Select(Mapper.ToCoding).ToList()
                 },
-                Value = observation.ValueQuantity.ToQuantity()
+                Value = observation.ValueQuantity.ToQuantity(),
+                Extension = new List<Extension>
+                {
+                    new("http://localhost/observationTiming", new Code(observation.Timing.ToString()))
+                }
             };
         }
     }
