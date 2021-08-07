@@ -4,6 +4,7 @@ using NodaTime;
 using QMUL.DiabetesBackend.Model.Enums;
 using Duration = NodaTime.Duration;
 using Instant = NodaTime.Instant;
+using Patient = QMUL.DiabetesBackend.Model.Patient;
 
 namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
@@ -57,6 +58,26 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 null => throw new ArgumentOutOfRangeException(nameof(dayOfWeek), "Invalid day of week"),
                 _ => throw new ArgumentOutOfRangeException(nameof(dayOfWeek), dayOfWeek, "Invalid day of week")
             };
+        }
+
+        public static Tuple<DateTime, DateTime> GetIntervalForPatient(Patient patient, DateTime startTime,
+            CustomEventTiming timing, string timezone, int defaultOffset)
+        {
+            DateTime start;
+            DateTime end;
+            if (patient.ExactEventTimes.ContainsKey(timing))
+            {
+                start = patient.ExactEventTimes[timing].AddMinutes(defaultOffset * -1);
+                start = startTime.Date.AddHours(start.Hour).AddMinutes(start.Minute);
+                end = patient.ExactEventTimes[timing].AddMinutes(defaultOffset);
+                end = startTime.Date.AddHours(end.Hour).AddMinutes(end.Minute);
+            }
+            else
+            {
+                (start, end) = GetIntervalFromCustomEventTiming(startTime, timing, timezone);
+            }
+
+            return new Tuple<DateTime, DateTime>(start, end);
         }
 
         public static Tuple<DateTime, DateTime> GetIntervalFromCustomEventTiming(DateTime startTime, CustomEventTiming timing, string timezone)

@@ -65,19 +65,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl
             var patient = await ResourceUtils.ValidateObject(
                 () => this.patientDao.GetPatientByIdOrEmail(patientId),
                 "Unable to find patient for the Observation", new KeyNotFoundException());
-            DateTime start;
-            DateTime end;
-            if (patient.ExactEventTimes.ContainsKey(timing))
-            {
-                start = patient.ExactEventTimes[timing].AddMinutes(DefaultOffset * -1);
-                start = dateTime.Date.AddHours(start.Hour).AddMinutes(start.Minute);
-                end = patient.ExactEventTimes[timing].AddMinutes(DefaultOffset);
-                end = dateTime.Date.AddHours(end.Hour).AddMinutes(end.Minute);
-            }
-            else
-            {
-                (start, end) = EventTimingMapper.GetIntervalFromCustomEventTiming(dateTime, timing, patientTimezone);
-            }
+            var (start, end) =
+                EventTimingMapper.GetIntervalForPatient(patient, dateTime, timing, patientTimezone, DefaultOffset);
 
             var observations = await this.observationDao.GetObservationsFor(patient.Id, start, end);
             var bundle = ResourceUtils.GenerateEmptyBundle();
