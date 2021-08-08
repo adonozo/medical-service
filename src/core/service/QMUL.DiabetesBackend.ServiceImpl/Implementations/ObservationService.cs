@@ -8,7 +8,7 @@ using QMUL.DiabetesBackend.Model.Enums;
 using QMUL.DiabetesBackend.ServiceImpl.Utils;
 using QMUL.DiabetesBackend.ServiceInterfaces;
 
-namespace QMUL.DiabetesBackend.ServiceImpl
+namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
     public class ObservationService : IObservationService
     {
