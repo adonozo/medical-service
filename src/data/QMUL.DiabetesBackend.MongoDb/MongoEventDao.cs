@@ -15,6 +15,7 @@ namespace QMUL.DiabetesBackend.MongoDb
     {
         private readonly IMongoCollection<MongoEvent> eventCollection;
         private const string CollectionName = "healthEvent";
+        private const int DefaultLimit = 3;
     
         public MongoEventDao(IDatabaseSettings settings) : base(settings)
         {
@@ -213,12 +214,12 @@ namespace QMUL.DiabetesBackend.MongoDb
         public async Task<IEnumerable<HealthEvent>> GetNextEvents(string patientId, EventType type)
         {
             var date = DateTime.UtcNow;
-            var sort = Builders<MongoEvent>.Sort.Ascending(healthEvent => healthEvent.EventTiming);
+            var sort = Builders<MongoEvent>.Sort.Ascending(healthEvent => healthEvent.EventDateTime);
             var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
                                                                   && healthEvent.Resource.EventType == type
                                                                   && healthEvent.EventDateTime > date )
                 .Sort(sort)
-                .Limit(5)
+                .Limit(DefaultLimit)
                 .Project(mongoEvent => mongoEvent.ToHealthEvent());
             return await result.ToListAsync();
         }
@@ -226,13 +227,13 @@ namespace QMUL.DiabetesBackend.MongoDb
         public async Task<IEnumerable<HealthEvent>> GetNextEvents(string patientId, EventType[] types)
         {
             var date = DateTime.UtcNow;
-            var sort = Builders<MongoEvent>.Sort.Ascending(healthEvent => healthEvent.EventTiming);
+            var sort = Builders<MongoEvent>.Sort.Ascending(healthEvent => healthEvent.EventDateTime);
             var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.Resource.EventType, types);
             filter &= this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
                                                                   && healthEvent.EventDateTime > date ).Filter;
             var result = this.eventCollection.Find(filter)
                 .Sort(sort)
-                .Limit(5)
+                .Limit(DefaultLimit)
                 .Project(mongoEvent => mongoEvent.ToHealthEvent());
             return await result.ToListAsync();
         }

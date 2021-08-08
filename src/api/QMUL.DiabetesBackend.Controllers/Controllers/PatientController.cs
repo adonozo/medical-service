@@ -188,6 +188,36 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpGet]
+        [Route("{idOrEmail}/alexa/next")]
+        public async Task<IActionResult> GetAlexaNextRequest([FromRoute] string idOrEmail, [FromQuery] AlexaRequestType type)
+        {
+            try
+            {
+                Bundle result;
+                if (type == AlexaRequestType.CarePlan)
+                {
+                    result = await this.alexaService.GetNextRequests(idOrEmail);
+                }
+                else
+                {
+                    result = await this.alexaService.GetNextRequests(idOrEmail, type);                    
+                }
+                
+                return this.Ok(result.ToJObject());
+            }
+            catch (KeyNotFoundException exception)
+            {
+                this.logger.LogWarning($"Not found: {exception.Message}");
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpGet]
         [Route("{idOrEmail}/observations/{observationId}")]
         public async Task<IActionResult> GetSingleObservation([FromRoute] string idOrEmail, [FromRoute] string observationId)
         {
