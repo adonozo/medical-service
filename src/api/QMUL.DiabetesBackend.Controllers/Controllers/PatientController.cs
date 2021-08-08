@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
@@ -23,7 +22,6 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         private readonly ICarePlanService carePlanService;
         private readonly IObservationService observationService;
         private readonly ILogger<PatientController> logger;
-        private static string jsonEcho = string.Empty;
 
         public PatientController(IPatientService patientService, IAlexaService alexaService,
             ILogger<PatientController> logger, ICarePlanService carePlanService, IObservationService observationService)
@@ -169,12 +167,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [Route("{idOrEmail}/alexa")]
         public async Task<IActionResult> GetAlexaRequest([FromRoute] string idOrEmail, [FromQuery] AlexaRequestType type,
             [FromQuery] DateTime date,
-            [FromQuery] AlexaRequestTime requestTime = AlexaRequestTime.ExactTime,
+            [FromQuery] string timezone = "UTC",
             [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
         {
             try
             {
-                var result = await this.alexaService.ProcessRequest(idOrEmail, type, date, requestTime, timing);
+                var result = await this.alexaService.ProcessRequest(idOrEmail, type, date, timing, timezone);
                 return this.Ok(result.ToJObject());
             }
             catch (KeyNotFoundException)
@@ -275,21 +273,5 @@ namespace QMUL.DiabetesBackend.Api.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
-
-        [HttpPost]
-        [Route("echo")]
-        public IActionResult SaveJsonEcho([FromBody] object jsonObject)
-        {
-            this.logger.LogDebug("Echoing a message");
-            jsonEcho = JsonSerializer.Serialize(jsonObject);
-            return this.Accepted();
-        }
-
-        [HttpGet]
-        [Route("echo")]
-        public ActionResult<string> GetJsonEcho()
-        {
-            return this.Ok(jsonEcho);
-        } 
     }
 }

@@ -83,15 +83,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         public static Tuple<DateTime, DateTime> GetIntervalFromCustomEventTiming(DateTime startTime, CustomEventTiming timing, string timezone)
         {
             DateTime endTime;
-            if (startTime.Kind != DateTimeKind.Utc)
-            {
-                startTime = startTime.ToUniversalTime();
-            }
-
-            var instant = Instant.FromDateTimeUtc(startTime);
-            var timezoneInfo = DateTimeZoneProviders.Tzdb[timezone];
-            var startZonedDateTime = instant.InZone(timezoneInfo);
-            var startLocalDate = startZonedDateTime.Date.AtStartOfDayInZone(timezoneInfo);
+            var startLocalDate = GetRelativeStartOfDay(startTime, timezone);
             
             switch (timing)
             {
@@ -158,7 +150,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                     endTime = startTime.AddHours(7);
                     break;
                 case CustomEventTiming.ALL_DAY:
-                    startTime = startTime.Date;
+                    startTime = startLocalDate.ToDateTimeUtc();
                     endTime = startTime.AddDays(1);
                     break;
                 default:
@@ -166,6 +158,45 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             }
 
             return new Tuple<DateTime, DateTime>(startTime, endTime);
+        }
+
+        public static CustomEventTiming[] GetRelatedTimings(CustomEventTiming eventTiming)
+        {
+            return eventTiming switch
+            {
+                CustomEventTiming.ACM => new[] {CustomEventTiming.ACM, CustomEventTiming.CM, CustomEventTiming.PCM},
+                CustomEventTiming.CM => new[] {CustomEventTiming.ACM, CustomEventTiming.CM, CustomEventTiming.PCM},
+                CustomEventTiming.PCM => new[] {CustomEventTiming.ACM, CustomEventTiming.CM, CustomEventTiming.PCM},
+                CustomEventTiming.ACD => new[] {CustomEventTiming.ACD, CustomEventTiming.CD, CustomEventTiming.PCD},
+                CustomEventTiming.CD => new[] {CustomEventTiming.ACD, CustomEventTiming.CD, CustomEventTiming.PCD},
+                CustomEventTiming.PCD => new[] {CustomEventTiming.ACD, CustomEventTiming.CD, CustomEventTiming.PCD},
+                CustomEventTiming.ACV => new[] {CustomEventTiming.ACV, CustomEventTiming.CV, CustomEventTiming.PCV},
+                CustomEventTiming.CV => new[] {CustomEventTiming.ACV, CustomEventTiming.CV, CustomEventTiming.PCV},
+                CustomEventTiming.PCV => new[] {CustomEventTiming.ACV, CustomEventTiming.CV, CustomEventTiming.PCV},
+                _ => Array.Empty<CustomEventTiming>()
+            };
+        }
+
+        public static Tuple<DateTime, DateTime> GetRelativeDayInterval(DateTime date, string timezone)
+        {
+            var startLocalDate = GetRelativeStartOfDay(date, timezone);
+            date = startLocalDate.ToDateTimeUtc();
+            var endTime = date.AddDays(1);
+            return new Tuple<DateTime, DateTime>(date, endTime);
+        }
+
+        private static ZonedDateTime GetRelativeStartOfDay(DateTime date, string timezone)
+        {
+            if (date.Kind != DateTimeKind.Utc)
+            {
+                date = date.ToUniversalTime();
+            }
+
+            var instant = Instant.FromDateTimeUtc(date);
+            var timezoneInfo = DateTimeZoneProviders.Tzdb[timezone];
+            var startZonedDateTime = instant.InZone(timezoneInfo);
+            var startLocalDate = startZonedDateTime.Date.AtStartOfDayInZone(timezoneInfo);
+            return startLocalDate;
         }
     }
 }
