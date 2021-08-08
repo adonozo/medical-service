@@ -53,43 +53,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             throw new NotImplementedException();
         }
 
-        public async Task<Bundle> GetMedicationRequests(string patientEmailOrId, DateTime dateTime,
-            CustomEventTiming timing, bool insulin, string timezone = "UTC")
-        {
-            var patient = await patientDao.GetPatientByIdOrEmail(patientEmailOrId);
-            var type = insulin ? EventType.InsulinDosage : EventType.MedicationDosage;
-            var timings = EventTimingMapper.GetRelatedTimings(timing);
-            IEnumerable<HealthEvent> events;
-            if (timings.Length == 0)
-            {
-                var (start, end) = EventTimingMapper.GetIntervalForPatient(patient, dateTime, timing, timezone, DefaultOffset);
-                events = await eventDao.GetEvents(patient.Id, type, start, end);
-            }
-            else
-            {
-                var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, "UTC");
-                events = await eventDao.GetEvents(patient.Id, type, start, end, timings);
-            }
-
-            var bundle = ResourceUtils.GenerateEmptyBundle();
-            var medicationRequests = await GetMedicationBundle(events);
-
-            bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
-                .ToList();
-            return bundle;
-        }
-
-        public async Task<Bundle> GetServiceRequests(string patientEmailOrId, DateTime dateTime, CustomEventTiming timing)
-        {
-            var patient = await patientDao.GetPatientByIdOrEmail(patientEmailOrId);
-            var events = await eventDao.GetEvents(patient.Id, EventType.Measurement, dateTime, timing);
-            var bundle = ResourceUtils.GenerateEmptyBundle();
-            var serviceRequests = await GetServiceBundle(events);
-            bundle.Entry = serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
-                .ToList();
-            return bundle;
-        }
-
         public async Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming, DateTime dateTime)
         {
             var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
@@ -206,6 +169,56 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 CustomEventTiming.PCV => dateTime.AddMinutes(DefaultTimingOffset * -1),
                 _ => dateTime
             };
+        }
+        
+        private async Task<Bundle> GetMedicationRequests(string patientEmailOrId, DateTime dateTime,
+            CustomEventTiming timing, bool insulin, string timezone = "UTC")
+        {
+            var patient = await patientDao.GetPatientByIdOrEmail(patientEmailOrId);
+            var type = insulin ? EventType.InsulinDosage : EventType.MedicationDosage;
+            var timings = EventTimingMapper.GetRelatedTimings(timing);
+            IEnumerable<HealthEvent> events;
+            if (timings.Length == 0)
+            {
+                var (start, end) = EventTimingMapper.GetIntervalForPatient(patient, dateTime, timing, timezone, DefaultOffset);
+                events = await eventDao.GetEvents(patient.Id, type, start, end);
+            }
+            else
+            {
+                var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, "UTC");
+                events = await eventDao.GetEvents(patient.Id, type, start, end, timings);
+            }
+
+            var bundle = ResourceUtils.GenerateEmptyBundle();
+            var medicationRequests = await GetMedicationBundle(events);
+
+            bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
+                .ToList();
+            return bundle;
+        }
+
+        private async Task<Bundle> GetServiceRequests(string patientEmailOrId, DateTime dateTime,
+            CustomEventTiming timing, string timezone = "UTC")
+        {
+            var patient = await patientDao.GetPatientByIdOrEmail(patientEmailOrId);
+            var timings = EventTimingMapper.GetRelatedTimings(timing);
+            IEnumerable<HealthEvent> events;
+            if (timings.Length == 0)
+            {
+                var (start, end) = EventTimingMapper.GetIntervalForPatient(patient, dateTime, timing, timezone, DefaultOffset);
+                events = await eventDao.GetEvents(patient.Id, EventType.Measurement, start, end);
+            }
+            else
+            {
+                var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, "UTC");
+                events = await eventDao.GetEvents(patient.Id, EventType.Measurement, start, end, timings);
+            }
+
+            var bundle = ResourceUtils.GenerateEmptyBundle();
+            var serviceRequests = await GetServiceBundle(events);
+            bundle.Entry = serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
+                .ToList();
+            return bundle;
         }
 
         private async Task<List<MedicationRequest>> GetMedicationBundle(IEnumerable<HealthEvent> events)
