@@ -53,13 +53,38 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             throw new NotImplementedException();
         }
 
+        public async Task<Bundle> GetNextRequests(string patientEmailOrId, AlexaRequestType type)
+        {
+            var patient = await ResourceUtils.ValidateObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientEmailOrId),
+                "Unable to find patient for the Observation", new KeyNotFoundException());
+            if (type is not (AlexaRequestType.Glucose or AlexaRequestType.Insulin or AlexaRequestType.Medication))
+            {
+                throw new NotSupportedException("Request type not supported");
+            }
+
+            var evenType = ResourceUtils.MapRequestToEventType(type);
+            var events = await this.eventDao.GetNextEvents(patient.Id, evenType);
+            var bundle = await this.GenerateBundle(events.ToList());
+            return bundle;
+        }
+
+        public async Task<Bundle> GetNextRequests(string patientEmailOrId)
+        {
+            var patient = await ResourceUtils.ValidateObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientEmailOrId),
+                "Unable to find patient for the Observation", new KeyNotFoundException());
+            var types = new[] {EventType.Measurement, EventType.InsulinDosage, EventType.MedicationDosage};
+            var events = await this.eventDao.GetNextEvents(patient.Id, types);
+            var bundle = await this.GenerateBundle(events.ToList());
+            return bundle;
+        }
+
         public async Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming, DateTime dateTime)
         {
-            var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
-            if (patient == null)
-            {
-                throw new KeyNotFoundException();
-            }
+            var patient = await ResourceUtils.ValidateObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
+                "Unable to find patient for the Observation", new KeyNotFoundException());
 
             patient.ExactEventTimes ??= new Dictionary<CustomEventTiming, DateTime>();
             patient.ExactEventTimes = SetRelatedTimings(patient, eventTiming, dateTime);
@@ -70,13 +95,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 
         public async Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, DateTime startDate)
         {
-            var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
-            var medicationRequest =
-                await this.medicationRequestDao.GetMedicationRequestForDosage(patient.Id, dosageId);
-            if (medicationRequest == null)
-            {
-                throw new KeyNotFoundException();
-            }
+            var patient = await ResourceUtils.ValidateObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
+                "Unable to find patient for the Observation", new KeyNotFoundException());
+            var medicationRequest = await ResourceUtils.ValidateObject(
+                () => this.medicationRequestDao.GetMedicationRequestForDosage(patient.Id, dosageId),
+                "Unable to find a medication for the dosage", new KeyNotFoundException());
 
             patient.ResourceStartDate ??= new Dictionary<string, DateTime>();
             patient.ResourceStartDate[dosageId] = startDate.Date;
@@ -189,11 +213,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 events = await eventDao.GetEvents(patient.Id, type, start, end, timings);
             }
 
-            var bundle = ResourceUtils.GenerateEmptyBundle();
-            var medicationRequests = await GetMedicationBundle(events);
-
-            bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
-                .ToList();
+            var bundle = await this.GenerateBundle(events.ToList());
             return bundle;
         }
 
@@ -214,10 +234,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 events = await eventDao.GetEvents(patient.Id, EventType.Measurement, start, end, timings);
             }
 
-            var bundle = ResourceUtils.GenerateEmptyBundle();
-            var serviceRequests = await GetServiceBundle(events);
-            bundle.Entry = serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
-                .ToList();
+            var bundle = await this.GenerateBundle(events.ToList());
             return bundle;
         }
         
@@ -239,15 +256,20 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 events = await eventDao.GetEvents(patient.Id, types, start, end, timings);
             }
 
+            var bundle = await this.GenerateBundle(events.ToList());
+            return bundle;
+        }
+
+        private async Task<Bundle> GenerateBundle(IReadOnlyCollection<HealthEvent> healthEvents)
+        {
             var bundle = ResourceUtils.GenerateEmptyBundle();
-            var healthEvents = events.ToList();
             var serviceEvents = healthEvents.Where(healthEvent => healthEvent.Resource.EventType == EventType.Measurement).ToArray();
-            var serviceRequests = await GetServiceBundle(serviceEvents);
+            var serviceRequests = serviceEvents.Any() ? await GetServiceBundle(serviceEvents) : new List<ServiceRequest>();
             var serviceEntries = serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
                 .ToList();
             var medicationEvents = healthEvents.Where(healthEvent =>
                 healthEvent.Resource.EventType is EventType.MedicationDosage or EventType.InsulinDosage).ToArray();
-            var medicationRequests = await GetMedicationBundle(medicationEvents);
+            var medicationRequests = medicationEvents.Any() ? await GetMedicationBundle(medicationEvents) : new List<MedicationRequest>();
             var medicationEntries = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
                 .ToList();
             serviceEntries.AddRange(medicationEntries);

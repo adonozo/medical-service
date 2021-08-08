@@ -9,7 +9,11 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
     {
         public Task<Bundle> ProcessRequest(string patientEmailOrId, AlexaRequestType type, DateTime dateTime,
             CustomEventTiming timing, string timezone = "UTC");
+
+        public Task<Bundle> GetNextRequests(string patientEmailOrId, AlexaRequestType type);
         
+        public Task<Bundle> GetNextRequests(string patientEmailOrId);
+
         /// <summary>
         /// Updates / Adds a specific time for a event timing to the patient's list. e.g., a specific time for breakfast.  
         /// </summary>

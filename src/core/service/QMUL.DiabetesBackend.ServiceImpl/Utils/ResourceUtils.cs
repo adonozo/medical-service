@@ -53,5 +53,16 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 
             return result;
         }
+
+        public static EventType MapRequestToEventType(AlexaRequestType requestType)
+        {
+            return requestType switch
+            {
+                AlexaRequestType.Medication => EventType.MedicationDosage,
+                AlexaRequestType.Insulin => EventType.InsulinDosage,
+                AlexaRequestType.Glucose => EventType.Measurement,
+                _ => throw new ArgumentOutOfRangeException(nameof(requestType), requestType, "Invalid request type")
+            };
+        }
     }
 }
