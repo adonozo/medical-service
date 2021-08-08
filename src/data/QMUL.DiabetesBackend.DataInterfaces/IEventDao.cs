@@ -84,5 +84,10 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="time">The time to change. Date is ignored</param>
         /// <returns>A boolean value to indicate if the update was successful.</returns>
         public Task<bool> UpdateEventsTiming(string patientId, CustomEventTiming timing, DateTime time);
+
+        public Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime start, DateTime end);
+
+        public Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime start, DateTime end,
+            CustomEventTiming[] timings);
     }
 }
