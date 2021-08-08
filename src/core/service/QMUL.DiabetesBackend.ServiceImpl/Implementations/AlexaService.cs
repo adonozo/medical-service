@@ -37,15 +37,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             switch (type)
             {
                 case AlexaRequestType.Medication:
-                    return await GetMedicationRequests(patientEmailOrId, dateTime, timing, false);
+                    return await GetMedicationRequests(patientEmailOrId, dateTime, timing, false, timezone);
                 case AlexaRequestType.Insulin:
-                    return await GetMedicationRequests(patientEmailOrId, dateTime, timing, true);
+                    return await GetMedicationRequests(patientEmailOrId, dateTime, timing, true, timezone);
                 case AlexaRequestType.Glucose:
-                    return await GetServiceRequests(patientEmailOrId, dateTime, timing);
+                    return await GetServiceRequests(patientEmailOrId, dateTime, timing, timezone);
                 case AlexaRequestType.Appointment:
                     break;
                 case AlexaRequestType.CarePlan:
-                    break;
+                    return await GetCarePlan(patientEmailOrId, dateTime, timing, timezone);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
@@ -185,7 +185,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             }
             else
             {
-                var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, "UTC");
+                var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, timezone);
                 events = await eventDao.GetEvents(patient.Id, type, start, end, timings);
             }
 
@@ -210,7 +210,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             }
             else
             {
-                var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, "UTC");
+                var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, timezone);
                 events = await eventDao.GetEvents(patient.Id, EventType.Measurement, start, end, timings);
             }
 
@@ -218,6 +218,40 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var serviceRequests = await GetServiceBundle(events);
             bundle.Entry = serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
                 .ToList();
+            return bundle;
+        }
+        
+        private async Task<Bundle> GetCarePlan(string patientEmailOrId, DateTime dateTime,
+            CustomEventTiming timing, string timezone = "UTC")
+        {
+            var patient = await patientDao.GetPatientByIdOrEmail(patientEmailOrId);
+            var timings = EventTimingMapper.GetRelatedTimings(timing);
+            var types = new[] {EventType.Measurement, EventType.InsulinDosage, EventType.MedicationDosage} ;
+            IEnumerable<HealthEvent> events;
+            if (timings.Length == 0)
+            {
+                var (start, end) = EventTimingMapper.GetIntervalForPatient(patient, dateTime, timing, timezone, DefaultOffset);
+                events = await eventDao.GetEvents(patient.Id, types, start, end);
+            }
+            else
+            {
+                var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, timezone);
+                events = await eventDao.GetEvents(patient.Id, types, start, end, timings);
+            }
+
+            var bundle = ResourceUtils.GenerateEmptyBundle();
+            var healthEvents = events.ToList();
+            var serviceEvents = healthEvents.Where(healthEvent => healthEvent.Resource.EventType == EventType.Measurement).ToArray();
+            var serviceRequests = await GetServiceBundle(serviceEvents);
+            var serviceEntries = serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
+                .ToList();
+            var medicationEvents = healthEvents.Where(healthEvent =>
+                healthEvent.Resource.EventType is EventType.MedicationDosage or EventType.InsulinDosage).ToArray();
+            var medicationRequests = await GetMedicationBundle(medicationEvents);
+            var medicationEntries = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
+                .ToList();
+            serviceEntries.AddRange(medicationEntries);
+            bundle.Entry = serviceEntries;
             return bundle;
         }
 

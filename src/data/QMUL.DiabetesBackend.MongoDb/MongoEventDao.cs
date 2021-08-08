@@ -185,5 +185,29 @@ namespace QMUL.DiabetesBackend.MongoDb
             var result = this.eventCollection.Find(timingFilter).Project(mongoEvent => mongoEvent.ToHealthEvent());
             return await result.ToListAsync();
         }
+
+        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType[] types, DateTime start, DateTime end)
+        {
+            var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.Resource.EventType, types);
+            filter &= this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
+                                                               && healthEvent.EventDateTime > start
+                                                               && healthEvent.EventDateTime < end)
+                .Filter;
+            var result = this.eventCollection.Find(filter).Project(mongoEvent => mongoEvent.ToHealthEvent());
+            return await result.ToListAsync();
+        }
+
+        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType[] types, DateTime start,
+            DateTime end, CustomEventTiming[] timings)
+        {
+            var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.EventTiming, timings);
+            filter &= Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.Resource.EventType, types);
+            filter &= this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
+                                                                     && healthEvent.EventDateTime > start
+                                                                     && healthEvent.EventDateTime < end)
+                .Filter;
+            var result = this.eventCollection.Find(filter).Project(mongoEvent => mongoEvent.ToHealthEvent());
+            return await result.ToListAsync();
+        }
     }
 }
