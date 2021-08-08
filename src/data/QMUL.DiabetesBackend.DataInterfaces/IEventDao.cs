@@ -94,5 +94,9 @@ namespace QMUL.DiabetesBackend.DataInterfaces
 
         public Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType[] types, DateTime start, DateTime end,
             CustomEventTiming[] timings);
+
+        public Task<IEnumerable<HealthEvent>> GetNextEvents(string patientId, EventType type);
+
+        public Task<IEnumerable<HealthEvent>> GetNextEvents(string patientId, EventType[] types);
     }
 }

@@ -209,5 +209,32 @@ namespace QMUL.DiabetesBackend.MongoDb
             var result = this.eventCollection.Find(filter).Project(mongoEvent => mongoEvent.ToHealthEvent());
             return await result.ToListAsync();
         }
+
+        public async Task<IEnumerable<HealthEvent>> GetNextEvents(string patientId, EventType type)
+        {
+            var date = DateTime.UtcNow;
+            var sort = Builders<MongoEvent>.Sort.Ascending(healthEvent => healthEvent.EventTiming);
+            var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
+                                                                  && healthEvent.Resource.EventType == type
+                                                                  && healthEvent.EventDateTime > date )
+                .Sort(sort)
+                .Limit(5)
+                .Project(mongoEvent => mongoEvent.ToHealthEvent());
+            return await result.ToListAsync();
+        }
+
+        public async Task<IEnumerable<HealthEvent>> GetNextEvents(string patientId, EventType[] types)
+        {
+            var date = DateTime.UtcNow;
+            var sort = Builders<MongoEvent>.Sort.Ascending(healthEvent => healthEvent.EventTiming);
+            var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.Resource.EventType, types);
+            filter &= this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
+                                                                  && healthEvent.EventDateTime > date ).Filter;
+            var result = this.eventCollection.Find(filter)
+                .Sort(sort)
+                .Limit(5)
+                .Project(mongoEvent => mongoEvent.ToHealthEvent());
+            return await result.ToListAsync();
+        }
     }
 }
