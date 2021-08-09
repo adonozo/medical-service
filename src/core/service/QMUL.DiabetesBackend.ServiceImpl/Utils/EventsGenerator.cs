@@ -92,7 +92,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 
             if (timing.Repeat.DayOfWeek.Any())
             {
-                return this.GenerateWeaklyEvents(days, startDate, timing.Repeat.DayOfWeek as DaysOfWeek?[]);
+                return this.GenerateWeaklyEvents(days, startDate, timing.Repeat.DayOfWeek);
             }
 
             return timing.Repeat.Period switch
@@ -116,15 +116,16 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             return events;
         }
 
-        private IEnumerable<HealthEvent> GenerateWeaklyEvents(int days, DateTime startDate, DaysOfWeek?[] daysOfWeek)
+        private IEnumerable<HealthEvent> GenerateWeaklyEvents(int days, DateTime startDate, IEnumerable<DaysOfWeek?> daysOfWeek)
         {
             var events = new List<HealthEvent>();
+            var daysOfWeeks = daysOfWeek as DaysOfWeek?[] ?? daysOfWeek.ToArray();
             for (var i = 0; i < days; i++)
             {
                 var day = startDate.AddDays(i).DayOfWeek;
-                if (Array.Exists(daysOfWeek, item => item.ToDayOfWeek() == day))
+                if (daysOfWeeks.Any(item => item.ToDayOfWeek() == day))
                 {
-                    events.AddRange(this.GenerateEventsOnSingleFrequency(startDate));
+                    events.AddRange(this.GenerateEventsOnSingleFrequency(startDate.AddDays(i)));
                 }
             }
 
@@ -195,11 +196,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             var hourOfDistance = 24 / this.timing.Repeat.Frequency ?? 24;
             for (var i = 0; i < totalOccurrences; i++)
             {
-                startDate = startDate.AddHours(hourOfDistance * i);
+                var date = startDate.AddHours(hourOfDistance * i);
                 var healthEvent = new HealthEvent
                 {
                     PatientId = this.patient.Id,
-                    EventDateTime = startDate,
+                    EventDateTime = date,
                     ExactTimeIsSetup = true,
                     EventTiming = CustomEventTiming.EXACT,
                     Resource = this.referenceResource
