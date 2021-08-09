@@ -84,26 +84,24 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                     days = duration.Value == null
                         ? throw new InvalidOperationException("Duration is not defined")
                         : (int) duration.Value;
-                    var startTimeExits = patient.ResourceStartDate.ContainsKey(this.referenceResource.EventReferenceId);
-                    startDate = startTimeExits
-                        ? patient.ResourceStartDate[this.referenceResource.EventReferenceId]
-                        : DateTime.UtcNow;
+                    startDate = this.GetPatientTimeOrDefault();
                     break;
                 default:
                     throw new InvalidOperationException("Dosage does not have a valid timing");
-            }
-
-            if (timing.Repeat.Period == 1 && timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D)
-            {
-                return this.GenerateDailyEvents(days, startDate);
             }
 
             if (timing.Repeat.DayOfWeek.Any())
             {
                 return this.GenerateWeaklyEvents(days, startDate, timing.Repeat.DayOfWeek as DaysOfWeek?[]);
             }
-            
-            throw new InvalidOperationException("Dosage timing not supported yet");
+
+            return timing.Repeat.Period switch
+            {
+                1 when timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D && timing.Repeat.Frequency > 1 => this
+                    .GenerateEventsOnMultipleFrequency(days, startDate),
+                1 when timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D => this.GenerateDailyEvents(days, startDate),
+                _ => throw new InvalidOperationException("Dosage timing not supported yet")
+            };
         }
 
         private IEnumerable<HealthEvent> GenerateDailyEvents(int days, DateTime startDate)
@@ -112,7 +110,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             for (var i = 0; i < days; i++)
             {
                 var day = startDate.AddDays(i);
-                events.AddRange(this.GenerateEventsOnFrequency(day));
+                events.AddRange(this.GenerateEventsOnSingleFrequency(day));
             }
 
             return events;
@@ -126,14 +124,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 var day = startDate.AddDays(i).DayOfWeek;
                 if (Array.Exists(daysOfWeek, item => item.ToDayOfWeek() == day))
                 {
-                    events.AddRange(this.GenerateEventsOnFrequency(startDate));
+                    events.AddRange(this.GenerateEventsOnSingleFrequency(startDate));
                 }
             }
 
             return events;
         }
 
-        private IEnumerable<HealthEvent> GenerateEventsOnFrequency(DateTime date)
+        private IEnumerable<HealthEvent> GenerateEventsOnSingleFrequency(DateTime date)
         {
             var events = new List<HealthEvent>();
             if (this.timing.Repeat.TimeOfDay.Any())
@@ -174,12 +172,41 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                     events.Add(healthEvent);
                 }
             }
-            // TODO missing once a day, twice a day, etc... Also needs a exact time from the patient
             else
             {
                 throw new InvalidOperationException("Dosage does not have a valid frequency by day");
             }
             
+            return events;
+        }
+
+        private DateTime GetPatientTimeOrDefault()
+        {
+            var startTimeExits = patient.ResourceStartDate.ContainsKey(this.referenceResource.EventReferenceId);
+            return startTimeExits
+                ? patient.ResourceStartDate[this.referenceResource.EventReferenceId]
+                : DateTime.UtcNow;
+        }
+
+        private IEnumerable<HealthEvent> GenerateEventsOnMultipleFrequency(int days, DateTime startDate)
+        {
+            var events = new List<HealthEvent>();
+            var totalOccurrences = days * this.timing.Repeat.Frequency ?? 0;
+            var hourOfDistance = 24 / this.timing.Repeat.Frequency ?? 24;
+            for (var i = 0; i < totalOccurrences; i++)
+            {
+                startDate = startDate.AddHours(hourOfDistance * i);
+                var healthEvent = new HealthEvent
+                {
+                    PatientId = this.patient.Id,
+                    EventDateTime = startDate,
+                    ExactTimeIsSetup = true,
+                    EventTiming = CustomEventTiming.EXACT,
+                    Resource = this.referenceResource
+                };
+                events.Add(healthEvent);
+            }
+
             return events;
         }
     }
