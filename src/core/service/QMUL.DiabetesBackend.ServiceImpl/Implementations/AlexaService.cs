@@ -103,7 +103,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 "Unable to find a medication for the dosage", new KeyNotFoundException());
 
             patient.ResourceStartDate ??= new Dictionary<string, DateTime>();
-            patient.ResourceStartDate[dosageId] = startDate.Date;
+            patient.ResourceStartDate[dosageId] = startDate;
             await this.UpdatePatient(patient);
 
             var deleteEvents = await this.eventDao.DeleteEventSeries(dosageId);
