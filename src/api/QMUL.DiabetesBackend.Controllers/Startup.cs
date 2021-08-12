@@ -9,7 +9,6 @@ using QMUL.DiabetesBackend.DataInterfaces;
 using QMUL.DiabetesBackend.DataMemory;
 using QMUL.DiabetesBackend.Model;
 using QMUL.DiabetesBackend.MongoDb;
-using QMUL.DiabetesBackend.ServiceImpl;
 using QMUL.DiabetesBackend.ServiceImpl.Implementations;
 using QMUL.DiabetesBackend.ServiceInterfaces;
 
@@ -27,6 +26,13 @@ namespace QMUL.DiabetesBackend.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                });
+            });
             services.AddControllers().AddNewtonsoftJson();
             services.AddSwaggerGen(c =>
             {
@@ -65,9 +71,9 @@ namespace QMUL.DiabetesBackend.Api
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "QMUL.DiabetesBackend.Controllers v1"));
             }
 
-            app.UseHttpsRedirection();
-
             app.UseRouting();
+
+            app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
             app.UseAuthorization();
 

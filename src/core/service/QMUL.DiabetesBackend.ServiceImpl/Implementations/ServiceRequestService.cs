@@ -23,8 +23,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 
         public async Task<ServiceRequest> CreateServiceRequest(ServiceRequest request)
         {
+            var patient = await ResourceUtils.ValidateObject(
+                () => this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId),
+                "Unable to find patient for the Observation", new KeyNotFoundException());
             var serviceRequest = await this.serviceRequestDao.CreateServiceRequest(request);
-            var patient = await this.patientDao.GetPatientByIdOrEmail(serviceRequest.Subject.ElementId);
             var events = EventsGenerator.GenerateEventsFrom(serviceRequest, patient);
             var eventsResult = await this.eventDao.CreateEvents(events);
             if (!eventsResult)
