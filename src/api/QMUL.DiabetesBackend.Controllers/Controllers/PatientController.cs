@@ -106,8 +106,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         {
             try
             {
-                var result = await this.patientService.GetPatientCarePlans(idOrEmail);
-                return this.Ok(result);
+                var result = await this.carePlanService.GetCarePlanFor(idOrEmail);
+                return this.Ok(result.ToJObject());
             }
             catch (KeyNotFoundException)
             {

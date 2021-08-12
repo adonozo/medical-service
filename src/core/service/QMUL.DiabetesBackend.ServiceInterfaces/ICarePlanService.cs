@@ -12,7 +12,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
 
         public Task<Bundle> GetActiveCarePlans(string patientIdOrEmail);
 
-        public List<CarePlan> GetCarePlanFor(string patientId);
+        public Task<Bundle> GetCarePlanFor(string patientId);
 
         public CarePlan UpdateCarePlan(string id, CarePlan carePlan);
 

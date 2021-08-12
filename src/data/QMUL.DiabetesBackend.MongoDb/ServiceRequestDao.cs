@@ -35,6 +35,14 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.FirstOrDefaultAsync();
         }
 
+        public async Task<List<ServiceRequest>> GetServiceRequestsFor(string patientId)
+        {
+            var result = this.serviceRequestCollection.Find(request =>
+                    request.PatientReference.ReferenceId == patientId)
+                .Project(mongoServiceRequest => mongoServiceRequest.ToServiceRequest());
+            return await result.ToListAsync();
+        }
+
         public async Task<List<ServiceRequest>> GetActiveServiceRequests(string patientId)
         {
             var result = this.serviceRequestCollection.Find(request =>

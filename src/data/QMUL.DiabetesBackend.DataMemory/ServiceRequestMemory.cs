@@ -69,6 +69,11 @@ namespace QMUL.DiabetesBackend.DataMemory
             return Task.FromResult(result);
         }
 
+        public Task<List<ServiceRequest>> GetServiceRequestsFor(string patientId)
+        {
+            return Task.FromResult(this.sampleRequests);
+        }
+
         public Task<List<ServiceRequest>> GetActiveServiceRequests(string patientId)
         {
             return Task.FromResult(this.sampleRequests);

@@ -10,6 +10,8 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         
         public Task<ServiceRequest> GetServiceRequest(string id);
 
+        public Task<List<ServiceRequest>> GetServiceRequestsFor(string patientId);
+
         public Task<List<ServiceRequest>> GetActiveServiceRequests(string patientId);
 
         public Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest actualRequest);

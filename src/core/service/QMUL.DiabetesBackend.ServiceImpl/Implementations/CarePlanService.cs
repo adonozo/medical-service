@@ -47,9 +47,19 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return bundle;
         }
 
-        public List<CarePlan> GetCarePlanFor(string patientId)
+        public async Task<Bundle> GetCarePlanFor(string patientEmailOrId)
         {
-            return this.carePlanDao.GetCarePlansFor(patientId);
+            var patient = await ResourceUtils.ValidateObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientEmailOrId),
+                "Unable to find patient for the Observation", new KeyNotFoundException());
+            var medicationRequests = await this.medicationRequestDao.GetMedicationRequestFor(patient.Id);
+            var serviceRequests = await this.serviceRequestDao.GetServiceRequestsFor(patient.Id);
+            var bundle = ResourceUtils.GenerateEmptyBundle();
+            bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
+                .ToList();
+            bundle.Entry.AddRange(serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
+                .ToList());
+            return bundle;
         }
 
         public CarePlan UpdateCarePlan(string id, CarePlan carePlan)

@@ -64,6 +64,14 @@ namespace QMUL.DiabetesBackend.MongoDb
             return result.Select(mongoMedicationRequest => mongoMedicationRequest.ToMedicationRequest()).ToList();
         }
 
+        public async Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId)
+        {
+            var result = this.medicationRequestCollection.Find(request =>
+                    request.PatientReference.ReferenceId == patientId)
+                .Project(mongoRequest => mongoRequest.ToMedicationRequest());
+            return await result.ToListAsync();
+        }
+
         public async Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId, DateTime dateTime, int intervalMin)
         {
             var startRange = dateTime.AddMinutes(intervalMin);
