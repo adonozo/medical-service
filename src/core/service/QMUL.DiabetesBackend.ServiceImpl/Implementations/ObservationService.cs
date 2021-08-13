@@ -41,6 +41,18 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return observation;
         }
 
+        public async Task<Bundle> GetAllObservationsFor(string patientId)
+        {
+            var patient = await ResourceUtils.ValidateObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientId),
+                "Unable to find patient for the Observation", new KeyNotFoundException());
+            var observations = await this.observationDao.GetAllObservationsFor(patient.Id);
+            var bundle = ResourceUtils.GenerateEmptyBundle();
+            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
+                .ToList();
+            return bundle;
+        }
+
         public async Task<Bundle> GetObservationsFor(string patientId, DateTime dateTime)
         {
             var patient = await ResourceUtils.ValidateObject(

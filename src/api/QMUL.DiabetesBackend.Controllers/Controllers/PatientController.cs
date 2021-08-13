@@ -260,6 +260,27 @@ namespace QMUL.DiabetesBackend.Api.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
+        
+        [HttpGet]
+        [Route("{idOrEmail}/all/observations/")]
+        public async Task<IActionResult> GetAllPatientObservations([FromRoute] string idOrEmail)
+        {
+            try
+            {
+                var result = await this.observationService.GetAllObservationsFor(idOrEmail);
+                return this.Ok(result.ToJObject());
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
 
         [HttpPut]
         [Route("{idOrEmail}/timing")]

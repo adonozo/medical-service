@@ -34,6 +34,14 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await cursor.FirstOrDefaultAsync();
         }
 
+        public async Task<List<Observation>> GetAllObservationsFor(string patientId)
+        {
+            var cursor = this.observationCollection.Find(observation =>
+                    observation.PatientReference.ReferenceId == patientId)
+                .Project(mongoObservation => mongoObservation.ToObservation());
+            return await cursor.ToListAsync();
+        }
+
         public async Task<List<Observation>> GetObservationsFor(string patientId, DateTime start, DateTime end)
         {
             var cursor = this.observationCollection.Find(observation =>

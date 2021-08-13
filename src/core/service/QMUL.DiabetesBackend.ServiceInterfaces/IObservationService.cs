@@ -10,6 +10,8 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         public Task<Observation> CreateObservation(Observation newObservation);
 
         public Task<Observation> GetSingleObservation(string observationId);
+        
+        public Task<Bundle> GetAllObservationsFor(string patientId);
 
         public Task<Bundle> GetObservationsFor(string patientId, DateTime dateTime);
 
