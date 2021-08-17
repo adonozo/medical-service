@@ -40,12 +40,12 @@ namespace QMUL.DiabetesBackend.Api
             });
 
             services.Configure<MongoDatabaseSettings>(Configuration.GetSection(nameof(MongoDatabaseSettings)));
-            services.AddSingleton<IMedicationDao, MedicationMemory>();
             services.AddSingleton<ITreatmentDosageDao, TreatmentMemory>();
+            services.AddSingleton<ICarePlanDao, CarePlanMemory>();
             services.AddSingleton<IDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<MongoDatabaseSettings>>().Value);
             services.AddSingleton<IMedicationRequestDao, MedicationRequestDao>();
-            services.AddSingleton<ICarePlanDao, CarePlanMemory>();
+            services.AddSingleton<IMedicationDao, MedicationDao>();
             services.AddSingleton<IEventDao, MongoEventDao>();
             services.AddSingleton<IPatientDao, PatientDao>();
             services.AddSingleton<IServiceRequestDao, ServiceRequestDao>();

@@ -12,14 +12,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     public class PatientService : IPatientService
     {
         private readonly IPatientDao patientDao;
-        private readonly ICarePlanDao carePlanDao;
         private readonly IMedicationRequestDao medicationRequestDao;
 
-        public PatientService(IPatientDao patientDao, ICarePlanDao carePlanDao,
-            IMedicationRequestDao medicationRequestDao)
+        public PatientService(IPatientDao patientDao, IMedicationRequestDao medicationRequestDao)
         {
             this.patientDao = patientDao;
-            this.carePlanDao = carePlanDao;
             this.medicationRequestDao = medicationRequestDao;
         }
 
@@ -42,17 +39,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             }
 
             return result;
-        }
-
-        public async Task<List<CarePlan>> GetPatientCarePlans(string patientIdOrEmail)
-        {
-            var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
-            if (patient == null)
-            {
-                throw new KeyNotFoundException();
-            }
-
-            return this.carePlanDao.GetCarePlansFor(patient.Id);
         }
 
         public async Task<Bundle> GetActiveMedicationRequests(string patientIdOrEmail)

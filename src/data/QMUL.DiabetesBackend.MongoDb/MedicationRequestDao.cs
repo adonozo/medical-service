@@ -107,7 +107,6 @@ namespace QMUL.DiabetesBackend.MongoDb
                     request.DosageInstructions.Any(instruction => timeCompare(instruction.Timing)));
             var requestList = await cursor.ToListAsync();
             
-            // TODO still need to consider day of week
             return requestList.Select(mongo => mongo.ToMedicationRequest()).ToList();
         }
 

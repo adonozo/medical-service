@@ -5,7 +5,7 @@ using QMUL.DiabetesBackend.DataInterfaces;
 
 namespace QMUL.DiabetesBackend.DataMemory
 {
-    public class MedicationMemory : IMedicationDao
+    public class MedicationMemory
     {
         #region SampleData
         private readonly List<Medication> sampleMedications;
