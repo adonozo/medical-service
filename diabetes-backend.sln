@@ -14,7 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{62F37995-061
 		api\medicationRequest-oral.json = api\medicationRequest-oral.json
 		api\medicationRequest.json = api\medicationRequest.json
 		api\patient.json = api\patient.json
-		api\patientTreatmentDossage.json = api\patientTreatmentDossage.json
 		api\serviceRequest.json = api\serviceRequest.json
 		api\swagger.yaml = api\swagger.yaml
 		api\timingDaily.json = api\timingDaily.json

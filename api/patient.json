@@ -1,56 +1,21 @@
 {
-  "resourceType": "Patient",
-  "id": "fb85c38d-5ea5-4263-ba00-3b9528d4c4b3",
-  "identifier": [
-    {
-      "use": "usual",
-      "value": "78860fa4-ec3a-4c2c-a0cf-c06a363f927b",
-      "period": {
-        "start": "2021-07-10"
-      },
-      "assigner": {
-        "display": "Alexa"
-      }
-    }
-  ],
-  "active": true,
-  "name": [
-    {
-      "use": "official",
-      "family": "Doe",
-      "given": [
-        "John"
-      ]
-    },
-    {
-      "use": "usual",
-      "given": [
-        "John"
-      ]
-    }
-  ],
-  "telecom": [
-    {
-      "system": "email",
-      "value": "j.doe@gmail.com",
-      "use": "home",
-      "rank": 1
-    },
-    {
-      "system": "phone",
-      "value": "(03) 3410 5613",
-      "use": "mobile",
-      "rank": 2
-    }
-  ],
-  "gender": "male",
-  "birthDate": "1974-12-25",
-  "_birthDate": {
-    "extension": [
-      {
-        "url": "http://hl7.org/fhir/StructureDefinition/patient-birthTime",
-        "valueDateTime": "1974-12-25T14:35:45-05:00"
-      }
-    ]
+  "id": "610060fc3101595f17be6529",
+  "alexaUserId": null,
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "jdoe@mail.com",
+  "exactEventTimes": {
+    "CM": "2021-08-17T07:00:00Z",
+    "ACM": "2021-08-17T06:40:00Z",
+    "PCM": "2021-08-17T07:20:00Z",
+    "CV": "2021-08-17T19:00:00Z",
+    "ACV": "2021-08-17T18:40:00Z",
+    "PCV": "2021-08-17T19:20:00Z",
+    "CD": "2021-08-17T12:00:00Z",
+    "ACD": "2021-08-17T11:40:00Z",
+    "PCD": "2021-08-17T12:20:00Z"
+  },
+  "resourceStartDate": {
+    "611c09e2d003a0d894f0b0c9": "2021-08-17T07:00:00Z"
   }
 }
