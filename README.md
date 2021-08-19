@@ -50,7 +50,7 @@ dotnet build
 
 ### Running the project
 
-After a successful build, execute the folowing command in a terminal, from the project's root folder: 
+After a successful build, execute the following command in a terminal, from the project's root folder: 
 
  ```bash
 dotnet run --project ./src/api/QMUL.DiabetesBackend.Controllers/QMUL.DiabetesBackend.Controllers.csproj
