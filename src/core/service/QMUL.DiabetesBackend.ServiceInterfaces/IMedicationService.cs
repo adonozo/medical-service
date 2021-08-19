@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Hl7.Fhir.Model;
-using Task = Hl7.Fhir.Model.Task;
 
 namespace QMUL.DiabetesBackend.ServiceInterfaces
 {

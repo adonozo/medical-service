@@ -37,108 +37,11 @@ namespace QMUL.DiabetesBackend.MongoDb
             }
         }
 
-        public async Task<bool> UpdateEvent(string eventId, HealthEvent healthEvent)
-        {
-            var mongoEvent = healthEvent.ToMongoEvent();
-            var result = await this.eventCollection.ReplaceOneAsync(item => item.Id == eventId, mongoEvent);
-            if (!result.IsAcknowledged)
-            {
-                throw new InvalidOperationException($"There was an error updating the event {eventId}");
-            }
-
-            var cursor = await this.eventCollection.FindAsync(item => item.Id == eventId);
-            var updatedEvent = await cursor.FirstOrDefaultAsync();
-            return updatedEvent != null;
-        }
-
         public async Task<bool> DeleteEventSeries(string referenceId)
         {
             var result = await
                 this.eventCollection.DeleteManyAsync(request => request.Resource.EventReferenceId == referenceId);
             return result.IsAcknowledged;
-        }
-
-        public async Task<IEnumerable<HealthEvent>> GetEvents(string referenceId)
-        {
-            var result =
-                await this.eventCollection.FindAsync(healthEvent => healthEvent.Resource.EventReferenceId == referenceId);
-            var events = await result.ToListAsync();
-            return events.Select(Mapper.ToHealthEvent);
-        }
-
-        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, DateTime dateTime, int offset)
-        {
-            var startDate = dateTime.AddMinutes(offset * -1);
-            var endDate = dateTime.AddMinutes(offset);
-            var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
-                                                                  && healthEvent.EventDateTime > startDate
-                                                                  && healthEvent.EventDateTime < endDate)
-                .Project(mongoEvent => mongoEvent.ToHealthEvent());
-            return await result.ToListAsync();
-        }
-
-        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime dateTime,
-            int offset)
-        {
-            var startDate = dateTime.AddMinutes(offset * -1);
-            var endDate = dateTime.AddMinutes(offset);
-            var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
-                                                                             && healthEvent.Resource.EventType == type
-                                                                             && healthEvent.ExactTimeIsSetup
-                                                                             && healthEvent.EventDateTime > startDate
-                                                                             && healthEvent.EventDateTime < endDate)
-                .Project(mongoEvent => mongoEvent.ToHealthEvent());
-            return await result.ToListAsync();
-        }
-
-        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, DateTime dateTime,
-            CustomEventTiming time)
-        {
-            var startDate = dateTime.Date;
-            var endDate = dateTime.Date.AddDays(1);
-            var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
-                                                                  && healthEvent.EventTiming == time
-                                                                  && healthEvent.EventDateTime > startDate 
-                                                                  && healthEvent.EventDateTime < endDate)
-                .Project(mongoEvent => mongoEvent.ToHealthEvent());
-            return await result.ToListAsync();
-        }
-
-        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime dateTime,
-            CustomEventTiming time)
-        {
-            var startDate = dateTime.Date;
-            var endDate = dateTime.Date.AddDays(1);
-            var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
-                                                                  && healthEvent.Resource.EventType == type
-                                                                  && healthEvent.EventTiming == time
-                                                                  && healthEvent.EventDateTime > startDate 
-                                                                  && healthEvent.EventDateTime < endDate)
-                .Project(mongoEvent => mongoEvent.ToHealthEvent());
-            return await result.ToListAsync();
-        }
-
-        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, DateTime dateTime)
-        {
-            var startDate = dateTime.Date;
-            var endDate = dateTime.Date.AddDays(1);
-            var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
-                                                                  && healthEvent.EventDateTime > startDate
-                                                                  && healthEvent.EventDateTime < endDate)
-                .Project(mongoEvent => mongoEvent.ToHealthEvent());
-            return await result.ToListAsync();
-        }
-
-        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime dateTime)
-        {
-            var startDate = dateTime.Date;
-            var endDate = dateTime.Date.AddDays(1);
-            var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
-                                                                  && healthEvent.Resource.EventType == type
-                                                                  && healthEvent.EventDateTime > startDate 
-                                                                  && healthEvent.EventDateTime < endDate)
-                .Project(mongoEvent => mongoEvent.ToHealthEvent());
-            return await result.ToListAsync();
         }
 
         public async Task<bool> UpdateEventsTiming(string patientId, CustomEventTiming timing, DateTime time)
