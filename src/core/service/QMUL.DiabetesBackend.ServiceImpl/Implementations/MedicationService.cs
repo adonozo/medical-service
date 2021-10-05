@@ -1,13 +1,16 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.DataInterfaces;
-using QMUL.DiabetesBackend.ServiceImpl.Utils;
-using QMUL.DiabetesBackend.ServiceInterfaces;
-
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using DataInterfaces;
+    using Hl7.Fhir.Model;
+    using ServiceInterfaces;
+    using Utils;
+
+    /// <summary>
+    /// Manages Medications
+    /// </summary>
     public class MedicationService : IMedicationService
     {
         private readonly IMedicationDao medicationDao;
@@ -17,6 +20,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.medicationDao = medicationDao;
         }
 
+        /// <inheritdoc/>>
         public async Task<Bundle> GetMedicationList()
         {
             var bundle = ResourceUtils.GenerateEmptyBundle();
@@ -26,6 +30,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return bundle;
         }
 
+        /// <inheritdoc/>>
         public async Task<Medication> GetSingleMedication(string id)
         {
             return await ResourceUtils.ValidateObject(
@@ -33,6 +38,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 "Unable to find the medication", new KeyNotFoundException());
         }
 
+        /// <inheritdoc/>>
         public async Task<Medication> CreateMedication(Medication newMedication)
         {
             return await this.medicationDao.CreateMedication(newMedication);
