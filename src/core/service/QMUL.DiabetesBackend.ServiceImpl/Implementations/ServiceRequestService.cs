@@ -1,13 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.DataInterfaces;
-using QMUL.DiabetesBackend.ServiceImpl.Utils;
-using QMUL.DiabetesBackend.ServiceInterfaces;
-
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using DataInterfaces;
+    using Hl7.Fhir.Model;
+    using ServiceInterfaces;
+    using Utils;
+
+    /// <summary>
+    /// Manages Services Requests for patients
+    /// </summary>
     public class ServiceRequestService : IServiceRequestService
     {
         private readonly IServiceRequestDao serviceRequestDao;
@@ -21,6 +24,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.eventDao = eventDao;
         }
 
+        /// <inheritdoc/>>
         public async Task<ServiceRequest> CreateServiceRequest(ServiceRequest request)
         {
             var patient = await ResourceUtils.ValidateObject(
@@ -37,11 +41,13 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return serviceRequest;
         }
 
+        /// <inheritdoc/>>
         public async Task<ServiceRequest> GetServiceRequest(string id)
         {
             return await this.serviceRequestDao.GetServiceRequest(id);
         }
 
+        /// <inheritdoc/>>
         public async Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest request)
         {
             var exists = this.serviceRequestDao.GetServiceRequest(id) != null;
@@ -53,6 +59,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             throw new KeyNotFoundException();
         }
 
+        /// <inheritdoc/>>
         public async Task<bool> DeleteServiceRequest(string id)
         {
             var exists = this.serviceRequestDao.GetServiceRequest(id) != null;
