@@ -1,14 +1,20 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.Model.Enums;
-using Task = System.Threading.Tasks.Task;
-
 namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
+    using System;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Hl7.Fhir.Model;
+    using Model.Enums;
+
+    /// <summary>
+    /// Resource util methods
+    /// </summary>
     public static class ResourceUtils
     {
+        /// <summary>
+        /// Creates an empty Bundle of type <see cref="Bundle.BundleType.Searchset"/> and time set to UtcNow
+        /// </summary>
+        /// <returns>A Bundle object</returns>
         public static Bundle GenerateEmptyBundle()
         {
             return new()
@@ -18,6 +24,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             };
         }
 
+        /// <summary>
+        /// Checks if the medication request contains an Insulin medication.
+        /// </summary>
+        /// <param name="request">The Medication Request</param>
+        /// <returns>True if the medication request contains insulin.</returns>
         public static bool IsInsulinResource(MedicationRequest request)
         {
             try
