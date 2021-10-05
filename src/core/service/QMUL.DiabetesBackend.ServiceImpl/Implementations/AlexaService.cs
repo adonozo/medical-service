@@ -1,18 +1,22 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.DataInterfaces;
-using QMUL.DiabetesBackend.Model;
-using QMUL.DiabetesBackend.Model.Enums;
-using QMUL.DiabetesBackend.ServiceImpl.Utils;
-using QMUL.DiabetesBackend.ServiceInterfaces;
-using Patient = QMUL.DiabetesBackend.Model.Patient;
-using Task = System.Threading.Tasks.Task;
-
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using DataInterfaces;
+    using Hl7.Fhir.Model;
+    using Model;
+    using Model.Enums;
+    using ServiceInterfaces;
+    using Utils;
+    using Patient = Model.Patient;
+    using Task = System.Threading.Tasks.Task;
+
+    /// <summary>
+    /// The Alexa Service handles requests for Alexa, getting the Bundle of medication and service requests, and creating
+    /// or updating patient settings (e.g., timing events).
+    /// </summary>
     public class AlexaService : IAlexaService
     {
         private readonly IPatientDao patientDao;
@@ -50,9 +54,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
 
-            throw new NotImplementedException();
+            throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }
 
+        /// <inheritdoc/>>
         public async Task<Bundle> GetNextRequests(string patientEmailOrId, AlexaRequestType type)
         {
             var patient = await ResourceUtils.ValidateObject(
@@ -69,6 +74,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return bundle;
         }
 
+        /// <inheritdoc/>>
         public async Task<Bundle> GetNextRequests(string patientEmailOrId)
         {
             var patient = await ResourceUtils.ValidateObject(
@@ -80,6 +86,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return bundle;
         }
 
+        /// <inheritdoc/>>
         public async Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming, DateTime dateTime)
         {
             var patient = await ResourceUtils.ValidateObject(
@@ -93,6 +100,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return await this.UpdateRelatedTimingEvents(patient, eventTiming, dateTime);
         }
 
+        /// <inheritdoc/>>
         public async Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, DateTime startDate)
         {
             var patient = await ResourceUtils.ValidateObject(
