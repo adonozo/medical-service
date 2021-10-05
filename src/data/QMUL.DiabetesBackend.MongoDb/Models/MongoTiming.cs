@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
-using MongoDB.Bson.Serialization.Attributes;
-
 namespace QMUL.DiabetesBackend.MongoDb.Models
 {
+    using System;
+    using System.Collections.Generic;
+    using MongoDB.Bson.Serialization.Attributes;
+
     public class MongoTiming
     {
         public int Frequency { get; set; }

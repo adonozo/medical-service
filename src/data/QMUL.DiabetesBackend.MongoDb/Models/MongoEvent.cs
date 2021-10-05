@@ -1,11 +1,11 @@
-using System;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-using QMUL.DiabetesBackend.Model;
-using QMUL.DiabetesBackend.Model.Enums;
-
 namespace QMUL.DiabetesBackend.MongoDb.Models
 {
+    using System;
+    using Model;
+    using Model.Enums;
+    using MongoDB.Bson;
+    using MongoDB.Bson.Serialization.Attributes;
+
     public class MongoEvent
     {
         [BsonId]
