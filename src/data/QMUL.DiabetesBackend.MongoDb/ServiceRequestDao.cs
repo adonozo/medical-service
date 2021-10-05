@@ -1,15 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using MongoDB.Driver;
-using QMUL.DiabetesBackend.DataInterfaces;
-using QMUL.DiabetesBackend.Model;
-using QMUL.DiabetesBackend.MongoDb.Models;
-using QMUL.DiabetesBackend.MongoDb.Utils;
-
 namespace QMUL.DiabetesBackend.MongoDb
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using DataInterfaces;
+    using Hl7.Fhir.Model;
+    using Model;
+    using Models;
+    using MongoDB.Driver;
+    using Utils;
+
+    /// <summary>
+    /// The Service Request Dao
+    /// </summary>
     public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     {
         private readonly IMongoCollection<MongoServiceRequest> serviceRequestCollection;
@@ -20,6 +23,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             this.serviceRequestCollection = this.Database.GetCollection<MongoServiceRequest>(CollectionName);
         }
 
+        /// <inheritdoc />
         public async Task<ServiceRequest> CreateServiceRequest(ServiceRequest newRequest)
         {
             var mongoRequest = newRequest.ToMongoServiceRequest();
@@ -28,6 +32,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await this.GetServiceRequest(mongoRequest.Id);
         }
 
+        /// <inheritdoc />
         public async Task<ServiceRequest> GetServiceRequest(string id)
         {
             var result = this.serviceRequestCollection.Find(request => request.Id == id)
@@ -35,6 +40,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.FirstOrDefaultAsync();
         }
 
+        /// <inheritdoc />
         public async Task<List<ServiceRequest>> GetServiceRequestsFor(string patientId)
         {
             var result = this.serviceRequestCollection.Find(request =>
@@ -43,6 +49,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.ToListAsync();
         }
 
+        /// <inheritdoc />
         public async Task<List<ServiceRequest>> GetActiveServiceRequests(string patientId)
         {
             var result = this.serviceRequestCollection.Find(request =>
@@ -52,6 +59,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.ToListAsync();
         }
 
+        /// <inheritdoc />
         public async Task<List<ServiceRequest>> GetServiceRequestsByIds(string[] ids)
         {
             var idFilter = Builders<MongoServiceRequest>.Filter
@@ -61,6 +69,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await cursor.ToListAsync();
         }
 
+        /// <inheritdoc />
         public async Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest actualRequest)
         {
             var mongoRequests = actualRequest.ToMongoServiceRequest();
@@ -73,6 +82,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             throw new InvalidOperationException($"there was an error updating the Medication Request {id}");
         }
 
+        /// <inheritdoc />
         public async Task<bool> DeleteServiceRequest(string id)
         {
             var result = await this.serviceRequestCollection.DeleteOneAsync(request => request.Id == id);

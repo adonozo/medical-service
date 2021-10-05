@@ -1,27 +1,31 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using MongoDB.Driver;
-using QMUL.DiabetesBackend.DataInterfaces;
-using QMUL.DiabetesBackend.Model;
-using QMUL.DiabetesBackend.Model.Enums;
-using QMUL.DiabetesBackend.MongoDb.Models;
-using QMUL.DiabetesBackend.MongoDb.Utils;
-
 namespace QMUL.DiabetesBackend.MongoDb
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using DataInterfaces;
+    using Model;
+    using Model.Enums;
+    using Models;
+    using MongoDB.Driver;
+    using Utils;
+
+    /// <summary>
+    /// The Mongo Event Dao
+    /// </summary>
     public class MongoEventDao : MongoDaoBase, IEventDao
     {
         private readonly IMongoCollection<MongoEvent> eventCollection;
         private const string CollectionName = "healthEvent";
         private const int DefaultLimit = 3;
-    
+
         public MongoEventDao(IDatabaseSettings settings) : base(settings)
         {
             this.eventCollection = this.Database.GetCollection<MongoEvent>(CollectionName);
         }
 
+        /// <inheritdoc />
         public async Task<bool> CreateEvents(IEnumerable<HealthEvent> events)
         {
             try
@@ -37,6 +41,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             }
         }
 
+        /// <inheritdoc />
         public async Task<bool> DeleteEventSeries(string referenceId)
         {
             var result = await
@@ -44,6 +49,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return result.IsAcknowledged;
         }
 
+        /// <inheritdoc />
         public async Task<bool> UpdateEventsTiming(string patientId, CustomEventTiming timing, DateTime time)
         {
             var currentTime = DateTime.UtcNow;
@@ -67,6 +73,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return true;
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime start, DateTime end)
         {
             var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
@@ -77,6 +84,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.ToListAsync();
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime start,
             DateTime end, CustomEventTiming[] timings)
         {
@@ -90,6 +98,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.ToListAsync();
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType[] types, DateTime start, DateTime end)
         {
             var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.Resource.EventType, types);
@@ -101,6 +110,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.ToListAsync();
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType[] types, DateTime start,
             DateTime end, CustomEventTiming[] timings)
         {
@@ -114,6 +124,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.ToListAsync();
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<HealthEvent>> GetNextEvents(string patientId, EventType type)
         {
             var date = DateTime.UtcNow;
@@ -127,6 +138,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.ToListAsync();
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<HealthEvent>> GetNextEvents(string patientId, EventType[] types)
         {
             var date = DateTime.UtcNow;

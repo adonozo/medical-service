@@ -1,16 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using QMUL.DiabetesBackend.DataInterfaces;
-using QMUL.DiabetesBackend.Model;
-using QMUL.DiabetesBackend.Model.Enums;
-using QMUL.DiabetesBackend.MongoDb.Models;
-using QMUL.DiabetesBackend.MongoDb.Utils;
-
 namespace QMUL.DiabetesBackend.MongoDb
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using DataInterfaces;
+    using Model;
+    using Model.Enums;
+    using Models;
+    using MongoDB.Bson;
+    using MongoDB.Driver;
+    using Utils;
+
+    /// <summary>
+    /// The Patient Dao.
+    /// </summary>
     public class PatientDao : MongoDaoBase, IPatientDao
     {
         private readonly IMongoCollection<MongoPatient> patientCollection;
@@ -21,6 +24,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             this.patientCollection = this.Database.GetCollection<MongoPatient>(CollectionName);
         }
 
+        /// <inheritdoc />
         public async Task<List<Patient>> GetPatients()
         {
             var result = this.patientCollection.Find(FilterDefinition<MongoPatient>.Empty)
@@ -28,6 +32,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.ToListAsync();
         }
 
+        /// <inheritdoc />
         public async Task<Patient> CreatePatient(Patient newPatient)
         {
             newPatient.ExactEventTimes ??= new Dictionary<CustomEventTiming, DateTime>();
@@ -37,6 +42,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await this.GetPatientByIdOrEmail(mongoPatient.Id);
         }
 
+        /// <inheritdoc />
         public async Task<Patient> GetPatientByIdOrEmail(string idOrEmail)
         {
             IFindFluent<MongoPatient, Patient> result;
@@ -54,6 +60,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.FirstOrDefaultAsync();
         }
 
+        /// <inheritdoc />
         public async Task<bool> UpdatePatient(Patient actualPatient)
         {
             var mongoPatient = actualPatient.ToMongoPatient();

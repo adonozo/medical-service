@@ -1,17 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using QMUL.DiabetesBackend.DataInterfaces;
-using QMUL.DiabetesBackend.Model;
-using QMUL.DiabetesBackend.MongoDb.Models;
-using QMUL.DiabetesBackend.MongoDb.Utils;
-
-namespace QMUL.DiabetesBackend.MongoDb
+﻿namespace QMUL.DiabetesBackend.MongoDb
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using DataInterfaces;
+    using Hl7.Fhir.Model;
+    using Model;
+    using Models;
+    using MongoDB.Bson;
+    using MongoDB.Driver;
+    using Utils;
+
+    /// <summary>
+    /// The Medication Request Dao
+    /// </summary>
     public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     {
         private readonly IMongoCollection<MongoMedicationRequest> medicationRequestCollection;
@@ -22,6 +25,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             this.medicationRequestCollection = this.Database.GetCollection<MongoMedicationRequest>(CollectionName);
         }
 
+        /// <inheritdoc />
         public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest newRequest)
         {
             var mongoRequest = newRequest.ToMongoMedicationRequest();
@@ -36,6 +40,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await this.GetMedicationRequest(mongoRequest.Id);
         }
 
+        /// <inheritdoc />
         public async Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest actualRequest)
         {
             var mongoRequest = actualRequest.ToMongoMedicationRequest();
@@ -48,6 +53,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             throw new InvalidOperationException($"there was an error updating the Medication Request {id}");
         }
 
+        /// <inheritdoc />
         public async Task<MedicationRequest> GetMedicationRequest(string id)
         {
             var cursorResult = await this.medicationRequestCollection.FindAsync(request => request.Id == id);
@@ -55,6 +61,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return result?.ToMedicationRequest();
         }
 
+        /// <inheritdoc />
         public async Task<List<MedicationRequest>> GetMedicationRequestsByIds(string[] ids)
         {
             var idFilter = Builders<MongoMedicationRequest>.Filter
@@ -64,6 +71,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return result.Select(mongoMedicationRequest => mongoMedicationRequest.ToMedicationRequest()).ToList();
         }
 
+        /// <inheritdoc />
         public async Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId)
         {
             var result = this.medicationRequestCollection.Find(request =>
@@ -72,12 +80,14 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.ToListAsync();
         }
 
+        /// <inheritdoc />
         public async Task<bool> DeleteMedicationRequest(string id)
         {
             var result = await this.medicationRequestCollection.DeleteOneAsync(request => request.Id == id);
             return result.IsAcknowledged;
         }
 
+        /// <inheritdoc />
         public async Task<MedicationRequest> GetMedicationRequestForDosage(string patientId, string dosageId)
         {
             var result = this.medicationRequestCollection.Find(request =>
@@ -87,6 +97,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.FirstOrDefaultAsync();
         }
 
+        /// <inheritdoc />
         public async Task<List<MedicationRequest>> GetActiveMedicationRequests(string patientId)
         {
             var result = this.medicationRequestCollection.Find(request =>
@@ -97,6 +108,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await result.ToListAsync();
         }
 
+        /// <inheritdoc />
         public async Task<List<MedicationRequest>> GetAllActiveMedicationRequests(string patientId)
         {
             var result = this.medicationRequestCollection.Find(request =>
