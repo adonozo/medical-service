@@ -1,13 +1,13 @@
-using System;
-using FluentAssertions;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.Model.Enums;
-using QMUL.DiabetesBackend.ServiceImpl.Utils;
-using Xunit;
-using static System.Enum;
-
 namespace QMUL.DiabetesBackend.ServiceImpl.Tests
 {
+    using System;
+    using FluentAssertions;
+    using Hl7.Fhir.Model;
+    using Model.Enums;
+    using Utils;
+    using Xunit;
+    using static System.Enum;
+
     public class EventTimingMapperTest
     {
         [Fact]
