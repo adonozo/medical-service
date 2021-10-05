@@ -1,13 +1,17 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.DataInterfaces;
-using QMUL.DiabetesBackend.ServiceImpl.Utils;
-using QMUL.DiabetesBackend.ServiceInterfaces;
-
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using DataInterfaces;
+    using Hl7.Fhir.Model;
+    using ServiceInterfaces;
+    using Utils;
+
+    /// <summary>
+    /// The care plan service handles care plans which are the set of medication and service requests for a patients
+    /// (a treatment). 
+    /// </summary>
     public class CarePlanService : ICarePlanService
     {
         private readonly IMedicationRequestDao medicationRequestDao;
@@ -22,6 +26,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.patientDao = patientDao;
         }
 
+        /// <inheritdoc/>>
         public async Task<Bundle> GetActiveCarePlans(string patientIdOrEmail)
         {
             var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
@@ -35,6 +40,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return bundle;
         }
 
+        /// <inheritdoc/>>
         public async Task<Bundle> GetCarePlanFor(string patientEmailOrId)
         {
             var patient = await ResourceUtils.ValidateObject(
