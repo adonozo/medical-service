@@ -1,13 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.Model;
-using QMUL.DiabetesBackend.Model.Enums;
-using Patient = QMUL.DiabetesBackend.Model.Patient;
-
 namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Hl7.Fhir.Model;
+    using Model;
+    using Model.Enums;
+    using Patient = Model.Patient;
+
+    /// <summary>
+    /// Generates health events based on a Resource frequency.
+    /// </summary>
     public class EventsGenerator
     {
         private readonly Patient patient;
@@ -48,6 +51,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             return events;
         }
 
+        /// <summary>
+        /// Creates a list of <see cref="HealthEvent"/> from a <see cref="ServiceRequest"/>
+        /// </summary>
+        /// <param name="request">The medication request</param>
+        /// <param name="patient">The medication request's subject</param>
+        /// <returns>A List of events for the medication request</returns>
         public static IEnumerable<HealthEvent> GenerateEventsFrom(ServiceRequest request, Patient patient)
         {
             var events = new List<HealthEvent>();
