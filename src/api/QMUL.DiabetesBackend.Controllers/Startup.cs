@@ -1,18 +1,18 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
-using QMUL.DiabetesBackend.DataInterfaces;
-using QMUL.DiabetesBackend.Model;
-using QMUL.DiabetesBackend.MongoDb;
-using QMUL.DiabetesBackend.ServiceImpl.Implementations;
-using QMUL.DiabetesBackend.ServiceInterfaces;
-
 namespace QMUL.DiabetesBackend.Api
 {
+    using DataInterfaces;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Options;
+    using Microsoft.OpenApi.Models;
+    using Model;
+    using MongoDb;
+    using ServiceImpl.Implementations;
+    using ServiceInterfaces;
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -64,7 +64,8 @@ namespace QMUL.DiabetesBackend.Api
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "QMUL.DiabetesBackend.Controllers v1"));
+                app.UseSwaggerUI(c =>
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "QMUL.DiabetesBackend.Controllers v1"));
             }
 
             app.UseRouting();
