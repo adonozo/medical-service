@@ -1,9 +1,12 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Patient = QMUL.DiabetesBackend.Model.Patient;
-
 namespace QMUL.DiabetesBackend.ServiceInterfaces
 {
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using Patient = Model.Patient;
+
+    /// <summary>
+    /// The Patient Service Interface.
+    /// </summary>
     public interface IPatientService
     {
         public Task<List<Patient>> GetPatientList();

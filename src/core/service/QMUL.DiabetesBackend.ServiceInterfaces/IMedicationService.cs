@@ -1,8 +1,11 @@
-﻿using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-
-namespace QMUL.DiabetesBackend.ServiceInterfaces
+﻿namespace QMUL.DiabetesBackend.ServiceInterfaces
 {
+    using System.Threading.Tasks;
+    using Hl7.Fhir.Model;
+
+    /// <summary>
+    /// The Medication Service Interface.
+    /// </summary>
     public interface IMedicationService
     {
         public Task<Bundle> GetMedicationList();

@@ -1,10 +1,13 @@
-using System;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.Model.Enums;
-
 namespace QMUL.DiabetesBackend.ServiceInterfaces
 {
+    using System;
+    using System.Threading.Tasks;
+    using Hl7.Fhir.Model;
+    using Model.Enums;
+
+    /// <summary>
+    /// The Observation Service Interface.
+    /// </summary>
     public interface IObservationService
     {
         public Task<Observation> CreateObservation(Observation newObservation);

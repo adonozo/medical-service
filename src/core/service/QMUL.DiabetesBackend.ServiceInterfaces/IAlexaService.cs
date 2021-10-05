@@ -1,10 +1,13 @@
-using System;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.Model.Enums;
-
 namespace QMUL.DiabetesBackend.ServiceInterfaces
 {
+    using System;
+    using System.Threading.Tasks;
+    using Hl7.Fhir.Model;
+    using Model.Enums;
+
+    /// <summary>
+    /// The Alexa Service Interface. Manages Alexa related requests.
+    /// </summary>
     public interface IAlexaService
     {
         public Task<Bundle> ProcessRequest(string patientEmailOrId, AlexaRequestType type, DateTime dateTime,

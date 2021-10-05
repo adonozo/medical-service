@@ -1,8 +1,11 @@
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-
 namespace QMUL.DiabetesBackend.ServiceInterfaces
 {
+    using System.Threading.Tasks;
+    using Hl7.Fhir.Model;
+
+    /// <summary>
+    /// The Service Request Service Interface
+    /// </summary>
     public interface IServiceRequestService
     {
         public Task<ServiceRequest> CreateServiceRequest(ServiceRequest request);
