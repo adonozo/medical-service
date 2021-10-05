@@ -21,16 +21,19 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         private readonly IAlexaService alexaService;
         private readonly ICarePlanService carePlanService;
         private readonly IObservationService observationService;
+        private readonly IMedicationRequestService medicationRequestService;
         private readonly ILogger<PatientController> logger;
 
         public PatientController(IPatientService patientService, IAlexaService alexaService,
-            ILogger<PatientController> logger, ICarePlanService carePlanService, IObservationService observationService)
+            ILogger<PatientController> logger, ICarePlanService carePlanService, IObservationService observationService, 
+            IMedicationRequestService medicationRequestService)
         {
             this.patientService = patientService;
             this.alexaService = alexaService;
             this.logger = logger;
             this.carePlanService = carePlanService;
             this.observationService = observationService;
+            this.medicationRequestService = medicationRequestService;
         }
 
         [HttpPost]
@@ -129,7 +132,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         {
             try
             {
-                var result = await this.patientService.GetActiveMedicationRequests(idOrEmail);
+                var result = await this.medicationRequestService.GetActiveMedicationRequests(idOrEmail);
                 return this.Ok(result.ToJObject());
             }
             catch (KeyNotFoundException)

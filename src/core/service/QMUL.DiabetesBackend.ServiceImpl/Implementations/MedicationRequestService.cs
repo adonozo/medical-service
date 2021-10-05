@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using DataInterfaces;
     using Hl7.Fhir.Model;
@@ -75,6 +76,22 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             }
 
             throw new KeyNotFoundException();
+        }
+
+        /// <inheritdoc/>>
+        public async Task<Bundle> GetActiveMedicationRequests(string patientIdOrEmail)
+        {
+            var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
+            if (patient == null)
+            {
+                throw new KeyNotFoundException();
+            }
+            
+            var bundle = ResourceUtils.GenerateEmptyBundle();
+            var medicationRequests = await this.medicationRequestDao.GetActiveMedicationRequests(patient.Id);
+            bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
+                .ToList();
+            return bundle;
         }
     }
 }

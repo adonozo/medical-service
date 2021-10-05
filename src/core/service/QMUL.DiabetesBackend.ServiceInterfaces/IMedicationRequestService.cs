@@ -12,5 +12,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         public Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest request);
 
         public Task<bool> DeleteMedicationRequest(string id);
+        
+        public Task<Bundle> GetActiveMedicationRequests(string patientIdOrEmail);
     }
 }
