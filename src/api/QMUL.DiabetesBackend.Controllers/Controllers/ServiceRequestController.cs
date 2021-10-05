@@ -1,15 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Serialization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using QMUL.DiabetesBackend.ServiceInterfaces;
-
 namespace QMUL.DiabetesBackend.Api.Controllers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using Hl7.Fhir.Model;
+    using Hl7.Fhir.Serialization;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
+    using ServiceInterfaces;
+
     [ApiController]
     [Route("serviceRequests/")]
     public class ServiceRequestController : ControllerBase
@@ -45,6 +45,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpPost]
+        [Route("")]
         public async Task<IActionResult> CreateServiceRequest([FromBody] object request)
         {
             try
