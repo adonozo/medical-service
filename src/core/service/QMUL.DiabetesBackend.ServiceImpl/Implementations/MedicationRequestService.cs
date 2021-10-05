@@ -1,13 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.DataInterfaces;
-using QMUL.DiabetesBackend.ServiceImpl.Utils;
-using QMUL.DiabetesBackend.ServiceInterfaces;
-
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using DataInterfaces;
+    using Hl7.Fhir.Model;
+    using ServiceInterfaces;
+    using Utils;
+
+    /// <summary>
+    /// Manages Medication Requests
+    /// </summary>
     public class MedicationRequestService : IMedicationRequestService
     {
         private readonly IMedicationRequestDao medicationRequestDao;
@@ -21,6 +24,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.patientDao = patientDao;
         }
 
+        /// <inheritdoc/>>
         public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
         {
             var patient = await ResourceUtils.ValidateObject(
@@ -37,6 +41,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return newRequest;
         }
 
+        /// <inheritdoc/>>
         public async Task<MedicationRequest> GetMedicationRequest(string id)
         {
             var result = await this.medicationRequestDao.GetMedicationRequest(id);
@@ -48,6 +53,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return result;
         }
 
+        /// <inheritdoc/>>
         public Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest request)
         {
             var exists = this.medicationRequestDao.GetMedicationRequest(id) != null;
@@ -59,6 +65,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             throw new KeyNotFoundException();
         }
 
+        /// <inheritdoc/>>
         public Task<bool> DeleteMedicationRequest(string id)
         {
             var exists = this.medicationRequestDao.GetMedicationRequest(id) != null;
