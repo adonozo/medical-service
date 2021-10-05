@@ -1,13 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.Model.Enums;
-using QMUL.DiabetesBackend.MongoDb.Models;
-using static System.Enum;
-
 namespace QMUL.DiabetesBackend.MongoDb.Utils
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Hl7.Fhir.Model;
+    using Model.Enums;
+    using Models;
+    using static System.Enum;
+
+    /// <summary>
+    /// Maps FHIR Observation objects into custom Mongo objects and vice-versa.
+    /// </summary>
     public static class ObservationMapper
     {
         public static MongoObservation ToMongoObservation(this Observation observation)

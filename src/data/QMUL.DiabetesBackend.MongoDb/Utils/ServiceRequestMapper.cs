@@ -1,10 +1,13 @@
-using System.Linq;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.MongoDb.Models;
-using static System.Enum;
-
 namespace QMUL.DiabetesBackend.MongoDb.Utils
 {
+    using System.Linq;
+    using Hl7.Fhir.Model;
+    using Models;
+    using static System.Enum;
+
+    /// <summary>
+    /// Maps FHIR Service Request objects into custom Mongo objects and vice-versa.
+    /// </summary>
     public static class ServiceRequestMapper
     {
         public static MongoServiceRequest ToMongoServiceRequest(this ServiceRequest request)

@@ -1,15 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.Model;
-using QMUL.DiabetesBackend.Model.Enums;
-using QMUL.DiabetesBackend.MongoDb.Models;
-using static System.Enum;
-using Patient = QMUL.DiabetesBackend.Model.Patient;
-
 namespace QMUL.DiabetesBackend.MongoDb.Utils
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Hl7.Fhir.Model;
+    using Model;
+    using Model.Enums;
+    using Models;
+    using static System.Enum;
+    using Patient = Model.Patient;
+
+    /// <summary>
+    /// Maps FHIR objects into custom Mongo objects and vice-versa.
+    /// </summary>
     public static class Mapper
     {
         public static Timing ToTiming(this MongoTiming timing)

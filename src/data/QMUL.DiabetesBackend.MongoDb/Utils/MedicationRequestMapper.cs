@@ -1,12 +1,15 @@
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.MongoDb.Models;
-using static System.Enum;
-
 namespace QMUL.DiabetesBackend.MongoDb.Utils
 {
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
+    using Hl7.Fhir.Model;
+    using Models;
+    using static System.Enum;
+
+    /// <summary>
+    /// Maps FHIR Medication Request objects into custom Mongo objects and vice-versa.
+    /// </summary>
     public static class MedicationRequestMapper
     {
         public static MedicationRequest ToMedicationRequest(this MongoMedicationRequest request)
