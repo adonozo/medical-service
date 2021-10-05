@@ -1,18 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Serialization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using QMUL.DiabetesBackend.Api.Models;
-using QMUL.DiabetesBackend.Model.Enums;
-using QMUL.DiabetesBackend.ServiceInterfaces;
-using Patient = QMUL.DiabetesBackend.Model.Patient;
-
 namespace QMUL.DiabetesBackend.Api.Controllers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using Hl7.Fhir.Model;
+    using Hl7.Fhir.Serialization;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
+    using Model.Enums;
+    using Models;
+    using ServiceInterfaces;
+    using Patient = Model.Patient;
+
     [ApiController]
     [Route("patients/")]
     public class PatientController : ControllerBase
@@ -34,6 +34,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpPost]
+        [Route("")]
         public async Task<ActionResult<Patient>> CreatePatient([FromBody] Patient newPatient)
         {
             this.logger.LogDebug($"Creating patient: {newPatient.FirstName} {newPatient.LastName}");
@@ -71,6 +72,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpGet]
+        [Route("")]
         public async Task<IActionResult> GetPatients()
         {
             this.logger.LogDebug("Getting patients list");
@@ -159,60 +161,6 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             catch (Exception exception)
             {
                 this.logger.LogError(exception, $"Error getting active care plans for: {idOrEmail}");
-                return this.StatusCode(StatusCodes.Status500InternalServerError);
-            }
-        }
-
-        [HttpGet]
-        [Route("{idOrEmail}/alexa")]
-        public async Task<IActionResult> GetAlexaRequest([FromRoute] string idOrEmail, [FromQuery] AlexaRequestType type,
-            [FromQuery] DateTime date,
-            [FromQuery] string timezone = "UTC",
-            [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
-        {
-            try
-            {
-                var result = await this.alexaService.ProcessRequest(idOrEmail, type, date, timing, timezone);
-                return this.Ok(result.ToJObject());
-            }
-            catch (KeyNotFoundException)
-            {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
-                return this.StatusCode(StatusCodes.Status500InternalServerError);
-            }
-        }
-
-        [HttpGet]
-        [Route("{idOrEmail}/alexa/next")]
-        public async Task<IActionResult> GetAlexaNextRequest([FromRoute] string idOrEmail, [FromQuery] AlexaRequestType type)
-        {
-            try
-            {
-                Bundle result;
-                if (type == AlexaRequestType.CarePlan)
-                {
-                    result = await this.alexaService.GetNextRequests(idOrEmail);
-                }
-                else
-                {
-                    result = await this.alexaService.GetNextRequests(idOrEmail, type);                    
-                }
-                
-                return this.Ok(result.ToJObject());
-            }
-            catch (KeyNotFoundException exception)
-            {
-                this.logger.LogWarning($"Not found: {exception.Message}");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
