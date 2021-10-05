@@ -1,13 +1,16 @@
-using System;
-using Hl7.Fhir.Model;
-using NodaTime;
-using QMUL.DiabetesBackend.Model.Enums;
-using Duration = NodaTime.Duration;
-using Instant = NodaTime.Instant;
-using Patient = QMUL.DiabetesBackend.Model.Patient;
-
 namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
+    using System;
+    using Hl7.Fhir.Model;
+    using Model.Enums;
+    using NodaTime;
+    using Duration = NodaTime.Duration;
+    using Instant = NodaTime.Instant;
+    using Patient = Model.Patient;
+
+    /// <summary>
+    /// Has helper methods to map Timing objects
+    /// </summary>
     public static class EventTimingMapper
     {
         public static CustomEventTiming ToCustomEventTiming(this Timing.EventTiming? eventTiming)
@@ -60,6 +63,17 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             };
         }
 
+        /// <summary>
+        /// Gets a time interval for a timing event, considering the patient's timezone and previous timing personal
+        /// settings. If the patient do not have a datetime for the timing event, a default time is used. E.g. If the
+        /// patient have not declared the time for breakfast before, it will set a default time. 
+        /// </summary>
+        /// <param name="patient">The patient to get the time interval for.</param>
+        /// <param name="startTime">The reference start date for the interval.</param>
+        /// <param name="timing">The timing event.</param>
+        /// <param name="timezone">The patient's timezone.</param>
+        /// <param name="defaultOffset">An offset for the time interval, in minutes.</param>
+        /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
         public static Tuple<DateTime, DateTime> GetIntervalForPatient(Patient patient, DateTime startTime,
             CustomEventTiming timing, string timezone, int defaultOffset)
         {
@@ -80,6 +94,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             return new Tuple<DateTime, DateTime>(start, end);
         }
 
+        /// <summary>
+        /// Gets the default interval time for a Timing event, considering the patient's timezone.
+        /// </summary>
+        /// <param name="startTime">The reference start date for the interval.</param>
+        /// <param name="timing">The timing event.</param>
+        /// <param name="timezone">The patient's timezone.</param>
+        /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">If there is no a default value for the timing event.</exception>
         public static Tuple<DateTime, DateTime> GetIntervalFromCustomEventTiming(DateTime startTime, CustomEventTiming timing, string timezone)
         {
             DateTime endTime;
@@ -160,6 +182,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             return new Tuple<DateTime, DateTime>(startTime, endTime);
         }
 
+        /// <summary>
+        /// Gets the related timing events for a given event. E.g, A before-breakfast event will get all breakfast
+        /// related events.
+        /// </summary>
+        /// <param name="eventTiming">The custom timing event.</param>
+        /// <returns>An array with the related timing events. Empty if there are no related events.</returns>
         public static CustomEventTiming[] GetRelatedTimings(CustomEventTiming eventTiming)
         {
             return eventTiming switch
