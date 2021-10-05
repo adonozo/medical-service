@@ -1,9 +1,12 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-
 namespace QMUL.DiabetesBackend.DataInterfaces
 {
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using Hl7.Fhir.Model;
+
+    /// <summary>
+    /// The Service Request Dao interface.
+    /// </summary>
     public interface IServiceRequestDao
     {
         public Task<ServiceRequest> CreateServiceRequest(ServiceRequest newRequest);

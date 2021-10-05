@@ -1,11 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using QMUL.DiabetesBackend.Model;
-using QMUL.DiabetesBackend.Model.Enums;
-
 namespace QMUL.DiabetesBackend.DataInterfaces
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using Model;
+    using Model.Enums;
+
+    /// <summary>
+    /// The Event Dao Interface
+    /// </summary>
     public interface IEventDao
     {
         public Task<bool> CreateEvents(IEnumerable<HealthEvent> events);

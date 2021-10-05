@@ -1,9 +1,12 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using QMUL.DiabetesBackend.Model;
-
 namespace QMUL.DiabetesBackend.DataInterfaces
 {
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using Model;
+
+    /// <summary>
+    /// The Patient Dao interface.
+    /// </summary>
     public interface IPatientDao
     {
         /// <summary>
