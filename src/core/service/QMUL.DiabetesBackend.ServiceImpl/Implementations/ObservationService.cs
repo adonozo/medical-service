@@ -1,15 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using QMUL.DiabetesBackend.DataInterfaces;
-using QMUL.DiabetesBackend.Model.Enums;
-using QMUL.DiabetesBackend.ServiceImpl.Utils;
-using QMUL.DiabetesBackend.ServiceInterfaces;
-
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using DataInterfaces;
+    using Hl7.Fhir.Model;
+    using Model.Enums;
+    using ServiceInterfaces;
+    using Utils;
+
+    /// <summary>
+    /// The Observation Service manages patients' clinical results, e.g., a blood glucose measurement. 
+    /// </summary>
     public class ObservationService : IObservationService
     {
         private readonly IPatientDao patientDao;
@@ -22,6 +25,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.observationDao = observationDao;
         }
 
+        /// <inheritdoc/>>
         public async Task<Observation> CreateObservation(Observation newObservation)
         {
             await ResourceUtils.ValidateObject(
@@ -33,6 +37,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return observation;
         }
 
+        /// <inheritdoc/>>
         public async Task<Observation> GetSingleObservation(string observationId)
         {
             var observation = await ResourceUtils.ValidateObject(
@@ -41,6 +46,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return observation;
         }
 
+        /// <inheritdoc/>>
         public async Task<Bundle> GetAllObservationsFor(string patientId)
         {
             var patient = await ResourceUtils.ValidateObject(
@@ -53,6 +59,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return bundle;
         }
 
+        /// <inheritdoc/>>
         public async Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime, string patientTimezone = "UTC")
         {
             if (timing == CustomEventTiming.EXACT)
