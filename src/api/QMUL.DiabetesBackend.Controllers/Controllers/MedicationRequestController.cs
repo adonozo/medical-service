@@ -34,12 +34,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"MedicationRequest with ID: {id} Not Found");
+                this.logger.LogWarning("MedicationRequest with ID: {Id} Not Found", id);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError($"Error getting medicationRequest with ID: {id}. {exception}");
+                this.logger.LogError(exception, "Error getting medicationRequest with ID: {Id}", id);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -66,7 +66,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, $"Error trying to create a medicationRequest.");
+                this.logger.LogError(exception, "Error trying to create a medicationRequest");
                 return this.BadRequest();
             }
         }
@@ -82,12 +82,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"MedicationRequest with ID: {id} Not Found");
+                this.logger.LogWarning("MedicationRequest with ID: {Id} Not Found", id);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError($"Error updating medicationRequest with ID: {id}. {exception}");
+                this.logger.LogError(exception, "Error updating medicationRequest with ID: {Id}", id);
                 return this.BadRequest();
             }
         }
@@ -103,12 +103,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"MedicationRequest with ID: {id} Not Found");
+                this.logger.LogWarning("MedicationRequest with ID: {Id} Not Found", id);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError($"Error deleting medicationRequest with ID: {id}. {exception}");
+                this.logger.LogError(exception, "Error deleting medicationRequest with ID: {Id}", id);
                 return this.BadRequest();
             }
         }

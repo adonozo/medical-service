@@ -34,12 +34,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"ServiceRequest with ID: {id} Not Found");
+                this.logger.LogWarning("ServiceRequest with ID: {Id} Not Found", id);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError($"Error getting serviceRequest with ID: {id}", exception);
+                this.logger.LogError(exception, "Error getting serviceRequest with ID: {Id}", id);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -82,12 +82,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"ServiceRequest with ID: {id} Not Found");
+                this.logger.LogWarning("ServiceRequest with ID: {Id} Not Found", id);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError($"Error updating serviceRequest with ID: {id}", exception);
+                this.logger.LogError(exception, "Error updating serviceRequest with ID: {Id}", id);
                 return this.BadRequest();
             }
         }
@@ -103,12 +103,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"ServiceRequest with ID: {id} Not Found");
+                this.logger.LogWarning("ServiceRequest with ID: {Id} Not Found", id);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError($"Error deleting serviceRequest with ID: {id}", exception);
+                this.logger.LogError(exception, "Error deleting serviceRequest with ID: {Id}", id);
                 return this.BadRequest();
             }
         }

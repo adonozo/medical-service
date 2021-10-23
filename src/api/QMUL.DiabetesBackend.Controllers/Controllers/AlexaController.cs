@@ -39,12 +39,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                this.logger.LogWarning("Patient not found: {IdOrEmail}", idOrEmail);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
+                this.logger.LogError(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -70,12 +70,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException exception)
             {
-                this.logger.LogWarning($"Not found: {exception.Message}");
+                this.logger.LogWarning("Not found: {Message}", exception.Message);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
+                this.logger.LogError(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
