@@ -5,6 +5,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using System.Threading.Tasks;
     using DataInterfaces;
     using Hl7.Fhir.Model;
+    using Microsoft.Extensions.Logging;
     using ServiceInterfaces;
     using Utils;
 
@@ -14,10 +15,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     public class MedicationService : IMedicationService
     {
         private readonly IMedicationDao medicationDao;
+        private readonly ILogger<MedicationService> logger;
 
-        public MedicationService(IMedicationDao medicationDao)
+        public MedicationService(IMedicationDao medicationDao, ILogger<MedicationService> logger)
         {
             this.medicationDao = medicationDao;
+            this.logger = logger;
         }
 
         /// <inheritdoc/>>
@@ -27,6 +30,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var medications = await this.medicationDao.GetMedicationList();
             bundle.Entry = medications.Select(medication => new Bundle.EntryComponent {Resource = medication})
                 .ToList();
+            this.logger.LogDebug("Found {Count} medications", medications.Count);
             return bundle;
         }
 
@@ -41,7 +45,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<Medication> CreateMedication(Medication newMedication)
         {
-            return await this.medicationDao.CreateMedication(newMedication);
+            var medication = await this.medicationDao.CreateMedication(newMedication);
+            this.logger.LogDebug("Medication created with ID: {Id}", medication.Id);
+            return medication;
         }
     }
 }

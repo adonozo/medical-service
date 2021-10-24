@@ -6,6 +6,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using System.Threading.Tasks;
     using DataInterfaces;
     using Hl7.Fhir.Model;
+    using Microsoft.Extensions.Logging;
     using ServiceInterfaces;
     using Utils;
 
@@ -17,12 +18,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         private readonly IMedicationRequestDao medicationRequestDao;
         private readonly IEventDao eventDao;
         private readonly IPatientDao patientDao;
+        private readonly ILogger<MedicationRequestService> logger;
 
-        public MedicationRequestService(IMedicationRequestDao medicationRequestDao, IEventDao eventDao, IPatientDao patientDao)
+        public MedicationRequestService(IMedicationRequestDao medicationRequestDao, IEventDao eventDao, 
+            IPatientDao patientDao, ILogger<MedicationRequestService> logger)
         {
             this.medicationRequestDao = medicationRequestDao;
             this.eventDao = eventDao;
             this.patientDao = patientDao;
+            this.logger = logger;
         }
 
         /// <inheritdoc/>>
@@ -31,6 +35,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var patient = await ResourceUtils.ValidateObject(
                 () => this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId),
                 "Unable to find patient for the Observation", new KeyNotFoundException());
+            this.logger.LogDebug("Creating medication request for patient {PatientId}", patient.Id);
             var newRequest = await this.medicationRequestDao.CreateMedicationRequest(request);
             var events = EventsGenerator.GenerateEventsFrom(newRequest, patient);
             var eventsResult = await this.eventDao.CreateEvents(events);
@@ -39,6 +44,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 throw new ArgumentException($"Unable to create events related to the request: {newRequest.Id}");
             }
 
+            this.logger.LogDebug("Medication request created with ID {Id}", newRequest.Id);
             return newRequest;
         }
 
@@ -51,6 +57,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 throw new KeyNotFoundException();
             }
 
+            this.logger.LogDebug("Found medication request with ID {Id}", id);
             return result;
         }
 
@@ -58,24 +65,26 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest request)
         {
             var exists = this.medicationRequestDao.GetMedicationRequest(id) != null;
-            if (exists)
+            if (!exists)
             {
-                return this.medicationRequestDao.UpdateMedicationRequest(id, request);
+                throw new KeyNotFoundException();
             }
 
-            throw new KeyNotFoundException();
+            this.logger.LogDebug("Medication request with ID {Id} updated", id);
+            return this.medicationRequestDao.UpdateMedicationRequest(id, request);
         }
 
         /// <inheritdoc/>>
         public Task<bool> DeleteMedicationRequest(string id)
         {
             var exists = this.medicationRequestDao.GetMedicationRequest(id) != null;
-            if (exists)
+            if (!exists)
             {
-                return this.medicationRequestDao.DeleteMedicationRequest(id);
+                throw new KeyNotFoundException();
             }
 
-            throw new KeyNotFoundException();
+            this.logger.LogDebug("Medication request deleted {Id}", id);
+            return this.medicationRequestDao.DeleteMedicationRequest(id);
         }
 
         /// <inheritdoc/>>
@@ -84,6 +93,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
             if (patient == null)
             {
+                this.logger.LogWarning("Patient not found: {PatientIdOrEmail}", patientIdOrEmail);
                 throw new KeyNotFoundException();
             }
             
@@ -91,6 +101,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var medicationRequests = await this.medicationRequestDao.GetActiveMedicationRequests(patient.Id);
             bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
                 .ToList();
+            this.logger.LogDebug("Found {Count} active medication requests", medicationRequests.Count);
             return bundle;
         }
     }
