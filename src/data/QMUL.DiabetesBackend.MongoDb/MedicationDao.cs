@@ -6,6 +6,7 @@ namespace QMUL.DiabetesBackend.MongoDb
     using MongoDB.Bson;
     using MongoDB.Driver;
     using DataInterfaces;
+    using Microsoft.Extensions.Logging;
     using Model;
 
     /// <summary>
@@ -14,10 +15,12 @@ namespace QMUL.DiabetesBackend.MongoDb
     public class MedicationDao : MongoDaoBase, IMedicationDao
     {
         private readonly IMongoCollection<Medication> medicationCollection;
+        private readonly ILogger<MedicationDao> logger;
         private const string CollectionName = "medication";
 
-        public MedicationDao(IDatabaseSettings settings) : base(settings)
+        public MedicationDao(IDatabaseSettings settings, ILogger<MedicationDao> logger) : base(settings)
         {
+            this.logger = logger;
             this.medicationCollection = this.Database.GetCollection<Medication>(CollectionName);
         }
 
@@ -38,8 +41,10 @@ namespace QMUL.DiabetesBackend.MongoDb
         /// <inheritdoc />
         public async Task<Medication> CreateMedication(Medication newMedication)
         {
+            this.logger.LogDebug("Creating medication...");
             newMedication.Id = ObjectId.GenerateNewId().ToString();
             await this.medicationCollection.InsertOneAsync(newMedication);
+            this.logger.LogDebug("Medication created with ID: {Id}", newMedication.Id);
             return await this.GetSingleMedication(newMedication.Id);
         }
     }
