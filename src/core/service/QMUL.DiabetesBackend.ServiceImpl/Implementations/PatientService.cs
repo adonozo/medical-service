@@ -21,20 +21,20 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.logger = logger;
         }
 
-        /// <inheritdoc/>>
+        /// <inheritdoc/>
         public async Task<List<Patient>> GetPatientList()
         {
             return await this.patientDao.GetPatients();
         }
 
-        /// <inheritdoc/>>
+        /// <inheritdoc/>
         public async Task<Patient> CreatePatient(Patient newPatient)
         {
             this.logger.LogDebug("Creating new patient {Email}", newPatient.Email);
             return await this.patientDao.CreatePatient(newPatient);
         }
 
-        /// <inheritdoc/>>
+        /// <inheritdoc/>
         public async Task<Patient> GetPatient(string idOrEmail)
         {
             var result = await this.patientDao.GetPatientByIdOrEmail(idOrEmail);

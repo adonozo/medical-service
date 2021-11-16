@@ -13,8 +13,21 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         public Task<Bundle> ProcessRequest(string patientEmailOrId, AlexaRequestType type, DateTime dateTime,
             CustomEventTiming timing, string timezone = "UTC");
 
+        /// <summary>
+        /// Gets the next requests for a patient to follow given a request type.
+        /// TODO this method should accept a result limit or have a default value. 
+        /// </summary>
+        /// <param name="patientEmailOrId">The patient's ID or email who owns the requests.</param>
+        /// <param name="type">The <see cref="AlexaRequestType"/></param>
+        /// <returns>A <see cref="Bundle"/> object with the list of requests.</returns>
         public Task<Bundle> GetNextRequests(string patientEmailOrId, AlexaRequestType type);
-        
+
+        /// <summary>
+        /// Gets the next requests for a patient to follow without filtering the request type.
+        /// TODO this method should accept a result limit or have a default value.
+        /// </summary>
+        /// <param name="patientEmailOrId">The patient's ID or email who owns the requests.</param>
+        /// <returns>A <see cref="Bundle"/> object with the list of requests.</returns>
         public Task<Bundle> GetNextRequests(string patientEmailOrId);
 
         /// <summary>

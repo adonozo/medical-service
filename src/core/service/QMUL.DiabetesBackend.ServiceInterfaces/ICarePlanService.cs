@@ -16,7 +16,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <returns>The list of medication and service requests as a Bundle.</returns>
         public Task<Bundle> GetActiveCarePlans(string patientIdOrEmail);
 
-        // TODO this gets all care plans for a given patient. Rename the method or repurpose it. 
+        // TODO this gets all care plans for a given patient. Rename the method or repurpose it. (is/will this be used?) 
         public Task<Bundle> GetCarePlanFor(string patientId);
     }
 }
