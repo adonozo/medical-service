@@ -4,10 +4,17 @@ using QMUL.DiabetesBackend.Model.Enums;
 
 namespace QMUL.DiabetesBackend.Model
 {
+    /// <summary>
+    /// A Patient with personal information. A Patient is unique in the system and can be identified by ID or email.
+    /// </summary>
     public class Patient
     {
+        /// <summary>
+        /// This is usually a GUID string. This is not a <see cref="Guid"/> object to keep compatibility with FHIR objects.
+        /// </summary>
         public string Id { get; set; }
-        
+
+        // TODO give it an actual usage
         public string AlexaUserId { get; set; }
         
         public string FirstName { get; set; }
