@@ -50,12 +50,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"Medication with ID: {id} Not Found");
+                this.logger.LogWarning("Medication with ID: {Id} Not Found", id);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, $"Error getting medication with ID: {id}");
+                this.logger.LogError(exception, "Error getting medication with ID: {Id}", id);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }

@@ -65,8 +65,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 
         /// <summary>
         /// Gets a time interval for a timing event, considering the patient's timezone and previous timing personal
-        /// settings. If the patient do not have a datetime for the timing event, a default time is used. E.g. If the
-        /// patient have not declared the time for breakfast before, it will set a default time. 
+        /// settings. If the patient do not have a datetime for the timing event, a default time is used. E.g., if the
+        /// patient have not declared the time for breakfast before, it will use a default time. 
         /// </summary>
         /// <param name="patient">The patient to get the time interval for.</param>
         /// <param name="startTime">The reference start date for the interval.</param>

@@ -4,6 +4,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
     using DataInterfaces;
     using Hl7.Fhir.Model;
     using Model.Enums;
@@ -17,12 +18,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     {
         private readonly IPatientDao patientDao;
         private readonly IObservationDao observationDao;
+        private readonly ILogger<ObservationService> logger;
         private const int DefaultOffset = 20;  // The default offset in minutes for search between dates
 
-        public ObservationService(IPatientDao patientDao, IObservationDao observationDao)
+        public ObservationService(IPatientDao patientDao, IObservationDao observationDao, ILogger<ObservationService> logger)
         {
             this.patientDao = patientDao;
             this.observationDao = observationDao;
+            this.logger = logger;
         }
 
         /// <inheritdoc/>>
@@ -34,6 +37,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var observation = await ResourceUtils.ValidateObject(
                 () => this.observationDao.CreateObservation(newObservation),
                 "Unable to create Observation", new ArgumentException("Invalid observation", nameof(newObservation)));
+            this.logger.LogDebug("Observation created with ID {Id}", observation.Id);
             return observation;
         }
 
@@ -43,6 +47,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var observation = await ResourceUtils.ValidateObject(
                 () => this.observationDao.GetObservation(observationId),
                 $"Observation not found: {observationId}", new KeyNotFoundException());
+            this.logger.LogDebug("Observation found: {Id}", observationId);
             return observation;
         }
 
@@ -56,11 +61,13 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var bundle = ResourceUtils.GenerateEmptyBundle();
             bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
                 .ToList();
+            this.logger.LogDebug("Found {Count} observations", observations.Count);
             return bundle;
         }
 
         /// <inheritdoc/>>
-        public async Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime, string patientTimezone = "UTC")
+        public async Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime, 
+            string patientTimezone = "UTC")
         {
             if (timing == CustomEventTiming.EXACT)
             {
@@ -72,11 +79,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 "Unable to find patient for the Observation", new KeyNotFoundException());
             var (start, end) =
                 EventTimingMapper.GetIntervalForPatient(patient, dateTime, timing, patientTimezone, DefaultOffset);
-
             var observations = await this.observationDao.GetObservationsFor(patient.Id, start, end);
             var bundle = ResourceUtils.GenerateEmptyBundle();
             bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
                 .ToList();
+            this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId, observations.Count);
             return bundle;
         }
 
@@ -91,6 +98,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var bundle = ResourceUtils.GenerateEmptyBundle();
             bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
                 .ToList();
+            this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId, observations.Count);
             return bundle;
         }
     }

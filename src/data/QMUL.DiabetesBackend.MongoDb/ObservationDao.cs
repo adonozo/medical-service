@@ -5,6 +5,7 @@ namespace QMUL.DiabetesBackend.MongoDb
     using System.Threading.Tasks;
     using DataInterfaces;
     using Hl7.Fhir.Model;
+    using Microsoft.Extensions.Logging;
     using Model;
     using Models;
     using MongoDB.Driver;
@@ -17,18 +18,22 @@ namespace QMUL.DiabetesBackend.MongoDb
     {
         private readonly IMongoCollection<MongoObservation> observationCollection;
         private const string CollectionName = "observation";
+        private readonly ILogger<ObservationDao> logger;
         
         /// <inheritdoc />
-        public ObservationDao(IDatabaseSettings settings) : base(settings)
+        public ObservationDao(IDatabaseSettings settings, ILogger<ObservationDao> logger) : base(settings)
         {
+            this.logger = logger;
             this.observationCollection = this.Database.GetCollection<MongoObservation>(CollectionName);
         }
 
         /// <inheritdoc />
         public async Task<Observation> CreateObservation(Observation observation)
         {
+            this.logger.LogDebug("Creating observation");
             var mongoObservation = observation.ToMongoObservation();
             await this.observationCollection.InsertOneAsync(mongoObservation);
+            this.logger.LogDebug("Observation created with ID: {Id}", mongoObservation.Id);
             return await this.GetObservation(mongoObservation.Id);
         }
 

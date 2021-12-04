@@ -40,9 +40,9 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [Route("")]
         public async Task<ActionResult<Patient>> CreatePatient([FromBody] Patient newPatient)
         {
-            this.logger.LogDebug($"Creating patient: {newPatient.FirstName} {newPatient.LastName}");
+            this.logger.LogDebug("Creating patient: {FirstName} {LastName}", newPatient.FirstName, newPatient.LastName);
             var createdPatient = await this.patientService.CreatePatient(newPatient);
-            this.logger.LogDebug($"Patient created with ID: {createdPatient.Id}");
+            this.logger.LogDebug("Patient created with ID: {Id}", createdPatient.Id);
             return this.Ok(createdPatient);
         }
 
@@ -80,7 +80,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         {
             this.logger.LogDebug("Getting patients list");
             var patients = await this.patientService.GetPatientList();
-            this.logger.LogDebug($"Found {patients.Count} patients");
+            this.logger.LogDebug("Found {PatientsCount} patients", patients.Count);
             return this.Ok(patients);
         }
 
@@ -95,12 +95,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                this.logger.LogWarning("Patient not found: {IdOrEmail}", idOrEmail);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, $"Error getting Patient: {idOrEmail}");
+                this.logger.LogError(exception, "Error getting Patient: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -116,12 +116,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                this.logger.LogWarning("Patient not found: {IdOrEmail}", idOrEmail);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError($"Error getting Patient: {idOrEmail}", exception);
+                this.logger.LogError(exception, "Error getting Patient: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -137,12 +137,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                this.logger.LogWarning("Patient not found: {IdOrEmail}", idOrEmail);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, $"Error getting Patient: {idOrEmail}");
+                this.logger.LogError(exception, "Error getting Patient: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -158,12 +158,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                this.logger.LogWarning("Patient not found: {IdOrEmail}", idOrEmail);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, $"Error getting active care plans for: {idOrEmail}");
+                this.logger.LogError(exception, "Error getting active care plans for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -179,12 +179,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"Observation not found: {observationId}");
+                this.logger.LogWarning("Observation not found: {ObservationId}", observationId);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
+                this.logger.LogError(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -202,12 +202,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                this.logger.LogWarning("Patient not found: {IdOrEmail}", idOrEmail);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
+                this.logger.LogError(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -223,12 +223,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                this.logger.LogWarning("Patient not found: {IdOrEmail}", idOrEmail);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
+                this.logger.LogError(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -244,12 +244,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                this.logger.LogWarning("Patient not found: {IdOrEmail}", idOrEmail);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, $"Error updating the timing for: {idOrEmail}");
+                this.logger.LogError(exception, "Error updating the timing for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -266,12 +266,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
+                this.logger.LogWarning("Patient not found: {IdOrEmail}", idOrEmail);
                 return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, $"Error updating the timing for: {idOrEmail}");
+                this.logger.LogError(exception, "Error updating the timing for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }

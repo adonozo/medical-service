@@ -6,6 +6,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using System.Threading.Tasks;
     using DataInterfaces;
     using Hl7.Fhir.Model;
+    using Microsoft.Extensions.Logging;
     using Model;
     using Model.Enums;
     using ServiceInterfaces;
@@ -23,16 +24,18 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         private readonly IMedicationRequestDao medicationRequestDao;
         private readonly IServiceRequestDao serviceRequestDao;
         private readonly IEventDao eventDao;
+        private readonly ILogger<AlexaService> logger;
         private const int DefaultOffset = 20; // The default offset (in minutes) when looking for exact times
         private const int DefaultTimingOffset = 20; // The offset for related timings. E.g., before lunch and lunch
 
         public AlexaService(IPatientDao patientDao, IMedicationRequestDao medicationRequestDao,
-            IServiceRequestDao serviceRequestDao, IEventDao eventDao)
+            IServiceRequestDao serviceRequestDao, IEventDao eventDao, ILogger<AlexaService> logger)
         {
             this.patientDao = patientDao;
             this.medicationRequestDao = medicationRequestDao;
             this.serviceRequestDao = serviceRequestDao;
             this.eventDao = eventDao;
+            this.logger = logger;
         }
 
         public async Task<Bundle> ProcessRequest(string patientEmailOrId, AlexaRequestType type, DateTime dateTime,
@@ -41,17 +44,21 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             switch (type)
             {
                 case AlexaRequestType.Medication:
+                    logger.LogTrace("Processing Alexa Medication request type");
                     return await GetMedicationRequests(patientEmailOrId, dateTime, timing, false, timezone);
                 case AlexaRequestType.Insulin:
+                    logger.LogTrace("Processing Alexa Insulin request type");
                     return await GetMedicationRequests(patientEmailOrId, dateTime, timing, true, timezone);
                 case AlexaRequestType.Glucose:
+                    logger.LogTrace("Processing Alexa Glucose service request type");
                     return await GetServiceRequests(patientEmailOrId, dateTime, timing, timezone);
                 case AlexaRequestType.Appointment:
                     break;
                 case AlexaRequestType.CarePlan:
+                    logger.LogTrace("Processing Alexa Care Plan request type");
                     return await GetCarePlan(patientEmailOrId, dateTime, timing, timezone);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+                    throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported Alexa request type");
             }
 
             throw new ArgumentOutOfRangeException(nameof(type), type, null);
@@ -96,6 +103,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             patient.ExactEventTimes ??= new Dictionary<CustomEventTiming, DateTime>();
             patient.ExactEventTimes = SetRelatedTimings(patient, eventTiming, dateTime);
             await this.UpdatePatient(patient);
+            this.logger.LogDebug("Timing event updated for {IdOrEmail}: {Timing}, {DateTime}", patientIdOrEmail,
+                eventTiming, dateTime);
 
             return await this.UpdateRelatedTimingEvents(patient, eventTiming, dateTime);
         }
@@ -128,9 +137,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 throw new ArgumentException($"Unable to create events related to the dosage instruction: {dosageId}");
             }
 
+            this.logger.LogDebug("Dosage start date updated for {IdOrEmail}: {DosageId}, {DateTime}", patientIdOrEmail,
+                dosageId, startDate);
             return true;
         }
-        
+
         private static MedicationRequest GetMedicationRequestWithSingleDosage(MedicationRequest request, string dosageId)
         {
             var dosage = request.DosageInstruction.FirstOrDefault(dose => dose.ElementId == dosageId);

@@ -3,7 +3,7 @@ using QMUL.DiabetesBackend.Model.Enums;
 namespace QMUL.DiabetesBackend.Model
 {
     /// <summary>
-    /// The resource it is referred to
+    /// A custom resource that references an actual FHIR resource
     /// </summary>
     public class CustomResource
     {

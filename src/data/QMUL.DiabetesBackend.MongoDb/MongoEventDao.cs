@@ -5,6 +5,7 @@ namespace QMUL.DiabetesBackend.MongoDb
     using System.Linq;
     using System.Threading.Tasks;
     using DataInterfaces;
+    using Microsoft.Extensions.Logging;
     using Model;
     using Model.Enums;
     using Models;
@@ -17,11 +18,13 @@ namespace QMUL.DiabetesBackend.MongoDb
     public class MongoEventDao : MongoDaoBase, IEventDao
     {
         private readonly IMongoCollection<MongoEvent> eventCollection;
+        private readonly ILogger<MongoEventDao> logger;
         private const string CollectionName = "healthEvent";
         private const int DefaultLimit = 3;
 
-        public MongoEventDao(IDatabaseSettings settings) : base(settings)
+        public MongoEventDao(IDatabaseSettings settings, ILogger<MongoEventDao> logger) : base(settings)
         {
+            this.logger = logger;
             this.eventCollection = this.Database.GetCollection<MongoEvent>(CollectionName);
         }
 
@@ -30,13 +33,15 @@ namespace QMUL.DiabetesBackend.MongoDb
         {
             try
             {
-                var mongoEvents = events.Select(Mapper.ToMongoEvent);
+                this.logger.LogDebug("Creating health events");
+                var mongoEvents = events.Select(Mapper.ToMongoEvent).ToArray();
                 await this.eventCollection.InsertManyAsync(mongoEvents);
+                this.logger.LogDebug("Created {Count} events", mongoEvents.Length);
                 return true;
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception);
+                this.logger.LogError(exception, "Error trying to create health events");
                 throw;
             }
         }
@@ -44,6 +49,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         /// <inheritdoc />
         public async Task<bool> DeleteEventSeries(string referenceId)
         {
+            this.logger.LogDebug("Deleting events with a reference ID: {Id}", referenceId);
             var result = await
                 this.eventCollection.DeleteManyAsync(request => request.Resource.EventReferenceId == referenceId);
             return result.IsAcknowledged;
@@ -52,9 +58,9 @@ namespace QMUL.DiabetesBackend.MongoDb
         /// <inheritdoc />
         public async Task<bool> UpdateEventsTiming(string patientId, CustomEventTiming timing, DateTime time)
         {
+            this.logger.LogDebug("Updating event timing for patient: {PatientId}", patientId);
             var currentTime = DateTime.UtcNow;
             var setTime = new Func<DateTime, DateTime>(oldTime => oldTime.Date.AddHours(time.Hour).AddMinutes(time.Minute));
-            
             var eventsToUpdate = await this.eventCollection.FindAsync(healthEvent => healthEvent.PatientId == patientId
                                                                 && healthEvent.EventTiming == timing
                                                                 && healthEvent.EventDateTime > currentTime);
