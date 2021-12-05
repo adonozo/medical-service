@@ -19,6 +19,8 @@ pipelines:
           caches:
             - dotnetcore
           script:
+            - dotnet restore
+            - dotnet build --no-restore --configuration Release
             - dotnet publish --configuration Release --no-build -o ./publish
           artifacts:
             - ./publish/**
