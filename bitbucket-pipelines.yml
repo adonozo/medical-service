@@ -5,19 +5,6 @@ image: mcr.microsoft.com/dotnet/sdk:5.0-bullseye-slim
 pipelines:
   branches: 
     dev:
-      - step:
-          name: Lint
-          caches:
-            - dotnetcore
-          script:
-            - export SOLUTION_NAME=diabetes-backend
-            - export REPORTS_PATH=linter-reports
-            - dotnet new tool-manifest
-            - dotnet tool install JetBrains.ReSharper.GlobalTools
-            - dotnet tool restore
-            - dotnet jb inspectcode ${SOLUTION_NAME}.sln --output="${REPORTS_PATH}/jb-${BITBUCKET_BUILD_NUMBER}.xml"
-          artifacts:
-            - linter-reports/**
       - step: 
           name: Build and Test
           caches:
@@ -38,19 +25,6 @@ pipelines:
 
   pull-requests:
     '**':
-      - step:
-          name: Lint
-          caches:
-            - dotnetcore
-          script:
-            - export SOLUTION_NAME=diabetes-backend
-            - export REPORTS_PATH=linter-reports
-            - dotnet new tool-manifest
-            - dotnet tool install JetBrains.ReSharper.GlobalTools
-            - dotnet tool restore
-            - dotnet jb inspectcode ${SOLUTION_NAME}.sln --output="${REPORTS_PATH}/jb-${BITBUCKET_BUILD_NUMBER}.xml"
-          artifacts:
-            - linter-reports/**
       - step:
           name: Build and Test
           caches:
