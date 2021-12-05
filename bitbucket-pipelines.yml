@@ -20,6 +20,7 @@ pipelines:
             - dotnetcore
           script:
             - dotnet restore
+            - dotnet build --no-restore --configuration Release
             - dotnet publish --configuration Release --no-build -o ./publish
           artifacts:
             - ./publish/**
@@ -35,13 +36,3 @@ pipelines:
             - dotnet restore
             - dotnet build --no-restore --configuration Release
             - dotnet test --no-build --configuration Release --test-adapter-path:. --logger:"junit;LogFilePath=$REPORTS_PATH/junit.xml"
-      - step:
-          name: Publish
-          caches:
-            - dotnetcore
-          script:
-            - dotnet restore
-            - dotnet build --no-restore --configuration Release
-            - dotnet publish --configuration Release --no-build -o ./publish
-          artifacts:
-            - ./publish/**
