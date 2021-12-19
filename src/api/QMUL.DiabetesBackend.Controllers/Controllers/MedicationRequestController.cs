@@ -17,7 +17,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         private readonly IMedicationRequestService medicationRequestService;
         private readonly ILogger<MedicationRequestController> logger;
 
-        public MedicationRequestController(ILogger<MedicationRequestController> logger, IMedicationRequestService medicationRequestService)
+        public MedicationRequestController(IMedicationRequestService medicationRequestService, ILogger<MedicationRequestController> logger)
         {
             this.logger = logger;
             this.medicationRequestService = medicationRequestService;
@@ -39,7 +39,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error getting medicationRequest with ID: {Id}", id);
+                this.logger.LogWarning(exception, "Error getting medicationRequest with ID: {Id}", id);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -48,37 +48,43 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [Route("")]
         public async Task<IActionResult> CreateMedicationRequest([FromBody] object request)
         {
+
+            var parser = new FhirJsonParser(new ParserSettings
+            { AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true });
             try
             {
-                var parser = new FhirJsonParser(new ParserSettings
-                    {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
-                try
-                {
-                    var parsedRequest = await parser.ParseAsync<MedicationRequest>(request.ToString());
-                    var result = await this.medicationRequestService.CreateMedicationRequest(parsedRequest);
-                    return this.Ok(result.ToJObject());
-                }
-                catch (Exception exception)
-                {
-                    this.logger.LogError(exception, "Couldn't parse the request");
-                    return this.BadRequest();
-                }
+                var parsedRequest = await parser.ParseAsync<MedicationRequest>(request.ToString());
+                var result = await this.medicationRequestService.CreateMedicationRequest(parsedRequest);
+                return this.Ok(result.ToJObject());
+            }
+            catch (FormatException exception)
+            {
+                this.logger.LogWarning(exception, "Couldn't parse the request");
+                return this.BadRequest();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error trying to create a medicationRequest");
-                return this.BadRequest();
+                this.logger.LogWarning(exception, "Error trying to create a medicationRequest");
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
         [HttpPut]
         [Route("{id}")]
-        public async Task<IActionResult> UpdateMedicationRequest([FromRoute] string id, [FromBody] MedicationRequest request)
+        public async Task<IActionResult> UpdateMedicationRequest([FromRoute] string id, [FromBody] object request)
         {
+            var parser = new FhirJsonParser(new ParserSettings
+                { AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true });
             try
             {
-                var result = await this.medicationRequestService.UpdateMedicationRequest(id, request);
+                var parsedRequest = await parser.ParseAsync<MedicationRequest>(request.ToString());
+                var result = await this.medicationRequestService.UpdateMedicationRequest(id, parsedRequest);
                 return this.Accepted(result);
+            }
+            catch (FormatException exception)
+            {
+                this.logger.LogWarning(exception, "Couldn't parse the request");
+                return this.BadRequest();
             }
             catch (KeyNotFoundException)
             {
@@ -87,8 +93,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error updating medicationRequest with ID: {Id}", id);
-                return this.BadRequest();
+                this.logger.LogWarning(exception, "Error updating medicationRequest with ID: {Id}", id);
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -108,8 +114,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error deleting medicationRequest with ID: {Id}", id);
-                return this.BadRequest();
+                this.logger.LogWarning(exception, "Error deleting medicationRequest with ID: {Id}", id);
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
     }
