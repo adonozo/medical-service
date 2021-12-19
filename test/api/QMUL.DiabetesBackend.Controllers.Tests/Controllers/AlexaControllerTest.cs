@@ -5,6 +5,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
     using Api.Controllers;
     using FluentAssertions;
     using Hl7.Fhir.Model;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
     using Model.Enums;
@@ -33,7 +34,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             var status = (ObjectResult) result;
 
             // Assert
-            status.StatusCode.Should().Be(200);
+            status.StatusCode.Should().Be(StatusCodes.Status200OK);
         }
 
         [Fact]
@@ -53,7 +54,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             var status = (StatusCodeResult) result;
 
             // Assert
-            status.StatusCode.Should().Be(404);
+            status.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -73,7 +74,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             var status = (StatusCodeResult) result;
 
             // Assert
-            status.StatusCode.Should().Be(500);
+            status.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [Fact]
@@ -83,7 +84,6 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             var service = Substitute.For<IAlexaService>();
             var logger = Substitute.For<ILogger<AlexaController>>();
             service.GetNextRequests(Arg.Any<string>(), Arg.Any<AlexaRequestType>()).Returns(new Bundle());
-
             var controller = new AlexaController(service, logger);
 
             // Act
@@ -91,7 +91,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             var status = (ObjectResult) result;
 
             // Assert
-            status.StatusCode.Should().Be(200);
+            status.StatusCode.Should().Be(StatusCodes.Status200OK);
         }
         
         [Fact]
@@ -109,7 +109,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             var status = (StatusCodeResult) result;
 
             // Assert
-            status.StatusCode.Should().Be(404);
+            status.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
         
         [Fact]
@@ -127,7 +127,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             var status = (StatusCodeResult) result;
 
             // Assert
-            status.StatusCode.Should().Be(500);
+            status.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
     }
 }
