@@ -39,7 +39,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error getting serviceRequest with ID: {Id}", id);
+                this.logger.LogWarning(exception, "Error getting serviceRequest with ID: {Id}", id);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -48,36 +48,37 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [Route("")]
         public async Task<IActionResult> CreateServiceRequest([FromBody] object request)
         {
+
+            var parser = new FhirJsonParser(new ParserSettings
+                { AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true });
             try
             {
-                var parser = new FhirJsonParser(new ParserSettings
-                    {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
-                try
-                {
-                    var parsedRequest = await parser.ParseAsync<ServiceRequest>(request.ToString());
-                    var result = await this.serviceRequestService.CreateServiceRequest(parsedRequest);
-                    return this.Ok(result.ToJObject());
-                }
-                catch (Exception exception)
-                {
-                    this.logger.LogError(exception, "Couldn't parse the request");
-                    return this.BadRequest();
-                }
+                var parsedRequest = await parser.ParseAsync<ServiceRequest>(request.ToString());
+                var result = await this.serviceRequestService.CreateServiceRequest(parsedRequest);
+                return this.Ok(result.ToJObject());
+            }
+            catch (FormatException exception)
+            {
+                this.logger.LogWarning(exception, "Couldn't parse the request");
+                return this.BadRequest();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error trying to create a serviceRequest");
-                return this.BadRequest();
+                this.logger.LogWarning(exception, "Error trying to create a serviceRequest");
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
         [HttpPut]
         [Route("{id}")]
-        public async Task<IActionResult> UpdateServiceRequest([FromRoute] string id, [FromBody] ServiceRequest request)
+        public async Task<IActionResult> UpdateServiceRequest([FromRoute] string id, [FromBody] object request)
         {
+            var parser = new FhirJsonParser(new ParserSettings
+                { AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true });
             try
             {
-                var result = await this.serviceRequestService.UpdateServiceRequest(id, request);
+                var parsedRequest = await parser.ParseAsync<ServiceRequest>(request.ToString());
+                var result = await this.serviceRequestService.UpdateServiceRequest(id, parsedRequest);
                 return this.Accepted(result);
             }
             catch (KeyNotFoundException)
@@ -87,8 +88,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error updating serviceRequest with ID: {Id}", id);
-                return this.BadRequest();
+                this.logger.LogWarning(exception, "Error updating serviceRequest with ID: {Id}", id);
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -108,8 +109,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error deleting serviceRequest with ID: {Id}", id);
-                return this.BadRequest();
+                this.logger.LogWarning(exception, "Error deleting serviceRequest with ID: {Id}", id);
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
     }
