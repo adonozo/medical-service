@@ -25,8 +25,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         private readonly ILogger<PatientController> logger;
 
         public PatientController(IPatientService patientService, IAlexaService alexaService,
-            ILogger<PatientController> logger, ICarePlanService carePlanService, IObservationService observationService, 
-            IMedicationRequestService medicationRequestService)
+            ICarePlanService carePlanService, IObservationService observationService, 
+            IMedicationRequestService medicationRequestService, ILogger<PatientController> logger)
         {
             this.patientService = patientService;
             this.alexaService = alexaService;
@@ -38,7 +38,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
 
         [HttpPost]
         [Route("")]
-        public async Task<ActionResult<Patient>> CreatePatient([FromBody] Patient newPatient)
+        public async Task<IActionResult> CreatePatient([FromBody] Patient newPatient)
         {
             this.logger.LogDebug("Creating patient: {FirstName} {LastName}", newPatient.FirstName, newPatient.LastName);
             var createdPatient = await this.patientService.CreatePatient(newPatient);
@@ -51,26 +51,28 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         public async Task<IActionResult> PostGlucoseObservation([FromRoute] string idOrEmail,
             [FromBody] object newObservation)
         {
+            var parser = new FhirJsonParser(new ParserSettings
+                {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
             try
             {
-                var parser = new FhirJsonParser(new ParserSettings
-                    {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
-                try
-                {
-                    var parsedRequest = await parser.ParseAsync<Observation>(newObservation.ToString());
-                    var result = await this.observationService.CreateObservation(parsedRequest);
-                    return this.Ok(result.ToJObject());
-                }
-                catch (Exception exception)
-                {
-                    this.logger.LogError(exception, "Couldn't parse the request");
-                    return this.BadRequest();
-                }
+                var parsedRequest = await parser.ParseAsync<Observation>(newObservation.ToString());
+                var result = await this.observationService.CreateObservation(idOrEmail, parsedRequest);
+                return this.Ok(result.ToJObject());
+            }
+            catch (FormatException exception)
+            {
+                this.logger.LogWarning(exception, "Couldn't parse the request");
+                return this.BadRequest();
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning("Patient not found: {IdOrEmail}", idOrEmail);
+                return this.NotFound();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error trying to create a serviceRequest");
-                return this.BadRequest();
+                this.logger.LogWarning(exception, "Error trying to create a serviceRequest");
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -100,7 +102,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error getting Patient: {IdOrEmail}", idOrEmail);
+                this.logger.LogWarning(exception, "Error getting Patient: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -121,7 +123,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error getting Patient: {IdOrEmail}", idOrEmail);
+                this.logger.LogWarning(exception, "Error getting Patient: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -142,7 +144,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error getting Patient: {IdOrEmail}", idOrEmail);
+                this.logger.LogWarning(exception, "Error getting Patient: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -163,7 +165,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error getting active care plans for: {IdOrEmail}", idOrEmail);
+                this.logger.LogWarning(exception, "Error getting active care plans for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -184,7 +186,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
+                this.logger.LogWarning(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -207,7 +209,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
+                this.logger.LogWarning(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -228,7 +230,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
+                this.logger.LogWarning(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -249,7 +251,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error updating the timing for: {IdOrEmail}", idOrEmail);
+                this.logger.LogWarning(exception, "Error updating the timing for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -271,7 +273,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error updating the timing for: {IdOrEmail}", idOrEmail);
+                this.logger.LogWarning(exception, "Error updating the timing for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }

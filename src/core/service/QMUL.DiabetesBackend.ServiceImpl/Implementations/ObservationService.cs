@@ -29,10 +29,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public async Task<Observation> CreateObservation(Observation newObservation)
+        public async Task<Observation> CreateObservation(string patientId, Observation newObservation)
         {
             await ResourceUtils.ValidateObject(
-                () => this.patientDao.GetPatientByIdOrEmail(newObservation.Subject.ElementId),
+                () => this.patientDao.GetPatientByIdOrEmail(patientId),
                 "Unable to find patient for the Observation", new KeyNotFoundException());
             var observation = await ResourceUtils.ValidateObject(
                 () => this.observationDao.CreateObservation(newObservation),
