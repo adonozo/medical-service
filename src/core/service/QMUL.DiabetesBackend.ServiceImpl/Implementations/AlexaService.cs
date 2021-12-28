@@ -130,7 +130,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             }
 
             medicationRequest = GetMedicationRequestWithSingleDosage(medicationRequest, dosageId);
-            var events = EventsGenerator.GenerateEventsFrom(medicationRequest, patient);
+            var events = ResourceUtils.GenerateEventsFrom(medicationRequest, patient);
             var eventsResult = await this.eventDao.CreateEvents(events);
             if (!eventsResult)
             {

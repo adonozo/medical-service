@@ -1,10 +1,13 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
+    using Model;
     using Model.Enums;
+    using Patient = Hl7.Fhir.Model.Patient;
 
     /// <summary>
     /// Resource util methods
@@ -17,7 +20,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// <returns>A Bundle object</returns>
         public static Bundle GenerateEmptyBundle()
         {
-            return new()
+            return new Bundle
             {
                 Type = Bundle.BundleType.Searchset,
                 Timestamp = DateTimeOffset.UtcNow
@@ -62,6 +65,63 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 AlexaRequestType.Glucose => EventType.Measurement,
                 _ => throw new ArgumentOutOfRangeException(nameof(requestType), requestType, "Invalid request type")
             };
+        }
+        
+        /// <summary>
+        /// Creates a list of events based on medication timings.
+        /// </summary>
+        /// <param name="request">The medication request</param>
+        /// <param name="patient">The medication request's subject</param>
+        /// <returns>A List of events for the medication request</returns>
+        public static IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request, Model.Patient patient)
+        {
+            var events = new List<HealthEvent>();
+            var isInsulin = ResourceUtils.IsInsulinResource(request);
+
+            foreach (var dosage in request.DosageInstruction)
+            {
+                var requestReference = new CustomResource
+                {
+                    EventType = isInsulin ? EventType.InsulinDosage : EventType.MedicationDosage,
+                    ResourceId = request.Id,
+                    Text = dosage.Text,
+                    EventReferenceId = dosage.ElementId
+                };
+                var eventsGenerator = new EventsGenerator(patient, dosage.Timing, requestReference);
+                events.AddRange(eventsGenerator.GetEvents());
+            }
+
+            return events;
+        }
+        
+        /// <summary>
+        /// Creates a list of <see cref="HealthEvent"/> from a <see cref="ServiceRequest"/>. The service request's
+        /// occurrence must be an instance of <see cref="Hl7.Fhir.Model.Timing"/> to have consistency between
+        /// service and medication requests, and to narrow down timing use cases.
+        /// </summary>
+        /// <param name="request">The medication request</param>
+        /// <param name="patient">The medication request's subject</param>
+        /// <returns>A List of events for the medication request</returns>
+        public static IEnumerable<HealthEvent> GenerateEventsFrom(ServiceRequest request, Model.Patient patient)
+        {
+            var events = new List<HealthEvent>();
+            var requestReference = new CustomResource
+            {
+                EventType = EventType.Measurement,
+                ResourceId = request.Id,
+                EventReferenceId = request.Id,
+                Text = request.PatientInstruction
+            };
+
+            // Occurrence must be expressed as a timing instance
+            if (request.Occurrence is not Timing timing)
+            {
+                throw new InvalidOperationException("Service Request Occurrence must be a Timing instance");
+            }
+
+            var eventsGenerator = new EventsGenerator(patient, timing, requestReference);
+            events.AddRange(eventsGenerator.GetEvents());
+            return events;
         }
     }
 }

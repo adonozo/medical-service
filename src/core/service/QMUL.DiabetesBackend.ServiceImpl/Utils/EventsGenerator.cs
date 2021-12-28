@@ -9,76 +9,35 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     using Patient = Model.Patient;
 
     /// <summary>
-    /// Generates health events based on a Resource frequency.
+    /// Generates health events based on a Resource frequency/occurrence.
     /// </summary>
-    public class EventsGenerator
+    internal class EventsGenerator
     {
         private readonly Patient patient;
         private readonly Timing timing;
         private readonly CustomResource referenceResource;
 
-        private EventsGenerator(Patient patient, Timing timing, CustomResource referenceResource)
+        /// <summary>
+        /// The class constructor
+        /// </summary>
+        /// <param name="patient">The patient associated with the resource.</param>
+        /// <param name="timing">The resource's timing setting. It must have the Bounds field as an instance of <see cref="Period"/>
+        /// or <see cref="Duration"/>. The only supported period is 1. Also, it must have the TimeOfDay or When field.</param>
+        /// <param name="referenceResource">A reference to the source resource, i.e., Medication or Service request.</param>
+        public EventsGenerator(Patient patient, Timing timing, CustomResource referenceResource)
         {
             this.patient = patient;
             this.timing = timing;
             this.referenceResource = referenceResource;
         }
-        
-        /// <summary>
-        /// Creates a list of events based on medication timings.
-        /// </summary>
-        /// <param name="request">The medication request</param>
-        /// <param name="patient">The medication request's subject</param>
-        /// <returns>A List of events for the medication request</returns>
-        public static IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request, Patient patient)
-        {
-            var events = new List<HealthEvent>();
-            var isInsulin = ResourceUtils.IsInsulinResource(request);
-
-            foreach (var dosage in request.DosageInstruction)
-            {
-                var requestReference = new CustomResource
-                {
-                    EventType = isInsulin ? EventType.InsulinDosage : EventType.MedicationDosage,
-                    ResourceId = request.Id,
-                    Text = dosage.Text,
-                    EventReferenceId = dosage.ElementId
-                };
-                var eventsGenerator = new EventsGenerator(patient, dosage.Timing, requestReference);
-                events.AddRange(eventsGenerator.GetEvents());
-            }
-
-            return events;
-        }
 
         /// <summary>
-        /// Creates a list of <see cref="HealthEvent"/> from a <see cref="ServiceRequest"/>
+        /// Creates a list of <see cref="HealthEvent"/> based on a timing instance, a patient and a resource reference.
+        /// For instance, a medication request for 14 days - daily would produce 14 health events.
         /// </summary>
-        /// <param name="request">The medication request</param>
-        /// <param name="patient">The medication request's subject</param>
-        /// <returns>A List of events for the medication request</returns>
-        public static IEnumerable<HealthEvent> GenerateEventsFrom(ServiceRequest request, Patient patient)
-        {
-            var events = new List<HealthEvent>();
-            var requestReference = new CustomResource
-            {
-                EventType = EventType.Measurement,
-                ResourceId = request.Id,
-                EventReferenceId = request.Id,
-                Text = request.PatientInstruction
-            };
-
-            if (request.Occurrence is not Timing timing)
-            {
-                return events;
-            }
-
-            var eventsGenerator = new EventsGenerator(patient, timing, requestReference);
-            events.AddRange(eventsGenerator.GetEvents());
-            return events;
-        }
-
-        private IEnumerable<HealthEvent> GetEvents()
+        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="HealthEvent"/> corresponding to the timing.</returns>
+        /// <exception cref="InvalidOperationException">If the timing is not properly configured</exception>
+        public IEnumerable<HealthEvent> GetEvents()
         {
             int days;
             DateTime startDate;
@@ -96,7 +55,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                     startDate = this.GetPatientTimeOrDefault();
                     break;
                 default:
-                    throw new InvalidOperationException("Dosage does not have a valid timing");
+                    throw new InvalidOperationException("Dosage or occurrence does not have a valid timing");
             }
 
             if (timing.Repeat.DayOfWeek.Any())
@@ -104,12 +63,13 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 return this.GenerateWeaklyEvents(days, startDate, timing.Repeat.DayOfWeek);
             }
 
+            // For now, only a period of 1 is supported; e.g., 3 times a day: frequency = 3, period = 1
             return timing.Repeat.Period switch
             {
                 1 when timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D && timing.Repeat.Frequency > 1 => this
                     .GenerateEventsOnMultipleFrequency(days, startDate),
                 1 when timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D => this.GenerateDailyEvents(days, startDate),
-                _ => throw new InvalidOperationException("Dosage timing not supported yet")
+                _ => throw new InvalidOperationException("Dosage timing not supported yet. Please review the period.")
             };
         }
 
@@ -165,8 +125,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 foreach (var eventTiming in this.timing.Repeat.When)
                 {
                     var customTiming = eventTiming.ToCustomEventTiming();
-                    var valueExists = patient.ExactEventTimes.ContainsKey(customTiming);
-                    var eventDate = valueExists
+                    var exactTimeIsSetup = patient.ExactEventTimes.ContainsKey(customTiming);
+
+                    // Default hour will be 0. Thus, patient will be asked to set a custom timing value to get these
+                    // events (and, consequently, events will be updated).
+                    var eventDate = exactTimeIsSetup
                         ? date.Date
                             .AddHours(patient.ExactEventTimes[customTiming].Hour)
                             .AddMinutes(patient.ExactEventTimes[customTiming].Minute)
@@ -175,7 +138,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                     {
                         PatientId = this.patient.Id,
                         EventDateTime = eventDate,
-                        ExactTimeIsSetup = valueExists,
+                        ExactTimeIsSetup = exactTimeIsSetup,
                         EventTiming = customTiming,
                         Resource = this.referenceResource
                     };

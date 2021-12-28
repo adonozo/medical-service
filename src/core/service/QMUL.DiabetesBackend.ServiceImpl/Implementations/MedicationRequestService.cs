@@ -37,7 +37,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 "Unable to find patient for the Observation", new KeyNotFoundException());
             this.logger.LogDebug("Creating medication request for patient {PatientId}", patient.Id);
             var newRequest = await this.medicationRequestDao.CreateMedicationRequest(request);
-            var events = EventsGenerator.GenerateEventsFrom(newRequest, patient);
+            var events = ResourceUtils.GenerateEventsFrom(newRequest, patient);
             var eventsResult = await this.eventDao.CreateEvents(events);
             if (!eventsResult)
             {
