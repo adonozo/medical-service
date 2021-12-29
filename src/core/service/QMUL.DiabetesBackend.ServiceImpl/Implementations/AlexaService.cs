@@ -67,9 +67,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<Bundle> GetNextRequests(string patientEmailOrId, AlexaRequestType type)
         {
-            var patient = await ResourceUtils.ValidateObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientEmailOrId),
-                "Unable to find patient for the Observation", new KeyNotFoundException());
+            var patient = await ResourceUtils.ValidateNullObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new KeyNotFoundException());
             if (type is not (AlexaRequestType.Glucose or AlexaRequestType.Insulin or AlexaRequestType.Medication))
             {
                 throw new NotSupportedException("Request type not supported");
@@ -84,9 +83,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<Bundle> GetNextRequests(string patientEmailOrId)
         {
-            var patient = await ResourceUtils.ValidateObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientEmailOrId),
-                "Unable to find patient for the Observation", new KeyNotFoundException());
+            var patient = await ResourceUtils.ValidateNullObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new KeyNotFoundException());
             var types = new[] {EventType.Measurement, EventType.InsulinDosage, EventType.MedicationDosage};
             var events = await this.eventDao.GetNextEvents(patient.Id, types);
             var bundle = await this.GenerateBundle(events.ToList());
@@ -96,9 +94,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming, DateTime dateTime)
         {
-            var patient = await ResourceUtils.ValidateObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
-                "Unable to find patient for the Observation", new KeyNotFoundException());
+            var patient = await ResourceUtils.ValidateNullObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), new KeyNotFoundException());
 
             patient.ExactEventTimes ??= new Dictionary<CustomEventTiming, DateTime>();
             patient.ExactEventTimes = SetRelatedTimings(patient, eventTiming, dateTime);
@@ -112,12 +109,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, DateTime startDate)
         {
-            var patient = await ResourceUtils.ValidateObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
-                "Unable to find patient for the Observation", new KeyNotFoundException());
-            var medicationRequest = await ResourceUtils.ValidateObject(
-                () => this.medicationRequestDao.GetMedicationRequestForDosage(patient.Id, dosageId),
-                "Unable to find a medication for the dosage", new KeyNotFoundException());
+            var patient = await ResourceUtils.ValidateNullObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), new KeyNotFoundException());
+            var medicationRequest = await ResourceUtils.ValidateNullObject(
+                () => this.medicationRequestDao.GetMedicationRequestForDosage(patient.Id, dosageId), new KeyNotFoundException());
 
             patient.ResourceStartDate ??= new Dictionary<string, DateTime>();
             patient.ResourceStartDate[dosageId] = startDate;

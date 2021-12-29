@@ -37,9 +37,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<Medication> GetSingleMedication(string id)
         {
-            return await ResourceUtils.ValidateObject(
-                () => this.medicationDao.GetSingleMedication(id),
-                "Unable to find the medication", new KeyNotFoundException());
+            return await ResourceUtils.ValidateNullObject(
+                () => this.medicationDao.GetSingleMedication(id), new KeyNotFoundException("Unable to find the medication"));
         }
 
         /// <inheritdoc/>>

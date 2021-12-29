@@ -32,9 +32,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
         {
-            var patient = await ResourceUtils.ValidateObject(
+            var patient = await ResourceUtils.ValidateNullObject(
                 () => this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId),
-                "Unable to find patient for the Observation", new KeyNotFoundException());
+                new KeyNotFoundException("Unable to find patient for the Observation"));
             this.logger.LogDebug("Creating medication request for patient {PatientId}", patient.Id);
             var newRequest = await this.medicationRequestDao.CreateMedicationRequest(request);
             var events = ResourceUtils.GenerateEventsFrom(newRequest, patient);

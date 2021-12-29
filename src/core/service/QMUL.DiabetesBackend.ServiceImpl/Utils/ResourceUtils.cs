@@ -45,7 +45,16 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             }
         }
 
-        public static async Task<T> ValidateObject<T>(Func<Task<T>> getObjectFunction, string message, Exception exception)
+        /// <summary>
+        /// Checks if the return value of an awaitable <see cref="Task{TResult}"/> is null. If it is not, it will return
+        /// the object; otherwise, it will throw an exception set in the parameter.
+        /// </summary>
+        /// <param name="getObjectFunction">A <see cref="Func{TResult}"/> that returns an awaitable <see cref="Task{TResult}"/></param>
+        /// <param name="exception">The exception to throw if the result is null.</param>
+        /// <typeparam name="T">The expected object's type</typeparam>
+        /// <returns>The Func return value if it is not null.</returns>
+        /// <exception cref="Exception">A custom exception if the Func result is null.</exception>
+        public static async Task<T> ValidateNullObject<T>(Func<Task<T>> getObjectFunction, Exception exception)
         {
             var result = await getObjectFunction.Invoke();
             if (result == null)
@@ -56,6 +65,13 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             return result;
         }
 
+        /// <summary>
+        /// Maps an AlexaRequestType to an EventType when there is an equivalence. Otherwise, throws an exception.
+        /// </summary>
+        /// <param name="requestType">The <see cref="AlexaRequestType"/> request.</param>
+        /// <returns>An equivalent <see cref="EventType"/> for the Alexa request.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if there is no equivalence between the Alexa request
+        /// and an Event type</exception>
         public static EventType MapRequestToEventType(AlexaRequestType requestType)
         {
             return requestType switch
@@ -66,7 +82,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 _ => throw new ArgumentOutOfRangeException(nameof(requestType), requestType, "Invalid request type")
             };
         }
-        
+
         /// <summary>
         /// Creates a list of events based on medication timings.
         /// </summary>
@@ -76,7 +92,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         public static IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request, Model.Patient patient)
         {
             var events = new List<HealthEvent>();
-            var isInsulin = ResourceUtils.IsInsulinResource(request);
+            var isInsulin = IsInsulinResource(request);
 
             foreach (var dosage in request.DosageInstruction)
             {
@@ -93,7 +109,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 
             return events;
         }
-        
+
         /// <summary>
         /// Creates a list of <see cref="HealthEvent"/> from a <see cref="ServiceRequest"/>. The service request's
         /// occurrence must be an instance of <see cref="Hl7.Fhir.Model.Timing"/> to have consistency between

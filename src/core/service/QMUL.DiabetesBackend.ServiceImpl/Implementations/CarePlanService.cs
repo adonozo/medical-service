@@ -50,9 +50,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<Bundle> GetCarePlanFor(string patientEmailOrId)
         {
             this.logger.LogTrace("Getting care plans for {IdOrEmail}", patientEmailOrId);
-            var patient = await ResourceUtils.ValidateObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientEmailOrId),
-                "Unable to find patient.", new KeyNotFoundException());
+            var patient = await ResourceUtils.ValidateNullObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new KeyNotFoundException("Unable to find patient."));
             var medicationRequests = await this.medicationRequestDao.GetMedicationRequestFor(patient.Id);
             var serviceRequests = await this.serviceRequestDao.GetServiceRequestsFor(patient.Id);
             var bundle = ResourceUtils.GenerateEmptyBundle();
