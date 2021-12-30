@@ -1,6 +1,7 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using Hl7.Fhir.Model;
     using Model.Enums;
     using NodaTime;
@@ -13,6 +14,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     /// </summary>
     public static class EventTimingMapper
     {
+        [ExcludeFromCodeCoverage]
         public static CustomEventTiming ToCustomEventTiming(this Timing.EventTiming? eventTiming)
         {
             return eventTiming switch
