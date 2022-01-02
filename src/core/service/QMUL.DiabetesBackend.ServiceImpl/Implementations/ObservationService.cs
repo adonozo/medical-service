@@ -34,8 +34,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             await ResourceUtils.ValidateNullObject(
                 () => this.patientDao.GetPatientByIdOrEmail(patientId),
                 new KeyNotFoundException("Unable to find patient for the Observation"));
+            newObservation.Subject.ElementId = patientId;
             var observation = await ResourceUtils.ValidateNullObject(
-                () => this.observationDao.CreateObservation(newObservation), new ArgumentException("Invalid observation", nameof(newObservation)));
+                () => this.observationDao.CreateObservation(newObservation),
+                new ArgumentException("Invalid observation", nameof(newObservation)));
             this.logger.LogDebug("Observation created with ID {Id}", observation.Id);
             return observation;
         }
@@ -58,44 +60,35 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 new KeyNotFoundException("Unable to find patient for the Observation"));
             var observations = await this.observationDao.GetAllObservationsFor(patient.Id);
             var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
+            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent { Resource = observation })
                 .ToList();
             this.logger.LogDebug("Found {Count} observations", observations.Count);
             return bundle;
         }
 
         /// <inheritdoc/>>
-        public async Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime, 
+        public async Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime,
             string patientTimezone = "UTC")
         {
+            var patient = await ResourceUtils.ValidateNullObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientId),
+                new KeyNotFoundException("Unable to find patient for the Observation"));
+
+            DateTime start, end;
             if (timing == CustomEventTiming.EXACT)
             {
-                return await this.GetObservationsFor(patientId, dateTime);
+                start = dateTime.AddMinutes(DefaultOffset * -1);
+                end = dateTime.AddMinutes(DefaultOffset);
+            }
+            else
+            {
+                (start, end) =
+                    EventTimingMapper.GetIntervalForPatient(patient, dateTime, timing, patientTimezone, DefaultOffset);
             }
 
-            var patient = await ResourceUtils.ValidateNullObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientId),
-                new KeyNotFoundException("Unable to find patient for the Observation"));
-            var (start, end) =
-                EventTimingMapper.GetIntervalForPatient(patient, dateTime, timing, patientTimezone, DefaultOffset);
             var observations = await this.observationDao.GetObservationsFor(patient.Id, start, end);
             var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
-                .ToList();
-            this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId, observations.Count);
-            return bundle;
-        }
-
-        private async Task<Bundle> GetObservationsFor(string patientId, DateTime dateTime)
-        {
-            var patient = await ResourceUtils.ValidateNullObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientId),
-                new KeyNotFoundException("Unable to find patient for the Observation"));
-            var startDate = dateTime.AddMinutes(DefaultOffset * -1);
-            var endDate = dateTime.AddMinutes(DefaultOffset);
-            var observations = await this.observationDao.GetObservationsFor(patient.Id, startDate, endDate);
-            var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
+            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent { Resource = observation })
                 .ToList();
             this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId, observations.Count);
             return bundle;
