@@ -185,8 +185,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         }
 
         /// <summary>
-        /// Gets the related timing events for a given event. E.g, A before-breakfast event will get all breakfast
-        /// related events.
+        /// Gets the related timing events for a given event. E.g, For before-breakfast, it will get all breakfast
+        /// related events: before, during, and after breakfast.
         /// </summary>
         /// <param name="eventTiming">The custom timing event.</param>
         /// <returns>An array with the related timing events. Empty if there are no related events.</returns>

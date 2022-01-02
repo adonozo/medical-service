@@ -88,7 +88,8 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
 
         /// <summary>
         /// Updates / Adds a start date for a dosage instruction. Useful when the medication doesn't have an exact start
-        /// date; has a duration rather than a period, e.g., for 7 days, for a month, etc. 
+        /// date and it has a duration rather than a period, e.g., for 7 days, for a month, etc.
+        /// The associated health events are updated as well by deleting old events and creating new ones. 
         /// </summary>
         /// <param name="patientIdOrEmail">The patient's ID or email.</param>
         /// <param name="dosageId">The dosage ID to update.</param>
