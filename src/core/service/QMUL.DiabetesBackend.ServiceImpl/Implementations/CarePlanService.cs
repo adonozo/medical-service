@@ -20,8 +20,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         private readonly IPatientDao patientDao;
         private readonly ILogger<CarePlanService> logger;
 
-        public CarePlanService(IServiceRequestDao serviceRequestDao,
-            IMedicationRequestDao medicationRequestDao, IPatientDao patientDao, ILogger<CarePlanService> logger)
+        public CarePlanService(IServiceRequestDao serviceRequestDao, IMedicationRequestDao medicationRequestDao,
+            IPatientDao patientDao, ILogger<CarePlanService> logger)
         {
             this.serviceRequestDao = serviceRequestDao;
             this.medicationRequestDao = medicationRequestDao;
@@ -33,14 +33,16 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<Bundle> GetActiveCarePlans(string patientIdOrEmail)
         {
             this.logger.LogTrace("Getting active care plans for {IdOrEmail}", patientIdOrEmail);
-            var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
+            var patient = await ResourceUtils.ValidateNullObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
+                new KeyNotFoundException("Unable to find patient."));
             var medicationRequests = await this.medicationRequestDao.GetAllActiveMedicationRequests(patient.Id);
             var serviceRequests = await this.serviceRequestDao.GetActiveServiceRequests(patient.Id);
             var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
+            bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent { Resource = request })
                 .ToList();
             this.logger.LogTrace("Found {Count} medication requests", medicationRequests.Count);
-            bundle.Entry.AddRange(serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
+            bundle.Entry.AddRange(serviceRequests.Select(request => new Bundle.EntryComponent { Resource = request })
                 .ToList());
             this.logger.LogTrace("Found {Count} service requests", serviceRequests.Count);
             return bundle;
@@ -51,14 +53,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         {
             this.logger.LogTrace("Getting care plans for {IdOrEmail}", patientEmailOrId);
             var patient = await ResourceUtils.ValidateNullObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new KeyNotFoundException("Unable to find patient."));
+                () => this.patientDao.GetPatientByIdOrEmail(patientEmailOrId),
+                new KeyNotFoundException("Unable to find patient."));
             var medicationRequests = await this.medicationRequestDao.GetMedicationRequestFor(patient.Id);
             var serviceRequests = await this.serviceRequestDao.GetServiceRequestsFor(patient.Id);
             var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
+            bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent { Resource = request })
                 .ToList();
             this.logger.LogTrace("Found {Count} medication requests", medicationRequests.Count);
-            bundle.Entry.AddRange(serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
+            bundle.Entry.AddRange(serviceRequests.Select(request => new Bundle.EntryComponent { Resource = request })
                 .ToList());
             this.logger.LogTrace("Found {Count} service requests", serviceRequests.Count);
             return bundle;
