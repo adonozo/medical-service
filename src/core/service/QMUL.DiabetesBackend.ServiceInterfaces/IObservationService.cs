@@ -13,9 +13,10 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <summary>
         /// Creates an <see cref="Observation"/>.
         /// </summary>
+        /// <param name="patientId">The patient's ID or email.</param>
         /// <param name="newObservation">The <see cref="Observation"/> to create.</param>
         /// <returns>The <see cref="Observation"/> created with a new ID.</returns>
-        public Task<Observation> CreateObservation(Observation newObservation);
+        public Task<Observation> CreateObservation(string patientId, Observation newObservation);
 
         /// <summary>
         /// Gets a single <see cref="Observation"/>.

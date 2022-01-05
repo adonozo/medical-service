@@ -1,5 +1,6 @@
 namespace QMUL.DiabetesBackend.DataInterfaces
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
@@ -9,10 +10,27 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     /// </summary>
     public interface IMedicationRequestDao
     {
+        /// <summary>
+        /// Creates the medication request from the argument.
+        /// </summary>
+        /// <param name="newRequest">The <see cref="MedicationRequest"/> to create.</param>
+        /// <returns>The newly created medication request.</returns>
         public Task<MedicationRequest> CreateMedicationRequest(MedicationRequest newRequest);
 
+        /// <summary>
+        /// Updates a medication request.
+        /// </summary>
+        /// <param name="id">The medication request's ID</param>
+        /// <param name="actualRequest">The <see cref="MedicationRequest"/> to update</param>
+        /// <returns>The updated medication request</returns>
         public Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest actualRequest);
 
+        /// <summary>
+        /// Gets a <see cref="MedicationRequest"/> based on the ID.
+        /// </summary>
+        /// <param name="id">The medication request's ID.</param>
+        /// <returns>The medication request found.</returns>
+        /// <exception cref="KeyNotFoundException">If the medication request was not found.</exception>
         public Task<MedicationRequest> GetMedicationRequest(string id);
 
         public Task<List<MedicationRequest>> GetMedicationRequestsByIds(string[] ids);

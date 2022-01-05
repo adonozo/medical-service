@@ -4,14 +4,61 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Model.Enums;
+    using Task = System.Threading.Tasks.Task;
 
     /// <summary>
     /// The Alexa Service Interface. Manages Alexa related requests.
     /// </summary>
     public interface IAlexaService
     {
-        public Task<Bundle> ProcessRequest(string patientEmailOrId, AlexaRequestType type, DateTime dateTime,
-            CustomEventTiming timing, string timezone = "UTC");
+        /// <summary>
+        /// Gets the medication requests for a given patient based on a date, timing, and the user's timezone. It does not
+        /// include the insulin requests. The results are limited to a single day timespan due to CustomEventTiming.
+        /// </summary>
+        /// <param name="patientEmailOrId">The patient's unique email or ID</param>
+        /// <param name="dateTime">The date and time to get the results from</param>
+        /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
+        /// <param name="timezone">The user's timezone. Defaults to UTC</param>
+        /// <returns>A <see cref="Bundle"/> with the results</returns>
+        public Task<Bundle> ProcessMedicationRequest(string patientEmailOrId, DateTime dateTime, CustomEventTiming timing,
+            string timezone = "UTC");
+        
+        /// <summary>
+        /// Gets the insulin medication requests for a given patient based on a date, timing, and the user's timezone.
+        /// The results are limited to a single day timespan due to CustomEventTiming.
+        /// </summary>
+        /// <param name="patientEmailOrId">The patient's unique email or ID</param>
+        /// <param name="dateTime">The date and time to get the results from</param>
+        /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
+        /// <param name="timezone">The user's timezone. Defaults to UTC</param>
+        /// <returns>A <see cref="Bundle"/> with the results</returns>
+        public Task<Bundle> ProcessInsulinMedicationRequest(string patientEmailOrId, DateTime dateTime, CustomEventTiming timing,
+            string timezone = "UTC");
+        
+        /// <summary>
+        /// Gets the glucose service requests for a given patient based on a date, timing, and the user's timezone.
+        /// The results are limited to a single day timespan due to CustomEventTiming.
+        /// </summary>
+        /// <param name="patientEmailOrId">The patient's unique email or ID</param>
+        /// <param name="dateTime">The date and time to get the results from</param>
+        /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
+        /// <param name="timezone">The user's timezone. Defaults to UTC</param>
+        /// <returns>A <see cref="Bundle"/> with the results</returns>
+        public Task<Bundle> ProcessGlucoseServiceRequest(string patientEmailOrId, DateTime dateTime, CustomEventTiming timing,
+            string timezone = "UTC");
+        
+        /// <summary>
+        /// Gets the complete care plan for a given patient based on a date, timing, and the user's timezone. This means
+        /// medication (insulin or not) and service requests. The results are limited to a single day timespan due to
+        /// CustomEventTiming.
+        /// </summary>
+        /// <param name="patientEmailOrId">The patient's unique email or ID</param>
+        /// <param name="dateTime">The date and time to get the results from</param>
+        /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
+        /// <param name="timezone">The user's timezone. Defaults to UTC</param>
+        /// <returns>A <see cref="Bundle"/> with the results</returns>
+        public Task<Bundle> ProcessCarePlanRequest(string patientEmailOrId, DateTime dateTime, CustomEventTiming timing,
+            string timezone = "UTC");
 
         /// <summary>
         /// Gets the next requests for a patient to follow given a request type.
@@ -41,7 +88,8 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
 
         /// <summary>
         /// Updates / Adds a start date for a dosage instruction. Useful when the medication doesn't have an exact start
-        /// date; has a duration rather than a period, e.g., for 7 days, for a month, etc. 
+        /// date and it has a duration rather than a period, e.g., for 7 days, for a month, etc.
+        /// The associated health events are updated as well by deleting old events and creating new ones. 
         /// </summary>
         /// <param name="patientIdOrEmail">The patient's ID or email.</param>
         /// <param name="dosageId">The dosage ID to update.</param>

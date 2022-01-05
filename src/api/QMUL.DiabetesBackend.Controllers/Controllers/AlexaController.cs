@@ -25,16 +25,15 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpGet]
-        [Route("{idOrEmail}/alexa")]
-        public async Task<IActionResult> GetAlexaRequest([FromRoute] string idOrEmail,
-            [FromQuery] AlexaRequestType type,
+        [Route("{idOrEmail}/alexa/medicationRequest")]
+        public async Task<IActionResult> GetMedicationRequest([FromRoute] string idOrEmail,
             [FromQuery] DateTime date,
             [FromQuery] string timezone = "UTC",
             [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
         {
             try
             {
-                var result = await this.alexaService.ProcessRequest(idOrEmail, type, date, timing, timezone);
+                var result = await this.alexaService.ProcessMedicationRequest(idOrEmail, date, timing, timezone);
                 return this.Ok(result.ToJObject());
             }
             catch (KeyNotFoundException)
@@ -44,7 +43,79 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
+                this.logger.LogWarning(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpGet]
+        [Route("{idOrEmail}/alexa/insulinRequest")]
+        public async Task<IActionResult> GetInsulinMedicationRequest([FromRoute] string idOrEmail,
+            [FromQuery] DateTime date,
+            [FromQuery] string timezone = "UTC",
+            [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
+        {
+            try
+            {
+                var result = await this.alexaService.ProcessInsulinMedicationRequest(idOrEmail, date, timing, timezone);
+                return this.Ok(result.ToJObject());
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning("Patient not found: {IdOrEmail}", idOrEmail);
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogWarning(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpGet]
+        [Route("{idOrEmail}/alexa/glucoseRequest")]
+        public async Task<IActionResult> GetGlucoseServiceRequest([FromRoute] string idOrEmail,
+            [FromQuery] DateTime date,
+            [FromQuery] string timezone = "UTC",
+            [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
+        {
+            try
+            {
+                var result = await this.alexaService.ProcessGlucoseServiceRequest(idOrEmail, date, timing, timezone);
+                return this.Ok(result.ToJObject());
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning("Patient not found: {IdOrEmail}", idOrEmail);
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogWarning(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpGet]
+        [Route("{idOrEmail}/alexa/carePlan")]
+        public async Task<IActionResult> GetCarePlan([FromRoute] string idOrEmail,
+            [FromQuery] DateTime date,
+            [FromQuery] string timezone = "UTC",
+            [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
+        {
+            try
+            {
+                var result = await this.alexaService.ProcessCarePlanRequest(idOrEmail, date, timing, timezone);
+                return this.Ok(result.ToJObject());
+            }
+            catch (KeyNotFoundException)
+            {
+                this.logger.LogWarning("Patient not found: {IdOrEmail}", idOrEmail);
+                return this.NotFound();
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogWarning(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -75,7 +146,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
+                this.logger.LogWarning(exception, "Error processing the request for: {IdOrEmail}", idOrEmail);
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }

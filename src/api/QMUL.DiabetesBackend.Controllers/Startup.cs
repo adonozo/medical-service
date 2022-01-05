@@ -1,5 +1,6 @@
 namespace QMUL.DiabetesBackend.Api
 {
+    using System.Diagnostics.CodeAnalysis;
     using DataInterfaces;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -13,6 +14,7 @@ namespace QMUL.DiabetesBackend.Api
     using ServiceImpl.Implementations;
     using ServiceInterfaces;
 
+    [ExcludeFromCodeCoverage]
     public class Startup
     {
         public Startup(IConfiguration configuration)

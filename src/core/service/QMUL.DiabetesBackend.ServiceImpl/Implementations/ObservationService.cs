@@ -29,14 +29,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public async Task<Observation> CreateObservation(Observation newObservation)
+        public async Task<Observation> CreateObservation(string patientId, Observation newObservation)
         {
-            await ResourceUtils.ValidateObject(
-                () => this.patientDao.GetPatientByIdOrEmail(newObservation.Subject.ElementId),
-                "Unable to find patient for the Observation", new KeyNotFoundException());
-            var observation = await ResourceUtils.ValidateObject(
+            await ResourceUtils.ValidateNullObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientId),
+                new KeyNotFoundException("Unable to find patient for the Observation"));
+            newObservation.Subject.ElementId = patientId;
+            var observation = await ResourceUtils.ValidateNullObject(
                 () => this.observationDao.CreateObservation(newObservation),
-                "Unable to create Observation", new ArgumentException("Invalid observation", nameof(newObservation)));
+                new ArgumentException("Invalid observation", nameof(newObservation)));
             this.logger.LogDebug("Observation created with ID {Id}", observation.Id);
             return observation;
         }
@@ -44,9 +45,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<Observation> GetSingleObservation(string observationId)
         {
-            var observation = await ResourceUtils.ValidateObject(
+            var observation = await ResourceUtils.ValidateNullObject(
                 () => this.observationDao.GetObservation(observationId),
-                $"Observation not found: {observationId}", new KeyNotFoundException());
+                new KeyNotFoundException($"Observation not found: {observationId}"));
             this.logger.LogDebug("Observation found: {Id}", observationId);
             return observation;
         }
@@ -54,49 +55,40 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<Bundle> GetAllObservationsFor(string patientId)
         {
-            var patient = await ResourceUtils.ValidateObject(
+            var patient = await ResourceUtils.ValidateNullObject(
                 () => this.patientDao.GetPatientByIdOrEmail(patientId),
-                "Unable to find patient for the Observation", new KeyNotFoundException());
+                new KeyNotFoundException("Unable to find patient for the Observation"));
             var observations = await this.observationDao.GetAllObservationsFor(patient.Id);
             var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
+            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent { Resource = observation })
                 .ToList();
             this.logger.LogDebug("Found {Count} observations", observations.Count);
             return bundle;
         }
 
         /// <inheritdoc/>>
-        public async Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime, 
+        public async Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime,
             string patientTimezone = "UTC")
         {
+            var patient = await ResourceUtils.ValidateNullObject(
+                () => this.patientDao.GetPatientByIdOrEmail(patientId),
+                new KeyNotFoundException("Unable to find patient for the Observation"));
+
+            DateTime start, end;
             if (timing == CustomEventTiming.EXACT)
             {
-                return await this.GetObservationsFor(patientId, dateTime);
+                start = dateTime.AddMinutes(DefaultOffset * -1);
+                end = dateTime.AddMinutes(DefaultOffset);
             }
-            
-            var patient = await ResourceUtils.ValidateObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientId),
-                "Unable to find patient for the Observation", new KeyNotFoundException());
-            var (start, end) =
-                EventTimingMapper.GetIntervalForPatient(patient, dateTime, timing, patientTimezone, DefaultOffset);
+            else
+            {
+                (start, end) =
+                    EventTimingMapper.GetIntervalForPatient(patient, dateTime, timing, patientTimezone, DefaultOffset);
+            }
+
             var observations = await this.observationDao.GetObservationsFor(patient.Id, start, end);
             var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
-                .ToList();
-            this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId, observations.Count);
-            return bundle;
-        }
-
-        private async Task<Bundle> GetObservationsFor(string patientId, DateTime dateTime)
-        {
-            var patient = await ResourceUtils.ValidateObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientId),
-                "Unable to find patient for the Observation", new KeyNotFoundException());
-            var startDate = dateTime.AddMinutes(DefaultOffset * -1);
-            var endDate = dateTime.AddMinutes(DefaultOffset);
-            var observations = await this.observationDao.GetObservationsFor(patient.Id, startDate, endDate);
-            var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
+            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent { Resource = observation })
                 .ToList();
             this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId, observations.Count);
             return bundle;

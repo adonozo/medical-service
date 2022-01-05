@@ -5,6 +5,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using DataInterfaces;
     using ServiceInterfaces;
     using Microsoft.Extensions.Logging;
+    using Utils;
     using Patient = Model.Patient;
 
     /// <summary>
@@ -37,14 +38,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>
         public async Task<Patient> GetPatient(string idOrEmail)
         {
-            var result = await this.patientDao.GetPatientByIdOrEmail(idOrEmail);
-            if (result == null)
-            {
-                throw new KeyNotFoundException();
-            }
+            var patient = await ResourceUtils.ValidateNullObject(
+                () => this.patientDao.GetPatientByIdOrEmail(idOrEmail),
+                new KeyNotFoundException($"The patient with ID {idOrEmail} was not found"));
 
             this.logger.LogDebug("Patient found: {IdOrEmail}", idOrEmail);
-            return result;
+            return patient;
         }
     }
 }

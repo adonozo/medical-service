@@ -59,31 +59,29 @@ namespace QMUL.DiabetesBackend.Api.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
-        
+
         [HttpPost]
         [Route("")]
-        public async Task<IActionResult> CreateServiceRequest([FromBody] object request)
+        public async Task<IActionResult> CreateMedication([FromBody] object request)
         {
+
+            var parser = new FhirJsonParser(new ParserSettings
+            { AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true });
             try
             {
-                var parser = new FhirJsonParser(new ParserSettings
-                    {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
-                try
-                {
-                    var parsedRequest = await parser.ParseAsync<Medication>(request.ToString());
-                    var result = await this.medicationService.CreateMedication(parsedRequest);
-                    return this.Ok(result.ToJObject());
-                }
-                catch (Exception exception)
-                {
-                    this.logger.LogError(exception, "Couldn't parse the request");
-                    return this.BadRequest();
-                }
+                var parsedRequest = await parser.ParseAsync<Medication>(request.ToString());
+                var result = await this.medicationService.CreateMedication(parsedRequest);
+                return this.Ok(result.ToJObject());
+            }
+            catch (FormatException exception)
+            {
+                this.logger.LogWarning(exception, "Couldn't parse the request");
+                return this.BadRequest();
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error trying to create a medication");
-                return this.BadRequest();
+                this.logger.LogWarning(exception, "Error trying to create a medication");
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
     }
