@@ -47,6 +47,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{584D014C-B66
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.Controllers.Tests", "test\api\QMUL.DiabetesBackend.Controllers.Tests\QMUL.DiabetesBackend.Controllers.Tests.csproj", "{9E90735C-91D2-44AA-8045-C6E2C0D4CD71}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "data", "data", "{55811FA2-1F40-45EB-A10C-6A50E23D2499}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.MongoDb.Tests", "test\data\QMUL.DiabetesBackend.MongoDb.Tests\QMUL.DiabetesBackend.MongoDb.Tests.csproj", "{BBCC2D6C-E9B8-467B-8B80-6995068AC7AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +89,10 @@ Global
 		{9E90735C-91D2-44AA-8045-C6E2C0D4CD71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E90735C-91D2-44AA-8045-C6E2C0D4CD71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E90735C-91D2-44AA-8045-C6E2C0D4CD71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBCC2D6C-E9B8-467B-8B80-6995068AC7AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBCC2D6C-E9B8-467B-8B80-6995068AC7AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBCC2D6C-E9B8-467B-8B80-6995068AC7AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBCC2D6C-E9B8-467B-8B80-6995068AC7AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -103,6 +111,8 @@ Global
 		{725B549D-8509-4DCD-A843-061F3C9537EE} = {83BD7429-F05E-42EC-8F4C-6C03388BD35D}
 		{584D014C-B66E-4434-B5F8-EC9E96ED4FBC} = {3723FF2D-06A0-41AC-B6ED-4D0B49B3C7BC}
 		{9E90735C-91D2-44AA-8045-C6E2C0D4CD71} = {584D014C-B66E-4434-B5F8-EC9E96ED4FBC}
+		{55811FA2-1F40-45EB-A10C-6A50E23D2499} = {3723FF2D-06A0-41AC-B6ED-4D0B49B3C7BC}
+		{BBCC2D6C-E9B8-467B-8B80-6995068AC7AF} = {55811FA2-1F40-45EB-A10C-6A50E23D2499}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AFB29E41-36A7-4D62-BDF0-63DC00B1E467}
