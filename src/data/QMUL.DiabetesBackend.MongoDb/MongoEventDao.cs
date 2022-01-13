@@ -5,6 +5,7 @@ namespace QMUL.DiabetesBackend.MongoDb
     using System.Linq;
     using System.Threading.Tasks;
     using DataInterfaces;
+    using DataInterfaces.Exceptions;
     using Microsoft.Extensions.Logging;
     using Model;
     using Model.Enums;
@@ -22,7 +23,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         private const string CollectionName = "healthEvent";
         private const int DefaultLimit = 3;
 
-        public MongoEventDao(IDatabaseSettings settings, ILogger<MongoEventDao> logger) : base(settings)
+        public MongoEventDao(IMongoDatabase database, ILogger<MongoEventDao> logger) : base(database)
         {
             this.logger = logger;
             this.eventCollection = this.Database.GetCollection<MongoEvent>(CollectionName);
@@ -41,8 +42,9 @@ namespace QMUL.DiabetesBackend.MongoDb
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error trying to create health events");
-                throw;
+                const string errorMessage = "Error trying to create health events";
+                this.logger.LogError(exception, errorMessage);
+                throw new CreateException(errorMessage, exception);
             }
         }
 
@@ -60,31 +62,32 @@ namespace QMUL.DiabetesBackend.MongoDb
         {
             this.logger.LogDebug("Updating event timing for patient: {PatientId}", patientId);
             var currentTime = DateTime.UtcNow;
-            var setTime = new Func<DateTime, DateTime>(oldTime => oldTime.Date.AddHours(time.Hour).AddMinutes(time.Minute));
+            var setTime =
+                new Func<DateTime, DateTime>(oldTime => oldTime.Date.AddHours(time.Hour).AddMinutes(time.Minute));
             var eventsToUpdate = await this.eventCollection.FindAsync(healthEvent => healthEvent.PatientId == patientId
-                                                                && healthEvent.EventTiming == timing
-                                                                && healthEvent.EventDateTime > currentTime);
+                && healthEvent.EventTiming == timing
+                && healthEvent.EventDateTime > currentTime);
 
             await eventsToUpdate.ForEachAsync(async healthEvent =>
             {
                 healthEvent.EventDateTime = setTime(healthEvent.EventDateTime);
                 var updateResult = await this.eventCollection.UpdateOneAsync(item => item.Id == healthEvent.Id,
                     Builders<MongoEvent>.Update.Set(item => item.EventDateTime, healthEvent.EventDateTime));
-                if (!updateResult.IsAcknowledged)
-                {
-                    throw new ArgumentException("Could not update the healthEvent", nameof(timing));
-                }
+                var errorMessage = $"Could not update the healthEvent with ID {healthEvent.Id}";
+                this.CheckAcknowledgedOrThrow(updateResult.IsAcknowledged, new UpdateException(errorMessage),
+                    () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
             });
-            
+
             return true;
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime start, DateTime end)
+        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime start,
+            DateTime end)
         {
             var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
                                                                   && healthEvent.Resource.EventType == type
-                                                                  && healthEvent.EventDateTime > start 
+                                                                  && healthEvent.EventDateTime > start
                                                                   && healthEvent.EventDateTime < end)
                 .Project(mongoEvent => mongoEvent.ToHealthEvent());
             return await result.ToListAsync();
@@ -96,16 +99,17 @@ namespace QMUL.DiabetesBackend.MongoDb
         {
             var timingFilter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.EventTiming, timings);
             timingFilter &= this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
-                                                                  && healthEvent.Resource.EventType == type
-                                                                  && healthEvent.EventDateTime > start
-                                                                  && healthEvent.EventDateTime < end)
+                                                                     && healthEvent.Resource.EventType == type
+                                                                     && healthEvent.EventDateTime > start
+                                                                     && healthEvent.EventDateTime < end)
                 .Filter;
             var result = this.eventCollection.Find(timingFilter).Project(mongoEvent => mongoEvent.ToHealthEvent());
             return await result.ToListAsync();
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType[] types, DateTime start, DateTime end)
+        public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType[] types, DateTime start,
+            DateTime end)
         {
             var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.Resource.EventType, types);
             filter &= this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
@@ -123,8 +127,8 @@ namespace QMUL.DiabetesBackend.MongoDb
             var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.EventTiming, timings);
             filter &= Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.Resource.EventType, types);
             filter &= this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
-                                                                     && healthEvent.EventDateTime > start
-                                                                     && healthEvent.EventDateTime < end)
+                                                               && healthEvent.EventDateTime > start
+                                                               && healthEvent.EventDateTime < end)
                 .Filter;
             var result = this.eventCollection.Find(filter).Project(mongoEvent => mongoEvent.ToHealthEvent());
             return await result.ToListAsync();
@@ -137,7 +141,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             var sort = Builders<MongoEvent>.Sort.Ascending(healthEvent => healthEvent.EventDateTime);
             var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
                                                                   && healthEvent.Resource.EventType == type
-                                                                  && healthEvent.EventDateTime > date )
+                                                                  && healthEvent.EventDateTime > date)
                 .Sort(sort)
                 .Limit(DefaultLimit)
                 .Project(mongoEvent => mongoEvent.ToHealthEvent());
@@ -151,7 +155,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             var sort = Builders<MongoEvent>.Sort.Ascending(healthEvent => healthEvent.EventDateTime);
             var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.Resource.EventType, types);
             filter &= this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
-                                                                  && healthEvent.EventDateTime > date ).Filter;
+                                                               && healthEvent.EventDateTime > date).Filter;
             var result = this.eventCollection.Find(filter)
                 .Sort(sort)
                 .Limit(DefaultLimit)
