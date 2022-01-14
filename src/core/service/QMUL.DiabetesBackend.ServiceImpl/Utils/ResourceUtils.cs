@@ -3,11 +3,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Model;
     using Model.Enums;
-    using Task = System.Threading.Tasks.Task;
 
     /// <summary>
     /// Resource util methods
@@ -42,42 +40,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             catch (Exception)
             {
                 return false;
-            }
-        }
-
-        /// <summary>
-        /// Checks if the return value of an awaitable <see cref="Task{TResult}"/> is null. If it is not, it will return
-        /// the object; otherwise, it will throw an exception set as an argument.
-        /// </summary>
-        /// <param name="getObjectFunction">A <see cref="Func{TResult}"/> that returns an awaitable <see cref="Task{TResult}"/></param>
-        /// <param name="exception">The exception to throw if the result is null.</param>
-        /// <typeparam name="T">The expected object's type</typeparam>
-        /// <returns>The Func return value if it is not null.</returns>
-        /// <exception cref="Exception">A custom exception if the Func result is null.</exception>
-        public static async Task<T> ValidateNullObject<T>(Func<Task<T>> getObjectFunction, Exception exception)
-        {
-            var result = await getObjectFunction.Invoke();
-            if (result == null)
-            {
-                throw exception;
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Checks if the result of the awaitable method is true. If it is not, it throws the second argument exception.
-        /// </summary>
-        /// <param name="booleanFunction">The function that returns a boolean value. A successful operation should return true.</param>
-        /// <param name="exception">The exception to throw if the result is false.</param>
-        /// <returns>True if the result was successful.</returns>
-        /// <exception cref="Exception">When the boolean result is false</exception>
-        public static async Task ValidateBooleanResult(Func<Task<bool>> booleanFunction, Exception exception)
-        {
-            var result = await booleanFunction.Invoke();
-            if (!result)
-            {
-                throw exception;
             }
         }
 

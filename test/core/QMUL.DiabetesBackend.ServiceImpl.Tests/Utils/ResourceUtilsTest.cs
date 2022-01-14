@@ -75,63 +75,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
             isInsulin.Should().Be(false);
         }
 
-        [Fact]
-        public async Task ValidateNullObject_WhenResultIsNotNull_ReturnsObject()
-        {
-            // Arrange
-            var function = new Func<Task<string>>(() => Task.FromResult(string.Empty));
-            var exception = new Exception();
-
-            // Act
-            var result = await ResourceUtils.ValidateNullObject(function, exception);
-
-            // Assert
-            result.Should().NotBeNull();
-        }
-
-        [Fact]
-        public async Task ValidateNullObject_WhenResultIsNull_ThrowsException()
-        {
-            // Arrange
-            var function = new Func<Task<string>>(() => Task.FromResult<string>(null));
-            var exception = new ArgumentException();
-            
-            // Act
-            var action =
-                new Func<Task<string>>(() => ResourceUtils.ValidateNullObject(function, exception));
-            
-            // Assert
-            await action.Should().ThrowAsync<ArgumentException>();
-        }
-
-        [Fact]
-        public async Task ValidateBooleanResult_WhenFunctionReturnsTrue_DoesNotThrowsExceptions()
-        {
-            // Arrange
-            var function = new Func<Task<bool>>(() => Task.FromResult(true));
-            var exception = new Exception();
-            
-            // Act
-            var action = new Func<Task>(() => ResourceUtils.ValidateBooleanResult(function, exception));
-
-            // Assert
-            await action.Should().NotThrowAsync();
-        }
-
-        [Fact]
-        public async Task ValidateBooleanResult_WhenFunctionReturnsFalse_ThrowsException()
-        {
-            // Arrange
-            var function = new Func<Task<bool>>(() => Task.FromResult(false));
-            var exception = new ArgumentException();
-            
-            // Act
-            var action = new Func<Task>(() => ResourceUtils.ValidateBooleanResult(function, exception));
-
-            // Assert
-            await action.Should().ThrowAsync<ArgumentException>();
-        }
-
         [Theory]
         [InlineData(AlexaRequestType.Medication, EventType.MedicationDosage)]
         [InlineData(AlexaRequestType.Insulin, EventType.InsulinDosage)]
