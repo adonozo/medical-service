@@ -15,6 +15,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="newRequest">The <see cref="MedicationRequest"/> to create.</param>
         /// <returns>The newly created medication request.</returns>
+        /// <exception cref="CreateException">If the medication was not inserted or found after being inserted.</exception>
         public Task<MedicationRequest> CreateMedicationRequest(MedicationRequest newRequest);
 
         /// <summary>
@@ -23,7 +24,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="id">The medication request's ID</param>
         /// <param name="actualRequest">The <see cref="MedicationRequest"/> to update</param>
         /// <returns>The updated medication request</returns>
-        /// <exception cref="CreateException">If the medication request was not found</exception>
+        /// <exception cref="UpdateException">If the medication request was not updated or found after the update.</exception>
         public Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest actualRequest);
 
         /// <summary>
