@@ -24,13 +24,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
             // Assert
             result.Should().Be(expectedResult);
         }
-        
+
         [Fact]
         public async Task ExecuteAndHandleAsync_WhenMethodThrowsCreateException_ThrowsException()
         {
             // Arrange
             var logger = Substitute.For<ILogger>();
-            var function = new Func<Task<string>>(() => throw new DataInterfaces.Exceptions.CreateException(string.Empty));
+            var function =
+                new Func<Task<string>>(() => throw new DataInterfaces.Exceptions.CreateException(string.Empty));
 
             // Act
             var action = new Func<Task>(() => ExceptionHandler.ExecuteAndHandleAsync(function, logger));
@@ -38,13 +39,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
             // Assert
             await action.Should().ThrowAsync<ServiceInterfaces.Exceptions.CreateException>();
         }
-        
+
         [Fact]
         public async Task ExecuteAndHandleAsync_WhenMethodThrowsNotFoundException_ThrowsException()
         {
             // Arrange
             var logger = Substitute.For<ILogger>();
-            var function = new Func<Task<string>>(() => throw new DataInterfaces.Exceptions.NotFoundException(string.Empty));
+            var function =
+                new Func<Task<string>>(() => throw new DataInterfaces.Exceptions.NotFoundException(string.Empty));
 
             // Act
             var action = new Func<Task>(() => ExceptionHandler.ExecuteAndHandleAsync(function, logger));
@@ -52,13 +54,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
             // Assert
             await action.Should().ThrowAsync<ServiceInterfaces.Exceptions.NotFoundException>();
         }
-        
+
         [Fact]
         public async Task ExecuteAndHandleAsync_WhenMethodThrowsUpdateException_ThrowsException()
         {
             // Arrange
             var logger = Substitute.For<ILogger>();
-            var function = new Func<Task<string>>(() => throw new DataInterfaces.Exceptions.UpdateException(string.Empty));
+            var function =
+                new Func<Task<string>>(() => throw new DataInterfaces.Exceptions.UpdateException(string.Empty));
 
             // Act
             var action = new Func<Task>(() => ExceptionHandler.ExecuteAndHandleAsync(function, logger));
@@ -66,7 +69,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
             // Assert
             await action.Should().ThrowAsync<ServiceInterfaces.Exceptions.UpdateException>();
         }
-        
+
         [Fact]
         public async Task ExecuteAndHandleAsync_WhenMethodThrowsException_ThrowsSame()
         {
