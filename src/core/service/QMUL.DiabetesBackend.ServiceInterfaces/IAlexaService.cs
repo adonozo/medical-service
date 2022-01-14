@@ -2,9 +2,9 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
 {
     using System;
     using System.Threading.Tasks;
+    using Exceptions;
     using Hl7.Fhir.Model;
     using Model.Enums;
-    using Task = System.Threading.Tasks.Task;
 
     /// <summary>
     /// The Alexa Service Interface. Manages Alexa related requests.
@@ -20,9 +20,9 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
         /// <param name="timezone">The user's timezone. Defaults to UTC</param>
         /// <returns>A <see cref="Bundle"/> with the results</returns>
-        public Task<Bundle> ProcessMedicationRequest(string patientEmailOrId, DateTime dateTime, CustomEventTiming timing,
-            string timezone = "UTC");
-        
+        public Task<Bundle> ProcessMedicationRequest(string patientEmailOrId, DateTime dateTime,
+            CustomEventTiming timing, string timezone = "UTC");
+
         /// <summary>
         /// Gets the insulin medication requests for a given patient based on a date, timing, and the user's timezone.
         /// The results are limited to a single day timespan due to CustomEventTiming.
@@ -32,9 +32,9 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
         /// <param name="timezone">The user's timezone. Defaults to UTC</param>
         /// <returns>A <see cref="Bundle"/> with the results</returns>
-        public Task<Bundle> ProcessInsulinMedicationRequest(string patientEmailOrId, DateTime dateTime, CustomEventTiming timing,
-            string timezone = "UTC");
-        
+        public Task<Bundle> ProcessInsulinMedicationRequest(string patientEmailOrId, DateTime dateTime,
+            CustomEventTiming timing, string timezone = "UTC");
+
         /// <summary>
         /// Gets the glucose service requests for a given patient based on a date, timing, and the user's timezone.
         /// The results are limited to a single day timespan due to CustomEventTiming.
@@ -44,9 +44,10 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
         /// <param name="timezone">The user's timezone. Defaults to UTC</param>
         /// <returns>A <see cref="Bundle"/> with the results</returns>
-        public Task<Bundle> ProcessGlucoseServiceRequest(string patientEmailOrId, DateTime dateTime, CustomEventTiming timing,
-            string timezone = "UTC");
-        
+        /// <exception cref="NotFoundException">If the patient is not found.</exception>
+        public Task<Bundle> ProcessGlucoseServiceRequest(string patientEmailOrId, DateTime dateTime,
+            CustomEventTiming timing, string timezone = "UTC");
+
         /// <summary>
         /// Gets the complete care plan for a given patient based on a date, timing, and the user's timezone. This means
         /// medication (insulin or not) and service requests. The results are limited to a single day timespan due to
@@ -57,24 +58,25 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
         /// <param name="timezone">The user's timezone. Defaults to UTC</param>
         /// <returns>A <see cref="Bundle"/> with the results</returns>
+        /// <exception cref="NotFoundException">If the patient is not found.</exception>
         public Task<Bundle> ProcessCarePlanRequest(string patientEmailOrId, DateTime dateTime, CustomEventTiming timing,
             string timezone = "UTC");
 
         /// <summary>
-        /// Gets the next requests for a patient to follow given a request type.
-        /// TODO this method should accept a result limit or have a default value. 
+        /// Gets the next requests for a patient to follow given a request type. 
         /// </summary>
         /// <param name="patientEmailOrId">The patient's ID or email who owns the requests.</param>
         /// <param name="type">The <see cref="AlexaRequestType"/></param>
         /// <returns>A <see cref="Bundle"/> object with the list of requests.</returns>
+        /// <exception cref="NotFoundException">If the patient is not found.</exception>
         public Task<Bundle> GetNextRequests(string patientEmailOrId, AlexaRequestType type);
 
         /// <summary>
         /// Gets the next requests for a patient to follow without filtering the request type.
-        /// TODO this method should accept a result limit or have a default value.
         /// </summary>
         /// <param name="patientEmailOrId">The patient's ID or email who owns the requests.</param>
         /// <returns>A <see cref="Bundle"/> object with the list of requests.</returns>
+        /// <exception cref="NotFoundException">If the patient is not found.</exception>
         public Task<Bundle> GetNextRequests(string patientEmailOrId);
 
         /// <summary>
@@ -84,6 +86,8 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="eventTiming">The event timing to set.</param>
         /// <param name="dateTime">The time for the event. The date is ignored.</param>
         /// <returns>A boolean value to indicate is the update was successful.</returns>
+        /// <exception cref="NotFoundException">If the patient is not found.</exception>
+        /// <exception cref="UpdateException">If there is an error updating the patient's timing</exception>
         public Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming, DateTime dateTime);
 
         /// <summary>
@@ -95,6 +99,8 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="dosageId">The dosage ID to update.</param>
         /// <param name="startDate">The start date.</param>
         /// <returns>A boolean value to indicate is the update was successful.</returns>
+        /// <exception cref="NotFoundException">If the patient is not found.</exception>
+        /// <exception cref="UpdateException">If there is an error updating the patient's timing</exception>
         Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, DateTime startDate);
     }
 }
