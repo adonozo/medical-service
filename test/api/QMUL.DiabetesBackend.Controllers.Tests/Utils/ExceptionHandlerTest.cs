@@ -94,6 +94,22 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Utils
         }
 
         [Fact]
+        public async Task ExecuteAndHandleAsync_WhenMethodThrowsFormatException_ReturnsBadRequest()
+        {
+            // Arrange
+            var controller = Substitute.For<ControllerBase>();
+            controller.BadRequest().Returns(new BadRequestResult());
+            var logger = Substitute.For<ILogger>();
+            var method = new Func<Task<IActionResult>>(() => throw new FormatException());
+
+            // Act
+            var result = await ExceptionHandler.ExecuteAndHandleAsync(method, logger, controller);
+
+            // Assert
+            result.Should().BeOfType<BadRequestResult>();
+        }
+
+        [Fact]
         public async Task ExecuteAndHandleAsync_WhenMethodThrowsException_ReturnsInternalError()
         {
             // Arrange
