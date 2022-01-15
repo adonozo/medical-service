@@ -61,35 +61,10 @@
 
             // Act
             var createdObservation = await controller.PostGlucoseObservation(id, jsonObservation);
-            var result = (ObjectResult)createdObservation;
+            var result = (ObjectResult) createdObservation;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task PostGlucoseObservation_WhenIdDoesNotExist_ReturnsNotFound()
-        {
-            // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            var id = Guid.NewGuid().ToString();
-            var jsonObservation = JsonSerializer.Serialize(new Observation { Id = id });
-            observationService.CreateObservation(Arg.Any<string>(), Arg.Any<Observation>())
-                .Throws(new KeyNotFoundException());
-
-            // Act
-            var createdObservation = await controller.PostGlucoseObservation(id, jsonObservation);
-            var result = (StatusCodeResult)createdObservation;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -110,7 +85,7 @@
 
             // Act
             var createdObservation = await controller.PostGlucoseObservation(id, "invalid json");
-            var result = (StatusCodeResult)createdObservation;
+            var result = (StatusCodeResult) createdObservation;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
@@ -129,13 +104,13 @@
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
                 medicationRequestService, logger);
             var id = Guid.NewGuid().ToString();
-            var jsonObservation = JsonSerializer.Serialize(new Observation { Id = id });
+            var jsonObservation = JsonSerializer.Serialize(new Observation {Id = id});
             observationService.CreateObservation(Arg.Any<string>(), Arg.Any<Observation>())
                 .Throws(new Exception());
 
             // Act
             var createdObservation = await controller.PostGlucoseObservation(id, jsonObservation);
-            var result = (StatusCodeResult)createdObservation;
+            var result = (StatusCodeResult) createdObservation;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -157,7 +132,7 @@
 
             // Act
             var patients = await controller.GetPatients();
-            var result = (ObjectResult)patients;
+            var result = (ObjectResult) patients;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -179,32 +154,10 @@
 
             // Act
             var patient = await controller.GetPatient("john@mail.com");
-            var result = (ObjectResult)patient;
+            var result = (ObjectResult) patient;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetPatient_WhenEmailDoesNotExist_ReturnsNotFound()
-        {
-            // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            patientService.GetPatient(Arg.Any<string>()).Throws(new KeyNotFoundException());
-
-            // Act
-            var patient = await controller.GetPatient("john@mail.com");
-            var result = (StatusCodeResult)patient;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -223,7 +176,7 @@
 
             // Act
             var patient = await controller.GetPatient("john@mail.com");
-            var result = (StatusCodeResult)patient;
+            var result = (StatusCodeResult) patient;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -245,32 +198,10 @@
 
             // Act
             var carePlans = await controller.GetPatientCarePlans("john@mail.com");
-            var result = (ObjectResult)carePlans;
+            var result = (ObjectResult) carePlans;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetPatientCarePlans_WhenEmailDoesNotExists_ReturnsNotFound()
-        {
-            // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            carePlanService.GetCarePlanFor(Arg.Any<string>()).Throws(new KeyNotFoundException());
-
-            // Act
-            var carePlans = await controller.GetPatientCarePlans("john@mail.com");
-            var result = (StatusCodeResult)carePlans;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -289,7 +220,7 @@
 
             // Act
             var carePlans = await controller.GetPatientCarePlans("john@mail.com");
-            var result = (StatusCodeResult)carePlans;
+            var result = (StatusCodeResult) carePlans;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -311,32 +242,10 @@
 
             // Act
             var medicationRequests = await controller.GetActiveMedicationRequests("john@mail.com");
-            var result = (ObjectResult)medicationRequests;
+            var result = (ObjectResult) medicationRequests;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetActiveMedicationRequests_WhenEmailDoesNotExists_ReturnsNotFound()
-        {
-            // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            medicationRequestService.GetActiveMedicationRequests(Arg.Any<string>()).Throws(new KeyNotFoundException());
-
-            // Act
-            var medicationRequests = await controller.GetActiveMedicationRequests("john@mail.com");
-            var result = (StatusCodeResult)medicationRequests;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -355,7 +264,7 @@
 
             // Act
             var medicationRequests = await controller.GetActiveMedicationRequests("john@mail.com");
-            var result = (StatusCodeResult)medicationRequests;
+            var result = (StatusCodeResult) medicationRequests;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -377,32 +286,10 @@
 
             // Act
             var carePlan = await controller.GetActiveCarePlan("john@mail.com");
-            var result = (ObjectResult)carePlan;
+            var result = (ObjectResult) carePlan;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetActiveCarePlan_WhenEmailIsNotFound_ReturnsNotFound()
-        {
-            // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            carePlanService.GetActiveCarePlans(Arg.Any<string>()).Throws(new KeyNotFoundException());
-
-            // Act
-            var carePlan = await controller.GetActiveCarePlan("john@mail.com");
-            var result = (StatusCodeResult)carePlan;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -421,7 +308,7 @@
 
             // Act
             var carePlan = await controller.GetActiveCarePlan("john@mail.com");
-            var result = (StatusCodeResult)carePlan;
+            var result = (StatusCodeResult) carePlan;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -443,32 +330,10 @@
 
             // Act
             var observation = await controller.GetSingleObservation("john@mail.com", Guid.NewGuid().ToString());
-            var result = (ObjectResult)observation;
+            var result = (ObjectResult) observation;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetSingleObservation_WhenIdDoesNotExist_ReturnsNotFound()
-        {
-            // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            observationService.GetSingleObservation(Arg.Any<string>()).Throws(new KeyNotFoundException());
-
-            // Act
-            var observation = await controller.GetSingleObservation("john@mail.com", Guid.NewGuid().ToString());
-            var result = (StatusCodeResult)observation;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -487,7 +352,7 @@
 
             // Act
             var observation = await controller.GetSingleObservation("john@mail.com", Guid.NewGuid().ToString());
-            var result = (StatusCodeResult)observation;
+            var result = (StatusCodeResult) observation;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -505,38 +370,16 @@
             var logger = Substitute.For<ILogger<PatientController>>();
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
                 medicationRequestService, logger);
-            observationService.GetObservationsFor(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>(), Arg.Any<string>())
+            observationService.GetObservationsFor(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>(),
+                    Arg.Any<string>())
                 .Returns(new Bundle());
 
             // Act
             var observations = await controller.GetPatientObservations("john@mail.com", DateTime.Now);
-            var result = (ObjectResult)observations;
+            var result = (ObjectResult) observations;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetPatientObservations_WhenEmailDoesNotExist_ReturnsNotFound()
-        {
-            // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            observationService.GetObservationsFor(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>(), Arg.Any<string>())
-                .Throws(new KeyNotFoundException());
-
-            // Act
-            var observations = await controller.GetPatientObservations("john@mail.com", DateTime.Now);
-            var result = (StatusCodeResult)observations;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -551,12 +394,13 @@
             var logger = Substitute.For<ILogger<PatientController>>();
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
                 medicationRequestService, logger);
-            observationService.GetObservationsFor(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>(), Arg.Any<string>())
+            observationService.GetObservationsFor(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>(),
+                    Arg.Any<string>())
                 .Throws(new Exception());
 
             // Act
             var observations = await controller.GetPatientObservations("john@mail.com", DateTime.Now);
-            var result = (StatusCodeResult)observations;
+            var result = (StatusCodeResult) observations;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -578,32 +422,10 @@
 
             // Act
             var observations = await controller.GetAllPatientObservations("john@mail.com");
-            var result = (ObjectResult)observations;
+            var result = (ObjectResult) observations;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetAllPatientObservations_WhenEmailDoesNotExist_ReturnsNotFound()
-        {
-            // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            observationService.GetAllObservationsFor(Arg.Any<string>()).Throws(new KeyNotFoundException());
-
-            // Act
-            var observations = await controller.GetAllPatientObservations("john@mail.com");
-            var result = (StatusCodeResult)observations;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -622,7 +444,7 @@
 
             // Act
             var observations = await controller.GetAllPatientObservations("john@mail.com");
-            var result = (StatusCodeResult)observations;
+            var result = (StatusCodeResult) observations;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -645,7 +467,7 @@
 
             // Act
             var updated = await controller.UpdatePatientTiming("john@mail.com", new PatientTimingRequest());
-            var result = (StatusCodeResult)updated;
+            var result = (StatusCodeResult) updated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
@@ -668,33 +490,10 @@
 
             // Act
             var updated = await controller.UpdatePatientTiming("john@mail.com", new PatientTimingRequest());
-            var result = (StatusCodeResult)updated;
+            var result = (StatusCodeResult) updated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
-        [Fact]
-        public async Task UpdatePatientTiming_WhenEmailDoesNotExists_ReturnsBadRequest()
-        {
-            // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>())
-                .Throws(new KeyNotFoundException());
-
-            // Act
-            var updated = await controller.UpdatePatientTiming("john@mail.com", new PatientTimingRequest());
-            var result = (StatusCodeResult)updated;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -714,7 +513,7 @@
 
             // Act
             var updated = await controller.UpdatePatientTiming("john@mail.com", new PatientTimingRequest());
-            var result = (StatusCodeResult)updated;
+            var result = (StatusCodeResult) updated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -738,7 +537,7 @@
             // Act
             var updated = await controller.UpdateDosageStartDate("john@mail.com", Guid.NewGuid().ToString(),
                 new PatientStartDateRequest());
-            var result = (StatusCodeResult)updated;
+            var result = (StatusCodeResult) updated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
@@ -762,34 +561,10 @@
             // Act
             var updated = await controller.UpdateDosageStartDate("john@mail.com", Guid.NewGuid().ToString(),
                 new PatientStartDateRequest());
-            var result = (StatusCodeResult)updated;
+            var result = (StatusCodeResult) updated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
-        [Fact]
-        public async Task UpdateDosageStartDate_WhenEmailDoesNotExist_ReturnsNotFound()
-        {
-            // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            alexaService.UpsertDosageStartDate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTime>())
-                .Throws(new KeyNotFoundException());
-
-            // Act
-            var updated = await controller.UpdateDosageStartDate("john@mail.com", Guid.NewGuid().ToString(),
-                new PatientStartDateRequest());
-            var result = (StatusCodeResult)updated;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -810,7 +585,7 @@
             // Act
             var updated = await controller.UpdateDosageStartDate("john@mail.com", Guid.NewGuid().ToString(),
                 new PatientStartDateRequest());
-            var result = (StatusCodeResult)updated;
+            var result = (StatusCodeResult) updated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
