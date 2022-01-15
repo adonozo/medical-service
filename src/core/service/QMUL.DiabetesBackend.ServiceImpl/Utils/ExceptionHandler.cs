@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+
+[assembly:InternalsVisibleTo("QMUL.DiabetesBackend.ServiceImpl.Tests")]
 namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
     using System;
@@ -8,7 +11,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     /// <summary>
     /// This static class has methods for handling exceptions.
     /// </summary>
-    public static class ExceptionHandler
+    internal static class ExceptionHandler
     {
         /// <summary>
         /// Tries to execute the async <see cref="Func{TResult}"/>. If it throws an error, it will be caught,

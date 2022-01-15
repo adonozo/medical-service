@@ -20,6 +20,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
         /// <param name="timezone">The user's timezone. Defaults to UTC</param>
         /// <returns>A <see cref="Bundle"/> with the results</returns>
+        /// <exception cref="NotFoundException">If the patient was not found.</exception>
         public Task<Bundle> ProcessMedicationRequest(string patientEmailOrId, DateTime dateTime,
             CustomEventTiming timing, string timezone = "UTC");
 
@@ -32,6 +33,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
         /// <param name="timezone">The user's timezone. Defaults to UTC</param>
         /// <returns>A <see cref="Bundle"/> with the results</returns>
+        /// <exception cref="NotFoundException">If the patient was not found.</exception>
         public Task<Bundle> ProcessInsulinMedicationRequest(string patientEmailOrId, DateTime dateTime,
             CustomEventTiming timing, string timezone = "UTC");
 
