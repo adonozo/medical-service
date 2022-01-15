@@ -1,7 +1,5 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using DataInterfaces;
@@ -38,17 +36,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<Medication> GetSingleMedication(string id)
         {
-            return await ResourceUtils.ValidateNullObject(
-                () => this.medicationDao.GetSingleMedication(id),
-                new KeyNotFoundException("Unable to find the medication"));
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.medicationDao.GetSingleMedication(id), this.logger);
         }
 
         /// <inheritdoc/>>
         public async Task<Medication> CreateMedication(Medication newMedication)
         {
-            var medication = await ResourceUtils.ValidateNullObject(
-                () => this.medicationDao.CreateMedication(newMedication),
-                new ArgumentException("The medication could not be created"));
+            var medication = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.medicationDao.CreateMedication(newMedication), this.logger);
             this.logger.LogDebug("Medication created with ID: {Id}", medication.Id);
             return medication;
         }

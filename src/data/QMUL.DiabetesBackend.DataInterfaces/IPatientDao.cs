@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using Exceptions;
     using Model;
 
     /// <summary>
@@ -20,6 +21,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="newPatient">The patient to create.</param>
         /// <returns>The created patient.</returns>
+        /// <exception cref="CreateException">If the patient could not be created.</exception>
         public Task<Patient> CreatePatient(Patient newPatient);
 
         /// <summary>
@@ -28,13 +30,15 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="idOrEmail">The patient's ID or email.</param>
         /// <returns>The patient.</returns>
+        /// <exception cref="NotFoundException">If the patient is not found.</exception>
         public Task<Patient> GetPatientByIdOrEmail(string idOrEmail);
-        
+
         /// <summary>
         /// Updates (replaces) a patient.
         /// </summary>
         /// <param name="actualPatient">The patient to update.</param>
         /// <returns>A boolean value to tell if the update was made.</returns>
+        /// <exception cref="UpdateException">If the patient could not be updated</exception>
         public Task<bool> UpdatePatient(Patient actualPatient);
     }
 }

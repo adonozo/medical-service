@@ -32,16 +32,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<Patient> CreatePatient(Patient newPatient)
         {
             this.logger.LogDebug("Creating new patient {Email}", newPatient.Email);
-            return await this.patientDao.CreatePatient(newPatient);
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.CreatePatient(newPatient), this.logger);
         }
 
         /// <inheritdoc/>
         public async Task<Patient> GetPatient(string idOrEmail)
         {
-            var patient = await ResourceUtils.ValidateNullObject(
-                () => this.patientDao.GetPatientByIdOrEmail(idOrEmail),
-                new KeyNotFoundException($"The patient with ID {idOrEmail} was not found"));
-
+            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(idOrEmail), this.logger);
             this.logger.LogDebug("Patient found: {IdOrEmail}", idOrEmail);
             return patient;
         }

@@ -1,7 +1,5 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
-    using System;
-    using System.Collections.Generic;
     using System.Threading.Tasks;
     using DataInterfaces;
     using Hl7.Fhir.Model;
@@ -19,7 +17,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         private readonly IEventDao eventDao;
         private readonly ILogger<ServiceRequestService> logger;
 
-        public ServiceRequestService(IServiceRequestDao serviceRequestDao, IPatientDao patientDao, IEventDao eventDao, 
+        public ServiceRequestService(IServiceRequestDao serviceRequestDao, IPatientDao patientDao, IEventDao eventDao,
             ILogger<ServiceRequestService> logger)
         {
             this.serviceRequestDao = serviceRequestDao;
@@ -31,15 +29,13 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<ServiceRequest> CreateServiceRequest(ServiceRequest request)
         {
-            var patient = await ResourceUtils.ValidateNullObject(
-                () => this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId),
-                new KeyNotFoundException($"Unable to find the patient with ID {request.Subject.ElementId}"));
-            var serviceRequest = await this.serviceRequestDao.CreateServiceRequest(request);
+            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId), this.logger);
+            var serviceRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.serviceRequestDao.CreateServiceRequest(request), this.logger);
             var events = ResourceUtils.GenerateEventsFrom(serviceRequest, patient);
-            await ResourceUtils.ValidateBooleanResult(
-                () => this.eventDao.CreateEvents(events),
-                new ArgumentException($"Unable to create events related to the request: {serviceRequest.Id}"));
-
+            await ExceptionHandler.ExecuteAndHandleAsync(async () => await this.eventDao.CreateEvents(events),
+                this.logger);
             this.logger.LogDebug("Service Request created with ID: {Id}", serviceRequest.Id);
             return serviceRequest;
         }
@@ -47,9 +43,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<ServiceRequest> GetServiceRequest(string id)
         {
-            var serviceRequest = await ResourceUtils.ValidateNullObject(
-                () => this.serviceRequestDao.GetServiceRequest(id),
-                new KeyNotFoundException($"Unable to find the service request with ID {id}"));
+            var serviceRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.serviceRequestDao.GetServiceRequest(id), this.logger);
             this.logger.LogDebug("Found service request {Id}", id);
             return serviceRequest;
         }
@@ -57,21 +52,19 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest request)
         {
-            await ResourceUtils.ValidateNullObject(
-                () => this.serviceRequestDao.GetServiceRequest(id),
-                new KeyNotFoundException($"Service request to be updated not found {id}"));
-
+            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.serviceRequestDao.GetServiceRequest(id), this.logger);
             this.logger.LogDebug("Service request with ID {Id} updated", id);
-            return await this.serviceRequestDao.UpdateServiceRequest(id, request);
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.serviceRequestDao.UpdateServiceRequest(id, request), this.logger);
         }
 
         /// <inheritdoc/>>
         public async Task<bool> DeleteServiceRequest(string id)
         {
-            await ResourceUtils.ValidateNullObject(
-                () => this.serviceRequestDao.GetServiceRequest(id),
-                new KeyNotFoundException($"Service request to be updated not found {id}"));
-
+            // Check if the service request exists
+            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.serviceRequestDao.GetServiceRequest(id), this.logger);
             this.logger.LogDebug("Service request {Id} deleted", id);
             return await this.serviceRequestDao.DeleteServiceRequest(id);
         }

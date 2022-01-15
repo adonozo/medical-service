@@ -1,7 +1,6 @@
 ﻿namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
 {
     using System;
-    using System.Collections.Generic;
     using System.Text.Json;
     using FluentAssertions;
     using Hl7.Fhir.Model;
@@ -67,24 +66,6 @@
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetMedicationRequest_WhenIdDoesNotExists_ReturnsNotFound()
-        {
-            // Arrange
-            var service = Substitute.For<IMedicationService>();
-            var logger = Substitute.For<ILogger<MedicationController>>();
-            var id = Guid.NewGuid().ToString();
-            service.GetSingleMedication(Arg.Any<string>()).Throws(new KeyNotFoundException());
-            var controller = new MedicationController(service, logger);
-
-            // Act
-            var medication = await controller.GetMedicationRequest(id);
-            var result = (StatusCodeResult) medication;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]

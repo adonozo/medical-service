@@ -5,9 +5,9 @@
     using System.Linq;
     using System.Threading.Tasks;
     using DataInterfaces;
+    using DataInterfaces.Exceptions;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
-    using Model;
     using Models;
     using MongoDB.Bson;
     using MongoDB.Driver;
@@ -22,7 +22,7 @@
         private readonly ILogger<MedicationRequestDao> logger;
         private const string CollectionName = "medicationRequest";
 
-        public MedicationRequestDao(IDatabaseSettings settings, ILogger<MedicationRequestDao> logger) : base(settings)
+        public MedicationRequestDao(IMongoDatabase database, ILogger<MedicationRequestDao> logger) : base(database)
         {
             this.logger = logger;
             this.medicationRequestCollection = this.Database.GetCollection<MongoMedicationRequest>(CollectionName);
@@ -42,7 +42,9 @@
 
             await this.medicationRequestCollection.InsertOneAsync(mongoRequest);
             this.logger.LogDebug("Medication request created with ID {Id}", mongoRequest.Id);
-            return await this.GetMedicationRequest(mongoRequest.Id);
+            var errorMessage = $"The medication request was not created";
+            return await this.GetSingleMedicationRequestOrThrow(mongoRequest.Id, new CreateException(errorMessage),
+                () => { this.logger.LogWarning("{ErrorMessage}", errorMessage); });
         }
 
         /// <inheritdoc />
@@ -50,23 +52,24 @@
         {
             this.logger.LogDebug("Updating medication request with ID {Id}", id);
             var mongoRequest = actualRequest.ToMongoMedicationRequest();
-            var result = await this.medicationRequestCollection.ReplaceOneAsync(request => request.Id == id, mongoRequest);
-            if (!result.IsAcknowledged)
-            {
-                throw new InvalidOperationException($"There was an error updating the Medication Request {id}");
-            }
-
+            var result =
+                await this.medicationRequestCollection.ReplaceOneAsync(request => request.Id == id, mongoRequest);
+            var errorMessage = $"There was an error updating the Medication Request {id}";
+            this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new UpdateException(errorMessage),
+                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
             this.logger.LogDebug("Medication request updated {Id}", id);
-            return await this.GetMedicationRequest(id);
+            return await this.GetSingleMedicationRequestOrThrow(id, new UpdateException(errorMessage),
+                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
         }
 
         /// <inheritdoc />
         public async Task<MedicationRequest> GetMedicationRequest(string id)
         {
-            var cursorResult = await this.medicationRequestCollection.FindAsync(request => request.Id == id);
-            var result = cursorResult.FirstOrDefault();
-            this.logger.LogDebug("Found medication request: {IdOrNull}", result?.Id);
-            return result?.ToMedicationRequest();
+            var errorMessage = $"Could not find medication request with ID {id}";
+            var result = await this.GetSingleMedicationRequestOrThrow(id, new NotFoundException(errorMessage),
+                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
+            this.logger.LogTrace("Medication Request with {Id} found", id);
+            return result;
         }
 
         /// <inheritdoc />
@@ -74,9 +77,9 @@
         {
             var idFilter = Builders<MongoMedicationRequest>.Filter
                 .In(item => item.Id, ids);
-            var cursor = await this.medicationRequestCollection.FindAsync(idFilter);
-            var result = await cursor.ToListAsync();
-            return result.Select(mongoMedicationRequest => mongoMedicationRequest.ToMedicationRequest()).ToList();
+            var result = this.medicationRequestCollection.Find(idFilter)
+                .Project(mongoMedicationRequest => mongoMedicationRequest.ToMedicationRequest());
+            return await result.ToListAsync();
         }
 
         /// <inheritdoc />
@@ -103,7 +106,9 @@
                     request.PatientReference.ReferenceId == patientId
                     && request.DosageInstructions.Any(instruction => instruction.Id == dosageId))
                 .Project(mongoRequest => mongoRequest.ToMedicationRequest());
-            return await result.FirstOrDefaultAsync();
+            var errorMessage = $"Could not found the medication request for the dosage ID {dosageId}";
+            return await this.GetSingleOrThrow(result, new NotFoundException(errorMessage),
+                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
         }
 
         /// <inheritdoc />
@@ -125,6 +130,14 @@
                     && request.Status == MedicationRequest.medicationrequestStatus.Active.ToString())
                 .Project(mongoRequest => mongoRequest.ToMedicationRequest());
             return await result.ToListAsync();
+        }
+
+        private async Task<MedicationRequest> GetSingleMedicationRequestOrThrow(string id, DataExceptionBase exception,
+            Action fallback)
+        {
+            var result = this.medicationRequestCollection.Find(request => request.Id == id)
+                .Project(medicationRequest => medicationRequest.ToMedicationRequest());
+            return await this.GetSingleOrThrow(result, exception, fallback);
         }
     }
 }

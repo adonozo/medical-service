@@ -1,7 +1,6 @@
 ﻿namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
 {
     using System;
-    using System.Collections.Generic;
     using System.Text.Json;
     using Api.Controllers;
     using FluentAssertions;
@@ -28,27 +27,10 @@
 
             // Act
             var serviceRequest = await controller.GetServiceRequest(Guid.NewGuid().ToString());
-            var result = (ObjectResult)serviceRequest;
+            var result = (ObjectResult) serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetServiceRequest_WhenEmailDoesNotExist_ReturnsNotFound()
-        {
-            // Arrange
-            var service = Substitute.For<IServiceRequestService>();
-            var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, logger);
-            service.GetServiceRequest(Arg.Any<string>()).Throws(new KeyNotFoundException());
-
-            // Act
-            var serviceRequest = await controller.GetServiceRequest(Guid.NewGuid().ToString());
-            var result = (StatusCodeResult)serviceRequest;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -62,7 +44,7 @@
 
             // Act
             var serviceRequest = await controller.GetServiceRequest(Guid.NewGuid().ToString());
-            var result = (StatusCodeResult)serviceRequest;
+            var result = (StatusCodeResult) serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -80,7 +62,7 @@
 
             // Act
             var serviceRequest = await controller.CreateServiceRequest(jsonService);
-            var result = (ObjectResult)serviceRequest;
+            var result = (ObjectResult) serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -96,7 +78,7 @@
 
             // Act
             var serviceRequest = await controller.CreateServiceRequest("invalid json");
-            var result = (StatusCodeResult)serviceRequest;
+            var result = (StatusCodeResult) serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
@@ -114,7 +96,7 @@
 
             // Act
             var serviceRequest = await controller.CreateServiceRequest(jsonService);
-            var result = (StatusCodeResult)serviceRequest;
+            var result = (StatusCodeResult) serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -134,29 +116,10 @@
 
             // Act
             var serviceRequest = await controller.UpdateServiceRequest(id, jsonService);
-            var result = (ObjectResult)serviceRequest;
+            var result = (ObjectResult) serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status202Accepted);
-        }
-
-        [Fact]
-        public async Task UpdateServiceRequest_WhenEmailIsNotFound_ReturnsNotFound()
-        {
-            // Arrange
-            var service = Substitute.For<IServiceRequestService>();
-            var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, logger);
-            var jsonService = JsonSerializer.Serialize(new ServiceRequest());
-            service.UpdateServiceRequest(Arg.Any<string>(), Arg.Any<ServiceRequest>())
-                .Throws(new KeyNotFoundException());
-
-            // Act
-            var serviceRequest = await controller.UpdateServiceRequest(Guid.NewGuid().ToString(), jsonService);
-            var result = (StatusCodeResult)serviceRequest;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -172,7 +135,7 @@
 
             // Act
             var serviceRequest = await controller.UpdateServiceRequest(Guid.NewGuid().ToString(), jsonService);
-            var result = (StatusCodeResult)serviceRequest;
+            var result = (StatusCodeResult) serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -190,28 +153,10 @@
 
             // Act
             var serviceRequest = await controller.DeleteActionResult(id);
-            var result = (StatusCodeResult)serviceRequest;
+            var result = (StatusCodeResult) serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
-        }
-
-        [Fact]
-        public async Task DeleteActionResult_WhenEmailDoesNotExist_ReturnsNotFound()
-        {
-            // Arrange
-            var service = Substitute.For<IServiceRequestService>();
-            var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, logger);
-            var id = Guid.NewGuid().ToString();
-            service.DeleteServiceRequest(Arg.Any<string>()).Throws(new KeyNotFoundException());
-
-            // Act
-            var serviceRequest = await controller.DeleteActionResult(id);
-            var result = (StatusCodeResult)serviceRequest;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -226,7 +171,7 @@
 
             // Act
             var serviceRequest = await controller.DeleteActionResult(id);
-            var result = (StatusCodeResult)serviceRequest;
+            var result = (StatusCodeResult) serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);

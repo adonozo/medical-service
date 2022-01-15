@@ -1,7 +1,5 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using DataInterfaces;
@@ -20,7 +18,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         private readonly IPatientDao patientDao;
         private readonly ILogger<MedicationRequestService> logger;
 
-        public MedicationRequestService(IMedicationRequestDao medicationRequestDao, IEventDao eventDao, 
+        public MedicationRequestService(IMedicationRequestDao medicationRequestDao, IEventDao eventDao,
             IPatientDao patientDao, ILogger<MedicationRequestService> logger)
         {
             this.medicationRequestDao = medicationRequestDao;
@@ -32,14 +30,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
         {
-            var patient = await ResourceUtils.ValidateNullObject(
-                () => this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId),
-                new KeyNotFoundException("Unable to find the patient linked to the medication request"));
+            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId), this.logger);
             this.logger.LogDebug("Creating medication request for patient {PatientId}", patient.Id);
-            var newRequest = await this.medicationRequestDao.CreateMedicationRequest(request);
+            var newRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.medicationRequestDao.CreateMedicationRequest(request), this.logger);
             var events = ResourceUtils.GenerateEventsFrom(newRequest, patient);
-            await ResourceUtils.ValidateBooleanResult(() => this.eventDao.CreateEvents(events),
-                new ArgumentException($"Unable to create events related to the request: {newRequest.Id}"));
+            await ExceptionHandler.ExecuteAndHandleAsync(async () => await this.eventDao.CreateEvents(events),
+                this.logger);
             this.logger.LogDebug("Medication request created with ID {Id}", newRequest.Id);
             return newRequest;
         }
@@ -47,10 +45,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<MedicationRequest> GetMedicationRequest(string id)
         {
-            var medicationRequest = await ResourceUtils.ValidateNullObject(
-                () => this.medicationRequestDao.GetMedicationRequest(id),
-                new KeyNotFoundException($"Unable to find the medication request with ID {id}"));
-
+            var medicationRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.medicationRequestDao.GetMedicationRequest(id), this.logger);
             this.logger.LogDebug("Found medication request with ID {Id}", id);
             return medicationRequest;
         }
@@ -58,21 +54,21 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest request)
         {
-            await ResourceUtils.ValidateNullObject(
-                () => this.medicationRequestDao.GetMedicationRequest(id),
-                new KeyNotFoundException($"The medication request with ID {id} was not found"));
-
+            // Check if the medication request exists
+            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.medicationRequestDao.GetMedicationRequest(id), this.logger);
+            var updatedResult = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.medicationRequestDao.UpdateMedicationRequest(id, request), this.logger);
             this.logger.LogDebug("Medication request with ID {Id} updated", id);
-            return await this.medicationRequestDao.UpdateMedicationRequest(id, request);
+            return updatedResult;
         }
 
         /// <inheritdoc/>>
         public async Task<bool> DeleteMedicationRequest(string id)
         {
-            await ResourceUtils.ValidateNullObject(
-                () => this.medicationRequestDao.GetMedicationRequest(id),
-                new KeyNotFoundException($"The medication request with ID {id} was not found"));
-
+            // Check if the medication request exists
+            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.medicationRequestDao.GetMedicationRequest(id), this.logger);
             this.logger.LogDebug("Medication request deleted {Id}", id);
             return await this.medicationRequestDao.DeleteMedicationRequest(id);
         }
@@ -80,10 +76,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<Bundle> GetActiveMedicationRequests(string patientIdOrEmail)
         {
-            var patient = await ResourceUtils.ValidateNullObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
-                new KeyNotFoundException($"Unable to find the patient with ID {patientIdOrEmail}"));
-
+            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
             var bundle = ResourceUtils.GenerateEmptyBundle();
             var medicationRequests = await this.medicationRequestDao.GetActiveMedicationRequests(patient.Id);
             bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})

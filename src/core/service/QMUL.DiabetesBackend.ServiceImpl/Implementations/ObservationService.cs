@@ -1,7 +1,6 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
@@ -19,9 +18,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         private readonly IPatientDao patientDao;
         private readonly IObservationDao observationDao;
         private readonly ILogger<ObservationService> logger;
-        private const int DefaultOffset = 20;  // The default offset in minutes for search between dates
+        private const int DefaultOffset = 20; // The default offset in minutes for search between dates
 
-        public ObservationService(IPatientDao patientDao, IObservationDao observationDao, ILogger<ObservationService> logger)
+        public ObservationService(IPatientDao patientDao, IObservationDao observationDao,
+            ILogger<ObservationService> logger)
         {
             this.patientDao = patientDao;
             this.observationDao = observationDao;
@@ -31,13 +31,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<Observation> CreateObservation(string patientId, Observation newObservation)
         {
-            await ResourceUtils.ValidateNullObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientId),
-                new KeyNotFoundException("Unable to find patient for the Observation"));
+            // Check if the patient exists
+            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
             newObservation.Subject.ElementId = patientId;
-            var observation = await ResourceUtils.ValidateNullObject(
-                () => this.observationDao.CreateObservation(newObservation),
-                new ArgumentException("Invalid observation", nameof(newObservation)));
+            var observation = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.observationDao.CreateObservation(newObservation), this.logger);
             this.logger.LogDebug("Observation created with ID {Id}", observation.Id);
             return observation;
         }
@@ -45,9 +44,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<Observation> GetSingleObservation(string observationId)
         {
-            var observation = await ResourceUtils.ValidateNullObject(
-                () => this.observationDao.GetObservation(observationId),
-                new KeyNotFoundException($"Observation not found: {observationId}"));
+            var observation = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.observationDao.GetObservation(observationId), this.logger);
             this.logger.LogDebug("Observation found: {Id}", observationId);
             return observation;
         }
@@ -55,12 +53,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<Bundle> GetAllObservationsFor(string patientId)
         {
-            var patient = await ResourceUtils.ValidateNullObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientId),
-                new KeyNotFoundException("Unable to find patient for the Observation"));
+            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
             var observations = await this.observationDao.GetAllObservationsFor(patient.Id);
             var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent { Resource = observation })
+            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
                 .ToList();
             this.logger.LogDebug("Found {Count} observations", observations.Count);
             return bundle;
@@ -70,9 +67,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime,
             string patientTimezone = "UTC")
         {
-            var patient = await ResourceUtils.ValidateNullObject(
-                () => this.patientDao.GetPatientByIdOrEmail(patientId),
-                new KeyNotFoundException("Unable to find patient for the Observation"));
+            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
 
             DateTime start, end;
             if (timing == CustomEventTiming.EXACT)
@@ -88,7 +84,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 
             var observations = await this.observationDao.GetObservationsFor(patient.Id, start, end);
             var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent { Resource = observation })
+            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
                 .ToList();
             this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId, observations.Count);
             return bundle;

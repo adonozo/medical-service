@@ -1,6 +1,7 @@
 ﻿namespace QMUL.DiabetesBackend.ServiceInterfaces
 {
     using System.Threading.Tasks;
+    using Exceptions;
     using Hl7.Fhir.Model;
 
     /// <summary>
@@ -19,6 +20,7 @@
         /// </summary>
         /// <param name="id">The <see cref="Medication"/> ID to look for.</param>
         /// <returns>A <see cref="Medication"/> object if found. An error otherwise.</returns>
+        /// <exception cref="NotFoundException">If the medication was not found.</exception>
         public Task<Medication> GetSingleMedication(string id);
 
         /// <summary>
@@ -26,6 +28,7 @@
         /// </summary>
         /// <param name="newMedication">The <see cref="Medication"/> object to create.</param>
         /// <returns>The created <see cref="Medication"/> with a new ID.</returns>
+        /// <exception cref="CreateException">If the medication was not created.</exception>
         public Task<Medication> CreateMedication(Medication newMedication);
     }
 }
