@@ -1,7 +1,6 @@
 ﻿namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
 {
     using System;
-    using System.Collections.Generic;
     using System.Text.Json;
     using Api.Controllers;
     using FluentAssertions;
@@ -35,23 +34,6 @@
         }
 
         [Fact]
-        public async Task GetMedicationRequest_WhenIdDoesNotExists_ReturnsNotFound()
-        {
-            // Arrange
-            var service = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<MedicationRequestController>>();
-            service.GetMedicationRequest(Arg.Any<string>()).Throws(new KeyNotFoundException());
-            var controller = new MedicationRequestController(service, logger);
-
-            // Act
-            var medicationRequest = await controller.GetMedicationRequest(Guid.NewGuid().ToString());
-            var result = (StatusCodeResult) medicationRequest;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        }
-
-        [Fact]
         public async Task GetMedicationRequest_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
@@ -74,7 +56,7 @@
             // Arrange
             var service = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<MedicationRequestController>>();
-            var medicationRequest = new MedicationRequest { Id = Guid.NewGuid().ToString()};
+            var medicationRequest = new MedicationRequest {Id = Guid.NewGuid().ToString()};
             service.CreateMedicationRequest(Arg.Any<MedicationRequest>()).Returns(medicationRequest);
             var controller = new MedicationRequestController(service, logger);
             var jsonMedicationRequest = JsonSerializer.Serialize(medicationRequest);
@@ -93,7 +75,7 @@
             // Arrange
             var service = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<MedicationRequestController>>();
-            var medicationRequest = new MedicationRequest { Id = Guid.NewGuid().ToString() };
+            var medicationRequest = new MedicationRequest {Id = Guid.NewGuid().ToString()};
             service.CreateMedicationRequest(Arg.Any<MedicationRequest>()).Returns(medicationRequest);
             var controller = new MedicationRequestController(service, logger);
 
@@ -113,7 +95,7 @@
             var logger = Substitute.For<ILogger<MedicationRequestController>>();
             service.CreateMedicationRequest(Arg.Any<MedicationRequest>()).Throws(new Exception());
             var controller = new MedicationRequestController(service, logger);
-            var medicationRequest = new MedicationRequest { Id = Guid.NewGuid().ToString() };
+            var medicationRequest = new MedicationRequest {Id = Guid.NewGuid().ToString()};
             var jsonMedicationRequest = JsonSerializer.Serialize(medicationRequest);
 
             // Act
@@ -131,7 +113,7 @@
             var id = Guid.NewGuid().ToString();
             var service = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<MedicationRequestController>>();
-            var medicationRequest = new MedicationRequest { Id = id };
+            var medicationRequest = new MedicationRequest {Id = id};
             service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>()).Returns(medicationRequest);
             var controller = new MedicationRequestController(service, logger);
             var jsonMedicationRequest = JsonSerializer.Serialize(medicationRequest);
@@ -151,7 +133,7 @@
             var id = Guid.NewGuid().ToString();
             var service = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<MedicationRequestController>>();
-            var medicationRequest = new MedicationRequest { Id = id };
+            var medicationRequest = new MedicationRequest {Id = id};
             service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>()).Returns(medicationRequest);
             var controller = new MedicationRequestController(service, logger);
 
@@ -164,26 +146,6 @@
         }
 
         [Fact]
-        public async Task UpdateMedicationRequest_WhenRequestIdDoesNotExist_ReturnsNotFound()
-        {
-            // Arrange
-            var id = Guid.NewGuid().ToString();
-            var service = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<MedicationRequestController>>();
-            service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>()).Throws(new KeyNotFoundException());
-            var controller = new MedicationRequestController(service, logger);
-            var medicationRequest = new MedicationRequest { Id = id };
-            var jsonMedicationRequest = JsonSerializer.Serialize(medicationRequest);
-
-            // Act
-            var medicationRequestCreated = await controller.UpdateMedicationRequest(id, jsonMedicationRequest);
-            var result = (StatusCodeResult) medicationRequestCreated;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        }
-
-        [Fact]
         public async Task UpdateMedicationRequest_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
@@ -192,7 +154,7 @@
             var logger = Substitute.For<ILogger<MedicationRequestController>>();
             service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>()).Throws(new Exception());
             var controller = new MedicationRequestController(service, logger);
-            var medicationRequest = new MedicationRequest { Id = id };
+            var medicationRequest = new MedicationRequest {Id = id};
             var jsonMedicationRequest = JsonSerializer.Serialize(medicationRequest);
 
             // Act
@@ -202,7 +164,7 @@
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
-        
+
         [Fact]
         public async Task DeleteMedicationRequest_WhenRequestIsCorrect_ReturnsNoContent()
         {
@@ -219,24 +181,6 @@
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
-        }
-
-        [Fact]
-        public async Task DeleteMedicationRequest_WhenIdDoesNotExist_ReturnsNotFound()
-        {
-            // Arrange
-            var id = Guid.NewGuid().ToString();
-            var service = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<MedicationRequestController>>();
-            service.DeleteMedicationRequest(Arg.Any<string>()).Throws(new KeyNotFoundException());
-            var controller = new MedicationRequestController(service, logger);
-
-            // Act
-            var medicationRequestCreated = await controller.DeleteMedicationRequest(id);
-            var result = (StatusCodeResult) medicationRequestCreated;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [Fact]
