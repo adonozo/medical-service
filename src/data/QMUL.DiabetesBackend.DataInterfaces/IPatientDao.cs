@@ -39,6 +39,6 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="actualPatient">The patient to update.</param>
         /// <returns>A boolean value to tell if the update was made.</returns>
         /// <exception cref="UpdateException">If the patient could not be updated</exception>
-        public Task<bool> UpdatePatient(Patient actualPatient);
+        public Task<Patient> UpdatePatient(Patient actualPatient);
     }
 }

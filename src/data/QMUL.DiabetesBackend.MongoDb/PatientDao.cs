@@ -47,11 +47,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             await this.patientCollection.InsertOneAsync(mongoPatient);
             this.logger.LogInformation("Patient {FirstName} {LastName} created with ID: {Id}", mongoPatient.FirstName,
                 mongoPatient.LastName, mongoPatient.Id);
-            var result = this.patientCollection.Find(patient => patient.Id == mongoPatient.Id)
-                .Project(patient => patient.ToPatient());
-            const string errorMessage = "Could not create patient";
-            return await this.GetSingleOrThrow(result, new CreateException(errorMessage),
-                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
+            return await this.GetSinglePatientOrThrow(mongoPatient.Id);
         }
 
         /// <inheritdoc />
@@ -75,7 +71,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<bool> UpdatePatient(Patient actualPatient)
+        public async Task<Patient> UpdatePatient(Patient actualPatient)
         {
             logger.LogInformation("Updating patient with ID: {Id}", actualPatient.Id);
             var mongoPatient = actualPatient.ToMongoPatient();
@@ -85,7 +81,16 @@ namespace QMUL.DiabetesBackend.MongoDb
             var errorMessage = $"Could not update patient with ID {actualPatient.Id}";
             this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new UpdateException(errorMessage),
                 () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
-            return true;
+            return await this.GetSinglePatientOrThrow(actualPatient.Id);
+        }
+
+        private async Task<Patient> GetSinglePatientOrThrow(string id)
+        {
+            var result = this.patientCollection.Find(patient => patient.Id == id)
+                .Project(patient => patient.ToPatient());
+            const string errorMessage = "Could not create patient";
+            return await this.GetSingleOrThrow(result, new CreateException(errorMessage),
+                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
         }
     }
 }
