@@ -45,6 +45,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return patient;
         }
 
+        /// <inheritdoc/>
         public async Task<Patient> UpdatePatient(string idOrEmail, Patient updatedPatient)
         {
             await ExceptionHandler.ExecuteAndHandleAsync(async () =>

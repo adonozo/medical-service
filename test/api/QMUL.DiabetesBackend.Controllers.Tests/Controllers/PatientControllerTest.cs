@@ -32,11 +32,11 @@
             var logger = Substitute.For<ILogger<PatientController>>();
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
                 medicationRequestService, logger);
-            patientService.CreatePatient(Arg.Any<Patient>()).Returns(new Patient {Id = Guid.NewGuid().ToString()});
+            patientService.CreatePatient(Arg.Any<Patient>()).Returns(new Patient { Id = Guid.NewGuid().ToString() });
 
             // Act
-            var createdPatient = await controller.CreatePatient(new Patient {FirstName = "John", LastName = "Doe"});
-            var result = (ObjectResult) createdPatient;
+            var createdPatient = await controller.CreatePatient(new Patient { FirstName = "John", LastName = "Doe" });
+            var result = (ObjectResult)createdPatient;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -55,13 +55,13 @@
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
                 medicationRequestService, logger);
             var id = Guid.NewGuid().ToString();
-            var jsonObservation = JsonSerializer.Serialize(new Observation {Id = id});
+            var jsonObservation = JsonSerializer.Serialize(new Observation { Id = id });
             observationService.CreateObservation(Arg.Any<string>(), Arg.Any<Observation>())
                 .Returns(new Observation());
 
             // Act
             var createdObservation = await controller.PostGlucoseObservation(id, jsonObservation);
-            var result = (ObjectResult) createdObservation;
+            var result = (ObjectResult)createdObservation;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -85,7 +85,7 @@
 
             // Act
             var createdObservation = await controller.PostGlucoseObservation(id, "invalid json");
-            var result = (StatusCodeResult) createdObservation;
+            var result = (StatusCodeResult)createdObservation;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
@@ -104,13 +104,13 @@
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
                 medicationRequestService, logger);
             var id = Guid.NewGuid().ToString();
-            var jsonObservation = JsonSerializer.Serialize(new Observation {Id = id});
+            var jsonObservation = JsonSerializer.Serialize(new Observation { Id = id });
             observationService.CreateObservation(Arg.Any<string>(), Arg.Any<Observation>())
                 .Throws(new Exception());
 
             // Act
             var createdObservation = await controller.PostGlucoseObservation(id, jsonObservation);
-            var result = (StatusCodeResult) createdObservation;
+            var result = (StatusCodeResult)createdObservation;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -132,7 +132,7 @@
 
             // Act
             var patients = await controller.GetPatients();
-            var result = (ObjectResult) patients;
+            var result = (ObjectResult)patients;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -154,7 +154,7 @@
 
             // Act
             var patient = await controller.GetPatient("john@mail.com");
-            var result = (ObjectResult) patient;
+            var result = (ObjectResult)patient;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -176,7 +176,7 @@
 
             // Act
             var patient = await controller.GetPatient("john@mail.com");
-            var result = (StatusCodeResult) patient;
+            var result = (StatusCodeResult)patient;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -198,7 +198,7 @@
 
             // Act
             var carePlans = await controller.GetPatientCarePlans("john@mail.com");
-            var result = (ObjectResult) carePlans;
+            var result = (ObjectResult)carePlans;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -220,7 +220,7 @@
 
             // Act
             var carePlans = await controller.GetPatientCarePlans("john@mail.com");
-            var result = (StatusCodeResult) carePlans;
+            var result = (StatusCodeResult)carePlans;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -242,7 +242,7 @@
 
             // Act
             var medicationRequests = await controller.GetActiveMedicationRequests("john@mail.com");
-            var result = (ObjectResult) medicationRequests;
+            var result = (ObjectResult)medicationRequests;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -264,7 +264,7 @@
 
             // Act
             var medicationRequests = await controller.GetActiveMedicationRequests("john@mail.com");
-            var result = (StatusCodeResult) medicationRequests;
+            var result = (StatusCodeResult)medicationRequests;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -286,7 +286,7 @@
 
             // Act
             var carePlan = await controller.GetActiveCarePlan("john@mail.com");
-            var result = (ObjectResult) carePlan;
+            var result = (ObjectResult)carePlan;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -308,7 +308,7 @@
 
             // Act
             var carePlan = await controller.GetActiveCarePlan("john@mail.com");
-            var result = (StatusCodeResult) carePlan;
+            var result = (StatusCodeResult)carePlan;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -330,7 +330,7 @@
 
             // Act
             var observation = await controller.GetSingleObservation("john@mail.com", Guid.NewGuid().ToString());
-            var result = (ObjectResult) observation;
+            var result = (ObjectResult)observation;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -352,7 +352,7 @@
 
             // Act
             var observation = await controller.GetSingleObservation("john@mail.com", Guid.NewGuid().ToString());
-            var result = (StatusCodeResult) observation;
+            var result = (StatusCodeResult)observation;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -376,7 +376,7 @@
 
             // Act
             var observations = await controller.GetPatientObservations("john@mail.com", DateTime.Now);
-            var result = (ObjectResult) observations;
+            var result = (ObjectResult)observations;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -400,7 +400,7 @@
 
             // Act
             var observations = await controller.GetPatientObservations("john@mail.com", DateTime.Now);
-            var result = (StatusCodeResult) observations;
+            var result = (StatusCodeResult)observations;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -422,7 +422,7 @@
 
             // Act
             var observations = await controller.GetAllPatientObservations("john@mail.com");
-            var result = (ObjectResult) observations;
+            var result = (ObjectResult)observations;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -444,7 +444,7 @@
 
             // Act
             var observations = await controller.GetAllPatientObservations("john@mail.com");
-            var result = (StatusCodeResult) observations;
+            var result = (StatusCodeResult)observations;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -467,7 +467,7 @@
 
             // Act
             var updated = await controller.UpdatePatientTiming("john@mail.com", new PatientTimingRequest());
-            var result = (StatusCodeResult) updated;
+            var result = (StatusCodeResult)updated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
@@ -490,7 +490,7 @@
 
             // Act
             var updated = await controller.UpdatePatientTiming("john@mail.com", new PatientTimingRequest());
-            var result = (StatusCodeResult) updated;
+            var result = (StatusCodeResult)updated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
@@ -513,7 +513,7 @@
 
             // Act
             var updated = await controller.UpdatePatientTiming("john@mail.com", new PatientTimingRequest());
-            var result = (StatusCodeResult) updated;
+            var result = (StatusCodeResult)updated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -537,7 +537,7 @@
             // Act
             var updated = await controller.UpdateDosageStartDate("john@mail.com", Guid.NewGuid().ToString(),
                 new PatientStartDateRequest());
-            var result = (StatusCodeResult) updated;
+            var result = (StatusCodeResult)updated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
@@ -561,7 +561,7 @@
             // Act
             var updated = await controller.UpdateDosageStartDate("john@mail.com", Guid.NewGuid().ToString(),
                 new PatientStartDateRequest());
-            var result = (StatusCodeResult) updated;
+            var result = (StatusCodeResult)updated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
@@ -585,10 +585,33 @@
             // Act
             var updated = await controller.UpdateDosageStartDate("john@mail.com", Guid.NewGuid().ToString(),
                 new PatientStartDateRequest());
-            var result = (StatusCodeResult) updated;
+            var result = (StatusCodeResult)updated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        }
+
+        [Fact]
+        public async Task UpdatePatient_WhenRequestIsCorrect_ReturnsAccepted()
+        {
+            // Arrange
+            var patientService = Substitute.For<IPatientService>();
+            var alexaService = Substitute.For<IAlexaService>();
+            var carePlanService = Substitute.For<ICarePlanService>();
+            var observationService = Substitute.For<IObservationService>();
+            var medicationRequestService = Substitute.For<IMedicationRequestService>();
+            var logger = Substitute.For<ILogger<PatientController>>();
+            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
+                medicationRequestService, logger);
+
+            patientService.UpdatePatient(Arg.Any<string>(), Arg.Any<Patient>()).Returns(new Patient());
+
+            // Act
+            var updated = await controller.UpdatePatient(Guid.NewGuid().ToString(), new Patient());
+            var result = (AcceptedResult) updated;
+
+            // Assert
+            result.StatusCode.Should().Be(StatusCodes.Status202Accepted);
         }
     }
 }
