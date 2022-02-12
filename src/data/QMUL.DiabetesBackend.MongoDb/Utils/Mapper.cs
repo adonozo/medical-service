@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using Hl7.Fhir.Model;
     using Model;
@@ -88,9 +89,9 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
             var days = 0;
             if (timing.Repeat.Bounds is Duration duration)
             {
-                days = duration.Value != null ? (int) duration.Value : 0;
+                days = duration.Value != null ? (int)duration.Value : 0;
             }
-            
+
             var whenList = from eventTiming in timing.Repeat.When
                 where eventTiming != null
                 select eventTiming.ToString();
@@ -161,6 +162,9 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 AlexaUserId = patient.AlexaUserId,
                 FirstName = patient.FirstName,
                 LastName = patient.LastName,
+                Gender = patient.Gender,
+                BirthDate = patient.BirthDate,
+                PhoneContacts = patient.PhoneContacts?? new Collection<Patient.PatientPhoneContact>(),
                 ExactEventTimes = eventTimes,
                 ResourceStartDate = patient.ResourceStartDate,
             };
@@ -170,7 +174,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
         {
             var eventTimes = patient.ExactEventTimes.ToDictionary(item => Parse<CustomEventTiming>(item.Key),
                 item => item.Value);
-            
+
             return new Patient
             {
                 Id = patient.Id,
@@ -178,11 +182,14 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 AlexaUserId = patient.AlexaUserId,
                 FirstName = patient.FirstName,
                 LastName = patient.LastName,
+                Gender = patient.Gender,
+                BirthDate = patient.BirthDate,
+                PhoneContacts = patient.PhoneContacts?? new Collection<Patient.PatientPhoneContact>(),
                 ExactEventTimes = eventTimes,
                 ResourceStartDate = patient.ResourceStartDate,
             };
         }
-        
+
         public static MongoCode ToMongoCode(this Coding code)
         {
             return new()

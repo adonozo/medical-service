@@ -2,23 +2,31 @@ namespace QMUL.DiabetesBackend.MongoDb.Models
 {
     using System;
     using System.Collections.Generic;
+    using Hl7.Fhir.Model;
     using MongoDB.Bson;
     using MongoDB.Bson.Serialization.Attributes;
+    using Patient = Model.Patient;
 
     public class MongoPatient
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
-        
+
         public string AlexaUserId { get; set; }
-        
+
         public string FirstName { get; set; }
-        
+
         public string LastName { get; set; }
-        
+
         public string Email { get; set; }
-        
+
+        public AdministrativeGender Gender { get; set; }
+
+        public DateTime BirthDate { get; set; }
+
+        public IList<Patient.PatientPhoneContact> PhoneContacts { get; set; }
+
         /// <summary>
         /// Holds the exact time the patient has set a specific event in the day: i.e., breakfast, diner, sleep. The date
         /// in the datetime is ignored. 
