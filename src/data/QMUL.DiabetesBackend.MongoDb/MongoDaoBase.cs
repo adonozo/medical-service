@@ -3,6 +3,7 @@ namespace QMUL.DiabetesBackend.MongoDb
     using System;
     using System.Threading.Tasks;
     using DataInterfaces.Exceptions;
+    using MongoDB.Bson.Serialization.Conventions;
     using MongoDB.Driver;
 
     /// <summary>
@@ -22,6 +23,8 @@ namespace QMUL.DiabetesBackend.MongoDb
         protected MongoDaoBase(IMongoDatabase database)
         {
             this.Database = database;
+            var conventionPack = new  ConventionPack {new CamelCaseElementNameConvention()};
+            ConventionRegistry.Register("camelCase", conventionPack, t => true);
         }
 
         /// <summary>

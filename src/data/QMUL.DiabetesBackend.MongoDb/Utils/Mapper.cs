@@ -88,9 +88,9 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
             var days = 0;
             if (timing.Repeat.Bounds is Duration duration)
             {
-                days = duration.Value != null ? (int) duration.Value : 0;
+                days = duration.Value != null ? (int)duration.Value : 0;
             }
-            
+
             var whenList = from eventTiming in timing.Repeat.When
                 where eventTiming != null
                 select eventTiming.ToString();
@@ -161,6 +161,14 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 AlexaUserId = patient.AlexaUserId,
                 FirstName = patient.FirstName,
                 LastName = patient.LastName,
+                Gender = patient.Gender.ToString().ToLower(),
+                BirthDate = patient.BirthDate,
+                PhoneContacts = patient.PhoneContacts?
+                    .Select(contact => new MongoPhoneContact
+                    {
+                        Number = contact.Number, 
+                        Use = contact.Use.ToString().ToLower()
+                    }).ToList() ?? new List<MongoPhoneContact>(),
                 ExactEventTimes = eventTimes,
                 ResourceStartDate = patient.ResourceStartDate,
             };
@@ -170,7 +178,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
         {
             var eventTimes = patient.ExactEventTimes.ToDictionary(item => Parse<CustomEventTiming>(item.Key),
                 item => item.Value);
-            
+
             return new Patient
             {
                 Id = patient.Id,
@@ -178,11 +186,19 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 AlexaUserId = patient.AlexaUserId,
                 FirstName = patient.FirstName,
                 LastName = patient.LastName,
+                Gender = Parse<PatientGender>(patient.Gender, true),
+                BirthDate = patient.BirthDate,
+                PhoneContacts = patient.PhoneContacts?
+                    .Select(contact => new Patient.PatientPhoneContact
+                    {
+                        Number = contact.Number,
+                        Use = Parse<ContactPointUse>(contact.Use, true)
+                    }).ToList() ?? new List<Patient.PatientPhoneContact>(),
                 ExactEventTimes = eventTimes,
                 ResourceStartDate = patient.ResourceStartDate,
             };
         }
-        
+
         public static MongoCode ToMongoCode(this Coding code)
         {
             return new()

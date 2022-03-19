@@ -37,8 +37,17 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// Updates (replaces) a patient.
         /// </summary>
         /// <param name="actualPatient">The patient to update.</param>
-        /// <returns>A boolean value to tell if the update was made.</returns>
+        /// <returns>The updated patient.</returns>
         /// <exception cref="UpdateException">If the patient could not be updated</exception>
-        public Task<bool> UpdatePatient(Patient actualPatient);
+        public Task<Patient> UpdatePatient(Patient actualPatient);
+
+        /// <summary>
+        /// Updates only non-empty patient fields without considering custom times or the ID. 
+        /// </summary>
+        /// <param name="actualPatient">The patient to update. If any of the fields is empty or default, it will
+        /// be ignored</param>
+        /// <returns>The updated patient.</returns>
+        /// <exception cref="UpdateException">If the patient could not be updated</exception>
+        public Task<Patient> PatchPatient(Patient actualPatient);
     }
 }

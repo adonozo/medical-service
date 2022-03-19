@@ -198,9 +198,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
             var patient = this.GetDummyPatient();
-            var expectedTimingKeys = new[] {CustomEventTiming.CM, CustomEventTiming.ACM, CustomEventTiming.PCM};
+            var expectedTimingKeys = new[] { CustomEventTiming.CM, CustomEventTiming.ACM, CustomEventTiming.PCM };
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(true);
+            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
             eventDao.UpdateEventsTiming(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>())
                 .Returns(true);
 
@@ -227,7 +227,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var patient = this.GetDummyPatient();
             var expectedDate = DateTime.Now;
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(true);
+            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
             eventDao.UpdateEventsTiming(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>())
                 .Returns(true);
 
@@ -253,7 +253,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
 
             var patient = this.GetDummyPatient();
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(true);
+            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
             var dosageId = Guid.NewGuid().ToString();
             medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
                 .Returns(GetTestMedicationRequest(dosageId));
@@ -282,7 +282,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
 
             var patient = this.GetDummyPatient();
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(true);
+            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
             var dosageId = Guid.NewGuid().ToString();
             medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
                 .Returns(GetTestMedicationRequest(dosageId));
@@ -311,7 +311,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
 
             var patient = this.GetDummyPatient();
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(true);
+            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
             var dosageId = Guid.NewGuid().ToString();
             medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
                 .Returns(GetTestMedicationRequest(dosageId));
@@ -338,7 +338,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
 
             var patient = this.GetDummyPatient();
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(true);
+            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
             var dosageId = Guid.NewGuid().ToString();
             medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
                 .Returns(GetTestMedicationRequest(dosageId));
@@ -383,13 +383,13 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 }
             };
             var medicationRequest = this.GetTestMedicationRequest(dosageId);
-            medicationRequest.DosageInstruction.Add(new Dosage {ElementId = Guid.NewGuid().ToString()});
+            medicationRequest.DosageInstruction.Add(new Dosage { ElementId = Guid.NewGuid().ToString() });
             medicationRequestDao.GetMedicationRequestsByIds(Arg.Any<string[]>())
-                .Returns(new List<MedicationRequest> {medicationRequest});
+                .Returns(new List<MedicationRequest> { medicationRequest });
 
             // Act
             var result =
-                await (Task<List<MedicationRequest>>) privateMethod.Invoke(alexaService, new object?[] {events});
+                await (Task<List<MedicationRequest>>)privateMethod.Invoke(alexaService, new object?[] { events });
 
             // Assert
             result.Count.Should().Be(1);
@@ -417,16 +417,16 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var serviceId2 = Guid.NewGuid().ToString();
             var events = new List<HealthEvent>
             {
-                new() {Resource = new CustomResource {ResourceId = serviceId1}},
-                new() {Resource = new CustomResource {ResourceId = serviceId2}},
-                new() {Resource = new CustomResource {ResourceId = serviceId1}},
+                new() { Resource = new CustomResource { ResourceId = serviceId1 } },
+                new() { Resource = new CustomResource { ResourceId = serviceId2 } },
+                new() { Resource = new CustomResource { ResourceId = serviceId1 } },
             };
             var expectedIds = Array.Empty<string>();
             serviceRequestDao.GetServiceRequestsByIds(Arg.Do<string[]>(ids => expectedIds = ids))
                 .Returns(new List<ServiceRequest>());
 
             // Act
-            await (Task<List<ServiceRequest>>) privateMethod.Invoke(alexaService, new object?[] {events});
+            await (Task<List<ServiceRequest>>)privateMethod.Invoke(alexaService, new object?[] { events });
 
             // Assert
             await serviceRequestDao.Received(1).GetServiceRequestsByIds(Arg.Any<string[]>());

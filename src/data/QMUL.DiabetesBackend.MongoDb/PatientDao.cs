@@ -47,11 +47,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             await this.patientCollection.InsertOneAsync(mongoPatient);
             this.logger.LogInformation("Patient {FirstName} {LastName} created with ID: {Id}", mongoPatient.FirstName,
                 mongoPatient.LastName, mongoPatient.Id);
-            var result = this.patientCollection.Find(patient => patient.Id == mongoPatient.Id)
-                .Project(patient => patient.ToPatient());
-            const string errorMessage = "Could not create patient";
-            return await this.GetSingleOrThrow(result, new CreateException(errorMessage),
-                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
+            return await this.GetSinglePatientOrThrow(mongoPatient.Id);
         }
 
         /// <inheritdoc />
@@ -75,7 +71,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<bool> UpdatePatient(Patient actualPatient)
+        public async Task<Patient> UpdatePatient(Patient actualPatient)
         {
             logger.LogInformation("Updating patient with ID: {Id}", actualPatient.Id);
             var mongoPatient = actualPatient.ToMongoPatient();
@@ -85,7 +81,59 @@ namespace QMUL.DiabetesBackend.MongoDb
             var errorMessage = $"Could not update patient with ID {actualPatient.Id}";
             this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new UpdateException(errorMessage),
                 () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
-            return true;
+            return await this.GetSinglePatientOrThrow(actualPatient.Id);
+        }
+
+        /// <inheritdoc />
+        public async Task<Patient> PatchPatient(Patient actualPatient)
+        {
+            logger.LogInformation("Updating patient with ID: {Id}", actualPatient.Id);
+            var mongoPatient = actualPatient.ToMongoPatient();
+            var definition = this.GetUpdateDefinition(mongoPatient);
+            var filter = Builders<MongoPatient>.Filter.Eq(p => p.Id, actualPatient.Id);
+            var result = await this.patientCollection.UpdateOneAsync(filter, definition);
+            var errorMessage = $"Could not update patient with ID {actualPatient.Id}";
+            this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new UpdateException(errorMessage),
+                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
+            return await this.GetSinglePatientOrThrow(actualPatient.Id);
+        }
+
+        private UpdateDefinition<MongoPatient> GetUpdateDefinition(MongoPatient patient)
+        {
+            // Gender is a enum, it will always have a value
+            var definition = Builders<MongoPatient>.Update.Set(p => p.Gender, patient.Gender);
+            definition = definition.Set(p => p.Gender, patient.Gender);
+            if (!string.IsNullOrEmpty(patient.LastName))
+            {
+                definition = definition.Set(p => p.LastName, patient.LastName);
+            }
+            if (!string.IsNullOrEmpty(patient.Email))
+            {
+                definition = definition.Set(p => p.Email, patient.Email);
+            }
+            if (!string.IsNullOrEmpty(patient.AlexaUserId))
+            {
+                definition = definition.Set(p => p.AlexaUserId, patient.AlexaUserId);
+            }
+            if (patient.BirthDate != default)
+            {
+                definition = definition.Set(p => p.BirthDate, patient.BirthDate);
+            }
+            if (patient.PhoneContacts != null)
+            {
+                definition = definition.Set(p => p.PhoneContacts, patient.PhoneContacts);
+            }
+            
+            return definition;
+        }
+
+        private async Task<Patient> GetSinglePatientOrThrow(string id)
+        {
+            var result = this.patientCollection.Find(patient => patient.Id == id)
+                .Project(patient => patient.ToPatient());
+            const string errorMessage = "Could not create patient";
+            return await this.GetSingleOrThrow(result, new CreateException(errorMessage),
+                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
         }
     }
 }
