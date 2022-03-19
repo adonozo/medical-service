@@ -2,7 +2,6 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.Linq;
     using Hl7.Fhir.Model;
     using Model;
@@ -162,9 +161,14 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 AlexaUserId = patient.AlexaUserId,
                 FirstName = patient.FirstName,
                 LastName = patient.LastName,
-                Gender = patient.Gender,
+                Gender = patient.Gender.ToString().ToLower(),
                 BirthDate = patient.BirthDate,
-                PhoneContacts = patient.PhoneContacts?? new Collection<Patient.PatientPhoneContact>(),
+                PhoneContacts = patient.PhoneContacts?
+                    .Select(contact => new MongoPhoneContact
+                    {
+                        Number = contact.Number, 
+                        Use = contact.Use.ToString().ToLower()
+                    }).ToList() ?? new List<MongoPhoneContact>(),
                 ExactEventTimes = eventTimes,
                 ResourceStartDate = patient.ResourceStartDate,
             };
@@ -182,9 +186,14 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 AlexaUserId = patient.AlexaUserId,
                 FirstName = patient.FirstName,
                 LastName = patient.LastName,
-                Gender = patient.Gender,
+                Gender = Parse<PatientGender>(patient.Gender, true),
                 BirthDate = patient.BirthDate,
-                PhoneContacts = patient.PhoneContacts?? new Collection<Patient.PatientPhoneContact>(),
+                PhoneContacts = patient.PhoneContacts?
+                    .Select(contact => new Patient.PatientPhoneContact
+                    {
+                        Number = contact.Number,
+                        Use = Parse<ContactPointUse>(contact.Use, true)
+                    }).ToList() ?? new List<Patient.PatientPhoneContact>(),
                 ExactEventTimes = eventTimes,
                 ResourceStartDate = patient.ResourceStartDate,
             };
