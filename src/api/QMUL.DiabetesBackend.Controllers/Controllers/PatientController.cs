@@ -192,5 +192,17 @@ namespace QMUL.DiabetesBackend.Api.Controllers
                 return result ? this.NoContent() : this.BadRequest();
             }, this.logger, this);
         }
+        
+        [HttpPatch]
+        [Route("{idOrEmail}")]
+        public async Task<IActionResult> PatchPatient([FromRoute] string idOrEmail,
+            [FromBody] Patient updatedPatient)
+        {
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+            {
+                var result = await this.patientService.PatchPatient(idOrEmail, updatedPatient);
+                return this.Accepted(result);
+            }, this.logger, this);
+        }
     }
 }

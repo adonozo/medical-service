@@ -54,5 +54,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.UpdatePatient(updatedPatient), this.logger);
         }
+
+        /// <inheritdoc/>
+        public async Task<Patient> PatchPatient(string idOrEmail, Patient updatedPatient)
+        {
+            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(idOrEmail), this.logger);
+            updatedPatient.Id = idOrEmail;
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.PatchPatient(updatedPatient), this.logger);
+        }
     }
 }

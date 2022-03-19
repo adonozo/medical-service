@@ -57,7 +57,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
                     {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
                 var parsedRequest = await parser.ParseAsync<MedicationRequest>(request.ToString());
                 var result = await this.medicationRequestService.UpdateMedicationRequest(id, parsedRequest);
-                return this.Accepted(result);
+                return this.Accepted(result.ToJObject());
             }, this.logger, this);
         }
 
