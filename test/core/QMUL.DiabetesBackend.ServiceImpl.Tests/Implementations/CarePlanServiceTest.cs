@@ -27,7 +27,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 .Returns(new List<MedicationRequest> { new() });
             serviceRequestDao.GetActiveServiceRequests(Arg.Any<string>())
                 .Returns(new List<ServiceRequest> { new() });
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetDummyPatient());
 
             // Act
             var result = await carePlanService.GetActiveCarePlans(Guid.NewGuid().ToString());
@@ -52,7 +52,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 .Returns(new List<MedicationRequest> { new() });
             serviceRequestDao.GetServiceRequestsFor(Arg.Any<string>())
                 .Returns(new List<ServiceRequest> { new() });
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetDummyPatient());
 
             // Act
             var result = await carePlanService.GetCarePlanFor(Guid.NewGuid().ToString());
@@ -62,17 +62,5 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             result.Entry.Should().Contain(entry => entry.Resource.TypeName == nameof(MedicationRequest));
             result.Entry.Should().Contain(entry => entry.Resource.TypeName == nameof(ServiceRequest));
         }
-
-        #region Private methods
-
-        private Patient GetDummyPatient()
-        {
-            return new Patient
-            {
-                Id = Guid.NewGuid().ToString()
-            };
-        }
-        
-        #endregion
     }
 }

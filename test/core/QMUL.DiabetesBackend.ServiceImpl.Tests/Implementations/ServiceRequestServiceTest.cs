@@ -25,7 +25,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<ServiceRequestService>>();
             var serviceRequestService = new ServiceRequestService(serviceRequestDao, patientDao, eventDao, logger);
 
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetDummyPatient();
             var serviceRequest = this.GetTestServiceRequest(patient.Id);
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
             serviceRequestDao.CreateServiceRequest(Arg.Any<ServiceRequest>()).Returns(serviceRequest);
@@ -104,15 +104,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
 
         #region Private methods
 
-        // TODO move this and similar to a "Utils" class
-        private Patient GetDummyPatient()
-        {
-            return new Patient
-            {
-                Id = Guid.NewGuid().ToString()
-            };
-        }
-        
         private ServiceRequest GetTestServiceRequest(string patientId)
         {
             return new ServiceRequest

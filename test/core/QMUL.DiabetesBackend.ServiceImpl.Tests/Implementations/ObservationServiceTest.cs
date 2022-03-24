@@ -24,7 +24,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<ObservationService>>();
             var observationService = new ObservationService(patientDao, observationDao, logger);
 
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetDummyPatient();
             var observation = new Observation { Subject = new ResourceReference() };
             var observationUsedInMethod = new Observation();
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
@@ -67,7 +67,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<ObservationService>>();
             var observationService = new ObservationService(patientDao, observationDao, logger);
 
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetDummyPatient());
             observationDao.GetAllObservationsFor(Arg.Any<string>()).Returns(new List<Observation> { new() });
 
             // Act
@@ -87,7 +87,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<ObservationService>>();
             var observationService = new ObservationService(patientDao, observationDao, logger);
             
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetDummyPatient());
             observationDao.GetObservationsFor(Arg.Any<string>(), Arg.Any<DateTime>(), Arg.Any<DateTime>())
                 .Returns(new List<Observation> { new() });
 
@@ -120,7 +120,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var expectedStartDateTime = testDateTime.AddMinutes(defaultTime * -1);
             var expectedEndDateTime = testDateTime.AddMinutes(defaultTime);
             
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetDummyPatient());
             observationDao.GetObservationsFor(Arg.Any<string>(), Arg.Do<DateTime>(startTime => start = startTime),
                     Arg.Do<DateTime>(endTime => end = endTime))
                 .Returns(new List<Observation> { new() });
@@ -133,17 +133,5 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             start.Should().Be(expectedStartDateTime);
             end.Should().Be(expectedEndDateTime);
         }
-
-        #region Private methods
-
-        private Patient GetDummyPatient()
-        {
-            return new Patient
-            {
-                Id = Guid.NewGuid().ToString()
-            };
-        }
-        
-        #endregion
     }
 }
