@@ -76,6 +76,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// <param name="timezone">The patient's timezone.</param>
         /// <param name="defaultOffset">An offset for the time interval, in minutes.</param>
         /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
+        // TODO no need for internal patient here, just the preference timing
         public static Tuple<DateTimeOffset, DateTimeOffset> GetIntervalForPatient(InternalPatient patient, DateTimeOffset startTime,
             CustomEventTiming timing, string timezone, int defaultOffset)
         {

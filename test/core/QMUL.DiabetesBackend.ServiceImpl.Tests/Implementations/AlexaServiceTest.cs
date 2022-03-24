@@ -11,6 +11,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
     using Microsoft.Extensions.Logging;
     using Model;
     using Model.Enums;
+    using Model.Extensions;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
     using ServiceImpl.Implementations;

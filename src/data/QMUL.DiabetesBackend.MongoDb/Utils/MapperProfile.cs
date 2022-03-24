@@ -2,7 +2,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
 {
     using AutoMapper;
     using Hl7.Fhir.Model;
-    using Model;
+    using Model.Extensions;
     using Models;
 
     public class MapperProfile : Profile

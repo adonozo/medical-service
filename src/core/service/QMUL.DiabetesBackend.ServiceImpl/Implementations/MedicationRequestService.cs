@@ -5,7 +5,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using DataInterfaces;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
-    using Model;
+    using Model.Extensions;
     using ServiceInterfaces;
     using Utils;
 

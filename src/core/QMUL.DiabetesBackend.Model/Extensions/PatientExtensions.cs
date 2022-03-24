@@ -1,4 +1,4 @@
-namespace QMUL.DiabetesBackend.Model
+namespace QMUL.DiabetesBackend.Model.Extensions
 {
     using System;
     using System.Collections.Generic;
@@ -44,7 +44,8 @@ namespace QMUL.DiabetesBackend.Model
             return preferences;
         }
 
-        public static void SetTimingPreferences(this Patient patient, Dictionary<CustomEventTiming, DateTimeOffset> preferences)
+        public static void SetTimingPreferences(this Patient patient,
+            Dictionary<CustomEventTiming, DateTimeOffset> preferences)
         {
             patient.ModifierExtension = new List<Extension>();
             var timingExtension = new Extension
@@ -58,9 +59,10 @@ namespace QMUL.DiabetesBackend.Model
                 var dateTime = new FhirDateTime(preference.Value);
                 timingExtension.SetExtension(uri, dateTime);
             }
+
             patient.ModifierExtension.Add(timingExtension);
         }
-        
+
         public static InternalPatient ToInternalPatient(this Patient patient)
         {
             var alexaId = patient.ModifierExtension
