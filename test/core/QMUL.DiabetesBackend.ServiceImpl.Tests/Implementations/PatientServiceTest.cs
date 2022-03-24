@@ -2,14 +2,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
 {
     using System;
     using System.Collections.Generic;
-    using System.Threading.Tasks;
     using DataInterfaces;
     using FluentAssertions;
+    using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
-    using Model;
     using NSubstitute;
     using ServiceImpl.Implementations;
     using Xunit;
+    using Task = System.Threading.Tasks.Task;
 
     public class PatientServiceTest
     {

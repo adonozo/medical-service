@@ -3,6 +3,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Exceptions;
+    using Hl7.Fhir.Model;
     using Model;
 
     /// <summary>
@@ -48,6 +49,6 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// be ignored</param>
         /// <returns>The updated patient.</returns>
         /// <exception cref="UpdateException">If the patient could not be updated</exception>
-        public Task<Patient> PatchPatient(Patient actualPatient);
+        public Task<Patient> PatchPatient(InternalPatient actualPatient);
     }
 }

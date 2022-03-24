@@ -6,6 +6,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     using Hl7.Fhir.Model;
     using Model;
     using Model.Enums;
+    using ResourceReference = Model.ResourceReference;
 
     /// <summary>
     /// Resource util methods
@@ -67,14 +68,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// <param name="request">The medication request</param>
         /// <param name="patient">The medication request's subject</param>
         /// <returns>A List of events for the medication request</returns>
-        public static IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request, Model.Patient patient)
+        public static IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request, InternalPatient patient)
         {
             var events = new List<HealthEvent>();
             var isInsulin = IsInsulinResource(request);
 
             foreach (var dosage in request.DosageInstruction)
             {
-                var requestReference = new CustomResource
+                var requestReference = new ResourceReference
                 {
                     EventType = isInsulin ? EventType.InsulinDosage : EventType.MedicationDosage,
                     ResourceId = request.Id,
@@ -96,10 +97,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// <param name="request">The medication request</param>
         /// <param name="patient">The medication request's subject</param>
         /// <returns>A List of events for the medication request</returns>
-        public static IEnumerable<HealthEvent> GenerateEventsFrom(ServiceRequest request, Model.Patient patient)
+        public static IEnumerable<HealthEvent> GenerateEventsFrom(ServiceRequest request, InternalPatient patient)
         {
             var events = new List<HealthEvent>();
-            var requestReference = new CustomResource
+            var requestReference = new ResourceReference
             {
                 EventType = EventType.Measurement,
                 ResourceId = request.Id,

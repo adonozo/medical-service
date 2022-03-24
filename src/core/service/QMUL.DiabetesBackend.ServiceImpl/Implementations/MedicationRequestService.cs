@@ -5,6 +5,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using DataInterfaces;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
+    using Model;
     using ServiceInterfaces;
     using Utils;
 
@@ -33,9 +34,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId), this.logger);
             this.logger.LogDebug("Creating medication request for patient {PatientId}", patient.Id);
+            var internalPatient = patient.ToInternalPatient();
             var newRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.medicationRequestDao.CreateMedicationRequest(request), this.logger);
-            var events = ResourceUtils.GenerateEventsFrom(newRequest, patient);
+            var events = ResourceUtils.GenerateEventsFrom(newRequest, internalPatient);
             await ExceptionHandler.ExecuteAndHandleAsync(async () => await this.eventDao.CreateEvents(events),
                 this.logger);
             this.logger.LogDebug("Medication request created with ID {Id}", newRequest.Id);

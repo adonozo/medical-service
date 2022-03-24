@@ -53,12 +53,12 @@ namespace QMUL.DiabetesBackend.MongoDb
         {
             this.logger.LogDebug("Deleting events with a reference ID: {Id}", referenceId);
             var result = await
-                this.eventCollection.DeleteManyAsync(request => request.Resource.EventReferenceId == referenceId);
+                this.eventCollection.DeleteManyAsync(request => request.ResourceReference.EventReferenceId == referenceId);
             return result.IsAcknowledged;
         }
 
         /// <inheritdoc />
-        public async Task<bool> UpdateEventsTiming(string patientId, CustomEventTiming timing, DateTime time)
+        public async Task<bool> UpdateEventsTiming(string patientId, CustomEventTiming timing, DateTimeOffset time)
         {
             this.logger.LogDebug("Updating event timing for patient: {PatientId}", patientId);
             var currentTime = DateTime.UtcNow;
@@ -86,7 +86,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             DateTime end)
         {
             var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
-                                                                  && healthEvent.Resource.EventType == type
+                                                                  && healthEvent.ResourceReference.EventType == type
                                                                   && healthEvent.EventDateTime > start
                                                                   && healthEvent.EventDateTime < end)
                 .Project(mongoEvent => mongoEvent.ToHealthEvent());
@@ -99,7 +99,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         {
             var timingFilter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.EventTiming, timings);
             timingFilter &= this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
-                                                                     && healthEvent.Resource.EventType == type
+                                                                     && healthEvent.ResourceReference.EventType == type
                                                                      && healthEvent.EventDateTime > start
                                                                      && healthEvent.EventDateTime < end)
                 .Filter;
@@ -111,7 +111,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType[] types, DateTime start,
             DateTime end)
         {
-            var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.Resource.EventType, types);
+            var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.ResourceReference.EventType, types);
             filter &= this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
                                                                && healthEvent.EventDateTime > start
                                                                && healthEvent.EventDateTime < end)
@@ -125,7 +125,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             DateTime end, CustomEventTiming[] timings)
         {
             var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.EventTiming, timings);
-            filter &= Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.Resource.EventType, types);
+            filter &= Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.ResourceReference.EventType, types);
             filter &= this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
                                                                && healthEvent.EventDateTime > start
                                                                && healthEvent.EventDateTime < end)
@@ -140,7 +140,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             var date = DateTime.UtcNow;
             var sort = Builders<MongoEvent>.Sort.Ascending(healthEvent => healthEvent.EventDateTime);
             var result = this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
-                                                                  && healthEvent.Resource.EventType == type
+                                                                  && healthEvent.ResourceReference.EventType == type
                                                                   && healthEvent.EventDateTime > date)
                 .Sort(sort)
                 .Limit(DefaultLimit)
@@ -153,7 +153,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         {
             var date = DateTime.UtcNow;
             var sort = Builders<MongoEvent>.Sort.Ascending(healthEvent => healthEvent.EventDateTime);
-            var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.Resource.EventType, types);
+            var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.ResourceReference.EventType, types);
             filter &= this.eventCollection.Find(healthEvent => healthEvent.PatientId == patientId
                                                                && healthEvent.EventDateTime > date).Filter;
             var result = this.eventCollection.Find(filter)

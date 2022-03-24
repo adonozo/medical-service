@@ -20,6 +20,6 @@ namespace QMUL.DiabetesBackend.MongoDb.Models
         
         public CustomEventTiming EventTiming { get; set; }
         
-        public CustomResource Resource { get; set; }
+        public ResourceReference ResourceReference { get; set; }
     }
 }

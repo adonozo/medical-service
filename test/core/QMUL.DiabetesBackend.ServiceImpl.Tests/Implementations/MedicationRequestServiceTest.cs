@@ -7,11 +7,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
     using Model;
-    using Model.Enums;
     using NSubstitute;
     using ServiceImpl.Implementations;
     using Xunit;
-    using Patient = Model.Patient;
+    using ResourceReference = Hl7.Fhir.Model.ResourceReference;
     using Task = System.Threading.Tasks.Task;
 
     public class MedicationRequestServiceTest
@@ -159,9 +158,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
         {
             return new Patient
             {
-                Id = Guid.NewGuid().ToString(), 
-                ExactEventTimes = new Dictionary<CustomEventTiming, DateTime>(),
-                ResourceStartDate = new Dictionary<string, DateTime>()
+                Id = Guid.NewGuid().ToString()
             };
         }
 

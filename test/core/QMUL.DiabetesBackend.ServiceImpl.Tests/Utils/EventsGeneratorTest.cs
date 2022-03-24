@@ -9,7 +9,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
     using Model.Enums;
     using ServiceImpl.Utils;
     using Xunit;
-    using Patient = Model.Patient;
+    using ResourceReference = Model.ResourceReference;
 
     public class EventsGeneratorTest
     {
@@ -305,9 +305,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
 
         #region Private Methods
 
-        private CustomResource GetDummyResource()
+        private ResourceReference GetDummyResource()
         {
-            return new CustomResource
+            return new ResourceReference
             {
                 ResourceId = string.Empty,
                 EventReferenceId = string.Empty,
@@ -315,12 +315,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
             };
         }
         
-        private Patient GetDummyPatient()
+        private InternalPatient GetDummyPatient()
         {
-            return new Patient
+            return new InternalPatient
             {
                 Id = Guid.NewGuid().ToString(), 
-                ExactEventTimes = new Dictionary<CustomEventTiming, DateTime>(),
+                ExactEventTimes = new Dictionary<CustomEventTiming, DateTimeOffset>(),
                 ResourceStartDate = new Dictionary<string, DateTime>()
             };
         }

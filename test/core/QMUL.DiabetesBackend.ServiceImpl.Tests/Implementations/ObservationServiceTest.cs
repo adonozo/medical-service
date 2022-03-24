@@ -11,7 +11,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
     using NSubstitute;
     using ServiceImpl.Implementations;
     using Xunit;
-    using Patient = Model.Patient;
     using Task = System.Threading.Tasks.Task;
 
     public class ObservationServiceTest
@@ -141,9 +140,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
         {
             return new Patient
             {
-                Id = Guid.NewGuid().ToString(), 
-                ExactEventTimes = new Dictionary<CustomEventTiming, DateTime>(),
-                ResourceStartDate = new Dictionary<string, DateTime>()
+                Id = Guid.NewGuid().ToString()
             };
         }
         

@@ -26,6 +26,6 @@ namespace QMUL.DiabetesBackend.Model
         /// </summary>
         public CustomEventTiming EventTiming { get; set; }
         
-        public CustomResource Resource { get; set; }
+        public ResourceReference ResourceReference { get; set; }
     }
 }

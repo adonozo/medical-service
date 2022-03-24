@@ -6,6 +6,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using Microsoft.Extensions.Logging;
     using DataInterfaces;
     using Hl7.Fhir.Model;
+    using Model;
     using Model.Enums;
     using ServiceInterfaces;
     using Utils;
@@ -69,8 +70,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
+            var internalPatient = patient.ToInternalPatient();
 
-            DateTime start, end;
+            DateTimeOffset start, end;
             if (timing == CustomEventTiming.EXACT)
             {
                 start = dateTime.AddMinutes(DefaultOffset * -1);
@@ -79,10 +81,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             else
             {
                 (start, end) =
-                    EventTimingMapper.GetIntervalForPatient(patient, dateTime, timing, patientTimezone, DefaultOffset);
+                    EventTimingMapper.GetIntervalForPatient(internalPatient, dateTime, timing, patientTimezone, DefaultOffset);
             }
 
-            var observations = await this.observationDao.GetObservationsFor(patient.Id, start, end);
+            var observations = await this.observationDao.GetObservationsFor(patient.Id, start.UtcDateTime, end.UtcDateTime);
             var bundle = ResourceUtils.GenerateEmptyBundle();
             bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
                 .ToList();

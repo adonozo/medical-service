@@ -15,7 +15,6 @@
     using NSubstitute.ExceptionExtensions;
     using ServiceInterfaces;
     using Xunit;
-    using Patient = Model.Patient;
     using Task = System.Threading.Tasks.Task;
 
     public class PatientControllerTest
@@ -35,7 +34,7 @@
             patientService.CreatePatient(Arg.Any<Patient>()).Returns(new Patient { Id = Guid.NewGuid().ToString() });
 
             // Act
-            var createdPatient = await controller.CreatePatient(new Patient { FirstName = "John", LastName = "Doe" });
+            var createdPatient = await controller.CreatePatient(new Patient());
             var result = (ObjectResult)createdPatient;
 
             // Assert

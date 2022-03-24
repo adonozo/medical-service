@@ -5,10 +5,9 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
     using System.Linq;
     using Hl7.Fhir.Model;
     using Model;
-    using Model.Enums;
     using Models;
     using static System.Enum;
-    using Patient = Model.Patient;
+    using ResourceReference = Hl7.Fhir.Model.ResourceReference;
 
     /// <summary>
     /// Maps FHIR objects into custom Mongo objects and vice-versa.
@@ -133,7 +132,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 EventDateTime = healthEvent.EventDateTime,
                 EventTiming = healthEvent.EventTiming,
                 ExactTimeIsSetup = healthEvent.ExactTimeIsSetup,
-                Resource = healthEvent.Resource
+                ResourceReference = healthEvent.ResourceReference
             };
         }
 
@@ -146,56 +145,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 EventDateTime = mongoEvent.EventDateTime,
                 EventTiming = mongoEvent.EventTiming,
                 ExactTimeIsSetup = mongoEvent.ExactTimeIsSetup,
-                Resource = mongoEvent.Resource
-            };
-        }
-
-        public static MongoPatient ToMongoPatient(this Patient patient)
-        {
-            var eventTimes = patient.ExactEventTimes.ToDictionary(item => item.Key.ToString(), item => item.Value);
-
-            return new MongoPatient
-            {
-                Id = patient.Id,
-                Email = patient.Email,
-                AlexaUserId = patient.AlexaUserId,
-                FirstName = patient.FirstName,
-                LastName = patient.LastName,
-                Gender = patient.Gender.ToString().ToLower(),
-                BirthDate = patient.BirthDate,
-                PhoneContacts = patient.PhoneContacts?
-                    .Select(contact => new MongoPhoneContact
-                    {
-                        Number = contact.Number, 
-                        Use = contact.Use.ToString().ToLower()
-                    }).ToList() ?? new List<MongoPhoneContact>(),
-                ExactEventTimes = eventTimes,
-                ResourceStartDate = patient.ResourceStartDate,
-            };
-        }
-
-        public static Patient ToPatient(this MongoPatient patient)
-        {
-            var eventTimes = patient.ExactEventTimes.ToDictionary(item => Parse<CustomEventTiming>(item.Key),
-                item => item.Value);
-
-            return new Patient
-            {
-                Id = patient.Id,
-                Email = patient.Email,
-                AlexaUserId = patient.AlexaUserId,
-                FirstName = patient.FirstName,
-                LastName = patient.LastName,
-                Gender = Parse<PatientGender>(patient.Gender, true),
-                BirthDate = patient.BirthDate,
-                PhoneContacts = patient.PhoneContacts?
-                    .Select(contact => new Patient.PatientPhoneContact
-                    {
-                        Number = contact.Number,
-                        Use = Parse<ContactPointUse>(contact.Use, true)
-                    }).ToList() ?? new List<Patient.PatientPhoneContact>(),
-                ExactEventTimes = eventTimes,
-                ResourceStartDate = patient.ResourceStartDate,
+                ResourceReference = mongoEvent.ResourceReference
             };
         }
 

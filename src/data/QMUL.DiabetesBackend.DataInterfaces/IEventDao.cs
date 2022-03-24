@@ -35,7 +35,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="time">The time to change. Date is ignored</param>
         /// <returns>A boolean value to indicate if the update was successful.</returns>
         /// <exception cref="UpdateException">If any of the events were not updated.</exception>
-        public Task<bool> UpdateEventsTiming(string patientId, CustomEventTiming timing, DateTime time);
+        public Task<bool> UpdateEventsTiming(string patientId, CustomEventTiming timing, DateTimeOffset time);
 
         /// <summary>
         /// Gets health events for the given parameters.
@@ -80,8 +80,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="timings">An array of <see cref="CustomEventTiming"/> to look for.</param>
         /// <returns>A list of <see cref="HealthEvent"/> matching the parameters.</returns>
         public Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType[] types, DateTime start,
-            DateTime end,
-            CustomEventTiming[] timings);
+            DateTime end, CustomEventTiming[] timings);
 
         /// <summary>
         /// Gets the next batch of events for a given patient. There is a default limit for the results.

@@ -4,11 +4,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
     using System.Collections.Generic;
     using FluentAssertions;
     using Hl7.Fhir.Model;
+    using Model;
     using Model.Enums;
     using ServiceImpl.Utils;
     using Xunit;
     using static System.Enum;
-    using Patient = Model.Patient;
 
     public class EventTimingMapperTest
     {
@@ -100,8 +100,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
             // Arrange
             var timingEvent = CustomEventTiming.AC;
             var patientTimingRecord = new DateTime(2020, 1, 1, 12, 0, 0);
-            var patient = new Patient
-                { ExactEventTimes = new Dictionary<CustomEventTiming, DateTime> { { timingEvent, patientTimingRecord } } };
+            var patient = new InternalPatient
+                { ExactEventTimes = new Dictionary<CustomEventTiming, DateTimeOffset> { { timingEvent, patientTimingRecord } } };
             var referenceDate = new DateTime(2020, 1, 1);
             var timezone = "UTC";
 
@@ -123,7 +123,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
             var timingEvent = CustomEventTiming.MORN;
             var referenceDate = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
             var timezone = "UTC";
-            var patient = new Patient{ ExactEventTimes = new Dictionary<CustomEventTiming, DateTime>()};
+            var patient = new InternalPatient{ ExactEventTimes = new Dictionary<CustomEventTiming, DateTimeOffset>()};
 
             // Act
             var (startDate, endDate) =

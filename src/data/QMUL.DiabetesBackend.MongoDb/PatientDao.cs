@@ -1,17 +1,16 @@
 namespace QMUL.DiabetesBackend.MongoDb
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using AutoMapper;
     using DataInterfaces;
     using DataInterfaces.Exceptions;
+    using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
     using Model;
-    using Model.Enums;
     using Models;
     using MongoDB.Bson;
     using MongoDB.Driver;
-    using Utils;
 
     /// <summary>
     /// The Patient Dao.
@@ -21,10 +20,12 @@ namespace QMUL.DiabetesBackend.MongoDb
         private readonly IMongoCollection<MongoPatient> patientCollection;
         private const string CollectionName = "patient";
         private readonly ILogger<PatientDao> logger;
+        private readonly IMapper mapper;
 
-        public PatientDao(IMongoDatabase database, ILogger<PatientDao> logger) : base(database)
+        public PatientDao(IMongoDatabase database, IMapper mapper, ILogger<PatientDao> logger) : base(database)
         {
             this.logger = logger;
+            this.mapper = mapper;
             this.patientCollection = this.Database.GetCollection<MongoPatient>(CollectionName);
         }
 
@@ -32,21 +33,19 @@ namespace QMUL.DiabetesBackend.MongoDb
         public async Task<List<Patient>> GetPatients()
         {
             var result = this.patientCollection.Find(FilterDefinition<MongoPatient>.Empty)
-                .Project(patient => patient.ToPatient());
+                .Project(patient => mapper.Map<Patient>(patient));
             return await result.ToListAsync();
         }
 
         /// <inheritdoc />
         public async Task<Patient> CreatePatient(Patient newPatient)
         {
-            this.logger.LogInformation("Creating patient {FirstName} {LastName}", newPatient.FirstName,
-                newPatient.LastName);
-            newPatient.ExactEventTimes ??= new Dictionary<CustomEventTiming, DateTime>();
-            newPatient.ResourceStartDate ??= new Dictionary<string, DateTime>();
-            var mongoPatient = newPatient.ToMongoPatient();
+            this.logger.LogInformation("Inserting patient...");
+            //newPatient.ExactEventTimes ??= new Dictionary<CustomEventTiming, DateTimeOffset>();
+            //newPatient.ResourceStartDate ??= new Dictionary<string, DateTime>();
+            var mongoPatient = mapper.Map<MongoPatient>(newPatient);
             await this.patientCollection.InsertOneAsync(mongoPatient);
-            this.logger.LogInformation("Patient {FirstName} {LastName} created with ID: {Id}", mongoPatient.FirstName,
-                mongoPatient.LastName, mongoPatient.Id);
+            this.logger.LogInformation("Patient created with ID: {Id}", mongoPatient.Id);
             return await this.GetSinglePatientOrThrow(mongoPatient.Id);
         }
 
@@ -57,12 +56,12 @@ namespace QMUL.DiabetesBackend.MongoDb
             if (ObjectId.TryParse(idOrEmail, out _))
             {
                 result = this.patientCollection.Find(patient => patient.Id == idOrEmail)
-                    .Project(patient => patient.ToPatient());
+                    .Project(patient => mapper.Map<Patient>(patient));
             }
             else
             {
                 result = this.patientCollection.Find(patient => patient.Email == idOrEmail)
-                    .Project(patient => patient.ToPatient());
+                    .Project(patient => mapper.Map<Patient>(patient));
             }
 
             var errorMessage = $"Could not find patient with ID or email {idOrEmail}";
@@ -74,7 +73,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         public async Task<Patient> UpdatePatient(Patient actualPatient)
         {
             logger.LogInformation("Updating patient with ID: {Id}", actualPatient.Id);
-            var mongoPatient = actualPatient.ToMongoPatient();
+            var mongoPatient = mapper.Map<MongoPatient>(actualPatient);
             var result = await this.patientCollection.ReplaceOneAsync(patient => patient.Id == actualPatient.Id,
                 mongoPatient, new ReplaceOptions {IsUpsert = true});
             logger.LogInformation("Patient with ID {Id} updated", actualPatient.Id);
@@ -85,11 +84,10 @@ namespace QMUL.DiabetesBackend.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<Patient> PatchPatient(Patient actualPatient)
+        public async Task<Patient> PatchPatient(InternalPatient actualPatient)
         {
             logger.LogInformation("Updating patient with ID: {Id}", actualPatient.Id);
-            var mongoPatient = actualPatient.ToMongoPatient();
-            var definition = this.GetUpdateDefinition(mongoPatient);
+            var definition = this.GetUpdateDefinition(actualPatient);
             var filter = Builders<MongoPatient>.Filter.Eq(p => p.Id, actualPatient.Id);
             var result = await this.patientCollection.UpdateOneAsync(filter, definition);
             var errorMessage = $"Could not update patient with ID {actualPatient.Id}";
@@ -98,31 +96,33 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await this.GetSinglePatientOrThrow(actualPatient.Id);
         }
 
-        private UpdateDefinition<MongoPatient> GetUpdateDefinition(MongoPatient patient)
+        private UpdateDefinition<MongoPatient> GetUpdateDefinition(InternalPatient patient)
         {
             // Gender is a enum, it will always have a value
-            var definition = Builders<MongoPatient>.Update.Set(p => p.Gender, patient.Gender);
-            definition = definition.Set(p => p.Gender, patient.Gender);
-            if (!string.IsNullOrEmpty(patient.LastName))
-            {
-                definition = definition.Set(p => p.LastName, patient.LastName);
-            }
-            if (!string.IsNullOrEmpty(patient.Email))
-            {
-                definition = definition.Set(p => p.Email, patient.Email);
-            }
-            if (!string.IsNullOrEmpty(patient.AlexaUserId))
-            {
-                definition = definition.Set(p => p.AlexaUserId, patient.AlexaUserId);
-            }
-            if (patient.BirthDate != default)
-            {
-                definition = definition.Set(p => p.BirthDate, patient.BirthDate);
-            }
-            if (patient.PhoneContacts != null)
-            {
-                definition = definition.Set(p => p.PhoneContacts, patient.PhoneContacts);
-            }
+            var definition = Builders<MongoPatient>.Update.Set(p => p.BirthDate, patient.BirthDate.ToString("O"));
+            // TODO the builder will be more complex with the new MongoPatient
+            // var definition = Builders<MongoPatient>.Update.Set(p => p.Gender, patient.Gender);
+            // definition = definition.Set(p => p.Gender, patient.Gender);
+            // if (!string.IsNullOrEmpty(patient.LastName))
+            // {
+            //     definition = definition.Set(p => p.LastName, patient.LastName);
+            // }
+            // if (!string.IsNullOrEmpty(patient.Email))
+            // {
+            //     definition = definition.Set(p => p.Email, patient.Email);
+            // }
+            // if (!string.IsNullOrEmpty(patient.AlexaUserId))
+            // {
+            //     definition = definition.Set(p => p.AlexaUserId, patient.AlexaUserId);
+            // }
+            // if (patient.BirthDate != default)
+            // {
+            //     definition = definition.Set(p => p.BirthDate, patient.BirthDate.ToString("O"));
+            // }
+            // if (patient.PhoneContacts != null)
+            // {
+            //     definition = definition.Set(p => p.PhoneContacts, patient.PhoneContacts);
+            // }
             
             return definition;
         }
@@ -130,7 +130,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         private async Task<Patient> GetSinglePatientOrThrow(string id)
         {
             var result = this.patientCollection.Find(patient => patient.Id == id)
-                .Project(patient => patient.ToPatient());
+                .Project(patient => mapper.Map<Patient>(patient));
             const string errorMessage = "Could not create patient";
             return await this.GetSingleOrThrow(result, new CreateException(errorMessage),
                 () => this.logger.LogWarning("{ErrorMessage}", errorMessage));

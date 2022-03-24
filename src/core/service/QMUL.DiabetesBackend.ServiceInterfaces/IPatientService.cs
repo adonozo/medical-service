@@ -3,7 +3,8 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Exceptions;
-    using Patient = Model.Patient;
+    using Hl7.Fhir.Model;
+    using Model;
 
     /// <summary>
     /// The Patient Service Interface.
@@ -50,6 +51,6 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <returns>The updated <see cref="Patient"/>.</returns>
         /// <exception cref="NotFoundException">If the patient was not found.</exception>
         /// <exception cref="UpdateException">If there was an error during update</exception>
-        public Task<Patient> PatchPatient(string idOrEmail, Patient updatedPatient);
+        public Task<Patient> PatchPatient(string idOrEmail, InternalPatient updatedPatient);
     }
 }

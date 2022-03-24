@@ -9,7 +9,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
     using Model.Enums;
     using ServiceImpl.Utils;
     using Xunit;
-    using Patient = Model.Patient;
 
     public class ResourceUtilsTest
     {
@@ -128,7 +127,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
 
             // Assert
             events.Count.Should().Be(10);
-            events[0].Resource.EventType.Should().Be(EventType.Measurement);
+            events[0].ResourceReference.EventType.Should().Be(EventType.Measurement);
         }
 
         [Fact]
@@ -191,17 +190,17 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
 
             // Assert
             events.Count.Should().Be(10);
-            events[0].Resource.EventType.Should().Be(EventType.MedicationDosage);
+            events[0].ResourceReference.EventType.Should().Be(EventType.MedicationDosage);
         }
 
         #region Private Methods
 
-        private Patient GetDummyPatient()
+        private InternalPatient GetDummyPatient()
         {
-            return new Patient
+            return new InternalPatient
             {
                 Id = Guid.NewGuid().ToString(),
-                ExactEventTimes = new Dictionary<CustomEventTiming, DateTime>(),
+                ExactEventTimes = new Dictionary<CustomEventTiming, DateTimeOffset>(),
                 ResourceStartDate = new Dictionary<string, DateTime>()
             };
         }

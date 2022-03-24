@@ -5,7 +5,7 @@ namespace QMUL.DiabetesBackend.Model
     /// <summary>
     /// A custom resource that references an actual FHIR resource
     /// </summary>
-    public class CustomResource
+    public class ResourceReference
     {
         /// <summary>
         /// The event type

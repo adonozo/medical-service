@@ -6,11 +6,11 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     using Hl7.Fhir.Serialization;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Model;
     using Model.Enums;
     using Models;
     using ServiceInterfaces;
     using Utils;
-    using Patient = Model.Patient;
 
     [ApiController]
     [Route("patients/")]
@@ -41,11 +41,10 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                this.logger.LogDebug("Creating patient: {FirstName} {LastName}", newPatient.FirstName,
-                    newPatient.LastName);
+                this.logger.LogDebug("Creating patient");
                 var createdPatient = await this.patientService.CreatePatient(newPatient);
                 this.logger.LogDebug("Patient created with ID: {Id}", createdPatient.Id);
-                return this.Ok(createdPatient);
+                return this.Ok(createdPatient.ToJObject());
             }, this.logger, this);
         }
 
@@ -165,7 +164,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var result = await this.patientService.UpdatePatient(idOrEmail, updatedPatient);
-                return this.Accepted(result);
+                return this.Accepted(result.ToJObject());
             }, this.logger, this);
         }
 
@@ -196,12 +195,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [HttpPatch]
         [Route("{idOrEmail}")]
         public async Task<IActionResult> PatchPatient([FromRoute] string idOrEmail,
-            [FromBody] Patient updatedPatient)
+            [FromBody] InternalPatient updatedPatient)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var result = await this.patientService.PatchPatient(idOrEmail, updatedPatient);
-                return this.Accepted(result);
+                return this.Accepted(result.ToJObject());
             }, this.logger, this);
         }
     }
