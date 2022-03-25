@@ -18,6 +18,7 @@
     /// </summary>
     public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     {
+        // TODO stop using MongoMedicationRequest
         private readonly IMongoCollection<MongoMedicationRequest> medicationRequestCollection;
         private readonly ILogger<MedicationRequestDao> logger;
         private const string CollectionName = "medicationRequest";

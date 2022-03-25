@@ -16,6 +16,7 @@ namespace QMUL.DiabetesBackend.MongoDb
     /// </summary>
     public class ObservationDao : MongoDaoBase, IObservationDao
     {
+        // TODO stop using MongoObservation
         private readonly IMongoCollection<MongoObservation> observationCollection;
         private const string CollectionName = "observation";
         private readonly ILogger<ObservationDao> logger;

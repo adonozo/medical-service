@@ -123,6 +123,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
             };
         }
 
+        // TODO use mapper instead or stop using MongoEvent
         public static MongoEvent ToMongoEvent(this HealthEvent healthEvent)
         {
             return new()

@@ -243,7 +243,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             patientTimings.Should().ContainKey(CustomEventTiming.SNACK).And.ContainValue(expectedDate);
         }
 
-        [Fact(Skip = "Resource start date will be moved")]
+        [Fact]
         public async Task UpsertDosageStartDate_WhenRequestIsSuccessful_ReturnsTrue()
         {
             // Arrange
@@ -253,24 +253,29 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var eventDao = Substitute.For<IEventDao>();
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
+            var dosageId = Guid.NewGuid().ToString();
+            var medicationRequest = GetTestMedicationRequest(dosageId);
 
             var patient = TestUtils.GetStubPatient();
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
             patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
-            var dosageId = Guid.NewGuid().ToString();
+            
             medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
-                .Returns(GetTestMedicationRequest(dosageId));
+                .Returns(medicationRequest);
+            medicationRequestDao.UpdateMedicationRequest(Arg.Any<string>(),
+                Arg.Do<MedicationRequest>(med => medicationRequest = med))
+                .Returns(medicationRequest);
             eventDao.DeleteEventSeries(Arg.Any<string>()).Returns(true);
             eventDao.CreateEvents(Arg.Any<IEnumerable<HealthEvent>>()).Returns(true);
             var expectedDate = DateTime.Now;
 
             // Act
             var result = await alexaService.UpsertDosageStartDate(Guid.NewGuid().ToString(), dosageId, expectedDate);
+            var dosage = medicationRequest.DosageInstruction.FirstOrDefault(dosage => dosage.ElementId == dosageId);
 
             // Assert
             result.Should().Be(true);
-            // TODO fix this
-            //patient.ResourceStartDate.Should().ContainKey(dosageId).And.ContainValue(expectedDate);
+            dosage.GetStartDate().Should().NotBeNull().And.Be(expectedDate);
         }
 
         [Fact]

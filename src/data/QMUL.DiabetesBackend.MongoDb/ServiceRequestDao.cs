@@ -16,6 +16,7 @@ namespace QMUL.DiabetesBackend.MongoDb
     /// </summary>
     public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     {
+        // TODO stop using MongoServiceRequest
         private readonly IMongoCollection<MongoServiceRequest> serviceRequestCollection;
         private const string CollectionName = "serviceRequest";
         private readonly ILogger<ServiceRequestDao> logger;
