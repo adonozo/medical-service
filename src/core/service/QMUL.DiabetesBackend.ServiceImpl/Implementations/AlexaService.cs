@@ -65,13 +65,13 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             logger.LogTrace("Processing Alexa Glucose service request type");
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), this.logger);
-            var internalPatient = patient.ToInternalPatient();
+            var timingPreferences = patient.GetTimingPreference();
             var timings = EventTimingMapper.GetRelatedTimings(timing);
             IEnumerable<HealthEvent> events;
             if (timings.Length == 0)
             {
                 var (start, end) =
-                    EventTimingMapper.GetIntervalForPatient(internalPatient, dateTime, timing, timezone, DefaultOffset);
+                    EventTimingMapper.GetIntervalForPatient(timingPreferences, dateTime, timing, timezone, DefaultOffset);
                 events = await this.eventDao.GetEvents(patient.Id, EventType.Measurement, start.UtcDateTime, end.UtcDateTime);
             }
             else
@@ -91,14 +91,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.logger.LogTrace("Processing Alexa Care Plan request type");
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), this.logger);
-            var internalPatient = patient.ToInternalPatient();
+            var timingPreferences = patient.GetTimingPreference();
             var timings = EventTimingMapper.GetRelatedTimings(timing);
             var types = new[] {EventType.Measurement, EventType.InsulinDosage, EventType.MedicationDosage};
             IEnumerable<HealthEvent> events;
             if (timings.Length == 0)
             {
                 var (start, end) =
-                    EventTimingMapper.GetIntervalForPatient(internalPatient, dateTime, timing, timezone, DefaultOffset);
+                    EventTimingMapper.GetIntervalForPatient(timingPreferences, dateTime, timing, timezone, DefaultOffset);
                 events = await this.eventDao.GetEvents(patient.Id, types, start.UtcDateTime, end.UtcDateTime);
             }
             else
@@ -232,13 +232,13 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), this.logger);
-            var internalPatient = patient.ToInternalPatient();
+            var timingPreferences = patient.GetTimingPreference();
             var timings = EventTimingMapper.GetRelatedTimings(timing);
             IEnumerable<HealthEvent> events;
             if (timings.Length == 0)
             {
                 var (start, end) =
-                    EventTimingMapper.GetIntervalForPatient(internalPatient, dateTime, timing, timezone, DefaultOffset);
+                    EventTimingMapper.GetIntervalForPatient(timingPreferences, dateTime, timing, timezone, DefaultOffset);
                 events = await this.eventDao.GetEvents(patient.Id, type, start.UtcDateTime, end.UtcDateTime);
             }
             else

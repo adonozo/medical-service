@@ -5,7 +5,7 @@
     using Enums;
 
     /// <summary>
-    /// A Patient with personal information. A Patient is unique in the system and can be identified by ID or email.
+    /// A lightweight Patient object. It is used to avoid the more complex FHIR Patient object
     /// </summary>
     public class InternalPatient
     {

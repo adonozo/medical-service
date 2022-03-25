@@ -1,6 +1,7 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using Hl7.Fhir.Model;
     using Model;
@@ -67,26 +68,25 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 
         /// <summary>
         /// Gets a time interval for a timing event, considering the patient's timezone and previous timing personal
-        /// settings. If the patient do not have a datetime for the timing event, a default time is used. E.g., if the
+        /// settings. If the patient does not have a datetime for the timing event, a default time is used, e.g., if the
         /// patient have not declared the time for breakfast before, it will use a default time. 
         /// </summary>
-        /// <param name="patient">The patient to get the time interval for.</param>
+        /// <param name="preferences">The patient's timing preferences in a <see cref="Dictionary{TKey,TValue}"/>.</param>
         /// <param name="startTime">The reference start date for the interval.</param>
         /// <param name="timing">The timing event.</param>
         /// <param name="timezone">The patient's timezone.</param>
         /// <param name="defaultOffset">An offset for the time interval, in minutes.</param>
         /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
-        // TODO no need for internal patient here, just the preference timing
-        public static Tuple<DateTimeOffset, DateTimeOffset> GetIntervalForPatient(InternalPatient patient, DateTimeOffset startTime,
-            CustomEventTiming timing, string timezone, int defaultOffset)
+        public static Tuple<DateTimeOffset, DateTimeOffset> GetIntervalForPatient(Dictionary<CustomEventTiming, DateTimeOffset> preferences, 
+            DateTimeOffset startTime, CustomEventTiming timing, string timezone, int defaultOffset)
         {
             DateTimeOffset start;
             DateTimeOffset end;
-            if (patient.ExactEventTimes.ContainsKey(timing))
+            if (preferences.ContainsKey(timing))
             {
-                start = patient.ExactEventTimes[timing].AddMinutes(defaultOffset * -1);
+                start = preferences[timing].AddMinutes(defaultOffset * -1);
                 start = startTime.Date.AddHours(start.Hour).AddMinutes(start.Minute);
-                end = patient.ExactEventTimes[timing].AddMinutes(defaultOffset);
+                end = preferences[timing].AddMinutes(defaultOffset);
                 end = startTime.Date.AddHours(end.Hour).AddMinutes(end.Minute);
             }
             else

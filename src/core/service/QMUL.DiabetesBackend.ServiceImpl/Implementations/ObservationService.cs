@@ -70,7 +70,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
-            var internalPatient = patient.ToInternalPatient();
+            var timingPreferences = patient.GetTimingPreference();
 
             DateTimeOffset start, end;
             if (timing == CustomEventTiming.EXACT)
@@ -81,7 +81,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             else
             {
                 (start, end) =
-                    EventTimingMapper.GetIntervalForPatient(internalPatient, dateTime, timing, patientTimezone, DefaultOffset);
+                    EventTimingMapper.GetIntervalForPatient(timingPreferences, dateTime, timing, patientTimezone, DefaultOffset);
             }
 
             var observations = await this.observationDao.GetObservationsFor(patient.Id, start.UtcDateTime, end.UtcDateTime);
