@@ -27,7 +27,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 new MedicationRequestService(medicationRequestDao, eventDao, patientDao, logger);
 
             var medicationRequest = this.GetTestMedicationRequest(Guid.NewGuid().ToString());
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
             medicationRequestDao.CreateMedicationRequest(Arg.Any<MedicationRequest>()).Returns(medicationRequest);
             eventDao.CreateEvents(Arg.Any<List<HealthEvent>>()).Returns(true);
 
@@ -51,7 +51,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 new MedicationRequestService(medicationRequestDao, eventDao, patientDao, logger);
 
             var medicationRequest = this.GetTestMedicationRequest(Guid.NewGuid().ToString());
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
             medicationRequestDao.CreateMedicationRequest(Arg.Any<MedicationRequest>()).Returns(medicationRequest);
             eventDao.CreateEvents(Arg.Any<List<HealthEvent>>()).Returns(true);
             
@@ -141,7 +141,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var medicationRequestService =
                 new MedicationRequestService(medicationRequestDao, eventDao, patientDao, logger);
 
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
             medicationRequestDao.GetActiveMedicationRequests(Arg.Any<string>()).Returns(new List<MedicationRequest>());
 
             // Act

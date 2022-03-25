@@ -55,7 +55,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                     days = duration.Value == null
                         ? throw new InvalidOperationException("Duration is not defined")
                         : (int) duration.Value;
-                    startDate = this.GetPatientTimeOrDefault();
+                    startDate = this.resourceReference.StartDate?.UtcDateTime ?? DateTime.UtcNow;
                     break;
                 default:
                     throw new InvalidOperationException("Dosage or occurrence does not have a valid timing");
@@ -154,14 +154,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             }
             
             return events;
-        }
-
-        private DateTime GetPatientTimeOrDefault()
-        {
-            var startTimeExits = patient.ResourceStartDate.ContainsKey(this.resourceReference.EventReferenceId);
-            return startTimeExits
-                ? patient.ResourceStartDate[this.resourceReference.EventReferenceId]
-                : DateTime.UtcNow;
         }
 
         private IEnumerable<HealthEvent> GenerateEventsOnMultipleFrequency(int days, DateTime startDate)

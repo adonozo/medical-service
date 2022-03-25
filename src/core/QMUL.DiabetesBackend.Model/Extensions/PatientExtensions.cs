@@ -10,19 +10,14 @@ namespace QMUL.DiabetesBackend.Model.Extensions
     {
         public static string GetEmailExtension(this Patient patient)
         {
-            var email = patient.ModifierExtension
-                .Where(mod => mod.Url == "http://hl7.org/fhir/StructureDefinition/Email")
-                .Select(z => z.Value)
-                .FirstOrDefault() as FhirString;
-            return email?.Value;
+            return patient.GetStringExtension("http://hl7.org/fhir/StructureDefinition/Email");
         }
 
         public static Dictionary<CustomEventTiming, DateTimeOffset> GetTimingPreference(this Patient patient)
         {
             var startDates = new Dictionary<CustomEventTiming, DateTimeOffset>();
             var preferenceExtension = patient
-                .GetExtensions("http://diabetes-assistant.com/fhir/StructureDefinition/TimingPreference")
-                .FirstOrDefault();
+                .GetExtension("http://diabetes-assistant.com/fhir/StructureDefinition/TimingPreference");
             if (preferenceExtension == null)
             {
                 return startDates;
@@ -65,15 +60,12 @@ namespace QMUL.DiabetesBackend.Model.Extensions
 
         public static InternalPatient ToInternalPatient(this Patient patient)
         {
-            var alexaId = patient.ModifierExtension
-                .Where(mod => mod.Url == "http://diabetes-assistant.com/fhir/StructureDefinition/AlexaId")
-                .Select(z => z.Value)
-                .FirstOrDefault() as FhirString;
+            var alexaId = patient.GetStringExtension("http://diabetes-assistant.com/fhir/StructureDefinition/AlexaId");
             var internalPatient = new InternalPatient
             {
                 Id = patient.Id,
                 Email = patient.GetEmailExtension(),
-                AlexaUserId = alexaId?.Value,
+                AlexaUserId = alexaId,
                 ExactEventTimes = patient.GetTimingPreference()
             };
 

@@ -34,7 +34,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
                     }
                 },
             };
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubInternalPatient();
             var reference = this.GetDummyResource();
             var eventsGenerator = new EventsGenerator(patient, timing, reference);
 
@@ -67,10 +67,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
                     TimeOfDay = new [] { "11:00" }
                 }
             };
-            var patient = this.GetDummyPatient();
-            patient.ResourceStartDate[dosageId] = medicationStartDateTime;
+            var patient = TestUtils.GetStubInternalPatient();
             var reference = this.GetDummyResource();
             reference.EventReferenceId = dosageId;
+            reference.StartDate = medicationStartDateTime;
             var eventsGenerator = new EventsGenerator(patient, timing, reference);
 
             // Act
@@ -92,7 +92,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
                     Bounds = new Hl7.Fhir.Model.Range()
                 }
             };
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubInternalPatient();
             var reference = this.GetDummyResource();
             var eventsGenerator = new EventsGenerator(patient, timing, reference);
 
@@ -128,7 +128,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
                     }
                 }
             };
-            var patient = GetDummyPatient();
+            var patient = TestUtils.GetStubInternalPatient();
             var reference = this.GetDummyResource();
             var eventsGenerator = new EventsGenerator(patient, timing, reference);
 
@@ -160,10 +160,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
                     }
                 }
             };
-            var patient = this.GetDummyPatient();
-            patient.ResourceStartDate[dosageId] = new DateTime(2020, 1, 1, 10, 0, 0);
+            var patient = TestUtils.GetStubInternalPatient();
             var reference = this.GetDummyResource();
             reference.EventReferenceId = dosageId;
+            reference.StartDate = new DateTime(2020, 1, 1, 10, 0, 0);
             var eventsGenerator = new EventsGenerator(patient, timing, reference);
 
             // Act
@@ -195,7 +195,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
                 }
             };
 
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubInternalPatient();
             patient.ExactEventTimes[CustomEventTiming.ACM] = new DateTime(2020, 1 , 1, 8, 0, 0);
             patient.ExactEventTimes[CustomEventTiming.ACV] = new DateTime(2020, 1 , 1, 19, 0, 0);
             var reference = this.GetDummyResource();
@@ -214,7 +214,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
         public void GetEvents_WhenTimingHasCustomTimingsButPatientDoesnt_ReturnsHealthEventsWithoutDefinedHours()
         {
             // Arrange
-            var serviceId = Guid.NewGuid().ToString();
             var timing = new Timing
             {
                 Repeat = new Timing.RepeatComponent
@@ -231,9 +230,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
                 }
             };
 
-            var patient = this.GetDummyPatient();
-            patient.ResourceStartDate[serviceId] = new DateTime(2020, 1, 1, 10, 0, 0);
+            var patient = TestUtils.GetStubInternalPatient();
             var reference = this.GetDummyResource();
+            reference.StartDate = new DateTime(2020, 1, 1, 10, 0, 0);
             var eventsGenerator = new EventsGenerator(patient, timing, reference);
             
             // Act
@@ -263,7 +262,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
                     }
                 }
             };
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubInternalPatient();
             var reference = this.GetDummyResource();
             var eventsGenerator = new EventsGenerator(patient, timing, reference);
 
@@ -292,7 +291,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
                     }
                 }
             };
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubInternalPatient();
             var reference = this.GetDummyResource();
             var eventsGenerator = new EventsGenerator(patient, timing, reference);
 
@@ -312,16 +311,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
                 ResourceId = string.Empty,
                 EventReferenceId = string.Empty,
                 EventType = EventType.MedicationDosage
-            };
-        }
-        
-        private InternalPatient GetDummyPatient()
-        {
-            return new InternalPatient
-            {
-                Id = Guid.NewGuid().ToString(), 
-                ExactEventTimes = new Dictionary<CustomEventTiming, DateTimeOffset>(),
-                ResourceStartDate = new Dictionary<string, DateTime>()
             };
         }
         

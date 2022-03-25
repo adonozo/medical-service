@@ -100,7 +100,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
         public void GenerateEventsFrom_WhenIsServiceRequest_ReturnsHealthEvents()
         {
             // Arrange
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubInternalPatient();
             var timing = new Timing
             {
                 Repeat = new Timing.RepeatComponent
@@ -134,7 +134,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
         public void GenerateEventsFrom_WhenIsServiceRequestWithoutTiming_ThrowsException()
         {
             // Arrange
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubInternalPatient();
             var serviceRequest = new ServiceRequest
             {
                 Id = Guid.NewGuid().ToString(),
@@ -157,7 +157,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
         public void GenerateEventsFrom_WhenIsMedicationRequest_ReturnsHealthEvents()
         {
             // Arrange
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubInternalPatient();
             var timing = new Timing
             {
                 Repeat = new Timing.RepeatComponent
@@ -192,19 +192,5 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
             events.Count.Should().Be(10);
             events[0].ResourceReference.EventType.Should().Be(EventType.MedicationDosage);
         }
-
-        #region Private Methods
-
-        private InternalPatient GetDummyPatient()
-        {
-            return new InternalPatient
-            {
-                Id = Guid.NewGuid().ToString(),
-                ExactEventTimes = new Dictionary<CustomEventTiming, DateTimeOffset>(),
-                ResourceStartDate = new Dictionary<string, DateTime>()
-            };
-        }
-
-        #endregion
     }
 }

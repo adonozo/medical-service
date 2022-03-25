@@ -6,6 +6,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     using Hl7.Fhir.Model;
     using Model;
     using Model.Enums;
+    using Model.Extensions;
     using ResourceReference = Model.ResourceReference;
 
     /// <summary>
@@ -80,7 +81,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                     EventType = isInsulin ? EventType.InsulinDosage : EventType.MedicationDosage,
                     ResourceId = request.Id,
                     Text = dosage.Text,
-                    EventReferenceId = dosage.ElementId
+                    EventReferenceId = dosage.ElementId,
+                    StartDate = dosage.GetStartDate()?.UtcDateTime
                 };
                 var eventsGenerator = new EventsGenerator(patient, dosage.Timing, requestReference);
                 events.AddRange(eventsGenerator.GetEvents());
@@ -105,7 +107,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 EventType = EventType.Measurement,
                 ResourceId = request.Id,
                 EventReferenceId = request.Id,
-                Text = request.PatientInstruction
+                Text = request.PatientInstruction,
+                StartDate = request.GetStartDate()?.UtcDateTime
             };
 
             // Occurrence must be expressed as a timing instance

@@ -11,7 +11,10 @@ namespace QMUL.DiabetesBackend.Model
         public string Id { get; set; }
         
         public string PatientId { get; set; }
-        
+
+        /// <summary>
+        /// When this event has to occur.
+        /// </summary>
         public DateTime EventDateTime { get; set; }
         
         /// <summary>

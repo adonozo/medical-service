@@ -27,7 +27,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 .Returns(new List<MedicationRequest> { new() });
             serviceRequestDao.GetActiveServiceRequests(Arg.Any<string>())
                 .Returns(new List<ServiceRequest> { new() });
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 
             // Act
             var result = await carePlanService.GetActiveCarePlans(Guid.NewGuid().ToString());
@@ -52,7 +52,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 .Returns(new List<MedicationRequest> { new() });
             serviceRequestDao.GetServiceRequestsFor(Arg.Any<string>())
                 .Returns(new List<ServiceRequest> { new() });
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 
             // Act
             var result = await carePlanService.GetCarePlanFor(Guid.NewGuid().ToString());

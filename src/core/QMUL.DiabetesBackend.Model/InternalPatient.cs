@@ -34,14 +34,6 @@
         /// </summary>
         public Dictionary<CustomEventTiming, DateTimeOffset> ExactEventTimes { get; set; } = new();
 
-        /// <summary>
-        /// Holds the exact date for a resource to start. Should be used when the resource has a frequency rather than a
-        /// period. For example, a medication that must be taken for 14 days. The key is the related resource ID, i.e.,
-        /// the dosage ID for a medication request, or the service request ID for a measurement.  
-        /// </summary>
-        // TODO remove ResourceStartDate from patient, and place it as an extension of the medication or service req.
-        public Dictionary<string, DateTime> ResourceStartDate { get; set; } = new();
-
         // ReSharper disable once ClassNeverInstantiated.Global
         public class PatientPhoneContact
         {

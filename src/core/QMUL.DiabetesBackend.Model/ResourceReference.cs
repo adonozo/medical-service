@@ -2,6 +2,8 @@ using QMUL.DiabetesBackend.Model.Enums;
 
 namespace QMUL.DiabetesBackend.Model
 {
+    using System;
+
     /// <summary>
     /// A custom resource that references an actual FHIR resource
     /// </summary>
@@ -26,5 +28,10 @@ namespace QMUL.DiabetesBackend.Model
         /// The medication or measurement instruction
         /// </summary>
         public string Text { get; set; }
+        
+        /// <summary>
+        /// When this resource has started. Null if it has not started yet.
+        /// </summary>
+        public DateTimeOffset? StartDate { get; set; }
     }
 }
