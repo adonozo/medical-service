@@ -4,6 +4,7 @@ namespace QMUL.DiabetesBackend.MongoDb
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using AutoMapper;
     using DataInterfaces;
     using DataInterfaces.Exceptions;
     using Microsoft.Extensions.Logging;
@@ -11,7 +12,6 @@ namespace QMUL.DiabetesBackend.MongoDb
     using Model.Enums;
     using Models;
     using MongoDB.Driver;
-    using Utils;
 
     /// <summary>
     /// The Mongo Event Dao
@@ -20,12 +20,15 @@ namespace QMUL.DiabetesBackend.MongoDb
     {
         private readonly IMongoCollection<MongoEvent> eventCollection;
         private readonly ILogger<MongoEventDao> logger;
+        private readonly IMapper mapper;
+        
         private const string CollectionName = "healthEvent";
         private const int DefaultLimit = 3;
 
-        public MongoEventDao(IMongoDatabase database, ILogger<MongoEventDao> logger) : base(database)
+        public MongoEventDao(IMongoDatabase database, IMapper mapper, ILogger<MongoEventDao> logger) : base(database)
         {
             this.logger = logger;
+            this.mapper = mapper;
             this.eventCollection = this.Database.GetCollection<MongoEvent>(CollectionName);
         }
 
@@ -35,7 +38,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             try
             {
                 this.logger.LogDebug("Creating health events");
-                var mongoEvents = events.Select(Mapper.ToMongoEvent).ToArray();
+                var mongoEvents = events.Select(this.mapper.Map<MongoEvent>).ToArray();
                 await this.eventCollection.InsertManyAsync(mongoEvents);
                 this.logger.LogDebug("Created {Count} events", mongoEvents.Length);
                 return true;
@@ -89,7 +92,7 @@ namespace QMUL.DiabetesBackend.MongoDb
                                                                   && healthEvent.ResourceReference.EventType == type
                                                                   && healthEvent.EventDateTime > start
                                                                   && healthEvent.EventDateTime < end)
-                .Project(mongoEvent => mongoEvent.ToHealthEvent());
+                .Project(mongoEvent => this.mapper.Map<HealthEvent>(mongoEvent));
             return await result.ToListAsync();
         }
 
@@ -103,7 +106,8 @@ namespace QMUL.DiabetesBackend.MongoDb
                                                                      && healthEvent.EventDateTime > start
                                                                      && healthEvent.EventDateTime < end)
                 .Filter;
-            var result = this.eventCollection.Find(timingFilter).Project(mongoEvent => mongoEvent.ToHealthEvent());
+            var result = this.eventCollection.Find(timingFilter)
+                .Project(mongoEvent => this.mapper.Map<HealthEvent>(mongoEvent));
             return await result.ToListAsync();
         }
 
@@ -116,7 +120,8 @@ namespace QMUL.DiabetesBackend.MongoDb
                                                                && healthEvent.EventDateTime > start
                                                                && healthEvent.EventDateTime < end)
                 .Filter;
-            var result = this.eventCollection.Find(filter).Project(mongoEvent => mongoEvent.ToHealthEvent());
+            var result = this.eventCollection.Find(filter)
+                .Project(mongoEvent => this.mapper.Map<HealthEvent>(mongoEvent));
             return await result.ToListAsync();
         }
 
@@ -130,7 +135,8 @@ namespace QMUL.DiabetesBackend.MongoDb
                                                                && healthEvent.EventDateTime > start
                                                                && healthEvent.EventDateTime < end)
                 .Filter;
-            var result = this.eventCollection.Find(filter).Project(mongoEvent => mongoEvent.ToHealthEvent());
+            var result = this.eventCollection.Find(filter)
+                .Project(mongoEvent => this.mapper.Map<HealthEvent>(mongoEvent));
             return await result.ToListAsync();
         }
 
@@ -144,7 +150,7 @@ namespace QMUL.DiabetesBackend.MongoDb
                                                                   && healthEvent.EventDateTime > date)
                 .Sort(sort)
                 .Limit(DefaultLimit)
-                .Project(mongoEvent => mongoEvent.ToHealthEvent());
+                .Project(mongoEvent => this.mapper.Map<HealthEvent>(mongoEvent));
             return await result.ToListAsync();
         }
 
@@ -159,7 +165,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             var result = this.eventCollection.Find(filter)
                 .Sort(sort)
                 .Limit(DefaultLimit)
-                .Project(mongoEvent => mongoEvent.ToHealthEvent());
+                .Project(mongoEvent => this.mapper.Map<HealthEvent>(mongoEvent));
             return await result.ToListAsync();
         }
     }

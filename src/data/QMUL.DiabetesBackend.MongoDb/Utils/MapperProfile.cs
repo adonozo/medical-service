@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
 {
     using AutoMapper;
     using Hl7.Fhir.Model;
+    using Model;
     using Model.Extensions;
     using Models;
 
@@ -14,6 +15,9 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                     opt => opt.MapFrom(patient => patient.GetEmailExtension()))
                 .ReverseMap()
                 .ForSourceMember(mongoPatient => mongoPatient.Email, opt => opt.DoNotValidate());
+
+            CreateMap<HealthEvent, MongoEvent>()
+                .ReverseMap();
         }
     }
 }
