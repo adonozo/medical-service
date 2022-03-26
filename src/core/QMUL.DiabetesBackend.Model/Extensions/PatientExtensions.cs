@@ -3,6 +3,7 @@ namespace QMUL.DiabetesBackend.Model.Extensions
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Constants;
     using Enums;
     using Hl7.Fhir.Model;
 
@@ -10,7 +11,12 @@ namespace QMUL.DiabetesBackend.Model.Extensions
     {
         public static string GetEmailExtension(this Patient patient)
         {
-            return patient.GetStringExtension("http://hl7.org/fhir/StructureDefinition/Email");
+            return patient.GetStringExtension(Constants.PatientEmailExtension);
+        }
+
+        public static void SetEmailExtension(this Patient patient, string email)
+        {
+            patient.SetStringExtension(Constants.PatientEmailExtension, email);
         }
 
         public static Dictionary<CustomEventTiming, DateTimeOffset> GetTimingPreference(this Patient patient)
@@ -58,9 +64,14 @@ namespace QMUL.DiabetesBackend.Model.Extensions
             patient.ModifierExtension.Add(timingExtension);
         }
 
+        public static void SetAlexaIdExtension(this Patient patient, string alexaId)
+        {
+            patient.SetStringExtension(Constants.PatientAlexaIdExtension, alexaId);
+        }
+
         public static InternalPatient ToInternalPatient(this Patient patient)
         {
-            var alexaId = patient.GetStringExtension("http://diabetes-assistant.com/fhir/StructureDefinition/AlexaId");
+            var alexaId = patient.GetStringExtension(Constants.PatientAlexaIdExtension);
             var internalPatient = new InternalPatient
             {
                 Id = patient.Id,

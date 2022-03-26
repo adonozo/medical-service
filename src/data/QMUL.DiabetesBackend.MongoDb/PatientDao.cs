@@ -8,6 +8,8 @@ namespace QMUL.DiabetesBackend.MongoDb
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
     using Model;
+    using Model.Constants;
+    using Model.Extensions;
     using Models;
     using MongoDB.Bson;
     using MongoDB.Driver;
@@ -84,47 +86,37 @@ namespace QMUL.DiabetesBackend.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<Patient> PatchPatient(InternalPatient actualPatient)
+        public async Task<Patient> PatchPatient(InternalPatient actualPatient, Patient oldPatient)
         {
             logger.LogInformation("Updating patient with ID: {Id}", actualPatient.Id);
-            var definition = this.GetUpdateDefinition(actualPatient);
-            var filter = Builders<MongoPatient>.Filter.Eq(p => p.Id, actualPatient.Id);
-            var result = await this.patientCollection.UpdateOneAsync(filter, definition);
-            var errorMessage = $"Could not update patient with ID {actualPatient.Id}";
-            this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new UpdateException(errorMessage),
-                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
-            return await this.GetSinglePatientOrThrow(actualPatient.Id);
+            var updatedPatient = this.SetPatientData(actualPatient, oldPatient);
+            return await UpdatePatient(updatedPatient);
         }
 
-        private UpdateDefinition<MongoPatient> GetUpdateDefinition(InternalPatient patient)
+        private Patient SetPatientData(InternalPatient patient, Patient oldPatient)
         {
-            // Gender is a enum, it will always have a value
-            var definition = Builders<MongoPatient>.Update.Set(p => p.BirthDate, patient.BirthDate.ToString("O"));
-            // TODO the builder will be more complex with the new MongoPatient
-            // var definition = Builders<MongoPatient>.Update.Set(p => p.Gender, patient.Gender);
-            // definition = definition.Set(p => p.Gender, patient.Gender);
-            // if (!string.IsNullOrEmpty(patient.LastName))
-            // {
-            //     definition = definition.Set(p => p.LastName, patient.LastName);
-            // }
-            // if (!string.IsNullOrEmpty(patient.Email))
-            // {
-            //     definition = definition.Set(p => p.Email, patient.Email);
-            // }
-            // if (!string.IsNullOrEmpty(patient.AlexaUserId))
-            // {
-            //     definition = definition.Set(p => p.AlexaUserId, patient.AlexaUserId);
-            // }
-            // if (patient.BirthDate != default)
-            // {
-            //     definition = definition.Set(p => p.BirthDate, patient.BirthDate.ToString("O"));
-            // }
-            // if (patient.PhoneContacts != null)
-            // {
-            //     definition = definition.Set(p => p.PhoneContacts, patient.PhoneContacts);
-            // }
+            if (!string.IsNullOrEmpty(patient.LastName))
+            {
+                oldPatient.Name[0].Family = patient.LastName;
+            }
+            if (!string.IsNullOrEmpty(patient.FirstName))
+            {
+                oldPatient.Name[0].Given = new[] {patient.FirstName};
+            }
+            if (!string.IsNullOrEmpty(patient.Email))
+            {
+                oldPatient.SetEmailExtension(patient.Email);
+            }
+            if (!string.IsNullOrEmpty(patient.AlexaUserId))
+            {
+                oldPatient.SetAlexaIdExtension(patient.AlexaUserId);
+            }
             
-            return definition;
+            oldPatient.Gender = patient.Gender ?? oldPatient.Gender;
+            oldPatient.BirthDate = patient.BirthDate?.ToString("O") ?? oldPatient.BirthDate;
+            oldPatient.Contact = patient.PhoneContacts as List<Patient.ContactComponent> ?? oldPatient.Contact;
+            
+            return oldPatient;
         }
 
         private async Task<Patient> GetSinglePatientOrThrow(string id)

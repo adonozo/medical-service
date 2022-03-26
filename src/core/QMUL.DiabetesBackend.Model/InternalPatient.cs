@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using Enums;
+    using Hl7.Fhir.Model;
 
     /// <summary>
     /// A lightweight Patient object. It is used to avoid the more complex FHIR Patient object
@@ -22,26 +23,16 @@
 
         public string Email { get; set; }
 
-        public PatientGender Gender { get; set; }
+        public AdministrativeGender? Gender { get; set; }
 
-        public DateTime BirthDate { get; set; }
+        public DateTime? BirthDate { get; set; }
 
-        public IList<PatientPhoneContact> PhoneContacts { get; set; } = new List<PatientPhoneContact>();
+        public IList<Patient.ContactComponent> PhoneContacts { get; set; } = new List<Patient.ContactComponent>();
 
         /// <summary>
         /// Holds the exact time the patient has set a specific event in the day: i.e., breakfast, diner, sleep. The date
         /// in the datetime is ignored. 
         /// </summary>
         public Dictionary<CustomEventTiming, DateTimeOffset> ExactEventTimes { get; set; } = new();
-
-        // ReSharper disable once ClassNeverInstantiated.Global
-        public class PatientPhoneContact
-        {
-            // ReSharper disable once UnusedMember.Global
-            public string Number { get; set; }
-
-            // ReSharper disable once UnusedMember.Global
-            public ContactPointUse Use { get; set; }
-        }
     }
 }
