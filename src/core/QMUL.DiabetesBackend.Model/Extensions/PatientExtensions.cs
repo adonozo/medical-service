@@ -11,19 +11,19 @@ namespace QMUL.DiabetesBackend.Model.Extensions
     {
         public static string GetEmailExtension(this Patient patient)
         {
-            return patient.GetStringExtension(Constants.PatientEmailExtension);
+            return patient.GetStringExtension(Extensions.PatientEmail);
         }
 
         public static void SetEmailExtension(this Patient patient, string email)
         {
-            patient.SetStringExtension(Constants.PatientEmailExtension, email);
+            patient.SetStringExtension(Extensions.PatientEmail, email);
         }
 
         public static Dictionary<CustomEventTiming, DateTimeOffset> GetTimingPreference(this Patient patient)
         {
             var startDates = new Dictionary<CustomEventTiming, DateTimeOffset>();
             var preferenceExtension = patient
-                .GetExtension("http://diabetes-assistant.com/fhir/StructureDefinition/TimingPreference");
+                .GetExtension(Extensions.PatientTimingPreference);
             if (preferenceExtension == null)
             {
                 return startDates;
@@ -51,7 +51,7 @@ namespace QMUL.DiabetesBackend.Model.Extensions
             patient.ModifierExtension = new List<Extension>();
             var timingExtension = new Extension
             {
-                Url = "http://diabetes-assistant.com/fhir/StructureDefinition/TimingPreference"
+                Url = Extensions.PatientTimingPreference
             };
 
             foreach (var preference in preferences)
@@ -66,12 +66,12 @@ namespace QMUL.DiabetesBackend.Model.Extensions
 
         public static void SetAlexaIdExtension(this Patient patient, string alexaId)
         {
-            patient.SetStringExtension(Constants.PatientAlexaIdExtension, alexaId);
+            patient.SetStringExtension(Extensions.PatientAlexaId, alexaId);
         }
 
         public static InternalPatient ToInternalPatient(this Patient patient)
         {
-            var alexaId = patient.GetStringExtension(Constants.PatientAlexaIdExtension);
+            var alexaId = patient.GetStringExtension(Extensions.PatientAlexaId);
             var internalPatient = new InternalPatient
             {
                 Id = patient.Id,

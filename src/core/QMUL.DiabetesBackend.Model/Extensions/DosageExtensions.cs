@@ -1,6 +1,7 @@
 namespace QMUL.DiabetesBackend.Model.Extensions
 {
     using System;
+    using Constants;
     using Hl7.Fhir.Model;
 
     public static class DosageExtensions
@@ -8,7 +9,7 @@ namespace QMUL.DiabetesBackend.Model.Extensions
         public static DateTimeOffset? GetStartDate(this Dosage dosage)
         {
             var extension =
-                dosage.GetExtension("http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate");
+                dosage.GetExtension(Extensions.DosageStartDate);
             var startDate = extension?.Value as FhirDateTime;
             if (startDate != null && startDate.TryToDateTimeOffset(out var result))
             {
@@ -27,7 +28,7 @@ namespace QMUL.DiabetesBackend.Model.Extensions
         public static void SetStartDate(this Dosage dosage, DateTimeOffset date)
         {
             var fhirDate = new FhirDateTime(date);
-            dosage.SetExtension("http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate", fhirDate);
+            dosage.SetExtension(Extensions.DosageStartDate, fhirDate);
         }
     }
 }
