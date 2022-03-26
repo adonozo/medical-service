@@ -2,7 +2,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using Hl7.Fhir.Model;
     using Model;
     using Model.Enums;
@@ -25,24 +24,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 Type = Bundle.BundleType.Searchset,
                 Timestamp = DateTimeOffset.UtcNow
             };
-        }
-
-        /// <summary>
-        /// Checks if the medication request contains an Insulin medication.
-        /// </summary>
-        /// <param name="request">The Medication Request</param>
-        /// <returns>True if the medication request contains insulin.</returns>
-        public static bool IsInsulinResource(MedicationRequest request)
-        {
-            try
-            {
-                var extensions = request.Extension;
-                return extensions != null && extensions.Any(extension => extension.Url.ToLower().Contains("insulin"));
-            }
-            catch (Exception)
-            {
-                return false;
-            }
         }
 
         /// <summary>
@@ -72,7 +53,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         public static IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request, InternalPatient patient)
         {
             var events = new List<HealthEvent>();
-            var isInsulin = IsInsulinResource(request);
+            var isInsulin = request.HasInsulinFlag();
 
             foreach (var dosage in request.DosageInstruction)
             {

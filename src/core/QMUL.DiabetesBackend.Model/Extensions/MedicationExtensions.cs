@@ -3,17 +3,19 @@ namespace QMUL.DiabetesBackend.Model.Extensions
     using Constants;
     using Hl7.Fhir.Model;
 
+    /// <summary>
+    /// Extension methods to <see cref="Medication"/>.
+    /// </summary>
     public static class MedicationExtensions
     {
-        public static bool HasInsulinFlag(this MedicationRequest medicationRequest)
+        /// <summary>
+        /// Checks if the <see cref="Medication"/> has the insulin flag extension.
+        /// </summary>
+        /// <param name="medication">The <see cref="Medication"/>.</param>
+        /// <returns>True if the medication has the insulin flag extension and its value is true. False otherwise</returns>
+        public static bool HasInsulinFlag(this Medication medication)
         {
-            return medicationRequest.GetBoolExtension(Extensions.InsulinFlag)?? false;
-        }
-
-        // TODO flag the medication request when the medication is insulin
-        public static void FlagInsulin(this MedicationRequest medicationRequest)
-        {
-            medicationRequest.SetBoolExtension(Extensions.InsulinFlag, true);
+            return medication.GetBoolExtension(Extensions.InsulinFlag)?? false;
         }
     }
 }

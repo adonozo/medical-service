@@ -1,5 +1,8 @@
 namespace QMUL.DiabetesBackend.Model.Constants
 {
+    /// <summary>
+    /// The URLs used to identify extensions in resources.
+    /// </summary>
     public static class Extensions
     {
         public const string PatientEmail = "http://hl7.org/fhir/StructureDefinition/Email";

@@ -37,41 +37,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
             bundle.Timestamp.Value.Date.Date.ToString("d").Should().Be(currentDate);
         }
 
-        [Fact]
-        public void IsInsulinResource_WhenExtensionContainsInsulin_ReturnsTrue()
-        {
-            // Arrange
-            var medicationRequest = new MedicationRequest
-            {
-                Extension = new List<Extension>
-                {
-                    new() {Url = "http://localhost/type/insulin"}
-                }
-            };
-
-            // Act
-            var isInsulin = ResourceUtils.IsInsulinResource(medicationRequest);
-
-            // Assert
-            isInsulin.Should().Be(true);
-        }
-
-        [Fact]
-        public void IsInsulinResource_WhenDoesNotHaveExtension_ReturnsFalse()
-        {
-            // Arrange
-            var medicationRequest = new MedicationRequest
-            {
-                Id = Guid.NewGuid().ToString()
-            };
-
-            // Act
-            var isInsulin = ResourceUtils.IsInsulinResource(medicationRequest);
-
-            // Assert
-            isInsulin.Should().Be(false);
-        }
-
         [Theory]
         [InlineData(AlexaRequestType.Medication, EventType.MedicationDosage)]
         [InlineData(AlexaRequestType.Insulin, EventType.InsulinDosage)]
