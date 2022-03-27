@@ -1,14 +1,12 @@
 namespace QMUL.DiabetesBackend.Api.Controllers
 {
-    using System;
-    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Serialization;
-    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
     using ServiceInterfaces;
+    using Utils;
 
     [ApiController]
     [Route("serviceRequests/")]
@@ -17,7 +15,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         private readonly IServiceRequestService serviceRequestService;
         private readonly ILogger<ServiceRequestController> logger;
 
-        public ServiceRequestController(IServiceRequestService serviceRequestService, ILogger<ServiceRequestController> logger)
+        public ServiceRequestController(IServiceRequestService serviceRequestService,
+            ILogger<ServiceRequestController> logger)
         {
             this.serviceRequestService = serviceRequestService;
             this.logger = logger;
@@ -27,90 +26,50 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [Route("{id}")]
         public async Task<IActionResult> GetServiceRequest(string id)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var result = await this.serviceRequestService.GetServiceRequest(id);
                 return this.Ok(result.ToJObject());
-            }
-            catch (KeyNotFoundException)
-            {
-                this.logger.LogWarning($"ServiceRequest with ID: {id} Not Found");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError($"Error getting serviceRequest with ID: {id}", exception);
-                return this.StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            }, this.logger, this);
         }
 
         [HttpPost]
         [Route("")]
         public async Task<IActionResult> CreateServiceRequest([FromBody] object request)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var parser = new FhirJsonParser(new ParserSettings
                     {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
-                try
-                {
-                    var parsedRequest = await parser.ParseAsync<ServiceRequest>(request.ToString());
-                    var result = await this.serviceRequestService.CreateServiceRequest(parsedRequest);
-                    return this.Ok(result.ToJObject());
-                }
-                catch (Exception exception)
-                {
-                    this.logger.LogError(exception, "Couldn't parse the request");
-                    return this.BadRequest();
-                }
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, "Error trying to create a serviceRequest");
-                return this.BadRequest();
-            }
+                var parsedRequest = await parser.ParseAsync<ServiceRequest>(request.ToString());
+                var result = await this.serviceRequestService.CreateServiceRequest(parsedRequest);
+                return this.Ok(result.ToJObject());
+            }, this.logger, this);
         }
 
         [HttpPut]
         [Route("{id}")]
-        public async Task<IActionResult> UpdateServiceRequest([FromRoute] string id, [FromBody] ServiceRequest request)
+        public async Task<IActionResult> UpdateServiceRequest([FromRoute] string id, [FromBody] object request)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var result = await this.serviceRequestService.UpdateServiceRequest(id, request);
+                var parser = new FhirJsonParser(new ParserSettings
+                    {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
+                var parsedRequest = await parser.ParseAsync<ServiceRequest>(request.ToString());
+                var result = await this.serviceRequestService.UpdateServiceRequest(id, parsedRequest);
                 return this.Accepted(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                this.logger.LogWarning($"ServiceRequest with ID: {id} Not Found");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError($"Error updating serviceRequest with ID: {id}", exception);
-                return this.BadRequest();
-            }
+            }, this.logger, this);
         }
 
         [HttpDelete]
         [Route("{id}")]
         public async Task<IActionResult> DeleteActionResult([FromRoute] string id)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 await this.serviceRequestService.DeleteServiceRequest(id);
                 return this.NoContent();
-            }
-            catch (KeyNotFoundException)
-            {
-                this.logger.LogWarning($"ServiceRequest with ID: {id} Not Found");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError($"Error deleting serviceRequest with ID: {id}", exception);
-                return this.BadRequest();
-            }
+            }, this.logger, this);
         }
     }
 }

@@ -1,11 +1,10 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using DataInterfaces;
     using Hl7.Fhir.Model;
+    using Microsoft.Extensions.Logging;
     using ServiceInterfaces;
     using Utils;
 
@@ -17,80 +16,73 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         private readonly IMedicationRequestDao medicationRequestDao;
         private readonly IEventDao eventDao;
         private readonly IPatientDao patientDao;
+        private readonly ILogger<MedicationRequestService> logger;
 
-        public MedicationRequestService(IMedicationRequestDao medicationRequestDao, IEventDao eventDao, IPatientDao patientDao)
+        public MedicationRequestService(IMedicationRequestDao medicationRequestDao, IEventDao eventDao,
+            IPatientDao patientDao, ILogger<MedicationRequestService> logger)
         {
             this.medicationRequestDao = medicationRequestDao;
             this.eventDao = eventDao;
             this.patientDao = patientDao;
+            this.logger = logger;
         }
 
         /// <inheritdoc/>>
         public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
         {
-            var patient = await ResourceUtils.ValidateObject(
-                () => this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId),
-                "Unable to find patient for the Observation", new KeyNotFoundException());
-            var newRequest = await this.medicationRequestDao.CreateMedicationRequest(request);
-            var events = EventsGenerator.GenerateEventsFrom(newRequest, patient);
-            var eventsResult = await this.eventDao.CreateEvents(events);
-            if (!eventsResult)
-            {
-                throw new ArgumentException($"Unable to create events related to the request: {newRequest.Id}");
-            }
-
+            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId), this.logger);
+            this.logger.LogDebug("Creating medication request for patient {PatientId}", patient.Id);
+            var newRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.medicationRequestDao.CreateMedicationRequest(request), this.logger);
+            var events = ResourceUtils.GenerateEventsFrom(newRequest, patient);
+            await ExceptionHandler.ExecuteAndHandleAsync(async () => await this.eventDao.CreateEvents(events),
+                this.logger);
+            this.logger.LogDebug("Medication request created with ID {Id}", newRequest.Id);
             return newRequest;
         }
 
         /// <inheritdoc/>>
         public async Task<MedicationRequest> GetMedicationRequest(string id)
         {
-            var result = await this.medicationRequestDao.GetMedicationRequest(id);
-            if (result == null)
-            {
-                throw new KeyNotFoundException();
-            }
-
-            return result;
+            var medicationRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.medicationRequestDao.GetMedicationRequest(id), this.logger);
+            this.logger.LogDebug("Found medication request with ID {Id}", id);
+            return medicationRequest;
         }
 
         /// <inheritdoc/>>
-        public Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest request)
+        public async Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest request)
         {
-            var exists = this.medicationRequestDao.GetMedicationRequest(id) != null;
-            if (exists)
-            {
-                return this.medicationRequestDao.UpdateMedicationRequest(id, request);
-            }
-
-            throw new KeyNotFoundException();
+            // Check if the medication request exists
+            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.medicationRequestDao.GetMedicationRequest(id), this.logger);
+            var updatedResult = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.medicationRequestDao.UpdateMedicationRequest(id, request), this.logger);
+            this.logger.LogDebug("Medication request with ID {Id} updated", id);
+            return updatedResult;
         }
 
         /// <inheritdoc/>>
-        public Task<bool> DeleteMedicationRequest(string id)
+        public async Task<bool> DeleteMedicationRequest(string id)
         {
-            var exists = this.medicationRequestDao.GetMedicationRequest(id) != null;
-            if (exists)
-            {
-                return this.medicationRequestDao.DeleteMedicationRequest(id);
-            }
-
-            throw new KeyNotFoundException();
+            // Check if the medication request exists
+            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.medicationRequestDao.GetMedicationRequest(id), this.logger);
+            this.logger.LogDebug("Medication request deleted {Id}", id);
+            return await this.medicationRequestDao.DeleteMedicationRequest(id);
         }
 
         /// <inheritdoc/>>
         public async Task<Bundle> GetActiveMedicationRequests(string patientIdOrEmail)
         {
-            var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
-            if (patient == null)
-            {
-                throw new KeyNotFoundException();
-            }
-            
+            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
             var bundle = ResourceUtils.GenerateEmptyBundle();
             var medicationRequests = await this.medicationRequestDao.GetActiveMedicationRequests(patient.Id);
             bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
                 .ToList();
+            this.logger.LogDebug("Found {Count} active medication requests", medicationRequests.Count);
             return bundle;
         }
     }

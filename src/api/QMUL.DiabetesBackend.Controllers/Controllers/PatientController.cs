@@ -1,16 +1,15 @@
 namespace QMUL.DiabetesBackend.Api.Controllers
 {
     using System;
-    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Serialization;
-    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
     using Model.Enums;
     using Models;
     using ServiceInterfaces;
+    using Utils;
     using Patient = Model.Patient;
 
     [ApiController]
@@ -25,8 +24,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         private readonly ILogger<PatientController> logger;
 
         public PatientController(IPatientService patientService, IAlexaService alexaService,
-            ILogger<PatientController> logger, ICarePlanService carePlanService, IObservationService observationService, 
-            IMedicationRequestService medicationRequestService)
+            ICarePlanService carePlanService, IObservationService observationService,
+            IMedicationRequestService medicationRequestService, ILogger<PatientController> logger)
         {
             this.patientService = patientService;
             this.alexaService = alexaService;
@@ -38,12 +37,16 @@ namespace QMUL.DiabetesBackend.Api.Controllers
 
         [HttpPost]
         [Route("")]
-        public async Task<ActionResult<Patient>> CreatePatient([FromBody] Patient newPatient)
+        public async Task<IActionResult> CreatePatient([FromBody] Patient newPatient)
         {
-            this.logger.LogDebug($"Creating patient: {newPatient.FirstName} {newPatient.LastName}");
-            var createdPatient = await this.patientService.CreatePatient(newPatient);
-            this.logger.LogDebug($"Patient created with ID: {createdPatient.Id}");
-            return this.Ok(createdPatient);
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+            {
+                this.logger.LogDebug("Creating patient: {FirstName} {LastName}", newPatient.FirstName,
+                    newPatient.LastName);
+                var createdPatient = await this.patientService.CreatePatient(newPatient);
+                this.logger.LogDebug("Patient created with ID: {Id}", createdPatient.Id);
+                return this.Ok(createdPatient);
+            }, this.logger, this);
         }
 
         [HttpPost]
@@ -51,142 +54,83 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         public async Task<IActionResult> PostGlucoseObservation([FromRoute] string idOrEmail,
             [FromBody] object newObservation)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var parser = new FhirJsonParser(new ParserSettings
                     {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
-                try
-                {
-                    var parsedRequest = await parser.ParseAsync<Observation>(newObservation.ToString());
-                    var result = await this.observationService.CreateObservation(parsedRequest);
-                    return this.Ok(result.ToJObject());
-                }
-                catch (Exception exception)
-                {
-                    this.logger.LogError(exception, "Couldn't parse the request");
-                    return this.BadRequest();
-                }
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, "Error trying to create a serviceRequest");
-                return this.BadRequest();
-            }
+                var parsedRequest = await parser.ParseAsync<Observation>(newObservation.ToString());
+                var result = await this.observationService.CreateObservation(idOrEmail, parsedRequest);
+                return this.Ok(result.ToJObject());
+            }, this.logger, this);
         }
 
         [HttpGet]
         [Route("")]
         public async Task<IActionResult> GetPatients()
         {
-            this.logger.LogDebug("Getting patients list");
-            var patients = await this.patientService.GetPatientList();
-            this.logger.LogDebug($"Found {patients.Count} patients");
-            return this.Ok(patients);
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+            {
+                this.logger.LogDebug("Getting patients list");
+                var patients = await this.patientService.GetPatientList();
+                this.logger.LogDebug("Found {PatientsCount} patients", patients.Count);
+                return this.Ok(patients);
+            }, this.logger, this);
         }
 
         [HttpGet]
         [Route("{idOrEmail}")]
         public async Task<IActionResult> GetPatient([FromRoute] string idOrEmail)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var result = await this.patientService.GetPatient(idOrEmail);
                 return this.Ok(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, $"Error getting Patient: {idOrEmail}");
-                return this.StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            }, this.logger, this);
         }
 
         [HttpGet]
         [Route("{idOrEmail}/carePlans")]
         public async Task<IActionResult> GetPatientCarePlans([FromRoute] string idOrEmail)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var result = await this.carePlanService.GetCarePlanFor(idOrEmail);
                 return this.Ok(result.ToJObject());
-            }
-            catch (KeyNotFoundException)
-            {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError($"Error getting Patient: {idOrEmail}", exception);
-                return this.StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            }, this.logger, this);
         }
 
         [HttpGet]
         [Route("{idOrEmail}/medicationRequests/active")]
         public async Task<IActionResult> GetActiveMedicationRequests([FromRoute] string idOrEmail)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var result = await this.medicationRequestService.GetActiveMedicationRequests(idOrEmail);
                 return this.Ok(result.ToJObject());
-            }
-            catch (KeyNotFoundException)
-            {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, $"Error getting Patient: {idOrEmail}");
-                return this.StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            }, this.logger, this);
         }
 
         [HttpGet]
         [Route("{idOrEmail}/carePlans/active")]
         public async Task<IActionResult> GetActiveCarePlan([FromRoute] string idOrEmail)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var result = await this.carePlanService.GetActiveCarePlans(idOrEmail);
                 return this.Ok(result.ToJObject());
-            }
-            catch (KeyNotFoundException)
-            {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, $"Error getting active care plans for: {idOrEmail}");
-                return this.StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            }, this.logger, this);
         }
 
         [HttpGet]
         [Route("{idOrEmail}/observations/{observationId}")]
-        public async Task<IActionResult> GetSingleObservation([FromRoute] string idOrEmail, [FromRoute] string observationId)
+        public async Task<IActionResult> GetSingleObservation([FromRoute] string idOrEmail,
+            [FromRoute] string observationId)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var result = await this.observationService.GetSingleObservation(observationId);
                 return this.Ok(result.ToJObject());
-            }
-            catch (KeyNotFoundException)
-            {
-                this.logger.LogWarning($"Observation not found: {observationId}");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
-                return this.StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            }, this.logger, this);
         }
 
         [HttpGet]
@@ -195,63 +139,46 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             [FromQuery] string timezone = "UTC",
             [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var result = await this.observationService.GetObservationsFor(idOrEmail, timing, date, timezone);
                 return this.Ok(result.ToJObject());
-            }
-            catch (KeyNotFoundException)
-            {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
-                return this.StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            }, this.logger, this);
         }
-        
+
         [HttpGet]
         [Route("{idOrEmail}/all/observations/")]
         public async Task<IActionResult> GetAllPatientObservations([FromRoute] string idOrEmail)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var result = await this.observationService.GetAllObservationsFor(idOrEmail);
                 return this.Ok(result.ToJObject());
-            }
-            catch (KeyNotFoundException)
+            }, this.logger, this);
+        }
+
+        [HttpPut]
+        [Route("{idOrEmail}")]
+        public async Task<IActionResult> UpdatePatient([FromRoute] string idOrEmail,
+            [FromBody] Patient updatedPatient)
+        {
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, $"Error processing the request for: {idOrEmail}");
-                return this.StatusCode(StatusCodes.Status500InternalServerError);
-            }
+                var result = await this.patientService.UpdatePatient(idOrEmail, updatedPatient);
+                return this.Accepted(result);
+            }, this.logger, this);
         }
 
         [HttpPut]
         [Route("{idOrEmail}/timing")]
-        public async Task<IActionResult> UpdatePatientTiming([FromRoute] string idOrEmail, [FromBody] PatientTimingRequest request) 
+        public async Task<IActionResult> UpdatePatientTiming([FromRoute] string idOrEmail,
+            [FromBody] PatientTimingRequest request)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
             {
                 var result = await this.alexaService.UpsertTimingEvent(idOrEmail, request.Timing, request.DateTime);
                 return result ? this.NoContent() : this.BadRequest();
-            }
-            catch (KeyNotFoundException)
-            {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, $"Error updating the timing for: {idOrEmail}");
-                return this.StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            }, this.logger, this);
         }
 
         [HttpPut]
@@ -259,21 +186,23 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         public async Task<IActionResult> UpdateDosageStartDate([FromRoute] string idOrEmail,
             [FromRoute] string dosageId, [FromBody] PatientStartDateRequest startDate)
         {
-            try
+            return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
             {
                 var result = await this.alexaService.UpsertDosageStartDate(idOrEmail, dosageId, startDate.StartDate);
                 return result ? this.NoContent() : this.BadRequest();
-            }
-            catch (KeyNotFoundException)
+            }, this.logger, this);
+        }
+        
+        [HttpPatch]
+        [Route("{idOrEmail}")]
+        public async Task<IActionResult> PatchPatient([FromRoute] string idOrEmail,
+            [FromBody] Patient updatedPatient)
+        {
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                this.logger.LogWarning($"Patient not found: {idOrEmail}");
-                return this.NotFound();
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, $"Error updating the timing for: {idOrEmail}");
-                return this.StatusCode(StatusCodes.Status500InternalServerError);
-            }
+                var result = await this.patientService.PatchPatient(idOrEmail, updatedPatient);
+                return this.Accepted(result);
+            }, this.logger, this);
         }
     }
 }

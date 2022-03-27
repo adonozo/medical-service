@@ -1,5 +1,6 @@
 namespace QMUL.DiabetesBackend.Api
 {
+    using System.Diagnostics.CodeAnalysis;
     using DataInterfaces;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -8,11 +9,13 @@ namespace QMUL.DiabetesBackend.Api
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
     using Microsoft.OpenApi.Models;
-    using Model;
     using MongoDb;
+    using MongoDB.Driver;
     using ServiceImpl.Implementations;
     using ServiceInterfaces;
+    using MongoDatabaseSettings = Model.MongoDatabaseSettings;
 
+    [ExcludeFromCodeCoverage]
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -39,8 +42,12 @@ namespace QMUL.DiabetesBackend.Api
             });
 
             services.Configure<MongoDatabaseSettings>(Configuration.GetSection(nameof(MongoDatabaseSettings)));
-            services.AddSingleton<IDatabaseSettings>(sp =>
-                sp.GetRequiredService<IOptions<MongoDatabaseSettings>>().Value);
+            services.AddSingleton(sp =>
+            {
+                var databaseSettings = sp.GetRequiredService<IOptions<MongoDatabaseSettings>>().Value;
+                var client = new MongoClient(databaseSettings.DatabaseConnectionString);
+                return client.GetDatabase(databaseSettings.DatabaseName);
+            });
             services.AddSingleton<IMedicationRequestDao, MedicationRequestDao>();
             services.AddSingleton<IMedicationDao, MedicationDao>();
             services.AddSingleton<IEventDao, MongoEventDao>();

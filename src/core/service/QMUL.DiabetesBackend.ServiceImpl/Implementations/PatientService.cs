@@ -4,6 +4,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using System.Threading.Tasks;
     using DataInterfaces;
     using ServiceInterfaces;
+    using Microsoft.Extensions.Logging;
+    using Utils;
     using Patient = Model.Patient;
 
     /// <summary>
@@ -12,34 +14,55 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     public class PatientService : IPatientService
     {
         private readonly IPatientDao patientDao;
+        private readonly ILogger<PatientService> logger;
 
-        public PatientService(IPatientDao patientDao, IMedicationRequestDao medicationRequestDao)
+        public PatientService(IPatientDao patientDao, ILogger<PatientService> logger)
         {
             this.patientDao = patientDao;
+            this.logger = logger;
         }
 
-        /// <inheritdoc/>>
+        /// <inheritdoc/>
         public async Task<List<Patient>> GetPatientList()
         {
             return await this.patientDao.GetPatients();
         }
 
-        /// <inheritdoc/>>
+        /// <inheritdoc/>
         public async Task<Patient> CreatePatient(Patient newPatient)
         {
-            return await this.patientDao.CreatePatient(newPatient);
+            this.logger.LogDebug("Creating new patient {Email}", newPatient.Email);
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.CreatePatient(newPatient), this.logger);
         }
 
-        /// <inheritdoc/>>
+        /// <inheritdoc/>
         public async Task<Patient> GetPatient(string idOrEmail)
         {
-            var result = await this.patientDao.GetPatientByIdOrEmail(idOrEmail);
-            if (result == null)
-            {
-                throw new KeyNotFoundException();
-            }
+            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(idOrEmail), this.logger);
+            this.logger.LogDebug("Patient found: {IdOrEmail}", idOrEmail);
+            return patient;
+        }
 
-            return result;
+        /// <inheritdoc/>
+        public async Task<Patient> UpdatePatient(string idOrEmail, Patient updatedPatient)
+        {
+            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(idOrEmail), this.logger);
+            updatedPatient.Id = idOrEmail;
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.UpdatePatient(updatedPatient), this.logger);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Patient> PatchPatient(string idOrEmail, Patient updatedPatient)
+        {
+            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(idOrEmail), this.logger);
+            updatedPatient.Id = idOrEmail;
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.PatchPatient(updatedPatient), this.logger);
         }
     }
 }

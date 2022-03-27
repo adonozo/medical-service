@@ -1,6 +1,7 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using Hl7.Fhir.Model;
     using Model.Enums;
     using NodaTime;
@@ -9,10 +10,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     using Patient = Model.Patient;
 
     /// <summary>
-    /// Has helper methods to map Timing objects
+    /// Helper methods to map Timing objects
     /// </summary>
     public static class EventTimingMapper
     {
+        [ExcludeFromCodeCoverage]
         public static CustomEventTiming ToCustomEventTiming(this Timing.EventTiming? eventTiming)
         {
             return eventTiming switch
@@ -65,8 +67,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 
         /// <summary>
         /// Gets a time interval for a timing event, considering the patient's timezone and previous timing personal
-        /// settings. If the patient do not have a datetime for the timing event, a default time is used. E.g. If the
-        /// patient have not declared the time for breakfast before, it will set a default time. 
+        /// settings. If the patient do not have a datetime for the timing event, a default time is used. E.g., if the
+        /// patient have not declared the time for breakfast before, it will use a default time. 
         /// </summary>
         /// <param name="patient">The patient to get the time interval for.</param>
         /// <param name="startTime">The reference start date for the interval.</param>
@@ -88,7 +90,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             }
             else
             {
-                (start, end) = GetIntervalFromCustomEventTiming(startTime, timing, timezone);
+                return GetIntervalFromCustomEventTiming(startTime, timing, timezone);
             }
 
             return new Tuple<DateTime, DateTime>(start, end);
@@ -183,8 +185,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         }
 
         /// <summary>
-        /// Gets the related timing events for a given event. E.g, A before-breakfast event will get all breakfast
-        /// related events.
+        /// Gets the related timing events for a given event. E.g, For before-breakfast, it will get all breakfast
+        /// related events: before, during, and after breakfast.
         /// </summary>
         /// <param name="eventTiming">The custom timing event.</param>
         /// <returns>An array with the related timing events. Empty if there are no related events.</returns>
@@ -205,6 +207,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             };
         }
 
+        /// <summary>
+        /// Gets a day interval for a date given a timezone. The result dates are calculated in UTC. For example, the
+        /// for a datetime 2020-01-01 10:00 America/La_Paz, the intervals would be 2020-01-01 04:00 & 2020-01-02 04:00
+        /// considering the timezone (UTC -4). 
+        /// </summary>
+        /// <param name="date">The reference datetime.</param>
+        /// <param name="timezone">The user's timezone.</param>
+        /// <returns>A <see cref="DateTime"/> tuple: the start and end day of the reference date in UTC.</returns>
         public static Tuple<DateTime, DateTime> GetRelativeDayInterval(DateTime date, string timezone)
         {
             var startLocalDate = GetRelativeStartOfDay(date, timezone);
@@ -213,7 +223,13 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             return new Tuple<DateTime, DateTime>(date, endTime);
         }
 
-        private static ZonedDateTime GetRelativeStartOfDay(DateTime date, string timezone)
+        /// <summary>
+        /// Gets the the relative start of day (datetime) given a date and timezone.
+        /// </summary>
+        /// <param name="date">The reference date for get the start date from.</param>
+        /// <param name="timezone">The user's timezone</param>
+        /// <returns>A <see cref="ZonedDateTime"/> at the same date of the reference date, but the time set to 00:00.</returns>
+        public static ZonedDateTime GetRelativeStartOfDay(DateTime date, string timezone)
         {
             if (date.Kind != DateTimeKind.Utc)
             {
