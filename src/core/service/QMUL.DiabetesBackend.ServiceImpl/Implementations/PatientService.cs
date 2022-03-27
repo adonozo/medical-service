@@ -24,7 +24,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<List<Patient>> GetPatientList()
+        public async Task<IEnumerable<Patient>> GetPatientList()
         {
             return await this.patientDao.GetPatients();
         }

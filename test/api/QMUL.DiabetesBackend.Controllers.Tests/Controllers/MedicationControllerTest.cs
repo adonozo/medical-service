@@ -51,7 +51,7 @@
         }
 
         [Fact]
-        public async Task GetMedicationRequest_WhenRequestIsCorrect_ReturnsOk()
+        public async Task GetMedication_WhenRequestIsCorrect_ReturnsOk()
         {
             // Arrange
             var service = Substitute.For<IMedicationService>();
@@ -61,7 +61,7 @@
             var controller = new MedicationController(service, logger);
 
             // Act
-            var medication = await controller.GetMedicationRequest(id);
+            var medication = await controller.GetMedication(id);
             var result = (ObjectResult) medication;
 
             // Assert
@@ -69,7 +69,7 @@
         }
 
         [Fact]
-        public async Task GetMedicationRequest_WhenRequestFails_ReturnsInternalError()
+        public async Task GetMedication_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
             var service = Substitute.For<IMedicationService>();
@@ -79,15 +79,15 @@
             var controller = new MedicationController(service, logger);
 
             // Act
-            var medications = await controller.GetMedicationRequest(id);
-            var result = (StatusCodeResult) medications;
+            var medicationResult = await controller.GetMedication(id);
+            var result = (StatusCodeResult) medicationResult;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [Fact]
-        public async Task GetMedication_WhenRequestIsCorrect_ReturnsOk()
+        public async Task CreateMedication_WhenRequestIsCorrect_ReturnsOk()
         {
             // Arrange
             var service = Substitute.For<IMedicationService>();
@@ -106,7 +106,7 @@
         }
 
         [Fact]
-        public async Task GetMedication_WhenRequestUnformatted_ReturnsBadRequest()
+        public async Task CreateMedication_WhenRequestUnformatted_ReturnsBadRequest()
         {
             // Arrange
             var service = Substitute.For<IMedicationService>();
@@ -124,7 +124,7 @@
         }
 
         [Fact]
-        public async Task GetMedication_WhenRequestFails_ReturnsInternalError()
+        public async Task CreateMedication_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
             var service = Substitute.For<IMedicationService>();

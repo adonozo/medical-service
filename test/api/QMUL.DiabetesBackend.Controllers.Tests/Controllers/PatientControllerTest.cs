@@ -2,15 +2,17 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Text.Json;
     using Api.Controllers;
     using Api.Models;
     using FluentAssertions;
     using Hl7.Fhir.Model;
+    using Hl7.Fhir.Serialization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Model;
     using Model.Enums;
+    using Newtonsoft.Json.Linq;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
     using ServiceInterfaces;
@@ -34,7 +36,7 @@
             patientService.CreatePatient(Arg.Any<Patient>()).Returns(new Patient { Id = Guid.NewGuid().ToString() });
 
             // Act
-            var createdPatient = await controller.CreatePatient(new Patient());
+            var createdPatient = await controller.CreatePatient(new Patient().ToJObject());
             var result = (ObjectResult)createdPatient;
 
             // Assert
@@ -54,12 +56,12 @@
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
                 medicationRequestService, logger);
             var id = Guid.NewGuid().ToString();
-            var jsonObservation = JsonSerializer.Serialize(new Observation { Id = id });
+            var jObservation = new Observation { Id = id }.ToJObject();
             observationService.CreateObservation(Arg.Any<string>(), Arg.Any<Observation>())
                 .Returns(new Observation());
 
             // Act
-            var createdObservation = await controller.PostGlucoseObservation(id, jsonObservation);
+            var createdObservation = await controller.PostGlucoseObservation(id, jObservation);
             var result = (ObjectResult)createdObservation;
 
             // Assert
@@ -83,7 +85,7 @@
                 .Throws(new KeyNotFoundException());
 
             // Act
-            var createdObservation = await controller.PostGlucoseObservation(id, "invalid json");
+            var createdObservation = await controller.PostGlucoseObservation(id, JObject.FromObject(new InternalPatient()));
             var result = (StatusCodeResult)createdObservation;
 
             // Assert
@@ -103,12 +105,12 @@
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
                 medicationRequestService, logger);
             var id = Guid.NewGuid().ToString();
-            var jsonObservation = JsonSerializer.Serialize(new Observation { Id = id });
+            var jObservation = new Observation { Id = id }.ToJObject();
             observationService.CreateObservation(Arg.Any<string>(), Arg.Any<Observation>())
                 .Throws(new Exception());
 
             // Act
-            var createdObservation = await controller.PostGlucoseObservation(id, jsonObservation);
+            var createdObservation = await controller.PostGlucoseObservation(id, jObservation);
             var result = (StatusCodeResult)createdObservation;
 
             // Assert
@@ -606,7 +608,7 @@
             patientService.UpdatePatient(Arg.Any<string>(), Arg.Any<Patient>()).Returns(new Patient());
 
             // Act
-            var updated = await controller.UpdatePatient(Guid.NewGuid().ToString(), new Patient());
+            var updated = await controller.UpdatePatient(Guid.NewGuid().ToString(), new Patient().ToJObject());
             var result = (AcceptedResult) updated;
 
             // Assert

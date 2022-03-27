@@ -34,7 +34,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public async Task<IActionResult> GetMedicationRequest([FromRoute] string id)
+        public async Task<IActionResult> GetMedication([FromRoute] string id)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {

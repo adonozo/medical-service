@@ -38,7 +38,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         /// <returns>A document found in the database.</returns>
         /// <exception cref="DataExceptionBase">Thrown if the result is not found.</exception>
         protected async Task<TProjection> GetSingleOrThrow<TDocument, TProjection>(
-            IFindFluent<TDocument, TProjection> find, DataExceptionBase exception, Action fallback)
+            IFindFluent<TDocument, TProjection> find, DataExceptionBase exception, Action fallback = null)
         {
             var result = await find.FirstOrDefaultAsync();
             if (result != null)
@@ -46,7 +46,7 @@ namespace QMUL.DiabetesBackend.MongoDb
                 return result;
             }
 
-            fallback.Invoke();
+            fallback?.Invoke();
             throw exception;
         }
 
@@ -58,14 +58,14 @@ namespace QMUL.DiabetesBackend.MongoDb
         /// <param name="exception">A <see cref="DataExceptionBase"/> exception to throw if the result is false.</param>
         /// <param name="fallback">An <see cref="Action"/> to execute before throwing the exception.</param>
         /// <exception cref="DataExceptionBase">Thrown if the result is false.</exception>
-        protected void CheckAcknowledgedOrThrow(bool result, DataExceptionBase exception, Action fallback)
+        protected void CheckAcknowledgedOrThrow(bool result, DataExceptionBase exception, Action fallback = null)
         {
             if (result)
             {
                 return;
             }
 
-            fallback.Invoke();
+            fallback?.Invoke();
             throw exception;
         }
     }

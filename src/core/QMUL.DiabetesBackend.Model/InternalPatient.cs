@@ -27,12 +27,26 @@
 
         public DateTime? BirthDate { get; set; }
 
-        public IList<Patient.ContactComponent> PhoneContacts { get; set; } = new List<Patient.ContactComponent>();
+        public IEnumerable<PatientPhone> Phones { get; set; }
 
         /// <summary>
         /// Holds the exact time the patient has set a specific event in the day: i.e., breakfast, diner, sleep. The date
         /// in the datetime is ignored. 
         /// </summary>
         public Dictionary<CustomEventTiming, DateTimeOffset> ExactEventTimes { get; set; } = new();
+
+        /// <summary>
+        /// This class models a FHIR <see cref="ContactPoint"/>.
+        /// </summary>
+        public class PatientPhone
+        {
+            public string System { get; set; }
+            
+            public string Value { get; set; }
+            
+            public string Use { get; set; }
+            
+            public int Rank { get; set; }
+        }
     }
 }

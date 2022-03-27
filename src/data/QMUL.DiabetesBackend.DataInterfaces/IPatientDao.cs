@@ -15,7 +15,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// The entire list of patients
         /// </summary>
         /// <returns>A list containing all registered patients</returns>
-        public Task<List<Patient>> GetPatients();
+        public Task<IEnumerable<Patient>> GetPatients();
 
         /// <summary>
         /// Creates a patient.

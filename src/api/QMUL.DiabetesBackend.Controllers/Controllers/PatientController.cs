@@ -1,6 +1,7 @@
 namespace QMUL.DiabetesBackend.Api.Controllers
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Serialization;
@@ -9,6 +10,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     using Model;
     using Model.Enums;
     using Models;
+    using Newtonsoft.Json.Linq;
     using ServiceInterfaces;
     using Utils;
 
@@ -37,11 +39,13 @@ namespace QMUL.DiabetesBackend.Api.Controllers
 
         [HttpPost]
         [Route("")]
-        public async Task<IActionResult> CreatePatient([FromBody] Patient newPatient)
+        public async Task<IActionResult> CreatePatient([FromBody] JObject patient)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 this.logger.LogDebug("Creating patient");
+                var newPatient = await Helpers.ParseResourceAsync<Patient>(patient);
+
                 var createdPatient = await this.patientService.CreatePatient(newPatient);
                 this.logger.LogDebug("Patient created with ID: {Id}", createdPatient.Id);
                 return this.Ok(createdPatient.ToJObject());
@@ -51,14 +55,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [HttpPost]
         [Route("{idOrEmail}/observations")]
         public async Task<IActionResult> PostGlucoseObservation([FromRoute] string idOrEmail,
-            [FromBody] object newObservation)
+            [FromBody] JObject newObservation)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var parser = new FhirJsonParser(new ParserSettings
-                    {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
-                var parsedRequest = await parser.ParseAsync<Observation>(newObservation.ToString());
-                var result = await this.observationService.CreateObservation(idOrEmail, parsedRequest);
+                var observation = await Helpers.ParseResourceAsync<Observation>(newObservation);
+                var result = await this.observationService.CreateObservation(idOrEmail, observation);
                 return this.Ok(result.ToJObject());
             }, this.logger, this);
         }
@@ -71,7 +73,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             {
                 this.logger.LogDebug("Getting patients list");
                 var patients = await this.patientService.GetPatientList();
-                this.logger.LogDebug("Found {PatientsCount} patients", patients.Count);
+                this.logger.LogDebug("Found {PatientsCount} patients", patients.Count());
                 return this.Ok(patients);
             }, this.logger, this);
         }
@@ -83,7 +85,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var result = await this.patientService.GetPatient(idOrEmail);
-                return this.Ok(result);
+                return this.Ok(result.ToJObject());
             }, this.logger, this);
         }
 
@@ -159,11 +161,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [HttpPut]
         [Route("{idOrEmail}")]
         public async Task<IActionResult> UpdatePatient([FromRoute] string idOrEmail,
-            [FromBody] Patient updatedPatient)
+            [FromBody] JObject updatedPatient)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var result = await this.patientService.UpdatePatient(idOrEmail, updatedPatient);
+                var patient = await Helpers.ParseResourceAsync<Patient>(updatedPatient);
+                var result = await this.patientService.UpdatePatient(idOrEmail, patient);
                 return this.Accepted(result.ToJObject());
             }, this.logger, this);
         }

@@ -15,7 +15,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// Gets the list of all patients.
         /// </summary>
         /// <returns>A <see cref="List{T}"/> of all registered patients.</returns>
-        public Task<List<Patient>> GetPatientList();
+        public Task<IEnumerable<Patient>> GetPatientList();
 
         /// <summary>
         /// Creates a <see cref="Patient"/>.

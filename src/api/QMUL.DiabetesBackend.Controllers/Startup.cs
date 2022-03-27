@@ -11,7 +11,7 @@ namespace QMUL.DiabetesBackend.Api
     using Microsoft.OpenApi.Models;
     using MongoDb;
     using MongoDB.Driver;
-    using MongoDb.Utils;
+    using MongoDb.Mapper;
     using ServiceImpl.Implementations;
     using ServiceInterfaces;
     using MongoDatabaseSettings = Model.MongoDatabaseSettings;
