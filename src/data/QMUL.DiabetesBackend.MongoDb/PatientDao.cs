@@ -44,10 +44,10 @@ namespace QMUL.DiabetesBackend.MongoDb
         public async Task<Patient> CreatePatient(Patient newPatient)
         {
             this.logger.LogInformation("Inserting patient...");
-            var bson = await this.PatientToBsonDocument(newPatient);
-            await this.patientCollection.InsertOneAsync(bson);
+            var document = await this.PatientToBsonDocument(newPatient);
+            await this.patientCollection.InsertOneAsync(document);
 
-            var newId = bson["_id"].ToString();
+            var newId = document["_id"].ToString();
             this.logger.LogInformation("Patient created with ID: {Id}", newId);
             return await this.GetSinglePatientOrThrow(newId);
         }

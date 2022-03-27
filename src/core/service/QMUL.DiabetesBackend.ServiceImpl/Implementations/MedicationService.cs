@@ -29,7 +29,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var medications = await this.medicationDao.GetMedicationList();
             bundle.Entry = medications.Select(medication => new Bundle.EntryComponent {Resource = medication})
                 .ToList();
-            this.logger.LogDebug("Found {Count} medications", medications.Count);
             return bundle;
         }
 
