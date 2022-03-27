@@ -33,7 +33,7 @@
       "reference":{
         "id":"3ca91535-8f78-4bc8-b8ca-f95b21d23c8c",
         "type":"MedicationRequest",
-        "reference":"medicationRequest/3ca91535-8f78-4bc8-b8ca-f95b21d23c8c"
+        "reference":"MedicationRequest/3ca91535-8f78-4bc8-b8ca-f95b21d23c8c"
       },
       "detail":{
         "kind":"MedicationRequest",

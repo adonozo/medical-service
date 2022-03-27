@@ -13,7 +13,7 @@
     ]
   },
   "subject": {
-    "reference": "/patients/fb85c38d-5ea5-4263-ba00-3b9528d4c4b3",
+    "reference": "Patient/fb85c38d-5ea5-4263-ba00-3b9528d4c4b3",
     "id": "fb85c38d-5ea5-4263-ba00-3b9528d4c4b3"
   },
   "occurrenceTiming": {
