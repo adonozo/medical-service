@@ -6,6 +6,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using Microsoft.Extensions.Logging;
     using DataInterfaces;
     using Hl7.Fhir.Model;
+    using Model.Constants;
     using Model.Enums;
     using Model.Extensions;
     using ServiceInterfaces;
@@ -33,9 +34,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<Observation> CreateObservation(string patientId, Observation newObservation)
         {
             // Check if the patient exists
-            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
-            newObservation.Subject.ElementId = patientId;
+            newObservation.Subject.Reference = Constants.PatientPath + patientId;
+            newObservation.Subject.Display = patient.Name[0].Family;
             var observation = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.observationDao.CreateObservation(newObservation), this.logger);
             this.logger.LogDebug("Observation created with ID {Id}", observation.Id);

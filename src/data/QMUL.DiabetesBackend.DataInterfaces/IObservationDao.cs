@@ -32,7 +32,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="patientId">The patient ID.</param>
         /// <returns>The patient's list of <see cref="Observation"/></returns>
-        public Task<List<Observation>> GetAllObservationsFor(string patientId);
+        public Task<IList<Observation>> GetAllObservationsFor(string patientId);
 
         /// <summary>
         /// Gets the list of <see cref="Observation"/> for a given patient in a defined time range.
@@ -41,6 +41,6 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="start">The range start datetime.</param>
         /// <param name="end">The range end datetime.</param>
         /// <returns>An <see cref="Observation"/> list within the start and end dates.</returns>
-        public Task<List<Observation>> GetObservationsFor(string patientId, DateTime start, DateTime end);
+        public Task<IList<Observation>> GetObservationsFor(string patientId, DateTime start, DateTime end);
     }
 }

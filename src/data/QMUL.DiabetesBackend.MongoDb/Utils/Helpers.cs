@@ -1,8 +1,10 @@
 namespace QMUL.DiabetesBackend.MongoDb.Utils
 {
+    using System;
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Serialization;
+    using Model.Constants;
     using MongoDB.Bson;
     using MongoDB.Driver;
     using Newtonsoft.Json;
@@ -33,6 +35,36 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
         public static FilterDefinition<BsonDocument> GetByIdFilter(string id)
         {
             return Builders<BsonDocument>.Filter.Eq("_id", new ObjectId(id));
+        }
+
+        /// <summary>
+        /// Gets a <see cref="FilterDefinition{TDocument}"/> to equal a subject reference to a patient ID.
+        /// </summary>
+        /// <param name="patientId">The patient ID.</param>
+        /// <returns>The subject reference filter definition.</returns>
+        public static FilterDefinition<BsonDocument> GetPatientReferenceFilter(string patientId)
+        {
+            var patientReference = Constants.PatientPath + patientId;
+            return Builders<BsonDocument>.Filter.Eq("subject.reference", patientReference);
+        }
+
+        /// <summary>
+        /// Sets a <see cref="BsonDocument"/> field as a <see cref="BsonDateTime"/> date from a <see cref="DateTimeOffset"/>.
+        /// If the dateTimeOffset is null, the document field will be removed.
+        /// </summary>
+        /// <param name="document">The <see cref="BsonDocument"/> to modify.</param>
+        /// <param name="field">The document's field name.</param>
+        /// <param name="dateTimeOffset">The <see cref="DateTimeOffset"/> to use.</param>
+        public static void SetBsonDateTimeValue(BsonDocument document, string field, DateTimeOffset? dateTimeOffset)
+        {
+            if (dateTimeOffset == null)
+            {
+                document.Remove(field);
+                return;
+            }
+
+            var dateTime = dateTimeOffset?.UtcDateTime;
+            document[field] = new BsonDateTime((DateTime)dateTime);
         }
 
         /// <summary>
