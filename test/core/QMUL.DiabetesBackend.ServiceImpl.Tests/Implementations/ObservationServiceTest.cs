@@ -36,7 +36,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
 
             // Assert
             result.Should().BeOfType<Observation>();
-            observationUsedInMethod.Subject.ElementId.Should().Be(patient.Id);
+            observationUsedInMethod.Subject.Reference.Should().Contain(patient.Id);
+            observationUsedInMethod.Subject.Display.Should().Contain(patient.Name[0].Family);
         }
 
         [Fact]

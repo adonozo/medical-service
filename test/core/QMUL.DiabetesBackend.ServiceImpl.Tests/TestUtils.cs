@@ -12,7 +12,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests
         {
             return new Patient
             {
-                Id = Guid.NewGuid().ToString()
+                Id = Guid.NewGuid().ToString(),
+                Name = new List<HumanName> { HumanName.ForFamily("Doe") }
             };
         }
 

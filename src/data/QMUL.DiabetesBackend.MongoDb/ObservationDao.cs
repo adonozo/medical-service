@@ -40,9 +40,9 @@ namespace QMUL.DiabetesBackend.MongoDb
             var newId = document["_id"].ToString();
             this.logger.LogDebug("Observation created with ID: {Id}", newId);
             const string errorMessage = "Could not create observation";
-            var bsonDocument = await this.GetSingleOrThrow(this.observationCollection.Find(Helpers.GetByIdFilter(newId)),
+            document = await this.GetSingleOrThrow(this.observationCollection.Find(Helpers.GetByIdFilter(newId)),
                 new CreateException(errorMessage));
-            return await Helpers.ToResourceAsync<Observation>(bsonDocument);
+            return await this.ProjectToObservation(document);
         }
 
         /// <inheritdoc />
@@ -57,10 +57,10 @@ namespace QMUL.DiabetesBackend.MongoDb
         /// <inheritdoc />
         public async Task<IList<Observation>> GetAllObservationsFor(string patientId)
         {
-            var result = await this.observationCollection.Find(Helpers.GetPatientReferenceFilter(patientId))
+            var results = await this.observationCollection.Find(Helpers.GetPatientReferenceFilter(patientId))
                 .Project(document => this.ProjectToObservation(document))
                 .ToListAsync();
-            return await Task.WhenAll(result);
+            return await Task.WhenAll(results);
         }
 
         /// <inheritdoc />

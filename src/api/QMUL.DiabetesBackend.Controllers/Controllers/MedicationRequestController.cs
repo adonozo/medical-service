@@ -5,6 +5,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     using Hl7.Fhir.Serialization;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json.Linq;
     using ServiceInterfaces;
     using Utils;
 
@@ -35,13 +36,11 @@ namespace QMUL.DiabetesBackend.Api.Controllers
 
         [HttpPost]
         [Route("")]
-        public async Task<IActionResult> CreateMedicationRequest([FromBody] object request)
+        public async Task<IActionResult> CreateMedicationRequest([FromBody] JObject request)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var parser = new FhirJsonParser(new ParserSettings
-                    {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
-                var parsedRequest = await parser.ParseAsync<MedicationRequest>(request.ToString());
+                var parsedRequest = await Helpers.ParseResourceAsync<MedicationRequest>(request);
                 var result = await this.medicationRequestService.CreateMedicationRequest(parsedRequest);
                 return this.Ok(result.ToJObject());
             }, this.logger, this);
@@ -49,13 +48,11 @@ namespace QMUL.DiabetesBackend.Api.Controllers
 
         [HttpPut]
         [Route("{id}")]
-        public async Task<IActionResult> UpdateMedicationRequest([FromRoute] string id, [FromBody] object request)
+        public async Task<IActionResult> UpdateMedicationRequest([FromRoute] string id, [FromBody] JObject request)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var parser = new FhirJsonParser(new ParserSettings
-                    {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
-                var parsedRequest = await parser.ParseAsync<MedicationRequest>(request.ToString());
+                var parsedRequest = await Helpers.ParseResourceAsync<MedicationRequest>(request);
                 var result = await this.medicationRequestService.UpdateMedicationRequest(id, parsedRequest);
                 return this.Accepted(result.ToJObject());
             }, this.logger, this);

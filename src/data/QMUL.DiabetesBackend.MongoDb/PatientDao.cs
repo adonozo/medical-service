@@ -34,10 +34,10 @@ namespace QMUL.DiabetesBackend.MongoDb
         /// <inheritdoc />
         public async Task<IEnumerable<Patient>> GetPatients()
         {
-            var findDefinition = await this.patientCollection.Find(FilterDefinition<BsonDocument>.Empty)
+            var results = await this.patientCollection.Find(FilterDefinition<BsonDocument>.Empty)
                 .Project(document => Helpers.ToResourceAsync<Patient>(document))
                 .ToListAsync();
-            return await Task.WhenAll(findDefinition);
+            return await Task.WhenAll(results);
         }
 
         /// <inheritdoc />
@@ -87,9 +87,9 @@ namespace QMUL.DiabetesBackend.MongoDb
 
         private async Task<Patient> GetSinglePatientOrThrow(string id)
         {
-            var result = this.patientCollection.Find(Helpers.GetByIdFilter(id));
+            var cursor = this.patientCollection.Find(Helpers.GetByIdFilter(id));
             const string errorMessage = "Could not find patient.";
-            var bsonDocument = await this.GetSingleOrThrow(result, new CreateException(errorMessage),
+            var bsonDocument = await this.GetSingleOrThrow(cursor, new CreateException(errorMessage),
                 () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
             return await Helpers.ToResourceAsync<Patient>(bsonDocument);
         }

@@ -398,7 +398,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
 
             // Act
             var result =
-                await (Task<List<MedicationRequest>>)privateMethod.Invoke(alexaService, new object?[] { events });
+                await (Task<IList<MedicationRequest>>)privateMethod.Invoke(alexaService, new object?[] { events });
 
             // Assert
             result.Count.Should().Be(1);

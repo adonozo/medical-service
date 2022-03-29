@@ -36,7 +36,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             // Check if the patient exists
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
-            newObservation.Subject.Reference = Constants.PatientPath + patientId;
+            newObservation.Subject.SetPatientReference(patientId);
             newObservation.Subject.Display = patient.Name[0].Family;
             var observation = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.observationDao.CreateObservation(newObservation), this.logger);

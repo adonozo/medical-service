@@ -40,14 +40,14 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="ids">The medication request IDs array.</param>
         /// <returns>A list of <see cref="Medication"/>.</returns>
-        public Task<List<MedicationRequest>> GetMedicationRequestsByIds(string[] ids);
+        public Task<IList<MedicationRequest>> GetMedicationRequestsByIds(string[] ids);
 
         /// <summary>
         /// Gets all the medication requests for a given patient ID.
         /// </summary>
         /// <param name="patientId">The patient's ID.</param>
         /// <returns>The patient's list of <see cref="MedicationRequest"/>.</returns>
-        public Task<List<MedicationRequest>> GetMedicationRequestFor(string patientId);
+        public Task<IList<MedicationRequest>> GetMedicationRequestFor(string patientId);
 
         /// <summary>
         /// Deletes a medication request given an ID.
@@ -71,13 +71,13 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="patientId">The patient's user ID, not email</param>
         /// <returns>The list of active medication requests.</returns>
-        public Task<List<MedicationRequest>> GetActiveMedicationRequests(string patientId);
+        public Task<IList<MedicationRequest>> GetActiveMedicationRequests(string patientId);
 
         /// <summary>
         /// Gets the all the active medication requests, insulin and non-insulin.
         /// </summary>
         /// <param name="patientId">The patient's user ID (not email)</param>
         /// <returns>The list of active medication requests.</returns>
-        public Task<List<MedicationRequest>> GetAllActiveMedicationRequests(string patientId);
+        public Task<IList<MedicationRequest>> GetAllActiveMedicationRequests(string patientId);
     }
 }

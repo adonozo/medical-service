@@ -24,7 +24,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         {
             this.Database = database;
             var conventionPack = new  ConventionPack {new CamelCaseElementNameConvention()};
-            ConventionRegistry.Register("camelCase", conventionPack, t => true);
+            ConventionRegistry.Register("camelCase", conventionPack, _ => true);
         }
 
         /// <summary>

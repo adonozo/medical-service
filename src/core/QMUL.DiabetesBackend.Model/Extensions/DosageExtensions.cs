@@ -6,10 +6,15 @@ namespace QMUL.DiabetesBackend.Model.Extensions
 
     public static class DosageExtensions
     {
+        /// <summary>
+        /// Gets the patient's <see cref="MedicationRequest"/> start date from the contained <see cref="Dosage"/>. This
+        /// date is stored as an extension value within the dosage.
+        /// </summary>
+        /// <param name="dosage">The <see cref="Dosage"/> contained in the <see cref="MedicationRequest"/></param>
+        /// <returns>The <see cref="DateTimeOffset"/> start date, or null if the value was not found.</returns>
         public static DateTimeOffset? GetStartDate(this Dosage dosage)
         {
-            var extension =
-                dosage.GetExtension(Extensions.DosageStartDate);
+            var extension = dosage.GetExtension(Extensions.DosageStartDate);
             var startDate = extension?.Value as FhirDateTime;
             if (startDate != null && startDate.TryToDateTimeOffset(out var result))
             {

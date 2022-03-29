@@ -36,7 +36,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId), this.logger);
+                await this.patientDao.GetPatientByIdOrEmail(request.Subject.GetPatientIdFromReference()), this.logger);
             this.logger.LogDebug("Creating medication request for patient {PatientId}", patient.Id);
             var internalPatient = patient.ToInternalPatient();
 
@@ -110,7 +110,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             }
 
             // In a reference, the resource ID is prefixed with a path.
-            var medicationId = reference.Reference.Replace(Constants.MedicationPath, "");
+            var medicationId = reference.Reference?.Replace(Constants.MedicationPath, "");
             var medication = request.FindContainedResource(reference.Reference) as Medication
                              ?? await this.medicationDao.GetSingleMedication(medicationId);
 

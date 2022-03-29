@@ -1,12 +1,13 @@
 ﻿namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
 {
     using System;
-    using System.Text.Json;
     using FluentAssertions;
     using Hl7.Fhir.Model;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Model;
+    using Newtonsoft.Json.Linq;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
     using QMUL.DiabetesBackend.Api.Controllers;
@@ -95,10 +96,9 @@
             var medication = new Medication { Id = Guid.NewGuid().ToString()};
             service.CreateMedication(Arg.Any<Medication>()).Returns(medication);
             var controller = new MedicationController(service, logger);
-            var jsonRequest = JsonSerializer.Serialize(medication);
 
             // Act
-            var medicationCreated = await controller.CreateMedication(jsonRequest);
+            var medicationCreated = await controller.CreateMedication(JObject.FromObject(medication));
             var result = (ObjectResult) medicationCreated;
 
             // Assert
@@ -111,12 +111,11 @@
             // Arrange
             var service = Substitute.For<IMedicationService>();
             var logger = Substitute.For<ILogger<MedicationController>>();
-            var medication = new Medication { Id = Guid.NewGuid().ToString() };
-            service.CreateMedication(Arg.Any<Medication>()).Returns(medication);
             var controller = new MedicationController(service, logger);
+            var unformattedObject = new InternalPatient();
 
             // Act
-            var medicationCreated = await controller.CreateMedication("invalid json");
+            var medicationCreated = await controller.CreateMedication(JObject.FromObject(unformattedObject));
             var result = (StatusCodeResult) medicationCreated;
 
             // Assert
@@ -132,10 +131,9 @@
             service.CreateMedication(Arg.Any<Medication>()).Throws(new Exception());
             var controller = new MedicationController(service, logger);
             var medication = new Medication { Id = Guid.NewGuid().ToString() };
-            var jsonRequest = JsonSerializer.Serialize(medication);
 
             // Act
-            var medicationCreated = await controller.CreateMedication(jsonRequest);
+            var medicationCreated = await controller.CreateMedication(JObject.FromObject(medication));
             var result = (StatusCodeResult) medicationCreated;
 
             // Assert

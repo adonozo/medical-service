@@ -4,7 +4,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using Hl7.Fhir.Model;
-    using Model;
     using Model.Enums;
     using NodaTime;
     using NodaTime.Extensions;

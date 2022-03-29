@@ -63,8 +63,8 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 return;
             }
 
-            var dateTime = dateTimeOffset?.UtcDateTime;
-            document[field] = new BsonDateTime((DateTime)dateTime);
+            var dateTime = ((DateTimeOffset)dateTimeOffset).UtcDateTime;
+            document[field] = new BsonDateTime(dateTime);
         }
 
         /// <summary>

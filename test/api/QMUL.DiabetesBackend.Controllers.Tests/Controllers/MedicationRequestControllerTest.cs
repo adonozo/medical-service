@@ -1,13 +1,14 @@
 ﻿namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
 {
     using System;
-    using System.Text.Json;
     using Api.Controllers;
     using FluentAssertions;
     using Hl7.Fhir.Model;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Model;
+    using Newtonsoft.Json.Linq;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
     using ServiceInterfaces;
@@ -27,7 +28,7 @@
 
             // Act
             var medicationRequest = await controller.GetMedicationRequest(Guid.NewGuid().ToString());
-            var result = (ObjectResult) medicationRequest;
+            var result = (ObjectResult)medicationRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -44,7 +45,7 @@
 
             // Act
             var medicationRequest = await controller.GetMedicationRequest(Guid.NewGuid().ToString());
-            var result = (StatusCodeResult) medicationRequest;
+            var result = (StatusCodeResult)medicationRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -56,14 +57,14 @@
             // Arrange
             var service = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<MedicationRequestController>>();
-            var medicationRequest = new MedicationRequest {Id = Guid.NewGuid().ToString()};
+            var medicationRequest = new MedicationRequest { Id = Guid.NewGuid().ToString() };
             service.CreateMedicationRequest(Arg.Any<MedicationRequest>()).Returns(medicationRequest);
             var controller = new MedicationRequestController(service, logger);
-            var jsonMedicationRequest = JsonSerializer.Serialize(medicationRequest);
 
             // Act
-            var medicationRequestCreated = await controller.CreateMedicationRequest(jsonMedicationRequest);
-            var result = (ObjectResult) medicationRequestCreated;
+            var medicationRequestCreated =
+                await controller.CreateMedicationRequest(JObject.FromObject(medicationRequest));
+            var result = (ObjectResult)medicationRequestCreated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -75,13 +76,13 @@
             // Arrange
             var service = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<MedicationRequestController>>();
-            var medicationRequest = new MedicationRequest {Id = Guid.NewGuid().ToString()};
-            service.CreateMedicationRequest(Arg.Any<MedicationRequest>()).Returns(medicationRequest);
             var controller = new MedicationRequestController(service, logger);
+            var unformattedObject = new InternalPatient();
 
             // Act
-            var medicationRequestCreated = await controller.CreateMedicationRequest("invalid json");
-            var result = (StatusCodeResult) medicationRequestCreated;
+            var medicationRequestCreated =
+                await controller.CreateMedicationRequest(JObject.FromObject(unformattedObject));
+            var result = (StatusCodeResult)medicationRequestCreated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
@@ -95,32 +96,32 @@
             var logger = Substitute.For<ILogger<MedicationRequestController>>();
             service.CreateMedicationRequest(Arg.Any<MedicationRequest>()).Throws(new Exception());
             var controller = new MedicationRequestController(service, logger);
-            var medicationRequest = new MedicationRequest {Id = Guid.NewGuid().ToString()};
-            var jsonMedicationRequest = JsonSerializer.Serialize(medicationRequest);
+            var medicationRequest = new MedicationRequest { Id = Guid.NewGuid().ToString() };
 
             // Act
-            var medicationRequestCreated = await controller.CreateMedicationRequest(jsonMedicationRequest);
-            var result = (StatusCodeResult) medicationRequestCreated;
+            var medicationRequestCreated =
+                await controller.CreateMedicationRequest(JObject.FromObject(medicationRequest));
+            var result = (StatusCodeResult)medicationRequestCreated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [Fact]
-        public async Task UpdateMedicationRequest_WhenRequestIsCorrect_ReturnsStatusOk()
+        public async Task UpdateMedicationRequest_WhenRequestIsCorrect_ReturnsStatusAccepted()
         {
             // Arrange
             var id = Guid.NewGuid().ToString();
             var service = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<MedicationRequestController>>();
-            var medicationRequest = new MedicationRequest {Id = id};
+            var medicationRequest = new MedicationRequest { Id = id };
             service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>()).Returns(medicationRequest);
             var controller = new MedicationRequestController(service, logger);
-            var jsonMedicationRequest = JsonSerializer.Serialize(medicationRequest);
 
             // Act
-            var medicationRequestCreated = await controller.UpdateMedicationRequest(id, jsonMedicationRequest);
-            var result = (ObjectResult) medicationRequestCreated;
+            var medicationRequestCreated =
+                await controller.UpdateMedicationRequest(id, JObject.FromObject(medicationRequest));
+            var result = (ObjectResult)medicationRequestCreated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status202Accepted);
@@ -133,13 +134,15 @@
             var id = Guid.NewGuid().ToString();
             var service = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<MedicationRequestController>>();
-            var medicationRequest = new MedicationRequest {Id = id};
+            var medicationRequest = new MedicationRequest { Id = id };
             service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>()).Returns(medicationRequest);
             var controller = new MedicationRequestController(service, logger);
+            var unformattedObject = new InternalPatient();
 
             // Act
-            var medicationRequestCreated = await controller.UpdateMedicationRequest(id, "invalid json");
-            var result = (StatusCodeResult) medicationRequestCreated;
+            var medicationRequestCreated =
+                await controller.UpdateMedicationRequest(id, JObject.FromObject(unformattedObject));
+            var result = (StatusCodeResult)medicationRequestCreated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
@@ -154,12 +157,12 @@
             var logger = Substitute.For<ILogger<MedicationRequestController>>();
             service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>()).Throws(new Exception());
             var controller = new MedicationRequestController(service, logger);
-            var medicationRequest = new MedicationRequest {Id = id};
-            var jsonMedicationRequest = JsonSerializer.Serialize(medicationRequest);
+            var medicationRequest = new MedicationRequest { Id = id };
 
             // Act
-            var medicationRequestCreated = await controller.UpdateMedicationRequest(id, jsonMedicationRequest);
-            var result = (StatusCodeResult) medicationRequestCreated;
+            var medicationRequestCreated =
+                await controller.UpdateMedicationRequest(id, JObject.FromObject(medicationRequest));
+            var result = (StatusCodeResult)medicationRequestCreated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -177,7 +180,7 @@
 
             // Act
             var medicationRequestCreated = await controller.DeleteMedicationRequest(id);
-            var result = (StatusCodeResult) medicationRequestCreated;
+            var result = (StatusCodeResult)medicationRequestCreated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
@@ -195,7 +198,7 @@
 
             // Act
             var medicationRequestCreated = await controller.DeleteMedicationRequest(id);
-            var result = (StatusCodeResult) medicationRequestCreated;
+            var result = (StatusCodeResult)medicationRequestCreated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
