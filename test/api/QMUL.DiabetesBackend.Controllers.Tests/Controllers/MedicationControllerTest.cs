@@ -3,6 +3,7 @@
     using System;
     using FluentAssertions;
     using Hl7.Fhir.Model;
+    using Hl7.Fhir.Serialization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
@@ -28,7 +29,7 @@
 
             // Act
             var medications = await controller.GetAllMedications();
-            var result = (ObjectResult) medications;
+            var result = (ObjectResult)medications;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -45,7 +46,7 @@
 
             // Act
             var medications = await controller.GetAllMedications();
-            var result = (StatusCodeResult) medications;
+            var result = (StatusCodeResult)medications;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -63,7 +64,7 @@
 
             // Act
             var medication = await controller.GetMedication(id);
-            var result = (ObjectResult) medication;
+            var result = (ObjectResult)medication;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -81,7 +82,7 @@
 
             // Act
             var medicationResult = await controller.GetMedication(id);
-            var result = (StatusCodeResult) medicationResult;
+            var result = (StatusCodeResult)medicationResult;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -93,13 +94,13 @@
             // Arrange
             var service = Substitute.For<IMedicationService>();
             var logger = Substitute.For<ILogger<MedicationController>>();
-            var medication = new Medication { Id = Guid.NewGuid().ToString()};
+            var medication = this.GetTestMedication(Guid.NewGuid().ToString());
             service.CreateMedication(Arg.Any<Medication>()).Returns(medication);
             var controller = new MedicationController(service, logger);
 
             // Act
-            var medicationCreated = await controller.CreateMedication(JObject.FromObject(medication));
-            var result = (ObjectResult) medicationCreated;
+            var medicationCreated = await controller.CreateMedication(medication.ToJObject());
+            var result = (ObjectResult)medicationCreated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -116,7 +117,7 @@
 
             // Act
             var medicationCreated = await controller.CreateMedication(JObject.FromObject(unformattedObject));
-            var result = (StatusCodeResult) medicationCreated;
+            var result = (StatusCodeResult)medicationCreated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
@@ -130,14 +131,28 @@
             var logger = Substitute.For<ILogger<MedicationController>>();
             service.CreateMedication(Arg.Any<Medication>()).Throws(new Exception());
             var controller = new MedicationController(service, logger);
-            var medication = new Medication { Id = Guid.NewGuid().ToString() };
+            var medication = this.GetTestMedication(Guid.NewGuid().ToString());
 
             // Act
-            var medicationCreated = await controller.CreateMedication(JObject.FromObject(medication));
-            var result = (StatusCodeResult) medicationCreated;
+            var medicationCreated = await controller.CreateMedication(medication.ToJObject());
+            var result = (StatusCodeResult)medicationCreated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
+
+        #region Private methods
+
+        private Medication GetTestMedication(string id)
+        {
+            return new Medication
+            {
+                Id = id,
+                Code = new CodeableConcept(),
+                Status = Medication.MedicationStatusCodes.Active
+            };
+        }
+
+        #endregion
     }
 }

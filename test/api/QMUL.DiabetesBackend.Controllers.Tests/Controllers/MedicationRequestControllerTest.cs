@@ -4,6 +4,7 @@
     using Api.Controllers;
     using FluentAssertions;
     using Hl7.Fhir.Model;
+    using Hl7.Fhir.Serialization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
@@ -63,7 +64,7 @@
 
             // Act
             var medicationRequestCreated =
-                await controller.CreateMedicationRequest(JObject.FromObject(medicationRequest));
+                await controller.CreateMedicationRequest(medicationRequest.ToJObject());
             var result = (ObjectResult)medicationRequestCreated;
 
             // Assert
@@ -100,7 +101,7 @@
 
             // Act
             var medicationRequestCreated =
-                await controller.CreateMedicationRequest(JObject.FromObject(medicationRequest));
+                await controller.CreateMedicationRequest(medicationRequest.ToJObject());
             var result = (StatusCodeResult)medicationRequestCreated;
 
             // Assert
@@ -120,7 +121,7 @@
 
             // Act
             var medicationRequestCreated =
-                await controller.UpdateMedicationRequest(id, JObject.FromObject(medicationRequest));
+                await controller.UpdateMedicationRequest(id, medicationRequest.ToJObject());
             var result = (ObjectResult)medicationRequestCreated;
 
             // Assert
@@ -161,7 +162,7 @@
 
             // Act
             var medicationRequestCreated =
-                await controller.UpdateMedicationRequest(id, JObject.FromObject(medicationRequest));
+                await controller.UpdateMedicationRequest(id, medicationRequest.ToJObject());
             var result = (StatusCodeResult)medicationRequestCreated;
 
             // Assert

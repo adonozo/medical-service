@@ -31,8 +31,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<ServiceRequest> CreateServiceRequest(ServiceRequest request)
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId), this.logger);
+                await this.patientDao.GetPatientByIdOrEmail(request.Subject.GetPatientIdFromReference()), this.logger);
             var internalPatient = patient.ToInternalPatient();
+
             var serviceRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.serviceRequestDao.CreateServiceRequest(request), this.logger);
             var events = ResourceUtils.GenerateEventsFrom(serviceRequest, internalPatient);
@@ -64,7 +65,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<bool> DeleteServiceRequest(string id)
         {
-            // Check if the service request exists
             await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.serviceRequestDao.GetServiceRequest(id), this.logger);
             this.logger.LogDebug("Service request {Id} deleted", id);

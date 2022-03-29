@@ -435,7 +435,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 .Returns(new List<ServiceRequest>());
 
             // Act
-            await (Task<List<ServiceRequest>>)privateMethod.Invoke(alexaService, new object?[] { events });
+            await (Task<IList<ServiceRequest>>)privateMethod.Invoke(alexaService, new object?[] { events });
 
             // Assert
             await serviceRequestDao.Received(1).GetServiceRequestsByIds(Arg.Any<string[]>());

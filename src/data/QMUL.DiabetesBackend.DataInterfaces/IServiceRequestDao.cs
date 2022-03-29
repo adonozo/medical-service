@@ -31,14 +31,14 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="patientId">The patient ID</param>
         /// <returns>A list of <see cref="ServiceRequest"/>.</returns>
-        public Task<List<ServiceRequest>> GetServiceRequestsFor(string patientId);
+        public Task<IList<ServiceRequest>> GetServiceRequestsFor(string patientId);
 
         /// <summary>
         /// Gets the <see cref="ServiceRequest"/> list with a active status for a given patient.
         /// </summary>
         /// <param name="patientId">The patient ID.</param>
         /// <returns>A list of <see cref="ServiceRequest"/>.</returns>
-        public Task<List<ServiceRequest>> GetActiveServiceRequests(string patientId);
+        public Task<IList<ServiceRequest>> GetActiveServiceRequests(string patientId);
 
         /// <summary>
         /// Updates a given <see cref="ServiceRequest"/> 
@@ -61,6 +61,6 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="ids">The array of IDs</param>
         /// <returns>A list of service requests matching the IDs.</returns>
-        public Task<List<ServiceRequest>> GetServiceRequestsByIds(string[] ids);
+        public Task<IList<ServiceRequest>> GetServiceRequestsByIds(string[] ids);
     }
 }

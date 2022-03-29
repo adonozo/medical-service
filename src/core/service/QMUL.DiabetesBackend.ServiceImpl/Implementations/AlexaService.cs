@@ -295,7 +295,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return requests;
         }
 
-        private async Task<List<ServiceRequest>> GetServiceBundle(IEnumerable<HealthEvent> events)
+        private async Task<IList<ServiceRequest>> GetServiceBundle(IEnumerable<HealthEvent> events)
         {
             var uniqueIds = new HashSet<string>();
             uniqueIds.UnionWith(events.Select(item => item.ResourceReference.ResourceId).ToArray());
