@@ -8,6 +8,9 @@ namespace QMUL.DiabetesBackend.MongoDb.Mapper
     {
         public MapperProfile()
         {
+            CreateMap<ResourceReference, MongoEvent.MongoResourceReference>()
+                .ReverseMap();
+
             CreateMap<HealthEvent, MongoEvent>()
                 .ReverseMap();
         }
