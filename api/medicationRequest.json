@@ -54,7 +54,7 @@
   "status": "active",
   "intent": "order",
   "medicationReference": {
-    "reference": "3ca91535-8f78-4bc8-b8ca-f95b21d23c8c",
+    "reference": "#d7b222dd-4a53-45ed-803b-4c47a05390aa",
     "display": "Novolog 100u/ml"
   },
   "subject": {

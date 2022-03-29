@@ -3,10 +3,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using DataInterfaces;
+    using Hl7.Fhir.Model;
     using ServiceInterfaces;
     using Microsoft.Extensions.Logging;
+    using Model;
     using Utils;
-    using Patient = Model.Patient;
 
     /// <summary>
     /// The Patient Service manages patients
@@ -23,17 +24,17 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<List<Patient>> GetPatientList()
+        public async Task<IEnumerable<Patient>> GetPatientList()
         {
             return await this.patientDao.GetPatients();
         }
 
         /// <inheritdoc/>
-        public async Task<Patient> CreatePatient(Patient newPatient)
+        public async Task<Patient> CreatePatient(Patient newInternalPatient)
         {
-            this.logger.LogDebug("Creating new patient {Email}", newPatient.Email);
+            this.logger.LogDebug("Creating new patient");
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.CreatePatient(newPatient), this.logger);
+                await this.patientDao.CreatePatient(newInternalPatient), this.logger);
         }
 
         /// <inheritdoc/>
@@ -46,23 +47,23 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<Patient> UpdatePatient(string idOrEmail, Patient updatedPatient)
+        public async Task<Patient> UpdatePatient(string idOrEmail, Patient updatedInternalPatient)
         {
             await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(idOrEmail), this.logger);
-            updatedPatient.Id = idOrEmail;
+            updatedInternalPatient.Id = idOrEmail;
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.UpdatePatient(updatedPatient), this.logger);
+                await this.patientDao.UpdatePatient(updatedInternalPatient), this.logger);
         }
 
         /// <inheritdoc/>
-        public async Task<Patient> PatchPatient(string idOrEmail, Patient updatedPatient)
+        public async Task<Patient> PatchPatient(string idOrEmail, InternalPatient updatedInternalPatient)
         {
-            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+            var oldPatient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(idOrEmail), this.logger);
-            updatedPatient.Id = idOrEmail;
+            updatedInternalPatient.Id = idOrEmail;
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.PatchPatient(updatedPatient), this.logger);
+                await this.patientDao.PatchPatient(updatedInternalPatient, oldPatient), this.logger);
         }
     }
 }

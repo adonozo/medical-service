@@ -6,6 +6,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     using Hl7.Fhir.Model;
     using Model;
     using Model.Enums;
+    using Model.Extensions;
+    using ResourceReference = Model.ResourceReference;
 
     /// <summary>
     /// Resource util methods
@@ -13,34 +15,30 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     public static class ResourceUtils
     {
         /// <summary>
-        /// Creates an empty Bundle of type <see cref="Bundle.BundleType.Searchset"/> and time set to UtcNow
+        /// Creates and populates a search Bundle of type <see cref="Bundle.BundleType.Searchset"/>. It also adds the
+        /// search timestamp as Utc.Now
         /// </summary>
-        /// <returns>A Bundle object</returns>
-        public static Bundle GenerateEmptyBundle()
+        /// <param name="resources">The search result resources.</param>
+        /// <returns>A <see cref="Bundle"/> search object.</returns>
+        public static Bundle GenerateSearchBundle(IEnumerable<Resource> resources)
         {
-            return new Bundle
+            var enumerable = resources.ToList();
+            var bundle = new Bundle
             {
+                Id = Guid.NewGuid().ToString(),
                 Type = Bundle.BundleType.Searchset,
-                Timestamp = DateTimeOffset.UtcNow
+                Timestamp = DateTimeOffset.UtcNow,
+                Total = enumerable.Count
             };
-        }
 
-        /// <summary>
-        /// Checks if the medication request contains an Insulin medication.
-        /// </summary>
-        /// <param name="request">The Medication Request</param>
-        /// <returns>True if the medication request contains insulin.</returns>
-        public static bool IsInsulinResource(MedicationRequest request)
-        {
-            try
+            foreach (var resource in enumerable)
             {
-                var extensions = request.Extension;
-                return extensions != null && extensions.Any(extension => extension.Url.ToLower().Contains("insulin"));
+                var identity = resource.ResourceIdentity();
+                var baseUrl = resource.ResourceBase?.ToString() ?? string.Empty;
+                var url = $"{baseUrl}/{identity?.ResourceType}/{identity?.Id}";
+                bundle.AddSearchEntry(resource, url, Bundle.SearchEntryMode.Match);
             }
-            catch (Exception)
-            {
-                return false;
-            }
+            return bundle;
         }
 
         /// <summary>
@@ -67,19 +65,20 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// <param name="request">The medication request</param>
         /// <param name="patient">The medication request's subject</param>
         /// <returns>A List of events for the medication request</returns>
-        public static IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request, Model.Patient patient)
+        public static IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request, InternalPatient patient)
         {
             var events = new List<HealthEvent>();
-            var isInsulin = IsInsulinResource(request);
+            var isInsulin = request.HasInsulinFlag();
 
             foreach (var dosage in request.DosageInstruction)
             {
-                var requestReference = new CustomResource
+                var requestReference = new ResourceReference
                 {
                     EventType = isInsulin ? EventType.InsulinDosage : EventType.MedicationDosage,
                     ResourceId = request.Id,
                     Text = dosage.Text,
-                    EventReferenceId = dosage.ElementId
+                    EventReferenceId = dosage.ElementId,
+                    StartDate = dosage.GetStartDate()?.UtcDateTime
                 };
                 var eventsGenerator = new EventsGenerator(patient, dosage.Timing, requestReference);
                 events.AddRange(eventsGenerator.GetEvents());
@@ -96,15 +95,16 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// <param name="request">The medication request</param>
         /// <param name="patient">The medication request's subject</param>
         /// <returns>A List of events for the medication request</returns>
-        public static IEnumerable<HealthEvent> GenerateEventsFrom(ServiceRequest request, Model.Patient patient)
+        public static IEnumerable<HealthEvent> GenerateEventsFrom(ServiceRequest request, InternalPatient patient)
         {
             var events = new List<HealthEvent>();
-            var requestReference = new CustomResource
+            var requestReference = new ResourceReference
             {
                 EventType = EventType.Measurement,
                 ResourceId = request.Id,
                 EventReferenceId = request.Id,
-                Text = request.PatientInstruction
+                Text = request.PatientInstruction,
+                StartDate = request.GetStartDate()?.UtcDateTime
             };
 
             // Occurrence must be expressed as a timing instance

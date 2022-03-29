@@ -4,6 +4,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using DataInterfaces;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
+    using Model.Extensions;
     using ServiceInterfaces;
     using Utils;
 
@@ -30,10 +31,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<ServiceRequest> CreateServiceRequest(ServiceRequest request)
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId), this.logger);
+                await this.patientDao.GetPatientByIdOrEmail(request.Subject.GetPatientIdFromReference()), this.logger);
+            var internalPatient = patient.ToInternalPatient();
+
             var serviceRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.serviceRequestDao.CreateServiceRequest(request), this.logger);
-            var events = ResourceUtils.GenerateEventsFrom(serviceRequest, patient);
+            var events = ResourceUtils.GenerateEventsFrom(serviceRequest, internalPatient);
             await ExceptionHandler.ExecuteAndHandleAsync(async () => await this.eventDao.CreateEvents(events),
                 this.logger);
             this.logger.LogDebug("Service Request created with ID: {Id}", serviceRequest.Id);
@@ -62,10 +65,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<bool> DeleteServiceRequest(string id)
         {
-            // Check if the service request exists
             await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.serviceRequestDao.GetServiceRequest(id), this.logger);
             this.logger.LogDebug("Service request {Id} deleted", id);
+            await this.eventDao.DeleteRelatedEvents(id);
             return await this.serviceRequestDao.DeleteServiceRequest(id);
         }
     }

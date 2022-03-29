@@ -1,21 +1,53 @@
 {
-  "id": "610060fc3101595f17be6529",
-  "alexaUserId": null,
-  "firstName": "John",
-  "lastName": "Doe",
-  "email": "jdoe@mail.com",
-  "exactEventTimes": {
-    "CM": "2021-08-17T07:00:00Z",
-    "ACM": "2021-08-17T06:40:00Z",
-    "PCM": "2021-08-17T07:20:00Z",
-    "CV": "2021-08-17T19:00:00Z",
-    "ACV": "2021-08-17T18:40:00Z",
-    "PCV": "2021-08-17T19:20:00Z",
-    "CD": "2021-08-17T12:00:00Z",
-    "ACD": "2021-08-17T11:40:00Z",
-    "PCD": "2021-08-17T12:20:00Z"
-  },
-  "resourceStartDate": {
-    "611c09e2d003a0d894f0b0c9": "2021-08-17T07:00:00Z"
-  }
+  "resourceType": "Patient",
+  "id": "0507447e-7e69-4e8a-89b5-4012791ecc8a",
+  "active": true,
+  "name": [
+    {
+      "use": "official",
+      "family": "Doe",
+      "given": [
+        "John"
+      ]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "(03) 5555 6473",
+      "use": "work",
+      "rank": 1
+    },
+    {
+      "system": "phone",
+      "value": "(03) 3410 5613",
+      "use": "mobile",
+      "rank": 2
+    }
+  ],
+  "gender": "male",
+  "birthDate": "1974-12-25",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Email",
+      "value": "johnDoe@mail.com"
+    },
+    {
+      "url": "http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate",
+      "extension": [
+        {
+          "url": "CV",
+          "value": "2021-08-02T19:30:00.000+00:00"
+        },
+        {
+          "url": "ACV",
+          "value": "2021-08-02T19:10:00.000+00:00"
+        },
+        {
+          "url": "PCV",
+          "value": "2021-08-02T19:50:00.000+00:00"
+        }
+      ]
+    }
+  ]
 }

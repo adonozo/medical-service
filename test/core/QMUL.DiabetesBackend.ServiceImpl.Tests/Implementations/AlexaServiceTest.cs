@@ -11,12 +11,13 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
     using Microsoft.Extensions.Logging;
     using Model;
     using Model.Enums;
+    using Model.Extensions;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
     using ServiceImpl.Implementations;
     using ServiceInterfaces.Exceptions;
     using Xunit;
-    using Patient = Model.Patient;
+    using ResourceReference = Model.ResourceReference;
     using Task = System.Threading.Tasks.Task;
 
     public class AlexaServiceTest
@@ -32,7 +33,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
             eventDao.GetEvents(Arg.Any<string>(), Arg.Any<EventType>(), Arg.Any<DateTime>(), Arg.Any<DateTime>())
                 .Returns(new List<HealthEvent>());
 
@@ -57,7 +58,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
             eventDao.GetEvents(Arg.Any<string>(), Arg.Any<EventType>(), Arg.Any<DateTime>(), Arg.Any<DateTime>())
                 .Returns(new List<HealthEvent>());
 
@@ -82,7 +83,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
             eventDao.GetEvents(Arg.Any<string>(), Arg.Any<EventType>(), Arg.Any<DateTime>(), Arg.Any<DateTime>())
                 .Returns(new List<HealthEvent>());
 
@@ -107,7 +108,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
             eventDao.GetEvents(Arg.Any<string>(), Arg.Any<EventType[]>(), Arg.Any<DateTime>(), Arg.Any<DateTime>())
                 .Returns(new List<HealthEvent>());
 
@@ -132,7 +133,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
             eventDao.GetNextEvents(Arg.Any<string>(), Arg.Any<EventType>()).Returns(Array.Empty<HealthEvent>());
 
             // Act
@@ -154,7 +155,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 
             // Act
             var action = new Func<Task<Bundle>>(() =>
@@ -175,7 +176,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
             eventDao.GetNextEvents(Arg.Any<string>(), Arg.Any<EventType[]>()).Returns(Array.Empty<HealthEvent>());
 
             // Act
@@ -197,20 +198,21 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubPatient();
             var expectedTimingKeys = new[] { CustomEventTiming.CM, CustomEventTiming.ACM, CustomEventTiming.PCM };
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
-            eventDao.UpdateEventsTiming(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>())
+            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(patient);
+            eventDao.UpdateEventsTiming(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTimeOffset>())
                 .Returns(true);
 
             // Act
             var result =
                 await alexaService.UpsertTimingEvent(Guid.NewGuid().ToString(), CustomEventTiming.CM, DateTime.Now);
+            var patientTimings = patient.GetTimingPreference();
 
             // Assert
             result.Should().Be(true);
-            patient.ExactEventTimes.Should().ContainKeys(expectedTimingKeys);
+            patientTimings.Should().ContainKeys(expectedTimingKeys);
         }
 
         [Fact]
@@ -224,20 +226,21 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubPatient();
             var expectedDate = DateTime.Now;
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
-            eventDao.UpdateEventsTiming(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>())
+            patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(patient);
+            eventDao.UpdateEventsTiming(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTimeOffset>())
                 .Returns(true);
 
             // Act
             var result =
                 await alexaService.UpsertTimingEvent(Guid.NewGuid().ToString(), CustomEventTiming.SNACK, expectedDate);
+            var patientTimings = patient.GetTimingPreference();
 
             // Assert
             result.Should().Be(true);
-            patient.ExactEventTimes.Should().ContainKey(CustomEventTiming.SNACK).And.ContainValue(expectedDate);
+            patientTimings.Should().ContainKey(CustomEventTiming.SNACK).And.ContainValue(expectedDate);
         }
 
         [Fact]
@@ -250,23 +253,29 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var eventDao = Substitute.For<IEventDao>();
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
+            var dosageId = Guid.NewGuid().ToString();
+            var medicationRequest = GetTestMedicationRequest(dosageId);
 
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubPatient();
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
             patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
-            var dosageId = Guid.NewGuid().ToString();
+            
             medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
-                .Returns(GetTestMedicationRequest(dosageId));
+                .Returns(medicationRequest);
+            medicationRequestDao.UpdateMedicationRequest(Arg.Any<string>(),
+                Arg.Do<MedicationRequest>(med => medicationRequest = med))
+                .Returns(medicationRequest);
             eventDao.DeleteEventSeries(Arg.Any<string>()).Returns(true);
             eventDao.CreateEvents(Arg.Any<IEnumerable<HealthEvent>>()).Returns(true);
             var expectedDate = DateTime.Now;
 
             // Act
             var result = await alexaService.UpsertDosageStartDate(Guid.NewGuid().ToString(), dosageId, expectedDate);
+            var dosage = medicationRequest.DosageInstruction.FirstOrDefault(dosage => dosage.ElementId == dosageId);
 
             // Assert
             result.Should().Be(true);
-            patient.ResourceStartDate.Should().ContainKey(dosageId).And.ContainValue(expectedDate);
+            dosage.GetStartDate().Should().NotBeNull().And.Be(expectedDate);
         }
 
         [Fact]
@@ -280,7 +289,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubPatient();
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
             patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
             var dosageId = Guid.NewGuid().ToString();
@@ -309,7 +318,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubPatient();
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
             patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
             var dosageId = Guid.NewGuid().ToString();
@@ -336,7 +345,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<AlexaService>>();
             var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubPatient();
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
             patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
             var dosageId = Guid.NewGuid().ToString();
@@ -375,7 +384,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             {
                 new()
                 {
-                    Resource = new CustomResource
+                    ResourceReference = new ResourceReference
                     {
                         ResourceId = medicationId,
                         EventReferenceId = dosageId
@@ -389,7 +398,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
 
             // Act
             var result =
-                await (Task<List<MedicationRequest>>)privateMethod.Invoke(alexaService, new object?[] { events });
+                await (Task<IList<MedicationRequest>>)privateMethod.Invoke(alexaService, new object?[] { events });
 
             // Assert
             result.Count.Should().Be(1);
@@ -417,16 +426,16 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var serviceId2 = Guid.NewGuid().ToString();
             var events = new List<HealthEvent>
             {
-                new() { Resource = new CustomResource { ResourceId = serviceId1 } },
-                new() { Resource = new CustomResource { ResourceId = serviceId2 } },
-                new() { Resource = new CustomResource { ResourceId = serviceId1 } },
+                new() { ResourceReference = new ResourceReference { ResourceId = serviceId1 } },
+                new() { ResourceReference = new ResourceReference { ResourceId = serviceId2 } },
+                new() { ResourceReference = new ResourceReference { ResourceId = serviceId1 } },
             };
             var expectedIds = Array.Empty<string>();
             serviceRequestDao.GetServiceRequestsByIds(Arg.Do<string[]>(ids => expectedIds = ids))
                 .Returns(new List<ServiceRequest>());
 
             // Act
-            await (Task<List<ServiceRequest>>)privateMethod.Invoke(alexaService, new object?[] { events });
+            await (Task<IList<ServiceRequest>>)privateMethod.Invoke(alexaService, new object?[] { events });
 
             // Assert
             await serviceRequestDao.Received(1).GetServiceRequestsByIds(Arg.Any<string[]>());
@@ -435,16 +444,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
         }
 
         #region Private methods
-
-        private Patient GetDummyPatient()
-        {
-            return new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                ExactEventTimes = new Dictionary<CustomEventTiming, DateTime>(),
-                ResourceStartDate = new Dictionary<string, DateTime>()
-            };
-        }
 
         private MedicationRequest GetTestMedicationRequest(string dosageId)
         {

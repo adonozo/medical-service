@@ -5,8 +5,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using DataInterfaces;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
+    using Model.Extensions;
     using ServiceInterfaces;
     using Utils;
+    using Task = System.Threading.Tasks.Task;
 
     /// <summary>
     /// Manages Medication Requests
@@ -14,16 +16,18 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     public class MedicationRequestService : IMedicationRequestService
     {
         private readonly IMedicationRequestDao medicationRequestDao;
+        private readonly IMedicationDao medicationDao;
         private readonly IEventDao eventDao;
         private readonly IPatientDao patientDao;
         private readonly ILogger<MedicationRequestService> logger;
 
         public MedicationRequestService(IMedicationRequestDao medicationRequestDao, IEventDao eventDao,
-            IPatientDao patientDao, ILogger<MedicationRequestService> logger)
+            IPatientDao patientDao, IMedicationDao medicationDao, ILogger<MedicationRequestService> logger)
         {
             this.medicationRequestDao = medicationRequestDao;
             this.eventDao = eventDao;
             this.patientDao = patientDao;
+            this.medicationDao = medicationDao;
             this.logger = logger;
         }
 
@@ -31,11 +35,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(request.Subject.ElementId), this.logger);
+                await this.patientDao.GetPatientByIdOrEmail(request.Subject.GetPatientIdFromReference()), this.logger);
             this.logger.LogDebug("Creating medication request for patient {PatientId}", patient.Id);
+            var internalPatient = patient.ToInternalPatient();
+
+            await this.SetInsulinRequest(request);
             var newRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.medicationRequestDao.CreateMedicationRequest(request), this.logger);
-            var events = ResourceUtils.GenerateEventsFrom(newRequest, patient);
+            var events = ResourceUtils.GenerateEventsFrom(newRequest, internalPatient);
             await ExceptionHandler.ExecuteAndHandleAsync(async () => await this.eventDao.CreateEvents(events),
                 this.logger);
             this.logger.LogDebug("Medication request created with ID {Id}", newRequest.Id);
@@ -57,6 +64,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             // Check if the medication request exists
             await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.medicationRequestDao.GetMedicationRequest(id), this.logger);
+            await this.SetInsulinRequest(request);
             var updatedResult = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.medicationRequestDao.UpdateMedicationRequest(id, request), this.logger);
             this.logger.LogDebug("Medication request with ID {Id} updated", id);
@@ -70,6 +78,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.medicationRequestDao.GetMedicationRequest(id), this.logger);
             this.logger.LogDebug("Medication request deleted {Id}", id);
+            await this.eventDao.DeleteRelatedEvents(id);
             return await this.medicationRequestDao.DeleteMedicationRequest(id);
         }
 
@@ -78,12 +87,35 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
-            var bundle = ResourceUtils.GenerateEmptyBundle();
             var medicationRequests = await this.medicationRequestDao.GetActiveMedicationRequests(patient.Id);
-            bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
-                .ToList();
             this.logger.LogDebug("Found {Count} active medication requests", medicationRequests.Count);
-            return bundle;
+            return ResourceUtils.GenerateSearchBundle(medicationRequests);
+        }
+
+        /// <summary>
+        /// Checks if the <see cref="MedicationRequest"/> has am insulin type <see cref="Medication"/>. If this is true,
+        /// it adds the insulin flag extension to the medication request.
+        /// The medication can be contained as part of the request, or be just a reference with the medication ID.
+        /// </summary>
+        /// <param name="request">The <see cref="MedicationRequest"/>.</param>
+        public async Task SetInsulinRequest(MedicationRequest request)
+        {
+            var medicationReference = request.Medication;
+            if (medicationReference is not ResourceReference reference || string.IsNullOrWhiteSpace(reference.Reference))
+            {
+                return;
+            }
+
+            if (request.FindContainedResource(reference.Reference) is not Medication medication)
+            {
+                var medicationId = reference.GetPatientIdFromReference();
+                medication = await this.medicationDao.GetSingleMedication(medicationId);
+            }
+
+            if (medication != null && medication.HasInsulinFlag())
+            {
+                request.SetInsulinFlag();
+            }
         }
     }
 }

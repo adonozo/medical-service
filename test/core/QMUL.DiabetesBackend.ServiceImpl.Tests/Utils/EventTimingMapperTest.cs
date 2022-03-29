@@ -8,7 +8,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
     using ServiceImpl.Utils;
     using Xunit;
     using static System.Enum;
-    using Patient = Model.Patient;
 
     public class EventTimingMapperTest
     {
@@ -99,15 +98,17 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
         {
             // Arrange
             var timingEvent = CustomEventTiming.AC;
-            var patientTimingRecord = new DateTime(2020, 1, 1, 12, 0, 0);
-            var patient = new Patient
-                { ExactEventTimes = new Dictionary<CustomEventTiming, DateTime> { { timingEvent, patientTimingRecord } } };
-            var referenceDate = new DateTime(2020, 1, 1);
             var timezone = "UTC";
+
+            var patientTimingRecord = new DateTime(2020, 1, 1, 12, 0, 0);
+            var timingPreferences = new Dictionary<CustomEventTiming, DateTimeOffset>
+                { { timingEvent, patientTimingRecord } };
+            var referenceDate = new DateTime(2020, 1, 1);
+            
 
             // Act
             var (startDate, endDate) =
-                EventTimingMapper.GetIntervalForPatient(patient, referenceDate, timingEvent, timezone, 30);
+                EventTimingMapper.GetIntervalForPatient(timingPreferences, referenceDate, timingEvent, timezone, 30);
             
             // Assert
             startDate.Hour.Should().Be(11);
@@ -121,13 +122,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
         {
             // Arrange
             var timingEvent = CustomEventTiming.MORN;
-            var referenceDate = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
             var timezone = "UTC";
-            var patient = new Patient{ ExactEventTimes = new Dictionary<CustomEventTiming, DateTime>()};
+            
+            var referenceDate = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
+            var timingPreferences = new Dictionary<CustomEventTiming, DateTimeOffset>();
 
             // Act
             var (startDate, endDate) =
-                EventTimingMapper.GetIntervalForPatient(patient, referenceDate, timingEvent, timezone, 30);
+                EventTimingMapper.GetIntervalForPatient(timingPreferences, referenceDate, timingEvent, timezone, 30);
 
             // Assert
             startDate.Hour.Should().Be(6, "Default morning time is 06:00");

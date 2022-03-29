@@ -7,11 +7,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
     using Model;
-    using Model.Enums;
+    using Model.Constants;
+    using Model.Extensions;
     using NSubstitute;
     using ServiceImpl.Implementations;
     using Xunit;
-    using Patient = Model.Patient;
+    using ResourceReference = Hl7.Fhir.Model.ResourceReference;
     using Task = System.Threading.Tasks.Task;
 
     public class MedicationRequestServiceTest
@@ -21,14 +22,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
         {
             // Arrange
             var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
+            var medicationDao = Substitute.For<IMedicationDao>();
             var eventDao = Substitute.For<IEventDao>();
             var patientDao = Substitute.For<IPatientDao>();
             var logger = Substitute.For<ILogger<MedicationRequestService>>();
             var medicationRequestService =
-                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, logger);
+                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, logger);
 
             var medicationRequest = this.GetTestMedicationRequest(Guid.NewGuid().ToString());
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
             medicationRequestDao.CreateMedicationRequest(Arg.Any<MedicationRequest>()).Returns(medicationRequest);
             eventDao.CreateEvents(Arg.Any<List<HealthEvent>>()).Returns(true);
 
@@ -45,20 +47,21 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
         {
             // Arrange
             var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
+            var medicationDao = Substitute.For<IMedicationDao>();
             var eventDao = Substitute.For<IEventDao>();
             var patientDao = Substitute.For<IPatientDao>();
             var logger = Substitute.For<ILogger<MedicationRequestService>>();
             var medicationRequestService =
-                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, logger);
+                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, logger);
 
             var medicationRequest = this.GetTestMedicationRequest(Guid.NewGuid().ToString());
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
             medicationRequestDao.CreateMedicationRequest(Arg.Any<MedicationRequest>()).Returns(medicationRequest);
             eventDao.CreateEvents(Arg.Any<List<HealthEvent>>()).Returns(true);
-            
+
             // Act
             await medicationRequestService.CreateMedicationRequest(medicationRequest);
-            
+
             // Assert
             await eventDao.Received(1).CreateEvents(Arg.Any<List<HealthEvent>>());
         }
@@ -68,17 +71,18 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
         {
             // Arrange
             var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
+            var medicationDao = Substitute.For<IMedicationDao>();
             var eventDao = Substitute.For<IEventDao>();
             var patientDao = Substitute.For<IPatientDao>();
             var logger = Substitute.For<ILogger<MedicationRequestService>>();
             var medicationRequestService =
-                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, logger);
+                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, logger);
 
             medicationRequestDao.GetMedicationRequest(Arg.Any<string>()).Returns(new MedicationRequest());
 
             // Act
             var result = await medicationRequestService.GetMedicationRequest(Guid.NewGuid().ToString());
-            
+
             // Assert
             result.Should().BeOfType<MedicationRequest>();
             await medicationRequestDao.Received(1).GetMedicationRequest(Arg.Any<string>());
@@ -89,11 +93,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
         {
             // Arrange
             var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
+            var medicationDao = Substitute.For<IMedicationDao>();
             var eventDao = Substitute.For<IEventDao>();
             var patientDao = Substitute.For<IPatientDao>();
             var logger = Substitute.For<ILogger<MedicationRequestService>>();
             var medicationRequestService =
-                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, logger);
+                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, logger);
 
             medicationRequestDao.GetMedicationRequest(Arg.Any<string>()).Returns(new MedicationRequest());
             medicationRequestDao.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>())
@@ -103,10 +108,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var result =
                 await medicationRequestService.UpdateMedicationRequest(Guid.NewGuid().ToString(),
                     new MedicationRequest());
-            
+
             // Assert
             result.Should().BeOfType<MedicationRequest>();
-            await medicationRequestDao.Received(1).UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>());
+            await medicationRequestDao.Received(1)
+                .UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>());
         }
 
         [Fact]
@@ -114,18 +120,19 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
         {
             // Arrange
             var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
+            var medicationDao = Substitute.For<IMedicationDao>();
             var eventDao = Substitute.For<IEventDao>();
             var patientDao = Substitute.For<IPatientDao>();
             var logger = Substitute.For<ILogger<MedicationRequestService>>();
             var medicationRequestService =
-                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, logger);
+                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, logger);
 
             medicationRequestDao.GetMedicationRequest(Arg.Any<string>()).Returns(new MedicationRequest());
             medicationRequestDao.DeleteMedicationRequest(Arg.Any<string>()).Returns(true);
-            
+
             // Act
             var result = await medicationRequestService.DeleteMedicationRequest(Guid.NewGuid().ToString());
-            
+
             // Assert
             result.Should().Be(true);
             await medicationRequestDao.Received(1).DeleteMedicationRequest(Arg.Any<string>());
@@ -136,13 +143,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
         {
             // Arrange
             var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
+            var medicationDao = Substitute.For<IMedicationDao>();
             var eventDao = Substitute.For<IEventDao>();
             var patientDao = Substitute.For<IPatientDao>();
             var logger = Substitute.For<ILogger<MedicationRequestService>>();
             var medicationRequestService =
-                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, logger);
+                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, logger);
 
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
             medicationRequestDao.GetActiveMedicationRequests(Arg.Any<string>()).Returns(new List<MedicationRequest>());
 
             // Act
@@ -153,17 +161,65 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             await medicationRequestDao.Received(1).GetActiveMedicationRequests(Arg.Any<string>());
         }
 
-        #region Private methods
-
-        private Patient GetDummyPatient()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task CheckInsulinRequest_WhenMedicationIsContained_ReturnsExpected(bool isInsulin)
         {
-            return new Patient
-            {
-                Id = Guid.NewGuid().ToString(), 
-                ExactEventTimes = new Dictionary<CustomEventTiming, DateTime>(),
-                ResourceStartDate = new Dictionary<string, DateTime>()
-            };
+            // Arrange
+            var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
+            var medicationDao = Substitute.For<IMedicationDao>();
+            var eventDao = Substitute.For<IEventDao>();
+            var patientDao = Substitute.For<IPatientDao>();
+            var logger = Substitute.For<ILogger<MedicationRequestService>>();
+            var medicationRequestService =
+                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, logger);
+
+            var request = this.GetTestMedicationRequest(Guid.NewGuid().ToString());
+            var medication = this.GetMedicationTest();
+            medication.SetBoolExtension(isInsulin ? Extensions.InsulinFlag : string.Empty, isInsulin);
+            request.Contained = new List<Resource> { medication };
+
+            // Act
+            await medicationRequestService.SetInsulinRequest(request);
+
+            // Assert
+            request.HasInsulinFlag().Should().Be(isInsulin);
         }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task CheckInsulinRequest_WhenMedicationIsReference_ReturnsExpected(bool isInsulin)
+        {
+            // Arrange
+            var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
+            var medicationDao = Substitute.For<IMedicationDao>();
+            var eventDao = Substitute.For<IEventDao>();
+            var patientDao = Substitute.For<IPatientDao>();
+            var logger = Substitute.For<ILogger<MedicationRequestService>>();
+            var medicationRequestService =
+                new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, logger);
+            
+            var medicationId = Guid.NewGuid().ToString();
+            var medication = this.GetMedicationTest(medicationId);
+            medication.SetBoolExtension(isInsulin ? Extensions.InsulinFlag : string.Empty, isInsulin);
+            medicationDao.GetSingleMedication(Arg.Any<string>()).Returns(medication);
+
+            var request = this.GetTestMedicationRequest(Guid.NewGuid().ToString());
+            request.Medication = new ResourceReference
+            {
+                Reference = Constants.MedicationPath + medicationId
+            };
+
+            // Act
+            await medicationRequestService.SetInsulinRequest(request);
+
+            // Assert
+            request.HasInsulinFlag().Should().Be(isInsulin);
+        }
+
+        #region Private methods
 
         private MedicationRequest GetTestMedicationRequest(string id)
         {
@@ -171,7 +227,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             {
                 Subject = new ResourceReference
                 {
-                    ElementId = Guid.NewGuid().ToString()
+                    Reference = "Patient/TestPatient"
                 },
                 Id = id,
                 DosageInstruction = new List<Dosage>
@@ -194,10 +250,20 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                             }
                         }
                     }
-                }
+                },
+                Medication = new ResourceReference("#medication-id"),
+                Contained = new List<Resource> { this.GetMedicationTest() }
             };
         }
-        
+
+        private Medication GetMedicationTest(string id = "medication-id")
+        {
+            return new Medication
+            {
+                Id = id
+            };
+        }
+
         #endregion
     }
 }

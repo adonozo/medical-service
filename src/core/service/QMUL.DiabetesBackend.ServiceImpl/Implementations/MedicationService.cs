@@ -25,12 +25,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<Bundle> GetMedicationList()
         {
-            var bundle = ResourceUtils.GenerateEmptyBundle();
             var medications = await this.medicationDao.GetMedicationList();
-            bundle.Entry = medications.Select(medication => new Bundle.EntryComponent {Resource = medication})
-                .ToList();
-            this.logger.LogDebug("Found {Count} medications", medications.Count);
-            return bundle;
+            return ResourceUtils.GenerateSearchBundle(medications);
         }
 
         /// <inheritdoc/>>

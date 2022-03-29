@@ -5,6 +5,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     using Hl7.Fhir.Serialization;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json.Linq;
     using ServiceInterfaces;
     using Utils;
 
@@ -34,7 +35,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public async Task<IActionResult> GetMedicationRequest([FromRoute] string id)
+        public async Task<IActionResult> GetMedication([FromRoute] string id)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
@@ -45,13 +46,11 @@ namespace QMUL.DiabetesBackend.Api.Controllers
 
         [HttpPost]
         [Route("")]
-        public async Task<IActionResult> CreateMedication([FromBody] object request)
+        public async Task<IActionResult> CreateMedication([FromBody] JObject request)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var parser = new FhirJsonParser(new ParserSettings
-                    {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
-                var parsedRequest = await parser.ParseAsync<Medication>(request.ToString());
+                var parsedRequest = await Helpers.ParseResourceAsync<Medication>(request);
                 var result = await this.medicationService.CreateMedication(parsedRequest);
                 return this.Ok(result.ToJObject());
             }, this.logger, this);
