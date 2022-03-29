@@ -9,16 +9,16 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     using Hl7.Fhir.Model;
     using Model;
     using Model.Enums;
-    using Patient = Model.Patient;
+    using ResourceReference = Model.ResourceReference;
 
     /// <summary>
     /// Generates health events based on a Resource frequency/occurrence.
     /// </summary>
     internal class EventsGenerator
     {
-        private readonly Patient patient;
+        private readonly InternalPatient patient;
         private readonly Timing timing;
-        private readonly CustomResource referenceResource;
+        private readonly ResourceReference resourceReference;
 
         /// <summary>
         /// The class constructor
@@ -26,12 +26,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// <param name="patient">The patient associated with the resource.</param>
         /// <param name="timing">The resource's timing setting. It must have the Bounds field as an instance of <see cref="Period"/>
         /// or <see cref="Duration"/>. The only supported period is 1. Also, it must have the TimeOfDay or When field.</param>
-        /// <param name="referenceResource">A reference to the source resource, i.e., Medication or Service request.</param>
-        public EventsGenerator(Patient patient, Timing timing, CustomResource referenceResource)
+        /// <param name="resourceReference">A reference to the source resource, i.e., Medication or Service request.</param>
+        public EventsGenerator(InternalPatient patient, Timing timing, ResourceReference resourceReference)
         {
             this.patient = patient;
             this.timing = timing;
-            this.referenceResource = referenceResource;
+            this.resourceReference = resourceReference;
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                     days = duration.Value == null
                         ? throw new InvalidOperationException("Duration is not defined")
                         : (int) duration.Value;
-                    startDate = this.GetPatientTimeOrDefault();
+                    startDate = this.resourceReference.StartDate?.UtcDateTime ?? DateTime.UtcNow;
                     break;
                 default:
                     throw new InvalidOperationException("Dosage or occurrence does not have a valid timing");
@@ -118,7 +118,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                         EventDateTime = eventDateTime,
                         ExactTimeIsSetup = true,
                         EventTiming = CustomEventTiming.EXACT,
-                        Resource = this.referenceResource
+                        ResourceReference = this.resourceReference
                     };
                     events.Add(healthEvent);
                 }
@@ -143,7 +143,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                         EventDateTime = eventDate,
                         ExactTimeIsSetup = exactTimeIsSetup,
                         EventTiming = customTiming,
-                        Resource = this.referenceResource
+                        ResourceReference = this.resourceReference
                     };
                     events.Add(healthEvent);
                 }
@@ -154,14 +154,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             }
             
             return events;
-        }
-
-        private DateTime GetPatientTimeOrDefault()
-        {
-            var startTimeExits = patient.ResourceStartDate.ContainsKey(this.referenceResource.EventReferenceId);
-            return startTimeExits
-                ? patient.ResourceStartDate[this.referenceResource.EventReferenceId]
-                : DateTime.UtcNow;
         }
 
         private IEnumerable<HealthEvent> GenerateEventsOnMultipleFrequency(int days, DateTime startDate)
@@ -178,7 +170,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                     EventDateTime = date,
                     ExactTimeIsSetup = true,
                     EventTiming = CustomEventTiming.EXACT,
-                    Resource = this.referenceResource
+                    ResourceReference = this.resourceReference
                 };
                 events.Add(healthEvent);
             }

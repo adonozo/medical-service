@@ -1,13 +1,13 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using Hl7.Fhir.Model;
     using Model.Enums;
     using NodaTime;
+    using NodaTime.Extensions;
     using Duration = NodaTime.Duration;
-    using Instant = NodaTime.Instant;
-    using Patient = Model.Patient;
 
     /// <summary>
     /// Helper methods to map Timing objects
@@ -67,25 +67,25 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 
         /// <summary>
         /// Gets a time interval for a timing event, considering the patient's timezone and previous timing personal
-        /// settings. If the patient do not have a datetime for the timing event, a default time is used. E.g., if the
+        /// settings. If the patient does not have a datetime for the timing event, a default time is used, e.g., if the
         /// patient have not declared the time for breakfast before, it will use a default time. 
         /// </summary>
-        /// <param name="patient">The patient to get the time interval for.</param>
+        /// <param name="preferences">The patient's timing preferences in a <see cref="Dictionary{TKey,TValue}"/>.</param>
         /// <param name="startTime">The reference start date for the interval.</param>
         /// <param name="timing">The timing event.</param>
         /// <param name="timezone">The patient's timezone.</param>
         /// <param name="defaultOffset">An offset for the time interval, in minutes.</param>
         /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
-        public static Tuple<DateTime, DateTime> GetIntervalForPatient(Patient patient, DateTime startTime,
-            CustomEventTiming timing, string timezone, int defaultOffset)
+        public static Tuple<DateTimeOffset, DateTimeOffset> GetIntervalForPatient(Dictionary<CustomEventTiming, DateTimeOffset> preferences, 
+            DateTimeOffset startTime, CustomEventTiming timing, string timezone, int defaultOffset)
         {
-            DateTime start;
-            DateTime end;
-            if (patient.ExactEventTimes.ContainsKey(timing))
+            DateTimeOffset start;
+            DateTimeOffset end;
+            if (preferences.ContainsKey(timing))
             {
-                start = patient.ExactEventTimes[timing].AddMinutes(defaultOffset * -1);
+                start = preferences[timing].AddMinutes(defaultOffset * -1);
                 start = startTime.Date.AddHours(start.Hour).AddMinutes(start.Minute);
-                end = patient.ExactEventTimes[timing].AddMinutes(defaultOffset);
+                end = preferences[timing].AddMinutes(defaultOffset);
                 end = startTime.Date.AddHours(end.Hour).AddMinutes(end.Minute);
             }
             else
@@ -93,7 +93,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 return GetIntervalFromCustomEventTiming(startTime, timing, timezone);
             }
 
-            return new Tuple<DateTime, DateTime>(start, end);
+            return new Tuple<DateTimeOffset, DateTimeOffset>(start, end);
         }
 
         /// <summary>
@@ -104,9 +104,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// <param name="timezone">The patient's timezone.</param>
         /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
         /// <exception cref="ArgumentOutOfRangeException">If there is no a default value for the timing event.</exception>
-        public static Tuple<DateTime, DateTime> GetIntervalFromCustomEventTiming(DateTime startTime, CustomEventTiming timing, string timezone)
+        public static Tuple<DateTimeOffset, DateTimeOffset> GetIntervalFromCustomEventTiming(DateTimeOffset startTime, CustomEventTiming timing, string timezone)
         {
-            DateTime endTime;
+            DateTimeOffset endTime;
             var startLocalDate = GetRelativeStartOfDay(startTime, timezone);
             
             switch (timing)
@@ -181,7 +181,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                     throw new ArgumentOutOfRangeException(nameof(timing), timing, null);
             }
 
-            return new Tuple<DateTime, DateTime>(startTime, endTime);
+            return new Tuple<DateTimeOffset, DateTimeOffset>(startTime, endTime);
         }
 
         /// <summary>
@@ -215,12 +215,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// <param name="date">The reference datetime.</param>
         /// <param name="timezone">The user's timezone.</param>
         /// <returns>A <see cref="DateTime"/> tuple: the start and end day of the reference date in UTC.</returns>
-        public static Tuple<DateTime, DateTime> GetRelativeDayInterval(DateTime date, string timezone)
+        public static Tuple<DateTimeOffset, DateTimeOffset> GetRelativeDayInterval(DateTimeOffset date, string timezone)
         {
             var startLocalDate = GetRelativeStartOfDay(date, timezone);
             date = startLocalDate.ToDateTimeUtc();
             var endTime = date.AddDays(1);
-            return new Tuple<DateTime, DateTime>(date, endTime);
+            return new Tuple<DateTimeOffset, DateTimeOffset>(date, endTime);
         }
 
         /// <summary>
@@ -229,14 +229,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// <param name="date">The reference date for get the start date from.</param>
         /// <param name="timezone">The user's timezone</param>
         /// <returns>A <see cref="ZonedDateTime"/> at the same date of the reference date, but the time set to 00:00.</returns>
-        public static ZonedDateTime GetRelativeStartOfDay(DateTime date, string timezone)
+        public static ZonedDateTime GetRelativeStartOfDay(DateTimeOffset date, string timezone)
         {
-            if (date.Kind != DateTimeKind.Utc)
-            {
-                date = date.ToUniversalTime();
-            }
-
-            var instant = Instant.FromDateTimeUtc(date);
+            var instant = date.ToInstant();
             var timezoneInfo = DateTimeZoneProviders.Tzdb[timezone];
             var startZonedDateTime = instant.InZone(timezoneInfo);
             var startLocalDate = startZonedDateTime.Date.AtStartOfDayInZone(timezoneInfo);

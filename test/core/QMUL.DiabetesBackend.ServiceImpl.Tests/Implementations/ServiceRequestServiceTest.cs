@@ -7,11 +7,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
     using Model;
-    using Model.Enums;
     using NSubstitute;
     using ServiceImpl.Implementations;
     using Xunit;
-    using Patient = Model.Patient;
+    using ResourceReference = Hl7.Fhir.Model.ResourceReference;
     using Task = System.Threading.Tasks.Task;
 
     public class ServiceRequestServiceTest
@@ -26,7 +25,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<ServiceRequestService>>();
             var serviceRequestService = new ServiceRequestService(serviceRequestDao, patientDao, eventDao, logger);
 
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubPatient();
             var serviceRequest = this.GetTestServiceRequest(patient.Id);
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
             serviceRequestDao.CreateServiceRequest(Arg.Any<ServiceRequest>()).Returns(serviceRequest);
@@ -105,16 +104,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
 
         #region Private methods
 
-        private Patient GetDummyPatient()
-        {
-            return new Patient
-            {
-                Id = Guid.NewGuid().ToString(), 
-                ExactEventTimes = new Dictionary<CustomEventTiming, DateTime>(),
-                ResourceStartDate = new Dictionary<string, DateTime>()
-            };
-        }
-        
         private ServiceRequest GetTestServiceRequest(string patientId)
         {
             return new ServiceRequest

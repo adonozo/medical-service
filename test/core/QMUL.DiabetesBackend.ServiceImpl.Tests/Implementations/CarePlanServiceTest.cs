@@ -6,11 +6,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
     using FluentAssertions;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
-    using Model.Enums;
     using NSubstitute;
     using ServiceImpl.Implementations;
     using Xunit;
-    using Patient = Model.Patient;
     using Task = System.Threading.Tasks.Task;
 
     public class CarePlanServiceTest
@@ -29,7 +27,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 .Returns(new List<MedicationRequest> { new() });
             serviceRequestDao.GetActiveServiceRequests(Arg.Any<string>())
                 .Returns(new List<ServiceRequest> { new() });
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 
             // Act
             var result = await carePlanService.GetActiveCarePlans(Guid.NewGuid().ToString());
@@ -54,7 +52,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 .Returns(new List<MedicationRequest> { new() });
             serviceRequestDao.GetServiceRequestsFor(Arg.Any<string>())
                 .Returns(new List<ServiceRequest> { new() });
-            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(this.GetDummyPatient());
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 
             // Act
             var result = await carePlanService.GetCarePlanFor(Guid.NewGuid().ToString());
@@ -64,19 +62,5 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             result.Entry.Should().Contain(entry => entry.Resource.TypeName == nameof(MedicationRequest));
             result.Entry.Should().Contain(entry => entry.Resource.TypeName == nameof(ServiceRequest));
         }
-
-        #region Private methods
-
-        private Patient GetDummyPatient()
-        {
-            return new Patient
-            {
-                Id = Guid.NewGuid().ToString(), 
-                ExactEventTimes = new Dictionary<CustomEventTiming, DateTime>(),
-                ResourceStartDate = new Dictionary<string, DateTime>()
-            };
-        }
-        
-        #endregion
     }
 }

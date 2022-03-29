@@ -3,6 +3,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Exceptions;
+    using Hl7.Fhir.Model;
     using Model;
 
     /// <summary>
@@ -14,7 +15,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// The entire list of patients
         /// </summary>
         /// <returns>A list containing all registered patients</returns>
-        public Task<List<Patient>> GetPatients();
+        public Task<IEnumerable<Patient>> GetPatients();
 
         /// <summary>
         /// Creates a patient.
@@ -44,10 +45,11 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <summary>
         /// Updates only non-empty patient fields without considering custom times or the ID. 
         /// </summary>
-        /// <param name="actualPatient">The patient to update. If any of the fields is empty or default, it will
-        /// be ignored</param>
+        /// <param name="actualPatient">The patient to update. If any of the fields is empty or default, they will
+        ///     be ignored</param>
+        /// <param name="oldPatient">The old patient data to update.</param>
         /// <returns>The updated patient.</returns>
         /// <exception cref="UpdateException">If the patient could not be updated</exception>
-        public Task<Patient> PatchPatient(Patient actualPatient);
+        public Task<Patient> PatchPatient(InternalPatient actualPatient, Patient oldPatient);
     }
 }

@@ -14,7 +14,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// Gets all the medications from the database as a <see cref="Medication"/> list.
         /// </summary>
         /// <returns>A <see cref="Medication"/> list.</returns>
-        public Task<List<Medication>> GetMedicationList();
+        public Task<IEnumerable<Medication>> GetMedicationList();
 
         /// <summary>
         /// Gets a single medication given an ID.

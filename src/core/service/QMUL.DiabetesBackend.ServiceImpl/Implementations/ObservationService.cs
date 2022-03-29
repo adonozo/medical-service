@@ -1,12 +1,12 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
     using System;
-    using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
     using DataInterfaces;
     using Hl7.Fhir.Model;
     using Model.Enums;
+    using Model.Extensions;
     using ServiceInterfaces;
     using Utils;
 
@@ -32,9 +32,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<Observation> CreateObservation(string patientId, Observation newObservation)
         {
             // Check if the patient exists
-            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
-            newObservation.Subject.ElementId = patientId;
+            newObservation.Subject.SetPatientReference(patientId);
+            newObservation.Subject.Display = patient.Name[0].Family;
             var observation = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.observationDao.CreateObservation(newObservation), this.logger);
             this.logger.LogDebug("Observation created with ID {Id}", observation.Id);
@@ -56,9 +57,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
             var observations = await this.observationDao.GetAllObservationsFor(patient.Id);
-            var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
-                .ToList();
+            var bundle = ResourceUtils.GenerateSearchBundle(observations);
             this.logger.LogDebug("Found {Count} observations", observations.Count);
             return bundle;
         }
@@ -69,8 +68,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
+            var timingPreferences = patient.GetTimingPreference();
 
-            DateTime start, end;
+            DateTimeOffset start, end;
             if (timing == CustomEventTiming.EXACT)
             {
                 start = dateTime.AddMinutes(DefaultOffset * -1);
@@ -79,13 +79,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             else
             {
                 (start, end) =
-                    EventTimingMapper.GetIntervalForPatient(patient, dateTime, timing, patientTimezone, DefaultOffset);
+                    EventTimingMapper.GetIntervalForPatient(timingPreferences, dateTime, timing, patientTimezone, DefaultOffset);
             }
 
-            var observations = await this.observationDao.GetObservationsFor(patient.Id, start, end);
-            var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
-                .ToList();
+            var observations = await this.observationDao.GetObservationsFor(patient.Id, start.UtcDateTime, end.UtcDateTime);
+            var bundle = ResourceUtils.GenerateSearchBundle(observations);
             this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId, observations.Count);
             return bundle;
         }

@@ -1,12 +1,14 @@
 ﻿namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
 {
     using System;
-    using System.Text.Json;
     using FluentAssertions;
     using Hl7.Fhir.Model;
+    using Hl7.Fhir.Serialization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Model;
+    using Newtonsoft.Json.Linq;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
     using QMUL.DiabetesBackend.Api.Controllers;
@@ -27,7 +29,7 @@
 
             // Act
             var medications = await controller.GetAllMedications();
-            var result = (ObjectResult) medications;
+            var result = (ObjectResult)medications;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -44,43 +46,7 @@
 
             // Act
             var medications = await controller.GetAllMedications();
-            var result = (StatusCodeResult) medications;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
-        }
-
-        [Fact]
-        public async Task GetMedicationRequest_WhenRequestIsCorrect_ReturnsOk()
-        {
-            // Arrange
-            var service = Substitute.For<IMedicationService>();
-            var logger = Substitute.For<ILogger<MedicationController>>();
-            var id = Guid.NewGuid().ToString();
-            service.GetSingleMedication(Arg.Any<string>()).Returns(new Medication());
-            var controller = new MedicationController(service, logger);
-
-            // Act
-            var medication = await controller.GetMedicationRequest(id);
-            var result = (ObjectResult) medication;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetMedicationRequest_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var service = Substitute.For<IMedicationService>();
-            var logger = Substitute.For<ILogger<MedicationController>>();
-            var id = Guid.NewGuid().ToString();
-            service.GetSingleMedication(Arg.Any<string>()).Throws(new Exception());
-            var controller = new MedicationController(service, logger);
-
-            // Act
-            var medications = await controller.GetMedicationRequest(id);
-            var result = (StatusCodeResult) medications;
+            var result = (StatusCodeResult)medications;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -92,35 +58,16 @@
             // Arrange
             var service = Substitute.For<IMedicationService>();
             var logger = Substitute.For<ILogger<MedicationController>>();
-            var medication = new Medication { Id = Guid.NewGuid().ToString()};
-            service.CreateMedication(Arg.Any<Medication>()).Returns(medication);
+            var id = Guid.NewGuid().ToString();
+            service.GetSingleMedication(Arg.Any<string>()).Returns(new Medication());
             var controller = new MedicationController(service, logger);
-            var jsonRequest = JsonSerializer.Serialize(medication);
 
             // Act
-            var medicationCreated = await controller.CreateMedication(jsonRequest);
-            var result = (ObjectResult) medicationCreated;
+            var medication = await controller.GetMedication(id);
+            var result = (ObjectResult)medication;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetMedication_WhenRequestUnformatted_ReturnsBadRequest()
-        {
-            // Arrange
-            var service = Substitute.For<IMedicationService>();
-            var logger = Substitute.For<ILogger<MedicationController>>();
-            var medication = new Medication { Id = Guid.NewGuid().ToString() };
-            service.CreateMedication(Arg.Any<Medication>()).Returns(medication);
-            var controller = new MedicationController(service, logger);
-
-            // Act
-            var medicationCreated = await controller.CreateMedication("invalid json");
-            var result = (StatusCodeResult) medicationCreated;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [Fact]
@@ -129,17 +76,83 @@
             // Arrange
             var service = Substitute.For<IMedicationService>();
             var logger = Substitute.For<ILogger<MedicationController>>();
-            service.CreateMedication(Arg.Any<Medication>()).Throws(new Exception());
+            var id = Guid.NewGuid().ToString();
+            service.GetSingleMedication(Arg.Any<string>()).Throws(new Exception());
             var controller = new MedicationController(service, logger);
-            var medication = new Medication { Id = Guid.NewGuid().ToString() };
-            var jsonRequest = JsonSerializer.Serialize(medication);
 
             // Act
-            var medicationCreated = await controller.CreateMedication(jsonRequest);
-            var result = (StatusCodeResult) medicationCreated;
+            var medicationResult = await controller.GetMedication(id);
+            var result = (StatusCodeResult)medicationResult;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
+
+        [Fact]
+        public async Task CreateMedication_WhenRequestIsCorrect_ReturnsOk()
+        {
+            // Arrange
+            var service = Substitute.For<IMedicationService>();
+            var logger = Substitute.For<ILogger<MedicationController>>();
+            var medication = this.GetTestMedication(Guid.NewGuid().ToString());
+            service.CreateMedication(Arg.Any<Medication>()).Returns(medication);
+            var controller = new MedicationController(service, logger);
+
+            // Act
+            var medicationCreated = await controller.CreateMedication(medication.ToJObject());
+            var result = (ObjectResult)medicationCreated;
+
+            // Assert
+            result.StatusCode.Should().Be(StatusCodes.Status200OK);
+        }
+
+        [Fact]
+        public async Task CreateMedication_WhenRequestUnformatted_ReturnsBadRequest()
+        {
+            // Arrange
+            var service = Substitute.For<IMedicationService>();
+            var logger = Substitute.For<ILogger<MedicationController>>();
+            var controller = new MedicationController(service, logger);
+            var unformattedObject = new InternalPatient();
+
+            // Act
+            var medicationCreated = await controller.CreateMedication(JObject.FromObject(unformattedObject));
+            var result = (StatusCodeResult)medicationCreated;
+
+            // Assert
+            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        }
+
+        [Fact]
+        public async Task CreateMedication_WhenRequestFails_ReturnsInternalError()
+        {
+            // Arrange
+            var service = Substitute.For<IMedicationService>();
+            var logger = Substitute.For<ILogger<MedicationController>>();
+            service.CreateMedication(Arg.Any<Medication>()).Throws(new Exception());
+            var controller = new MedicationController(service, logger);
+            var medication = this.GetTestMedication(Guid.NewGuid().ToString());
+
+            // Act
+            var medicationCreated = await controller.CreateMedication(medication.ToJObject());
+            var result = (StatusCodeResult)medicationCreated;
+
+            // Assert
+            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        }
+
+        #region Private methods
+
+        private Medication GetTestMedication(string id)
+        {
+            return new Medication
+            {
+                Id = id,
+                Code = new CodeableConcept(),
+                Status = Medication.MedicationStatusCodes.Active
+            };
+        }
+
+        #endregion
     }
 }

@@ -7,69 +7,80 @@ namespace QMUL.DiabetesBackend.MongoDb
     using DataInterfaces.Exceptions;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
-    using Models;
+    using MongoDB.Bson;
     using MongoDB.Driver;
     using Utils;
+    using Task = System.Threading.Tasks.Task;
 
     /// <summary>
     /// The Observation Dao
     /// </summary>
     public class ObservationDao : MongoDaoBase, IObservationDao
     {
-        private readonly IMongoCollection<MongoObservation> observationCollection;
         private const string CollectionName = "observation";
+
+        private readonly IMongoCollection<BsonDocument> observationCollection;
         private readonly ILogger<ObservationDao> logger;
 
         /// <inheritdoc />
         public ObservationDao(IMongoDatabase database, ILogger<ObservationDao> logger) : base(database)
         {
             this.logger = logger;
-            this.observationCollection = this.Database.GetCollection<MongoObservation>(CollectionName);
+            this.observationCollection = this.Database.GetCollection<BsonDocument>(CollectionName);
         }
 
         /// <inheritdoc />
         public async Task<Observation> CreateObservation(Observation observation)
         {
-            this.logger.LogDebug("Creating observation");
-            var newMongoObservation = observation.ToMongoObservation();
-            await this.observationCollection.InsertOneAsync(newMongoObservation);
-            this.logger.LogDebug("Observation created with ID: {Id}", newMongoObservation.Id);
+            this.logger.LogDebug("Creating observation...");
+            var document = await Helpers.ToBsonDocumentAsync(observation);
+            Helpers.SetBsonDateTimeValue(document, "issued", observation.Issued);
+            await this.observationCollection.InsertOneAsync(document);
+
+            var newId = document["_id"].ToString();
+            this.logger.LogDebug("Observation created with ID: {Id}", newId);
             const string errorMessage = "Could not create observation";
-            return await this.GetSingleOrThrow(this.observationCollection
-                    .Find(mongoObservation => mongoObservation.Id == newMongoObservation.Id)
-                    .Project(mongoObservation => mongoObservation.ToObservation()),
-                new CreateException(errorMessage),
-                () => this.logger.LogWarning(errorMessage));
+            document = await this.GetSingleOrThrow(this.observationCollection.Find(Helpers.GetByIdFilter(newId)),
+                new CreateException(errorMessage));
+            return await this.ProjectToObservation(document);
         }
 
         /// <inheritdoc />
         public async Task<Observation> GetObservation(string observationId)
         {
-            var cursor = this.observationCollection.Find(observation => observation.Id == observationId)
-                .Project(mongoObservation => mongoObservation.ToObservation());
+            var cursor = this.observationCollection.Find(Helpers.GetByIdFilter(observationId));
             var errorMessage = $"Could not find observation with ID {observationId}";
-            return await this.GetSingleOrThrow(cursor, new NotFoundException(errorMessage),
-                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
+            var document = await this.GetSingleOrThrow(cursor, new NotFoundException(errorMessage));
+            return await this.ProjectToObservation(document);
         }
 
         /// <inheritdoc />
-        public async Task<List<Observation>> GetAllObservationsFor(string patientId)
+        public async Task<IList<Observation>> GetAllObservationsFor(string patientId)
         {
-            var cursor = this.observationCollection.Find(observation =>
-                    observation.PatientReference.ReferenceId == patientId)
-                .Project(mongoObservation => mongoObservation.ToObservation());
-            return await cursor.ToListAsync();
+            var results = await this.observationCollection.Find(Helpers.GetPatientReferenceFilter(patientId))
+                .Project(document => this.ProjectToObservation(document))
+                .ToListAsync();
+            return await Task.WhenAll(results);
         }
 
         /// <inheritdoc />
-        public async Task<List<Observation>> GetObservationsFor(string patientId, DateTime start, DateTime end)
+        public async Task<IList<Observation>> GetObservationsFor(string patientId, DateTime start, DateTime end)
         {
-            var cursor = this.observationCollection.Find(observation =>
-                    observation.PatientReference.ReferenceId == patientId
-                    && observation.Issued > start
-                    && observation.Issued < end)
-                .Project(mongoObservation => mongoObservation.ToObservation());
-            return await cursor.ToListAsync();
+            var filter = Builders<BsonDocument>.Filter.And(
+                Helpers.GetPatientReferenceFilter(patientId),
+                Builders<BsonDocument>.Filter.Gt("issued", start),
+                Builders<BsonDocument>.Filter.Lt("issued", end));
+
+            var result = await this.observationCollection.Find(filter)
+                .Project(document => this.ProjectToObservation(document))
+                .ToListAsync();
+            return await Task.WhenAll(result);
+        }
+
+        private async Task<Observation> ProjectToObservation(BsonDocument document)
+        {
+            document["issued"] = document["issued"].ToString();
+            return await Helpers.ToResourceAsync<Observation>(document);
         }
     }
 }

@@ -11,6 +11,7 @@ namespace QMUL.DiabetesBackend.Api
     using Microsoft.OpenApi.Models;
     using MongoDb;
     using MongoDB.Driver;
+    using MongoDb.Mapper;
     using ServiceImpl.Implementations;
     using ServiceInterfaces;
     using MongoDatabaseSettings = Model.MongoDatabaseSettings;
@@ -41,6 +42,7 @@ namespace QMUL.DiabetesBackend.Api
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "QMUL.DiabetesBackend.Controllers", Version = "v1"});
             });
 
+            services.AddAutoMapper(typeof(MapperProfile));
             services.Configure<MongoDatabaseSettings>(Configuration.GetSection(nameof(MongoDatabaseSettings)));
             services.AddSingleton(sp =>
             {

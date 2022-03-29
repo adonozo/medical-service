@@ -9,68 +9,37 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
     using Model.Enums;
     using ServiceImpl.Utils;
     using Xunit;
-    using Patient = Model.Patient;
 
     public class ResourceUtilsTest
     {
         [Fact]
-        public void GenerateEmptyBundle_ReturnsABundleInstance()
+        public void GenerateSearchBundle_ReturnsABundleInstance()
         {
+            // Arrange
+            var entries = new List<Resource> { TestUtils.GetStubPatient() };
+            
             // Arrange and Act
-            var bundle = ResourceUtils.GenerateEmptyBundle();
+            var bundle = ResourceUtils.GenerateSearchBundle(entries);
 
             // Assert
             bundle.Should().BeOfType<Bundle>();
+            bundle.Total.Should().Be(entries.Count);
         }
 
         [Fact]
-        public void GenerateEmptyBundle_ReturnsBundleTypeAndCurrentDate()
+        public void GenerateSearchBundle_ReturnsBundleTypeAndCurrentDate()
         {
             // Arrange
             var currentDate = DateTime.UtcNow.ToString("d");
 
             // Act
-            var bundle = ResourceUtils.GenerateEmptyBundle();
+            var bundle = ResourceUtils.GenerateSearchBundle(new List<Resource>());
 
             // Assert
             bundle.Type.Should().Be(Bundle.BundleType.Searchset);
+            bundle.Total.Should().Be(0);
             // ReSharper disable once PossibleInvalidOperationException
             bundle.Timestamp.Value.Date.Date.ToString("d").Should().Be(currentDate);
-        }
-
-        [Fact]
-        public void IsInsulinResource_WhenExtensionContainsInsulin_ReturnsTrue()
-        {
-            // Arrange
-            var medicationRequest = new MedicationRequest
-            {
-                Extension = new List<Extension>
-                {
-                    new() {Url = "http://localhost/type/insulin"}
-                }
-            };
-
-            // Act
-            var isInsulin = ResourceUtils.IsInsulinResource(medicationRequest);
-
-            // Assert
-            isInsulin.Should().Be(true);
-        }
-
-        [Fact]
-        public void IsInsulinResource_WhenDoesNotHaveExtension_ReturnsFalse()
-        {
-            // Arrange
-            var medicationRequest = new MedicationRequest
-            {
-                Id = Guid.NewGuid().ToString()
-            };
-
-            // Act
-            var isInsulin = ResourceUtils.IsInsulinResource(medicationRequest);
-
-            // Assert
-            isInsulin.Should().Be(false);
         }
 
         [Theory]
@@ -101,7 +70,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
         public void GenerateEventsFrom_WhenIsServiceRequest_ReturnsHealthEvents()
         {
             // Arrange
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubInternalPatient();
             var timing = new Timing
             {
                 Repeat = new Timing.RepeatComponent
@@ -128,14 +97,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
 
             // Assert
             events.Count.Should().Be(10);
-            events[0].Resource.EventType.Should().Be(EventType.Measurement);
+            events[0].ResourceReference.EventType.Should().Be(EventType.Measurement);
         }
 
         [Fact]
         public void GenerateEventsFrom_WhenIsServiceRequestWithoutTiming_ThrowsException()
         {
             // Arrange
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubInternalPatient();
             var serviceRequest = new ServiceRequest
             {
                 Id = Guid.NewGuid().ToString(),
@@ -158,7 +127,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
         public void GenerateEventsFrom_WhenIsMedicationRequest_ReturnsHealthEvents()
         {
             // Arrange
-            var patient = this.GetDummyPatient();
+            var patient = TestUtils.GetStubInternalPatient();
             var timing = new Timing
             {
                 Repeat = new Timing.RepeatComponent
@@ -191,21 +160,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
 
             // Assert
             events.Count.Should().Be(10);
-            events[0].Resource.EventType.Should().Be(EventType.MedicationDosage);
+            events[0].ResourceReference.EventType.Should().Be(EventType.MedicationDosage);
         }
-
-        #region Private Methods
-
-        private Patient GetDummyPatient()
-        {
-            return new Patient
-            {
-                Id = Guid.NewGuid().ToString(),
-                ExactEventTimes = new Dictionary<CustomEventTiming, DateTime>(),
-                ResourceStartDate = new Dictionary<string, DateTime>()
-            };
-        }
-
-        #endregion
     }
 }
