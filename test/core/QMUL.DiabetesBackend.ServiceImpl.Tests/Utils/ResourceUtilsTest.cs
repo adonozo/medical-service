@@ -13,26 +13,31 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
     public class ResourceUtilsTest
     {
         [Fact]
-        public void GenerateEmptyBundle_ReturnsABundleInstance()
+        public void GenerateSearchBundle_ReturnsABundleInstance()
         {
+            // Arrange
+            var entries = new List<Resource> { TestUtils.GetStubPatient() };
+            
             // Arrange and Act
-            var bundle = ResourceUtils.GenerateEmptyBundle();
+            var bundle = ResourceUtils.GenerateSearchBundle(entries);
 
             // Assert
             bundle.Should().BeOfType<Bundle>();
+            bundle.Total.Should().Be(entries.Count);
         }
 
         [Fact]
-        public void GenerateEmptyBundle_ReturnsBundleTypeAndCurrentDate()
+        public void GenerateSearchBundle_ReturnsBundleTypeAndCurrentDate()
         {
             // Arrange
             var currentDate = DateTime.UtcNow.ToString("d");
 
             // Act
-            var bundle = ResourceUtils.GenerateEmptyBundle();
+            var bundle = ResourceUtils.GenerateSearchBundle(new List<Resource>());
 
             // Assert
             bundle.Type.Should().Be(Bundle.BundleType.Searchset);
+            bundle.Total.Should().Be(0);
             // ReSharper disable once PossibleInvalidOperationException
             bundle.Timestamp.Value.Date.Date.ToString("d").Should().Be(currentDate);
         }

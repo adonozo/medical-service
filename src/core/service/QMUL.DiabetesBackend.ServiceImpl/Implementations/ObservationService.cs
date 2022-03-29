@@ -1,12 +1,10 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
     using System;
-    using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
     using DataInterfaces;
     using Hl7.Fhir.Model;
-    using Model.Constants;
     using Model.Enums;
     using Model.Extensions;
     using ServiceInterfaces;
@@ -59,9 +57,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
             var observations = await this.observationDao.GetAllObservationsFor(patient.Id);
-            var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
-                .ToList();
+            var bundle = ResourceUtils.GenerateSearchBundle(observations);
             this.logger.LogDebug("Found {Count} observations", observations.Count);
             return bundle;
         }
@@ -87,9 +83,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             }
 
             var observations = await this.observationDao.GetObservationsFor(patient.Id, start.UtcDateTime, end.UtcDateTime);
-            var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = observations.Select(observation => new Bundle.EntryComponent {Resource = observation})
-                .ToList();
+            var bundle = ResourceUtils.GenerateSearchBundle(observations);
             this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId, observations.Count);
             return bundle;
         }

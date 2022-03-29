@@ -87,12 +87,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
-            var bundle = ResourceUtils.GenerateEmptyBundle();
             var medicationRequests = await this.medicationRequestDao.GetActiveMedicationRequests(patient.Id);
-            bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent { Resource = request })
-                .ToList();
             this.logger.LogDebug("Found {Count} active medication requests", medicationRequests.Count);
-            return bundle;
+            return ResourceUtils.GenerateSearchBundle(medicationRequests);
         }
 
         /// <summary>

@@ -247,31 +247,25 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 events = await this.eventDao.GetEvents(patient.Id, type, start.UtcDateTime, end.UtcDateTime, timings);
             }
 
-            var bundle = await this.GenerateBundle(events.ToList());
-            return bundle;
+            return await this.GenerateBundle(events.ToList());
         }
 
         private async Task<Bundle> GenerateBundle(IReadOnlyCollection<HealthEvent> healthEvents)
         {
-            var bundle = ResourceUtils.GenerateEmptyBundle();
             var serviceEvents = healthEvents
                 .Where(healthEvent => healthEvent.ResourceReference.EventType == EventType.Measurement).ToArray();
             var serviceRequests = serviceEvents.Any()
                 ? await this.GetServiceBundle(serviceEvents)
                 : new List<ServiceRequest>();
-            var serviceEntries = serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
-                .ToList();
             var medicationEvents = healthEvents.Where(healthEvent =>
                 healthEvent.ResourceReference.EventType is EventType.MedicationDosage or EventType.InsulinDosage).ToArray();
             var medicationRequests = medicationEvents.Any()
                 ? await this.GetMedicationBundle(medicationEvents)
                 : new List<MedicationRequest>();
-            var medicationEntries = medicationRequests
-                .Select(request => new Bundle.EntryComponent {Resource = request})
-                .ToList();
-            serviceEntries.AddRange(medicationEntries);
-            bundle.Entry = serviceEntries;
-            return bundle;
+
+            var entries = new List<Resource>(serviceRequests);
+            entries.AddRange(medicationRequests);
+            return ResourceUtils.GenerateSearchBundle(entries);
         }
 
         private async Task<IList<MedicationRequest>> GetMedicationBundle(IEnumerable<HealthEvent> events)

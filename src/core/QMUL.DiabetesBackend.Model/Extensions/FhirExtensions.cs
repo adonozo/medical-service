@@ -25,7 +25,7 @@ namespace QMUL.DiabetesBackend.Model.Extensions
         /// <returns>The patient ID.</returns>
         public static string GetPatientIdFromReference(this ResourceReference resource)
         {
-            return resource.Reference.Replace(Constants.PatientPath, "");
+            return resource.Reference?.Replace(Constants.PatientPath, "");
         }
     }
 }

@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Hl7.Fhir.Model;
     using Model;
     using Model.Enums;
@@ -14,16 +15,30 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     public static class ResourceUtils
     {
         /// <summary>
-        /// Creates an empty Bundle of type <see cref="Bundle.BundleType.Searchset"/> and time set to UtcNow
+        /// Creates and populates a search Bundle of type <see cref="Bundle.BundleType.Searchset"/>. It also adds the
+        /// search timestamp as Utc.Now
         /// </summary>
-        /// <returns>A Bundle object</returns>
-        public static Bundle GenerateEmptyBundle()
+        /// <param name="resources">The search result resources.</param>
+        /// <returns>A <see cref="Bundle"/> search object.</returns>
+        public static Bundle GenerateSearchBundle(IEnumerable<Resource> resources)
         {
-            return new Bundle
+            var enumerable = resources.ToList();
+            var bundle = new Bundle
             {
+                Id = Guid.NewGuid().ToString(),
                 Type = Bundle.BundleType.Searchset,
-                Timestamp = DateTimeOffset.UtcNow
+                Timestamp = DateTimeOffset.UtcNow,
+                Total = enumerable.Count
             };
+
+            foreach (var resource in enumerable)
+            {
+                var identity = resource.ResourceIdentity();
+                var baseUrl = resource.ResourceBase?.ToString() ?? string.Empty;
+                var url = $"{baseUrl}/{identity?.ResourceType}/{identity?.Id}";
+                bundle.AddSearchEntry(resource, url, Bundle.SearchEntryMode.Match);
+            }
+            return bundle;
         }
 
         /// <summary>

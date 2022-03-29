@@ -1,6 +1,6 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
-    using System.Linq;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using DataInterfaces;
     using Hl7.Fhir.Model;
@@ -36,14 +36,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
             var medicationRequests = await this.medicationRequestDao.GetAllActiveMedicationRequests(patient.Id);
             var serviceRequests = await this.serviceRequestDao.GetActiveServiceRequests(patient.Id);
-            var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
-                .ToList();
+            var entries = new List<Resource>(medicationRequests);
+            entries.AddRange(serviceRequests);
+
             this.logger.LogTrace("Found {Count} medication requests", medicationRequests.Count);
-            bundle.Entry.AddRange(serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
-                .ToList());
             this.logger.LogTrace("Found {Count} service requests", serviceRequests.Count);
-            return bundle;
+            return ResourceUtils.GenerateSearchBundle(entries);
         }
 
         /// <inheritdoc/>
@@ -54,14 +52,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
             var medicationRequests = await this.medicationRequestDao.GetMedicationRequestFor(patient.Id);
             var serviceRequests = await this.serviceRequestDao.GetServiceRequestsFor(patient.Id);
-            var bundle = ResourceUtils.GenerateEmptyBundle();
-            bundle.Entry = medicationRequests.Select(request => new Bundle.EntryComponent {Resource = request})
-                .ToList();
+            var entries = new List<Resource>(medicationRequests);
+            entries.AddRange(serviceRequests);
+
             this.logger.LogTrace("Found {Count} medication requests", medicationRequests.Count);
-            bundle.Entry.AddRange(serviceRequests.Select(request => new Bundle.EntryComponent {Resource = request})
-                .ToList());
             this.logger.LogTrace("Found {Count} service requests", serviceRequests.Count);
-            return bundle;
+            return ResourceUtils.GenerateSearchBundle(entries);
         }
     }
 }
