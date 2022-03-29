@@ -68,6 +68,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.serviceRequestDao.GetServiceRequest(id), this.logger);
             this.logger.LogDebug("Service request {Id} deleted", id);
+            await this.eventDao.DeleteRelatedEvents(id);
             return await this.serviceRequestDao.DeleteServiceRequest(id);
         }
     }

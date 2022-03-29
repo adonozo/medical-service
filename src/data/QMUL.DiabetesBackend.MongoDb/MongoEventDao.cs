@@ -35,20 +35,20 @@ namespace QMUL.DiabetesBackend.MongoDb
         /// <inheritdoc />
         public async Task<bool> CreateEvents(IEnumerable<HealthEvent> events)
         {
-            try
-            {
-                this.logger.LogDebug("Creating health events");
-                var mongoEvents = events.Select(this.mapper.Map<MongoEvent>).ToArray();
-                await this.eventCollection.InsertManyAsync(mongoEvents);
-                this.logger.LogDebug("Created {Count} events", mongoEvents.Length);
-                return true;
-            }
-            catch (Exception exception)
-            {
-                const string errorMessage = "Error trying to create health events";
-                this.logger.LogError(exception, errorMessage);
-                throw new CreateException(errorMessage, exception);
-            }
+            this.logger.LogDebug("Creating health events");
+            var mongoEvents = events.Select(this.mapper.Map<MongoEvent>).ToArray();
+            await this.eventCollection.InsertManyAsync(mongoEvents);
+            this.logger.LogDebug("Created {Count} events", mongoEvents.Length);
+            return true;
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> DeleteRelatedEvents(string resourceId)
+        {
+            this.logger.LogDebug("Deleting events with a resource ID: {Id}", resourceId);
+            var result = await
+                this.eventCollection.DeleteManyAsync(request => request.ResourceReference.ResourceId == resourceId);
+            return result.IsAcknowledged;
         }
 
         /// <inheritdoc />

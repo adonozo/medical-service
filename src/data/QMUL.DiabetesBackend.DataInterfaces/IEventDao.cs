@@ -21,10 +21,18 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         public Task<bool> CreateEvents(IEnumerable<HealthEvent> events);
 
         /// <summary>
+        /// Deletes all events related to a resource, i.e., Medication or Service requests. Should be called to tidy up
+        /// resources. 
+        /// </summary>
+        /// <param name="resourceId">Medication or Service request ID</param>
+        /// <returns>A bool to indicate if the operation was successful</returns>
+        public Task<bool> DeleteRelatedEvents(string resourceId);
+        
+        /// <summary>
         /// Deletes the event series based on a reference ID.
         /// </summary>
         /// <param name="referenceId">The Reference ID. i.e., the dosageInstruction ID from the medication request.</param>
-        /// <returns>If the delete operation was successful.</returns>
+        /// <returns>A bool to indicate if the delete operation was successful.</returns>
         public Task<bool> DeleteEventSeries(string referenceId);
 
         /// <summary>

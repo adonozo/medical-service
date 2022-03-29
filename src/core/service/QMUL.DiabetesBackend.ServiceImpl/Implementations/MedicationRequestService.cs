@@ -5,7 +5,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using DataInterfaces;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
-    using Model.Constants;
     using Model.Extensions;
     using ServiceInterfaces;
     using Utils;
@@ -79,6 +78,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.medicationRequestDao.GetMedicationRequest(id), this.logger);
             this.logger.LogDebug("Medication request deleted {Id}", id);
+            await this.eventDao.DeleteRelatedEvents(id);
             return await this.medicationRequestDao.DeleteMedicationRequest(id);
         }
 
@@ -104,15 +104,16 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task SetInsulinRequest(MedicationRequest request)
         {
             var medicationReference = request.Medication;
-            if (medicationReference is not ResourceReference reference)
+            if (medicationReference is not ResourceReference reference || string.IsNullOrWhiteSpace(reference.Reference))
             {
                 return;
             }
 
-            // In a reference, the resource ID is prefixed with a path.
-            var medicationId = reference.Reference?.Replace(Constants.MedicationPath, "");
-            var medication = request.FindContainedResource(reference.Reference) as Medication
-                             ?? await this.medicationDao.GetSingleMedication(medicationId);
+            if (request.FindContainedResource(reference.Reference) is not Medication medication)
+            {
+                var medicationId = reference.GetPatientIdFromReference();
+                medication = await this.medicationDao.GetSingleMedication(medicationId);
+            }
 
             if (medication != null && medication.HasInsulinFlag())
             {
