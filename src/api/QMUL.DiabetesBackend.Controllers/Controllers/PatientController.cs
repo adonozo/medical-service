@@ -1,7 +1,6 @@
 namespace QMUL.DiabetesBackend.Api.Controllers
 {
     using System;
-    using System.Linq;
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Serialization;
@@ -44,6 +43,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 this.logger.LogDebug("Creating patient");
+                patient.Property("id")?.Remove();
                 var newPatient = await Helpers.ParseResourceAsync<Patient>(patient);
 
                 var createdPatient = await this.patientService.CreatePatient(newPatient);
@@ -73,8 +73,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             {
                 this.logger.LogDebug("Getting patients list");
                 var patients = await this.patientService.GetPatientList();
-                this.logger.LogDebug("Found {PatientsCount} patients", patients.Count());
-                return this.Ok(patients);
+                return this.Ok(patients.ToJObject());
             }, this.logger, this);
         }
 
