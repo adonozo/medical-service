@@ -129,7 +129,7 @@
             var logger = Substitute.For<ILogger<PatientController>>();
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
                 medicationRequestService, logger);
-            patientService.GetPatientList().Returns(new List<Patient>());
+            patientService.GetPatientList().Returns(new Bundle());
 
             // Act
             var patients = await controller.GetPatients();

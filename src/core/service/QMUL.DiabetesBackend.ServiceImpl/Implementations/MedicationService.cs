@@ -1,6 +1,5 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
-    using System.Linq;
     using System.Threading.Tasks;
     using DataInterfaces;
     using Hl7.Fhir.Model;
