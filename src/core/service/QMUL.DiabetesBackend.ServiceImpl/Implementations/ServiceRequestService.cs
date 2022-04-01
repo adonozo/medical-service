@@ -1,5 +1,6 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
+    using System;
     using System.Threading.Tasks;
     using DataInterfaces;
     using Hl7.Fhir.Model;
@@ -34,6 +35,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 await this.patientDao.GetPatientByIdOrEmail(request.Subject.GetPatientIdFromReference()), this.logger);
             var internalPatient = patient.ToInternalPatient();
 
+            request.AuthoredOn = DateTime.UtcNow.ToString("O");
             var serviceRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.serviceRequestDao.CreateServiceRequest(request), this.logger);
             var events = ResourceUtils.GenerateEventsFrom(serviceRequest, internalPatient);
