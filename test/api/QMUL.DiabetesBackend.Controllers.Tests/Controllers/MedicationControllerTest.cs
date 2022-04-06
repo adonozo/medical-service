@@ -24,8 +24,19 @@
             // Arrange
             var service = Substitute.For<IMedicationService>();
             var logger = Substitute.For<ILogger<MedicationController>>();
-            service.GetMedicationList().Returns(new Bundle());
-            var controller = new MedicationController(service, logger);
+            
+            var paginatedResult = new PaginatedResult<Bundle>
+            {
+                Results = new Bundle()
+            };
+            service.GetMedicationList(Arg.Any<PaginationRequest>()).Returns(paginatedResult);
+            var controller = new MedicationController(service, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
 
             // Act
             var medications = await controller.GetAllMedications();
@@ -41,8 +52,14 @@
             // Arrange
             var service = Substitute.For<IMedicationService>();
             var logger = Substitute.For<ILogger<MedicationController>>();
-            service.GetMedicationList().Throws(new Exception());
-            var controller = new MedicationController(service, logger);
+            service.GetMedicationList(Arg.Any<PaginationRequest>()).Throws(new Exception());
+            var controller = new MedicationController(service, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
 
             // Act
             var medications = await controller.GetAllMedications();
