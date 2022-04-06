@@ -40,27 +40,13 @@ namespace QMUL.DiabetesBackend.MongoDb
                 .Limit(paginationRequest.Limit)
                 .Project(document => Helpers.ToResourceAsync<Patient>(document))
                 .ToListAsync();
-            var patients = await Task.WhenAll(results);
+            Resource[] patients = await Task.WhenAll(results);
             if (patients.Length == 0)
             {
                 return new PaginatedResult<IEnumerable<Resource>> { Results = patients };
             }
 
-            var updatedLastCursorId = patients[^1].Id;
-            var countDefinition = this.patientCollection.Find(searchFilter);
-            var count = await Helpers.GetTotalCount(countDefinition);
-
-            var remainingDefinition = this.patientCollection
-                .Find(Helpers.GetPaginationFilter(searchFilter, updatedLastCursorId));
-            var remainingResults = await Helpers.GetTotalCount(remainingDefinition);
-
-            return new PaginatedResult<IEnumerable<Resource>>
-            {
-                Results = patients,
-                TotalResults = count,
-                LastDataCursor = updatedLastCursorId,
-                RemainingCount = remainingResults
-            };
+            return await Helpers.GetPaginatedResul(patientCollection, searchFilter, patients);
         }
 
         /// <inheritdoc />
@@ -78,7 +64,8 @@ namespace QMUL.DiabetesBackend.MongoDb
         /// <inheritdoc />
         public async Task<Patient> GetPatientByIdOrEmail(string idOrEmail)
         {
-            var filter = ObjectId.TryParse(idOrEmail, out _) ? Helpers.GetByIdFilter(idOrEmail)
+            var filter = ObjectId.TryParse(idOrEmail, out _)
+                ? Helpers.GetByIdFilter(idOrEmail)
                 : Builders<BsonDocument>.Filter.Eq("email", idOrEmail);
             var error = $"Could not find patient with ID or email {idOrEmail}";
             var bsonPatient =
@@ -92,7 +79,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             logger.LogInformation("Updating patient with ID: {Id}", actualPatient.Id);
             var bson = await this.PatientToBsonDocument(actualPatient);
             var result = await this.patientCollection.ReplaceOneAsync(Helpers.GetByIdFilter(actualPatient.Id),
-                bson, new ReplaceOptions {IsUpsert = true});
+                bson, new ReplaceOptions { IsUpsert = true });
 
             var errorMessage = $"Could not update patient with ID {actualPatient.Id}";
             this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new UpdateException(errorMessage));
@@ -123,25 +110,29 @@ namespace QMUL.DiabetesBackend.MongoDb
             bson.Add("email", patient.GetEmailExtension());
             return bson;
         }
-        
+
         private async Task<Patient> SetPatientData(InternalPatient patient, Patient oldPatient)
         {
             if (!string.IsNullOrEmpty(patient.LastName))
             {
                 oldPatient.Name[0].Family = patient.LastName;
             }
+
             if (!string.IsNullOrEmpty(patient.FirstName))
             {
-                oldPatient.Name[0].Given = new[] {patient.FirstName};
+                oldPatient.Name[0].Given = new[] { patient.FirstName };
             }
+
             if (!string.IsNullOrEmpty(patient.Email))
             {
                 oldPatient.SetEmailExtension(patient.Email);
             }
+
             if (!string.IsNullOrEmpty(patient.AlexaUserId))
             {
                 oldPatient.SetAlexaIdExtension(patient.AlexaUserId);
             }
+
             if (patient.Phones != null)
             {
                 var phonesTask = patient.Phones.Select(Helpers.ToDataTypeAsync<ContactPoint>);

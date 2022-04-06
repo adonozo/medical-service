@@ -8,6 +8,7 @@ namespace QMUL.DiabetesBackend.MongoDb
     using DataInterfaces;
     using DataInterfaces.Exceptions;
     using Microsoft.Extensions.Logging;
+    using Model;
     using Utils;
     using Task = System.Threading.Tasks.Task;
 
@@ -28,15 +29,24 @@ namespace QMUL.DiabetesBackend.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<Medication>> GetMedicationList()
+        public async Task<PaginatedResult<IEnumerable<Resource>>> GetMedicationList(PaginationRequest paginationRequest)
         {
             this.logger.LogTrace("Getting all medications...");
-            var result = await this.medicationCollection.Find(FilterDefinition<BsonDocument>.Empty)
+            var searchFilter = FilterDefinition<BsonDocument>.Empty;
+            var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
+            var result = await this.medicationCollection.Find(resultsFilter)
+                .Limit(paginationRequest.Limit)
                 .Project(document => Helpers.ToResourceAsync<Medication>(document))
                 .ToListAsync();
 
-            this.logger.LogTrace("Found {Count} medications", result.Count);
-            return await Task.WhenAll(result);
+            Resource[] medications = await Task.WhenAll(result);
+            this.logger.LogTrace("Found {Count} medications", medications.Length);
+            if (medications.Length == 0)
+            {
+                return new PaginatedResult<IEnumerable<Resource>> { Results = medications };
+            }
+
+            return await Helpers.GetPaginatedResul(this.medicationCollection, searchFilter, medications);
         }
 
         /// <inheritdoc />
