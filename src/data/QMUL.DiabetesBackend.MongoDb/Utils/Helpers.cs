@@ -1,9 +1,11 @@
 namespace QMUL.DiabetesBackend.MongoDb.Utils
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Serialization;
+    using Model;
     using Model.Constants;
     using MongoDB.Bson;
     using MongoDB.Driver;
@@ -124,13 +126,32 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
         }
 
         /// <summary>
-        /// Gets the total of results given a find definition.
+        /// Gets the paginated result including counts, from a resource collection.
         /// </summary>
-        /// <param name="cursor">The find definition which should include any filters.</param>
-        /// <returns>The total number of results.</returns>
-        public static async Task<long> GetTotalCount(IFindFluent<BsonDocument, BsonDocument> cursor)
+        /// <param name="collection">The mongo collection.</param>
+        /// <param name="searchFilter">The search filters used to get the results.</param>
+        /// <param name="results">The <see cref="Resource"/> result array.</param>
+        /// <returns>A <see cref="PaginatedResult{T}"/>.</returns>
+        public static async Task<PaginatedResult<IEnumerable<Resource>>> GetPaginatedResul(
+            IMongoCollection<BsonDocument> collection,
+            FilterDefinition<BsonDocument> searchFilter,
+            Resource[] results)
         {
-            return await cursor.CountDocumentsAsync();
+            var updatedLastCursorId = results[^1].Id;
+            var count = await collection.Find(searchFilter)
+                .CountDocumentsAsync();
+
+            var remainingResults = await collection
+                .Find(GetPaginationFilter(searchFilter, updatedLastCursorId))
+                .CountDocumentsAsync();
+
+            return new PaginatedResult<IEnumerable<Resource>>
+            {
+                Results = results,
+                TotalResults = count,
+                LastDataCursor = updatedLastCursorId,
+                RemainingCount = remainingResults
+            };
         }
     }
 }
