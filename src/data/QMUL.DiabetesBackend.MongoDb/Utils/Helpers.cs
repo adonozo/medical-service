@@ -104,5 +104,33 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
             var resource = await parser.ParseAsync<T>(jObject.ToString());
             return resource;
         }
+
+        /// <summary>
+        /// Gets the filter to use with keyset pagination if the last data cursor is not empty.
+        /// </summary>
+        /// <param name="searchFilters">The filters search filters.</param>
+        /// <param name="lastDataCursor">The last ID obtained from previous pagination results.</param>
+        /// <returns>The pagination filter.</returns>
+        public static FilterDefinition<BsonDocument> GetPaginationFilter(FilterDefinition<BsonDocument> searchFilters,
+            string lastDataCursor)
+        {
+            if (!ObjectId.TryParse(lastDataCursor, out var lastId))
+            {
+                return searchFilters;
+            }
+
+            return Builders<BsonDocument>.Filter.And(searchFilters,
+                Builders<BsonDocument>.Filter.Gt("_id", lastId));
+        }
+
+        /// <summary>
+        /// Gets the total of results given a find definition.
+        /// </summary>
+        /// <param name="cursor">The find definition which should include any filters.</param>
+        /// <returns>The total number of results.</returns>
+        public static async Task<long> GetTotalCount(IFindFluent<BsonDocument, BsonDocument> cursor)
+        {
+            return await cursor.CountDocumentsAsync();
+        }
     }
 }

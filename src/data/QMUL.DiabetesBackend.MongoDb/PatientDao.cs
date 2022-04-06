@@ -32,12 +32,35 @@ namespace QMUL.DiabetesBackend.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<Patient>> GetPatients()
+        public async Task<PaginatedResult<IEnumerable<Resource>>> GetPatients(PaginationRequest paginationRequest)
         {
-            var results = await this.patientCollection.Find(FilterDefinition<BsonDocument>.Empty)
+            var searchFilter = FilterDefinition<BsonDocument>.Empty;
+            var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
+            var results = await this.patientCollection.Find(resultsFilter)
+                .Limit(paginationRequest.Limit)
                 .Project(document => Helpers.ToResourceAsync<Patient>(document))
                 .ToListAsync();
-            return await Task.WhenAll(results);
+            var patients = await Task.WhenAll(results);
+            if (patients.Length == 0)
+            {
+                return new PaginatedResult<IEnumerable<Resource>> { Results = patients };
+            }
+
+            var updatedLastCursorId = patients[^1].Id;
+            var countDefinition = this.patientCollection.Find(searchFilter);
+            var count = await Helpers.GetTotalCount(countDefinition);
+
+            var remainingDefinition = this.patientCollection
+                .Find(Helpers.GetPaginationFilter(searchFilter, updatedLastCursorId));
+            var remainingResults = await Helpers.GetTotalCount(remainingDefinition);
+
+            return new PaginatedResult<IEnumerable<Resource>>
+            {
+                Results = patients,
+                TotalResults = count,
+                LastDataCursor = updatedLastCursorId,
+                RemainingCount = remainingResults
+            };
         }
 
         /// <inheritdoc />

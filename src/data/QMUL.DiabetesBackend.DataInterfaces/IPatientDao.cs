@@ -12,10 +12,10 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     public interface IPatientDao
     {
         /// <summary>
-        /// The entire list of patients
+        /// Gets a list of paginated <see cref="Patient"/>.
         /// </summary>
-        /// <returns>A list containing all registered patients</returns>
-        public Task<IEnumerable<Patient>> GetPatients();
+        /// <returns>A <see cref="PaginatedResult{T}"/> with the patients.</returns>
+        public Task<PaginatedResult<IEnumerable<Resource>>> GetPatients(PaginationRequest paginationRequest);
 
         /// <summary>
         /// Creates a patient.
