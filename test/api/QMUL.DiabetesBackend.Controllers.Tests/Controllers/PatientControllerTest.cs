@@ -127,9 +127,21 @@
             var observationService = Substitute.For<IObservationService>();
             var medicationRequestService = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<PatientController>>();
+
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            patientService.GetPatientList().Returns(new Bundle());
+                medicationRequestService, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
+
+            var paginatedResult = new PaginatedResult<Bundle>
+            {
+                Results = new Bundle()
+            };
+            patientService.GetPatientList(Arg.Any<PaginationRequest>()).Returns(paginatedResult);
 
             // Act
             var patients = await controller.GetPatients();
