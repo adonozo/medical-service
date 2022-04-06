@@ -5,12 +5,12 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     using Hl7.Fhir.Serialization;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Model;
     using Newtonsoft.Json.Linq;
     using ServiceInterfaces;
     using Utils;
 
     [ApiController]
-    [Route("medications/")]
     public class MedicationController : ControllerBase
     {
         private readonly IMedicationService medicationService;
@@ -22,19 +22,21 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             this.logger = logger;
         }
 
-        [HttpGet]
-        [Route("")]
-        public async Task<IActionResult> GetAllMedications()
+        [HttpGet("medications")]
+        public async Task<IActionResult> GetAllMedications([FromQuery] int? limit = null,
+            [FromQuery] string after = null)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var result = await this.medicationService.GetMedicationList();
-                return this.Ok(result.ToJObject());
+                var pagination = new PaginationRequest(limit, after);
+                var paginatedResult = await this.medicationService.GetMedicationList(pagination);
+                
+                this.HttpContext.SetPaginatedResult(paginatedResult);
+                return this.Ok(paginatedResult.Results.ToJObject());
             }, this.logger, this);
         }
 
-        [HttpGet]
-        [Route("{id}")]
+        [HttpGet("medications/{id}")]
         public async Task<IActionResult> GetMedication([FromRoute] string id)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -44,8 +46,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpPost]
-        [Route("")]
+        [HttpPost("medications")]
         public async Task<IActionResult> CreateMedication([FromBody] JObject request)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
