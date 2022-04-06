@@ -4,6 +4,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using DataInterfaces;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
+    using Model;
     using ServiceInterfaces;
     using Utils;
 
@@ -22,10 +23,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public async Task<Bundle> GetMedicationList()
+        public async Task<PaginatedResult<Bundle>> GetMedicationList(PaginationRequest paginationRequest)
         {
-            var medications = await this.medicationDao.GetMedicationList();
-            return ResourceUtils.GenerateSearchBundle(medications);
+            var paginatedMedications = await this.medicationDao.GetMedicationList(paginationRequest);
+            return paginatedMedications.ToBundleResult();
         }
 
         /// <inheritdoc/>>

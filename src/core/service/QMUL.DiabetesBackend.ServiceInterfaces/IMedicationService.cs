@@ -3,6 +3,7 @@
     using System.Threading.Tasks;
     using Exceptions;
     using Hl7.Fhir.Model;
+    using Model;
 
     /// <summary>
     /// The Medication Service Interface.
@@ -13,7 +14,7 @@
         /// Gets all the <see cref="Medication"/> objects stored. 
         /// </summary>
         /// <returns>A <see cref="Bundle"/> object with the medication list.</returns>
-        public Task<Bundle> GetMedicationList();
+        public Task<PaginatedResult<Bundle>> GetMedicationList(PaginationRequest paginationRequest);
 
         /// <summary>
         /// Gets a single <see cref="Medication"/> given an ID.
