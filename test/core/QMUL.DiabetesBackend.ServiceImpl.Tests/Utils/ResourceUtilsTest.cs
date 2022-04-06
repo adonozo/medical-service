@@ -23,7 +23,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
 
             // Assert
             bundle.Should().BeOfType<Bundle>();
-            bundle.Total.Should().Be(entries.Count);
         }
 
         [Fact]
@@ -37,7 +36,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
 
             // Assert
             bundle.Type.Should().Be(Bundle.BundleType.Searchset);
-            bundle.Total.Should().Be(0);
             // ReSharper disable once PossibleInvalidOperationException
             bundle.Timestamp.Value.Date.Date.ToString("d").Should().Be(currentDate);
         }
