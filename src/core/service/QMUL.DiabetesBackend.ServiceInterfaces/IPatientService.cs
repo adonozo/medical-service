@@ -1,6 +1,5 @@
 namespace QMUL.DiabetesBackend.ServiceInterfaces
 {
-    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Exceptions;
     using Hl7.Fhir.Model;
@@ -12,10 +11,10 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
     public interface IPatientService
     {
         /// <summary>
-        /// Gets the list of all patients.
+        /// Gets a list of <see cref="Patient"/> contained within a <see cref="Bundle"/> and paginated.
         /// </summary>
-        /// <returns>A <see cref="List{T}"/> of all registered patients.</returns>
-        public Task<Bundle> GetPatientList();
+        /// <returns>A <see cref="PaginatedResult{T}"/> with the patient's <see cref="Bundle"/>.</returns>
+        public Task<PaginatedResult<Bundle>> GetPatientList(PaginationRequest paginationRequest);
 
         /// <summary>
         /// Creates a <see cref="Patient"/>.
