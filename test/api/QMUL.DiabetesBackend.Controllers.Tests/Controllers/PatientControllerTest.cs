@@ -251,8 +251,20 @@
             var medicationRequestService = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<PatientController>>();
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            medicationRequestService.GetActiveMedicationRequests(Arg.Any<string>()).Returns(new Bundle());
+                medicationRequestService, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
+
+            var paginatedResult = new PaginatedResult<Bundle>
+            {
+                Results = new Bundle()
+            };
+            medicationRequestService.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>())
+                .Returns(paginatedResult);
 
             // Act
             var medicationRequests = await controller.GetActiveMedicationRequests("john@mail.com");
@@ -273,8 +285,16 @@
             var medicationRequestService = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<PatientController>>();
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            medicationRequestService.GetActiveMedicationRequests(Arg.Any<string>()).Throws(new Exception());
+                medicationRequestService, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
+
+            medicationRequestService.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>())
+                .Throws(new Exception());
 
             // Act
             var medicationRequests = await controller.GetActiveMedicationRequests("john@mail.com");
