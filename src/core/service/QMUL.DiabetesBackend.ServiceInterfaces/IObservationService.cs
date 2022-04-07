@@ -4,6 +4,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
     using System.Threading.Tasks;
     using Exceptions;
     using Hl7.Fhir.Model;
+    using Model;
     using Model.Enums;
 
     /// <summary>
@@ -33,9 +34,10 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// Gets all the observations for a given patient.
         /// </summary>
         /// <param name="patientId">The patient ID who owns the observations.</param>
-        /// <returns>The list of <see cref="Observation"/> for a patient in a <see cref="Bundle"/> object.</returns>
+        /// <param name="paginationRequest">The paginated request parameters.</param>
+        /// <returns>The list of <see cref="Observation"/> for a patient in a paginated <see cref="Bundle"/> object.</returns>
         /// <exception cref="NotFoundException">If the patient was not found.</exception>
-        public Task<Bundle> GetAllObservationsFor(string patientId);
+        public Task<PaginatedResult<Bundle>> GetAllObservationsFor(string patientId, PaginationRequest paginationRequest);
 
         /// <summary>
         /// Gets the <see cref="Observation"/> for a patient given a <see cref="CustomEventTiming"/> event and a datetime.
@@ -44,10 +46,11 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="patientId">The patient's ID or email who owns the observations.</param>
         /// <param name="timing">A <see cref="CustomEventTiming"/> where the observation(s) happened.</param>
         /// <param name="dateTime">The <see cref="DateTime"/> when the observation(s) happened.</param>
+        /// <param name="paginationRequest">The paginated request parameters.</param>
         /// <param name="patientTimezone">The patient's timezone.</param>
-        /// <returns>A <see cref="Bundle"/> object with the list of observations.</returns>
+        /// <returns>A <see cref="PaginatedResult{T}"/> <see cref="Bundle"/> object with the list of observations.</returns>
         /// <exception cref="NotFoundException">If the patient was not found.</exception>
-        public Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime,
-            string patientTimezone = "UTC");
+        public Task<PaginatedResult<Bundle>> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime,
+            PaginationRequest paginationRequest, string patientTimezone = "UTC");
     }
 }

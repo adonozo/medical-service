@@ -132,7 +132,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
         /// <param name="searchFilter">The search filters used to get the results.</param>
         /// <param name="results">The <see cref="Resource"/> result array.</param>
         /// <returns>A <see cref="PaginatedResult{T}"/>.</returns>
-        public static async Task<PaginatedResult<IEnumerable<Resource>>> GetPaginatedResul(
+        public static async Task<PaginatedResult<IEnumerable<Resource>>> GetPaginatedResult(
             IMongoCollection<BsonDocument> collection,
             FilterDefinition<BsonDocument> searchFilter,
             Resource[] results)

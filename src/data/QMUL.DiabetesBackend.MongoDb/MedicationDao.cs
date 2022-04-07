@@ -46,7 +46,7 @@ namespace QMUL.DiabetesBackend.MongoDb
                 return new PaginatedResult<IEnumerable<Resource>> { Results = medications };
             }
 
-            return await Helpers.GetPaginatedResul(this.medicationCollection, searchFilter, medications);
+            return await Helpers.GetPaginatedResult(this.medicationCollection, searchFilter, medications);
         }
 
         /// <inheritdoc />

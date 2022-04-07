@@ -7,6 +7,7 @@ namespace QMUL.DiabetesBackend.MongoDb
     using DataInterfaces.Exceptions;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
+    using Model;
     using MongoDB.Bson;
     using MongoDB.Driver;
     using Utils;
@@ -55,26 +56,47 @@ namespace QMUL.DiabetesBackend.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<IList<Observation>> GetAllObservationsFor(string patientId)
+        public async Task<PaginatedResult<IEnumerable<Resource>>> GetAllObservationsFor(string patientId,
+            PaginationRequest paginationRequest)
         {
-            var results = await this.observationCollection.Find(Helpers.GetPatientReferenceFilter(patientId))
+            var searchFilter = Helpers.GetPatientReferenceFilter(patientId);
+            var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
+
+            var results = await this.observationCollection.Find(resultsFilter)
                 .Project(document => this.ProjectToObservation(document))
                 .ToListAsync();
-            return await Task.WhenAll(results);
+            Resource[] observations = await Task.WhenAll(results);
+
+            if (observations.Length == 0)
+            {
+                return new PaginatedResult<IEnumerable<Resource>> { Results = observations };
+            }
+
+            return await Helpers.GetPaginatedResult(this.observationCollection, searchFilter, observations);
         }
 
         /// <inheritdoc />
-        public async Task<IList<Observation>> GetObservationsFor(string patientId, DateTime start, DateTime end)
+        public async Task<PaginatedResult<IEnumerable<Resource>>> GetObservationsFor(string patientId, DateTime start,
+            DateTime end, PaginationRequest paginationRequest)
         {
-            var filter = Builders<BsonDocument>.Filter.And(
+            var searchFilter = Builders<BsonDocument>.Filter.And(
                 Helpers.GetPatientReferenceFilter(patientId),
                 Builders<BsonDocument>.Filter.Gt("issued", start),
                 Builders<BsonDocument>.Filter.Lt("issued", end));
 
-            var result = await this.observationCollection.Find(filter)
+            var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
+            var result = await this.observationCollection.Find(resultsFilter)
+                .Limit(paginationRequest.Limit)
                 .Project(document => this.ProjectToObservation(document))
                 .ToListAsync();
-            return await Task.WhenAll(result);
+
+            Resource[] observations = await Task.WhenAll(result);
+            if (observations.Length == 0)
+            {
+                return new PaginatedResult<IEnumerable<Resource>> { Results = observations };
+            }
+
+            return await Helpers.GetPaginatedResult(this.observationCollection, searchFilter, observations);
         }
 
         private async Task<Observation> ProjectToObservation(BsonDocument document)
