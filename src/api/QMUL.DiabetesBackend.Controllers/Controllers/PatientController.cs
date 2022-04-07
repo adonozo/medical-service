@@ -87,7 +87,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpGet("patients/{idOrEmail}/carePlans")]
-        // TODO pagination
+        [Obsolete("This merges services and medication requests. Won't work with pagination. " +
+                  "Use individual requests instead.")]
         public async Task<IActionResult> GetPatientCarePlans([FromRoute] string idOrEmail)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -97,14 +98,17 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        // TODO pagination - Alexa endpoint
         [HttpGet("patients/{idOrEmail}/medicationRequests/active")]
-        public async Task<IActionResult> GetActiveMedicationRequests([FromRoute] string idOrEmail)
+        public async Task<IActionResult> GetActiveMedicationRequests([FromRoute] string idOrEmail,
+            [FromQuery] int? limit = null, [FromQuery] string after = null)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var result = await this.medicationRequestService.GetActiveMedicationRequests(idOrEmail);
-                return this.Ok(result.ToJObject());
+                var paginationRequest = new PaginationRequest(limit, after);
+                var paginatedResult = await this.medicationRequestService.GetActiveMedicationRequests(idOrEmail, paginationRequest);
+
+                this.HttpContext.SetPaginatedResult(paginatedResult);
+                return this.Ok(paginatedResult.Results.ToJObject());
             }, this.logger, this);
         }
 

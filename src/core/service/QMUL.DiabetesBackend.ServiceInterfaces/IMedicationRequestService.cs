@@ -3,6 +3,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
     using System.Threading.Tasks;
     using Exceptions;
     using Hl7.Fhir.Model;
+    using Model;
 
     /// <summary>
     /// The Medication Request Service Interface.
@@ -50,8 +51,10 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// Gets the active medication requests for a given patient.
         /// </summary>
         /// <param name="patientIdOrEmail">The patient's ID or email.</param>
-        /// <returns>A <see cref="Bundle"/> object with the list of active medication requests.</returns>
+        /// <param name="paginationRequest">The pagination request parameter.</param>
+        /// <returns>A paginated <see cref="PaginatedResult{T}"/> <see cref="Bundle"/> object with the list of active
+        /// medication requests.</returns>
         /// <exception cref="NotFoundException">If the patient was not found.</exception>
-        public Task<Bundle> GetActiveMedicationRequests(string patientIdOrEmail);
+        public Task<PaginatedResult<Bundle>> GetActiveMedicationRequests(string patientIdOrEmail, PaginationRequest paginationRequest);
     }
 }
