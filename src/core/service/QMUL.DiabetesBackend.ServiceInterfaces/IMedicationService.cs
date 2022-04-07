@@ -11,9 +11,10 @@
     public interface IMedicationService
     {
         /// <summary>
-        /// Gets all the <see cref="Medication"/> objects stored. 
+        /// Gets a paginated list of the <see cref="Medication"/> objects stored. 
         /// </summary>
-        /// <returns>A <see cref="Bundle"/> object with the medication list.</returns>
+        /// <param name="paginationRequest">The pagination request parameter.</param>
+        /// <returns>A <see cref="PaginatedResult{T}"/> of a <see cref="Bundle"/> object with the medication list.</returns>
         public Task<PaginatedResult<Bundle>> GetMedicationList(PaginationRequest paginationRequest);
 
         /// <summary>

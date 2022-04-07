@@ -13,6 +13,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <summary>
         /// Gets a list of <see cref="Patient"/> contained within a <see cref="Bundle"/> and paginated.
         /// </summary>
+        /// <param name="paginationRequest">The pagination request parameter.</param>
         /// <returns>A <see cref="PaginatedResult{T}"/> with the patient's <see cref="Bundle"/>.</returns>
         public Task<PaginatedResult<Bundle>> GetPatientList(PaginationRequest paginationRequest);
 

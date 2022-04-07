@@ -12,10 +12,10 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     public interface IMedicationDao
     {
         /// <summary>
-        /// Gets all the medications from the database as a <see cref="Medication"/> list.
+        /// Gets the medications from the database as a paginated <see cref="Medication"/> list.
         /// </summary>
-        /// TODO update this comment (and service)
-        /// <returns>A <see cref="Medication"/> list.</returns>
+        /// <param name="paginationRequest">The pagination request parameter.</param>
+        /// <returns>The paginated list of <see cref="Medication"/>, in a <see cref="PaginatedResult{T}"/> object.</returns>
         public Task<PaginatedResult<IEnumerable<Resource>>> GetMedicationList(PaginationRequest paginationRequest);
 
         /// <summary>
