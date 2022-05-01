@@ -29,10 +29,13 @@ namespace QMUL.DiabetesBackend.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<PaginatedResult<IEnumerable<Resource>>> GetMedicationList(PaginationRequest paginationRequest)
+        public async Task<PaginatedResult<IEnumerable<Resource>>> GetMedicationList(PaginationRequest paginationRequest,
+            string name = null)
         {
             this.logger.LogTrace("Getting all medications...");
-            var searchFilter = FilterDefinition<BsonDocument>.Empty;
+            var searchFilter = name == null
+                ? FilterDefinition<BsonDocument>.Empty
+                : Builders<BsonDocument>.Filter.Regex("code.coding.display", new BsonRegularExpression(name, "i"));
             var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
             var result = await this.medicationCollection.Find(resultsFilter)
                 .Limit(paginationRequest.Limit)

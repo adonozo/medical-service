@@ -15,8 +15,11 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// Gets the medications from the database as a paginated <see cref="Medication"/> list.
         /// </summary>
         /// <param name="paginationRequest">The pagination request parameter.</param>
+        /// <param name="name">The medication display name to look for. Maps to the Coding property of the
+        /// <see cref="Medication"/> object.</param>
         /// <returns>The paginated list of <see cref="Medication"/>, in a <see cref="PaginatedResult{T}"/> object.</returns>
-        public Task<PaginatedResult<IEnumerable<Resource>>> GetMedicationList(PaginationRequest paginationRequest);
+        public Task<PaginatedResult<IEnumerable<Resource>>> GetMedicationList(PaginationRequest paginationRequest,
+            string name = null);
 
         /// <summary>
         /// Gets a single medication given an ID.

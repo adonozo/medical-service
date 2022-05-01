@@ -14,8 +14,10 @@
         /// Gets a paginated list of the <see cref="Medication"/> objects stored. 
         /// </summary>
         /// <param name="paginationRequest">The pagination request parameter.</param>
+        /// <param name="name">The medication display name to look for. Maps to the Coding property of the
+        /// <see cref="Medication"/> object.</param>
         /// <returns>A <see cref="PaginatedResult{T}"/> of a <see cref="Bundle"/> object with the medication list.</returns>
-        public Task<PaginatedResult<Bundle>> GetMedicationList(PaginationRequest paginationRequest);
+        public Task<PaginatedResult<Bundle>> GetMedicationList(PaginationRequest paginationRequest, string name = null);
 
         /// <summary>
         /// Gets a single <see cref="Medication"/> given an ID.

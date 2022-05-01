@@ -63,6 +63,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
 
             var results = await this.observationCollection.Find(resultsFilter)
+                .Limit(paginationRequest.Limit)
                 .Project(document => this.ProjectToObservation(document))
                 .ToListAsync();
             Resource[] observations = await Task.WhenAll(results);
