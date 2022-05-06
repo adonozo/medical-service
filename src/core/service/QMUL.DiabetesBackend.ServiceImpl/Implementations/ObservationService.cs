@@ -1,10 +1,12 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
     using DataInterfaces;
     using Hl7.Fhir.Model;
+    using Model;
     using Model.Enums;
     using Model.Extensions;
     using ServiceInterfaces;
@@ -52,19 +54,20 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public async Task<Bundle> GetAllObservationsFor(string patientId)
+        public async Task<PaginatedResult<Bundle>> GetAllObservationsFor(string patientId, PaginationRequest paginationRequest)
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
-            var observations = await this.observationDao.GetAllObservationsFor(patient.Id);
-            var bundle = ResourceUtils.GenerateSearchBundle(observations);
-            this.logger.LogDebug("Found {Count} observations", observations.Count);
-            return bundle;
+            var observations = await this.observationDao.GetAllObservationsFor(patient.Id, paginationRequest);
+            
+            var paginateResult = observations.ToBundleResult();
+            this.logger.LogDebug("Found {Count} observations", observations.Results.Count());
+            return paginateResult;
         }
 
         /// <inheritdoc/>>
-        public async Task<Bundle> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime,
-            string patientTimezone = "UTC")
+        public async Task<PaginatedResult<Bundle>> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime,
+            PaginationRequest paginationRequest, string patientTimezone = "UTC")
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
@@ -82,10 +85,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                     EventTimingMapper.GetIntervalForPatient(timingPreferences, dateTime, timing, patientTimezone, DefaultOffset);
             }
 
-            var observations = await this.observationDao.GetObservationsFor(patient.Id, start.UtcDateTime, end.UtcDateTime);
-            var bundle = ResourceUtils.GenerateSearchBundle(observations);
-            this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId, observations.Count);
-            return bundle;
+            var observations = await this.observationDao.GetObservationsFor(patient.Id, start.UtcDateTime,
+                end.UtcDateTime, paginationRequest);
+            var paginatedResult = observations.ToBundleResult();
+            this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId,
+                observations.Results.Count());
+            return paginatedResult;
         }
     }
 }

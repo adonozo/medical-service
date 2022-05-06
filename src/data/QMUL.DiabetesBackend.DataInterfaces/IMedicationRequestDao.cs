@@ -4,6 +4,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     using System.Threading.Tasks;
     using Exceptions;
     using Hl7.Fhir.Model;
+    using Model;
 
     /// <summary>
     /// The Medication Request Dao interface.
@@ -70,8 +71,10 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// not include insulin request
         /// </summary>
         /// <param name="patientId">The patient's user ID, not email</param>
-        /// <returns>The list of active medication requests.</returns>
-        public Task<IList<MedicationRequest>> GetActiveMedicationRequests(string patientId);
+        /// <param name="paginationRequest">The pagination request parameter.</param>
+        /// <returns>The list of active medication requests within a <see cref="PaginatedResult{T}"/> object.</returns>
+        public Task<PaginatedResult<IEnumerable<Resource>>> GetActiveMedicationRequests(string patientId,
+            PaginationRequest paginationRequest);
 
         /// <summary>
         /// Gets the all the active medication requests, insulin and non-insulin.

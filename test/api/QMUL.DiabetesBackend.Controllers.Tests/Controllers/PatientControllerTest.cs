@@ -85,7 +85,8 @@
                 .Throws(new KeyNotFoundException());
 
             // Act
-            var createdObservation = await controller.PostGlucoseObservation(id, JObject.FromObject(new InternalPatient()));
+            var createdObservation =
+                await controller.PostGlucoseObservation(id, JObject.FromObject(new InternalPatient()));
             var result = (StatusCodeResult)createdObservation;
 
             // Assert
@@ -127,9 +128,21 @@
             var observationService = Substitute.For<IObservationService>();
             var medicationRequestService = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<PatientController>>();
+
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            patientService.GetPatientList().Returns(new Bundle());
+                medicationRequestService, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
+
+            var paginatedResult = new PaginatedResult<Bundle>
+            {
+                Results = new Bundle()
+            };
+            patientService.GetPatientList(Arg.Any<PaginationRequest>()).Returns(paginatedResult);
 
             // Act
             var patients = await controller.GetPatients();
@@ -238,8 +251,20 @@
             var medicationRequestService = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<PatientController>>();
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            medicationRequestService.GetActiveMedicationRequests(Arg.Any<string>()).Returns(new Bundle());
+                medicationRequestService, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
+
+            var paginatedResult = new PaginatedResult<Bundle>
+            {
+                Results = new Bundle()
+            };
+            medicationRequestService.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>())
+                .Returns(paginatedResult);
 
             // Act
             var medicationRequests = await controller.GetActiveMedicationRequests("john@mail.com");
@@ -260,8 +285,16 @@
             var medicationRequestService = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<PatientController>>();
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            medicationRequestService.GetActiveMedicationRequests(Arg.Any<string>()).Throws(new Exception());
+                medicationRequestService, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
+
+            medicationRequestService.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>())
+                .Throws(new Exception());
 
             // Act
             var medicationRequests = await controller.GetActiveMedicationRequests("john@mail.com");
@@ -370,10 +403,22 @@
             var medicationRequestService = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<PatientController>>();
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
+                medicationRequestService, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
+
+            var paginatedResult = new PaginatedResult<Bundle>
+            {
+                Results = new Bundle()
+            };
+
             observationService.GetObservationsFor(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>(),
-                    Arg.Any<string>())
-                .Returns(new Bundle());
+                    Arg.Any<PaginationRequest>(), Arg.Any<string>())
+                .Returns(paginatedResult);
 
             // Act
             var observations = await controller.GetPatientObservations("john@mail.com", DateTime.Now);
@@ -394,9 +439,16 @@
             var medicationRequestService = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<PatientController>>();
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
+                medicationRequestService, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
+
             observationService.GetObservationsFor(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>(),
-                    Arg.Any<string>())
+                    Arg.Any<PaginationRequest>(), Arg.Any<string>())
                 .Throws(new Exception());
 
             // Act
@@ -418,8 +470,20 @@
             var medicationRequestService = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<PatientController>>();
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            observationService.GetAllObservationsFor(Arg.Any<string>()).Returns(new Bundle());
+                medicationRequestService, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
+
+            var paginatedResult = new PaginatedResult<Bundle>
+            {
+                Results = new Bundle()
+            };
+            observationService.GetAllObservationsFor(Arg.Any<string>(), Arg.Any<PaginationRequest>())
+                .Returns(paginatedResult);
 
             // Act
             var observations = await controller.GetAllPatientObservations("john@mail.com");
@@ -440,8 +504,16 @@
             var medicationRequestService = Substitute.For<IMedicationRequestService>();
             var logger = Substitute.For<ILogger<PatientController>>();
             var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-            observationService.GetAllObservationsFor(Arg.Any<string>()).Throws(new Exception());
+                medicationRequestService, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
+
+            observationService.GetAllObservationsFor(Arg.Any<string>(), Arg.Any<PaginationRequest>())
+                .Throws(new Exception());
 
             // Act
             var observations = await controller.GetAllPatientObservations("john@mail.com");
@@ -609,7 +681,7 @@
 
             // Act
             var updated = await controller.UpdatePatient(Guid.NewGuid().ToString(), new Patient().ToJObject());
-            var result = (AcceptedResult) updated;
+            var result = (AcceptedResult)updated;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status202Accepted);

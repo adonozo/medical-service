@@ -4,6 +4,8 @@ namespace QMUL.DiabetesBackend.Api.Utils
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Serialization;
+    using Microsoft.AspNetCore.Http;
+    using Model;
     using Newtonsoft.Json.Linq;
 
     public static class Helpers
@@ -21,6 +23,12 @@ namespace QMUL.DiabetesBackend.Api.Utils
                 { AllowUnrecognizedEnums = true, AcceptUnknownMembers = false, PermissiveParsing = false });
             var resource = await parser.ParseAsync<T>(jObject.ToString());
             return resource;
+        }
+
+        public static void SetPaginatedResult<T>(this HttpContext context, PaginatedResult<T> paginatedResult)
+        {
+            context.Response.Headers[HttpConstants.LastCursorHeader] = paginatedResult.LastDataCursor;
+            context.Response.Headers[HttpConstants.RemainingCountHeader] = paginatedResult.RemainingCount.ToString();
         }
     }
 }

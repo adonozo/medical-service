@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using DataInterfaces;
     using FluentAssertions;
     using Hl7.Fhir.Model;
@@ -105,9 +106,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 .Returns(new MedicationRequest());
 
             // Act
-            var result =
-                await medicationRequestService.UpdateMedicationRequest(Guid.NewGuid().ToString(),
-                    new MedicationRequest());
+            var result = await medicationRequestService.UpdateMedicationRequest(Guid.NewGuid().ToString(),
+                new MedicationRequest());
 
             // Assert
             result.Should().BeOfType<MedicationRequest>();
@@ -149,16 +149,24 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<MedicationRequestService>>();
             var medicationRequestService =
                 new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, logger);
+            var paginatedResult = new PaginatedResult<IEnumerable<Resource>>
+            {
+                Results = new Collection<MedicationRequest>()
+            };
 
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
-            medicationRequestDao.GetActiveMedicationRequests(Arg.Any<string>()).Returns(new List<MedicationRequest>());
+            medicationRequestDao.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>())
+                .Returns(paginatedResult);
 
             // Act
-            var result = await medicationRequestService.GetActiveMedicationRequests(Guid.NewGuid().ToString());
+            var result = await medicationRequestService.GetActiveMedicationRequests(Guid.NewGuid().ToString(),
+                new PaginationRequest(20, null));
 
             // Assert
-            result.Should().BeOfType<Bundle>();
-            await medicationRequestDao.Received(1).GetActiveMedicationRequests(Arg.Any<string>());
+            result.Results.Should().BeOfType<Bundle>();
+            result.Results.Type.Should().NotBeNull().And.Be(Bundle.BundleType.Searchset);
+            await medicationRequestDao.Received(1)
+                .GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>());
         }
 
         [Theory]
@@ -200,7 +208,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var logger = Substitute.For<ILogger<MedicationRequestService>>();
             var medicationRequestService =
                 new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, logger);
-            
+
             var medicationId = Guid.NewGuid().ToString();
             var medication = this.GetMedicationTest(medicationId);
             medication.SetBoolExtension(isInsulin ? Extensions.InsulinFlag : string.Empty, isInsulin);
