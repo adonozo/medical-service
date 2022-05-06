@@ -28,7 +28,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 Id = Guid.NewGuid().ToString(),
                 Type = Bundle.BundleType.Searchset,
                 Timestamp = DateTimeOffset.UtcNow,
-                Total = enumerable.Count
             };
 
             foreach (var resource in enumerable)
@@ -116,6 +115,25 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             var eventsGenerator = new EventsGenerator(patient, timing, requestReference);
             events.AddRange(eventsGenerator.GetEvents());
             return events;
+        }
+
+        /// <summary>
+        /// Creates a Paginated search <see cref="Bundle"/> result from a Paginated list of <see cref="Resource"/>.
+        /// </summary>
+        /// <param name="paginatedResult">The paginated result with a <see cref="Resource"/> list.</param>
+        /// <returns>The paginated search <see cref="Bundle"/>.</returns>
+        public static PaginatedResult<Bundle> ToBundleResult(this PaginatedResult<IEnumerable<Resource>> paginatedResult)
+        {
+            var bundle = GenerateSearchBundle(paginatedResult.Results);
+            bundle.Total = (int)paginatedResult.TotalResults;
+            
+            return new PaginatedResult<Bundle>
+            {
+                Results = bundle,
+                TotalResults = paginatedResult.TotalResults,
+                LastDataCursor = paginatedResult.LastDataCursor,
+                RemainingCount = paginatedResult.RemainingCount
+            };
         }
     }
 }

@@ -14,6 +14,7 @@ namespace QMUL.DiabetesBackend.Api
     using MongoDb.Mapper;
     using ServiceImpl.Implementations;
     using ServiceInterfaces;
+    using Utils;
     using MongoDatabaseSettings = Model.MongoDatabaseSettings;
 
     [ExcludeFromCodeCoverage]
@@ -79,7 +80,10 @@ namespace QMUL.DiabetesBackend.Api
 
             app.UseRouting();
 
-            app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            app.UseCors(options => options.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .WithExposedHeaders(HttpConstants.LastCursorHeader, HttpConstants.RemainingCountHeader));
 
             app.UseAuthorization();
 

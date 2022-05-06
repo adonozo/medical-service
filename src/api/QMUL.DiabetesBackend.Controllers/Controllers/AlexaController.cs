@@ -11,7 +11,6 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     using Utils;
 
     [ApiController]
-    [Route("patients/")]
     public class AlexaController : ControllerBase
     {
         private readonly IAlexaService alexaService;
@@ -23,8 +22,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             this.logger = logger;
         }
 
-        [HttpGet]
-        [Route("{idOrEmail}/alexa/medicationRequest")]
+        [HttpGet("patients/{idOrEmail}/alexa/medicationRequest")]
         public async Task<IActionResult> GetMedicationRequest([FromRoute] string idOrEmail,
             [FromQuery] DateTime date,
             [FromQuery] string timezone = "UTC",
@@ -37,8 +35,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpGet]
-        [Route("{idOrEmail}/alexa/insulinRequest")]
+        [HttpGet("patients/{idOrEmail}/alexa/insulinRequest")]
         public async Task<IActionResult> GetInsulinMedicationRequest([FromRoute] string idOrEmail,
             [FromQuery] DateTime date,
             [FromQuery] string timezone = "UTC",
@@ -51,8 +48,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpGet]
-        [Route("{idOrEmail}/alexa/glucoseRequest")]
+        [HttpGet("patients/{idOrEmail}/alexa/glucoseRequest")]
         public async Task<IActionResult> GetGlucoseServiceRequest([FromRoute] string idOrEmail,
             [FromQuery] DateTime date,
             [FromQuery] string timezone = "UTC",
@@ -65,8 +61,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpGet]
-        [Route("{idOrEmail}/alexa/carePlan")]
+        [HttpGet("patients/{idOrEmail}/alexa/carePlan")]
         public async Task<IActionResult> GetCarePlan([FromRoute] string idOrEmail,
             [FromQuery] DateTime date,
             [FromQuery] string timezone = "UTC",
@@ -79,8 +74,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpGet]
-        [Route("{idOrEmail}/alexa/next")]
+        [HttpGet("patients/{idOrEmail}/alexa/next")]
         public async Task<IActionResult> GetAlexaNextRequest([FromRoute] string idOrEmail,
             [FromQuery] AlexaRequestType type)
         {

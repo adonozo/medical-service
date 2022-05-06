@@ -1,7 +1,6 @@
 namespace QMUL.DiabetesBackend.Api.Controllers
 {
     using System;
-    using System.Linq;
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Serialization;
@@ -15,7 +14,6 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     using Utils;
 
     [ApiController]
-    [Route("patients/")]
     public class PatientController : ControllerBase
     {
         private readonly IPatientService patientService;
@@ -37,13 +35,15 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             this.medicationRequestService = medicationRequestService;
         }
 
-        [HttpPost]
-        [Route("")]
+        #region POST
+
+        [HttpPost("patients")]
         public async Task<IActionResult> CreatePatient([FromBody] JObject patient)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 this.logger.LogDebug("Creating patient");
+                patient.Property("id")?.Remove();
                 var newPatient = await Helpers.ParseResourceAsync<Patient>(patient);
 
                 var createdPatient = await this.patientService.CreatePatient(newPatient);
@@ -52,8 +52,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpPost]
-        [Route("{idOrEmail}/observations")]
+        [HttpPost("patients/{idOrEmail}/observations")]
         public async Task<IActionResult> PostGlucoseObservation([FromRoute] string idOrEmail,
             [FromBody] JObject newObservation)
         {
@@ -65,21 +64,25 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpGet]
-        [Route("")]
-        public async Task<IActionResult> GetPatients()
+        #endregion
+
+        #region GET
+
+        [HttpGet("patients")]
+        public async Task<IActionResult> GetPatients([FromQuery] int? limit = null, [FromQuery] string after = null)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 this.logger.LogDebug("Getting patients list");
-                var patients = await this.patientService.GetPatientList();
-                this.logger.LogDebug("Found {PatientsCount} patients", patients.Count());
-                return this.Ok(patients);
+                var pagination = new PaginationRequest(limit, after);
+                var paginatedResult = await this.patientService.GetPatientList(pagination);
+
+                this.HttpContext.SetPaginatedResult(paginatedResult);
+                return this.Ok(paginatedResult.Results.ToJObject());
             }, this.logger, this);
         }
 
-        [HttpGet]
-        [Route("{idOrEmail}")]
+        [HttpGet("patients/{idOrEmail}")]
         public async Task<IActionResult> GetPatient([FromRoute] string idOrEmail)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -89,8 +92,9 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpGet]
-        [Route("{idOrEmail}/carePlans")]
+        [HttpGet("patients/{idOrEmail}/carePlans")]
+        [Obsolete("This merges services and medication requests. Won't work with pagination. " +
+                  "Use individual requests instead.")]
         public async Task<IActionResult> GetPatientCarePlans([FromRoute] string idOrEmail)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -100,19 +104,23 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpGet]
-        [Route("{idOrEmail}/medicationRequests/active")]
-        public async Task<IActionResult> GetActiveMedicationRequests([FromRoute] string idOrEmail)
+        [HttpGet("patients/{idOrEmail}/medicationRequests/active")]
+        public async Task<IActionResult> GetActiveMedicationRequests([FromRoute] string idOrEmail,
+            [FromQuery] int? limit = null, [FromQuery] string after = null)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var result = await this.medicationRequestService.GetActiveMedicationRequests(idOrEmail);
-                return this.Ok(result.ToJObject());
+                var paginationRequest = new PaginationRequest(limit, after);
+                var paginatedResult =
+                    await this.medicationRequestService.GetActiveMedicationRequests(idOrEmail, paginationRequest);
+
+                this.HttpContext.SetPaginatedResult(paginatedResult);
+                return this.Ok(paginatedResult.Results.ToJObject());
             }, this.logger, this);
         }
 
-        [HttpGet]
-        [Route("{idOrEmail}/carePlans/active")]
+        // Alexa endpoint
+        [HttpGet("patients/{idOrEmail}/carePlans/active")]
         public async Task<IActionResult> GetActiveCarePlan([FromRoute] string idOrEmail)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -122,8 +130,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpGet]
-        [Route("{idOrEmail}/observations/{observationId}")]
+        [HttpGet("patients/{idOrEmail}/observations/{observationId}")]
         public async Task<IActionResult> GetSingleObservation([FromRoute] string idOrEmail,
             [FromRoute] string observationId)
         {
@@ -134,32 +141,44 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpGet]
-        [Route("{idOrEmail}/observations/")]
+        [HttpGet("patients/{idOrEmail}/observations/")]
         public async Task<IActionResult> GetPatientObservations([FromRoute] string idOrEmail, [FromQuery] DateTime date,
             [FromQuery] string timezone = "UTC",
-            [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
+            [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT,
+            [FromQuery] int? limit = null,
+            [FromQuery] string after = null)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var result = await this.observationService.GetObservationsFor(idOrEmail, timing, date, timezone);
-                return this.Ok(result.ToJObject());
+                var pagination = new PaginationRequest(limit, after);
+                var paginatedResult =
+                    await this.observationService.GetObservationsFor(idOrEmail, timing, date, pagination, timezone);
+
+                this.HttpContext.SetPaginatedResult(paginatedResult);
+                return this.Ok(paginatedResult.Results.ToJObject());
             }, this.logger, this);
         }
 
-        [HttpGet]
-        [Route("{idOrEmail}/all/observations/")]
-        public async Task<IActionResult> GetAllPatientObservations([FromRoute] string idOrEmail)
+        [HttpGet("patients/{idOrEmail}/all/observations/")]
+        public async Task<IActionResult> GetAllPatientObservations([FromRoute] string idOrEmail,
+            [FromQuery] int? limit = null,
+            [FromQuery] string after = null)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var result = await this.observationService.GetAllObservationsFor(idOrEmail);
-                return this.Ok(result.ToJObject());
+                var pagination = new PaginationRequest(limit, after);
+                var paginatedResult = await this.observationService.GetAllObservationsFor(idOrEmail, pagination);
+
+                this.HttpContext.SetPaginatedResult(paginatedResult);
+                return this.Ok(paginatedResult.Results.ToJObject());
             }, this.logger, this);
         }
 
-        [HttpPut]
-        [Route("{idOrEmail}")]
+        #endregion
+
+        #region PUT
+
+        [HttpPut("patients/{idOrEmail}")]
         public async Task<IActionResult> UpdatePatient([FromRoute] string idOrEmail,
             [FromBody] JObject updatedPatient)
         {
@@ -171,8 +190,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpPut]
-        [Route("{idOrEmail}/timing")]
+        [HttpPut("patients/{idOrEmail}/timing")]
         public async Task<IActionResult> UpdatePatientTiming([FromRoute] string idOrEmail,
             [FromBody] PatientTimingRequest request)
         {
@@ -183,8 +201,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpPut]
-        [Route("{idOrEmail}/dosage/{dosageId}/startDate")]
+        [HttpPut("patients/{idOrEmail}/dosage/{dosageId}/startDate")]
         public async Task<IActionResult> UpdateDosageStartDate([FromRoute] string idOrEmail,
             [FromRoute] string dosageId, [FromBody] PatientStartDateRequest startDate)
         {
@@ -194,9 +211,10 @@ namespace QMUL.DiabetesBackend.Api.Controllers
                 return result ? this.NoContent() : this.BadRequest();
             }, this.logger, this);
         }
-        
-        [HttpPatch]
-        [Route("{idOrEmail}")]
+
+        #endregion
+
+        [HttpPatch("patients/{idOrEmail}")]
         public async Task<IActionResult> PatchPatient([FromRoute] string idOrEmail,
             [FromBody] InternalPatient updatedPatient)
         {

@@ -1,9 +1,11 @@
 namespace QMUL.DiabetesBackend.MongoDb.Utils
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Serialization;
+    using Model;
     using Model.Constants;
     using MongoDB.Bson;
     using MongoDB.Driver;
@@ -103,6 +105,53 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
                 { AllowUnrecognizedEnums = true, AcceptUnknownMembers = false, PermissiveParsing = false });
             var resource = await parser.ParseAsync<T>(jObject.ToString());
             return resource;
+        }
+
+        /// <summary>
+        /// Gets the filter to use with keyset pagination if the last data cursor is not empty.
+        /// </summary>
+        /// <param name="searchFilters">The filters search filters.</param>
+        /// <param name="lastDataCursor">The last ID obtained from previous pagination results.</param>
+        /// <returns>The pagination filter.</returns>
+        public static FilterDefinition<BsonDocument> GetPaginationFilter(FilterDefinition<BsonDocument> searchFilters,
+            string lastDataCursor)
+        {
+            if (!ObjectId.TryParse(lastDataCursor, out var lastId))
+            {
+                return searchFilters;
+            }
+
+            return Builders<BsonDocument>.Filter.And(searchFilters,
+                Builders<BsonDocument>.Filter.Gt("_id", lastId));
+        }
+
+        /// <summary>
+        /// Gets the paginated result including counts, from a resource collection.
+        /// </summary>
+        /// <param name="collection">The mongo collection.</param>
+        /// <param name="searchFilter">The search filters used to get the results.</param>
+        /// <param name="results">The <see cref="Resource"/> result array.</param>
+        /// <returns>A <see cref="PaginatedResult{T}"/>.</returns>
+        public static async Task<PaginatedResult<IEnumerable<Resource>>> GetPaginatedResult(
+            IMongoCollection<BsonDocument> collection,
+            FilterDefinition<BsonDocument> searchFilter,
+            Resource[] results)
+        {
+            var updatedLastCursorId = results[^1].Id;
+            var count = await collection.Find(searchFilter)
+                .CountDocumentsAsync();
+
+            var remainingResults = await collection
+                .Find(GetPaginationFilter(searchFilter, updatedLastCursorId))
+                .CountDocumentsAsync();
+
+            return new PaginatedResult<IEnumerable<Resource>>
+            {
+                Results = results,
+                TotalResults = count,
+                LastDataCursor = updatedLastCursorId,
+                RemainingCount = remainingResults
+            };
         }
     }
 }

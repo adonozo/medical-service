@@ -1,13 +1,16 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
+    using System;
     using System.Linq;
     using System.Threading.Tasks;
     using DataInterfaces;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
+    using Model;
     using Model.Extensions;
     using ServiceInterfaces;
     using Utils;
+    using ResourceReference = Hl7.Fhir.Model.ResourceReference;
     using Task = System.Threading.Tasks.Task;
 
     /// <summary>
@@ -40,6 +43,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var internalPatient = patient.ToInternalPatient();
 
             await this.SetInsulinRequest(request);
+            request.AuthoredOn = DateTime.UtcNow.ToString("O");
             var newRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.medicationRequestDao.CreateMedicationRequest(request), this.logger);
             var events = ResourceUtils.GenerateEventsFrom(newRequest, internalPatient);
@@ -83,13 +87,17 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public async Task<Bundle> GetActiveMedicationRequests(string patientIdOrEmail)
+        public async Task<PaginatedResult<Bundle>> GetActiveMedicationRequests(string patientIdOrEmail,
+            PaginationRequest paginationRequest)
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
-            var medicationRequests = await this.medicationRequestDao.GetActiveMedicationRequests(patient.Id);
-            this.logger.LogDebug("Found {Count} active medication requests", medicationRequests.Count);
-            return ResourceUtils.GenerateSearchBundle(medicationRequests);
+            var medicationRequests =
+                await this.medicationRequestDao.GetActiveMedicationRequests(patient.Id, paginationRequest);
+
+            var paginatedBundle = medicationRequests.ToBundleResult();
+            this.logger.LogDebug("Found {Count} active medication requests", medicationRequests.Results.Count());
+            return paginatedBundle;
         }
 
         /// <summary>

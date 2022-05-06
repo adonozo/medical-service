@@ -2,10 +2,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using DataInterfaces;
     using FluentAssertions;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
+    using Model;
     using NSubstitute;
     using ServiceImpl.Implementations;
     using Xunit;
@@ -20,15 +22,18 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var medicationDao = Substitute.For<IMedicationDao>();
             var logger = Substitute.For<ILogger<MedicationService>>();
             var medicationService = new MedicationService(medicationDao, logger);
+            var paginatedResult = new PaginatedResult<IEnumerable<Resource>>
+            {
+                Results = new Collection<Medication>()
+            };
 
-            medicationDao.GetMedicationList().Returns(new List<Medication> { new () });
+            medicationDao.GetMedicationList(Arg.Any<PaginationRequest>()).Returns(paginatedResult);
 
             // Act
-            var result = await medicationService.GetMedicationList();
+            await medicationService.GetMedicationList(new PaginationRequest(20, string.Empty));
 
             // Assert
-            result.Should().BeOfType<Bundle>();
-            result.Entry.Count.Should().Be(1);
+            await medicationDao.Received(1).GetMedicationList(Arg.Any<PaginationRequest>());
         }
 
         [Fact]

@@ -10,7 +10,6 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     using Utils;
 
     [ApiController]
-    [Route("medicationRequests/")]
     public class MedicationRequestController : ControllerBase
     {
         private readonly IMedicationRequestService medicationRequestService;
@@ -23,8 +22,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             this.medicationRequestService = medicationRequestService;
         }
 
-        [HttpGet]
-        [Route("{id}")]
+        [HttpGet("medicationRequests/{id}")]
         public async Task<IActionResult> GetMedicationRequest([FromRoute] string id)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -34,8 +32,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpPost]
-        [Route("")]
+        [HttpPost("medicationRequests")]
         public async Task<IActionResult> CreateMedicationRequest([FromBody] JObject request)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -46,8 +43,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpPut]
-        [Route("{id}")]
+        [HttpPut("medicationRequests/{id}")]
         public async Task<IActionResult> UpdateMedicationRequest([FromRoute] string id, [FromBody] JObject request)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -58,8 +54,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             }, this.logger, this);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
+        [HttpDelete("medicationRequests/{id}")]
         public async Task<IActionResult> DeleteMedicationRequest([FromRoute] string id)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>

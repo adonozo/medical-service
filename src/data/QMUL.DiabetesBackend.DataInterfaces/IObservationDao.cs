@@ -5,6 +5,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     using System.Threading.Tasks;
     using Exceptions;
     using Hl7.Fhir.Model;
+    using Model;
 
     /// <summary>
     /// The Observation Dao interface.
@@ -31,8 +32,11 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// Gets all the observations for a given patient.
         /// </summary>
         /// <param name="patientId">The patient ID.</param>
-        /// <returns>The patient's list of <see cref="Observation"/></returns>
-        public Task<IList<Observation>> GetAllObservationsFor(string patientId);
+        /// <param name="paginationRequest">The paginated request parameters.</param>
+        /// <returns>The patient's list of <see cref="Observation"/> in a paginated <see cref="PaginatedResult{T}"/>
+        /// object.</returns>
+        public Task<PaginatedResult<IEnumerable<Resource>>> GetAllObservationsFor(string patientId,
+            PaginationRequest paginationRequest);
 
         /// <summary>
         /// Gets the list of <see cref="Observation"/> for a given patient in a defined time range.
@@ -40,7 +44,10 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="patientId">The patient ID.</param>
         /// <param name="start">The range start datetime.</param>
         /// <param name="end">The range end datetime.</param>
-        /// <returns>An <see cref="Observation"/> list within the start and end dates.</returns>
-        public Task<IList<Observation>> GetObservationsFor(string patientId, DateTime start, DateTime end);
+        /// <param name="paginationRequest">The paginated request parameters.</param>
+        /// <returns>An <see cref="Observation"/> list within the start and end dates; contained within a paginated
+        /// <see cref="PaginatedResult{T}"/> object.</returns>
+        public Task<PaginatedResult<IEnumerable<Resource>>> GetObservationsFor(string patientId, DateTime start,
+            DateTime end, PaginationRequest paginationRequest);
     }
 }

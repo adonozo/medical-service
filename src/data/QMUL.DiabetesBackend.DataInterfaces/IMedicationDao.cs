@@ -4,6 +4,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     using System.Threading.Tasks;
     using Exceptions;
     using Hl7.Fhir.Model;
+    using Model;
 
     /// <summary>
     /// The Medication Dao interface.
@@ -11,10 +12,14 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     public interface IMedicationDao
     {
         /// <summary>
-        /// Gets all the medications from the database as a <see cref="Medication"/> list.
+        /// Gets the medications from the database as a paginated <see cref="Medication"/> list.
         /// </summary>
-        /// <returns>A <see cref="Medication"/> list.</returns>
-        public Task<IEnumerable<Medication>> GetMedicationList();
+        /// <param name="paginationRequest">The pagination request parameter.</param>
+        /// <param name="name">The medication display name to look for. Maps to the Coding property of the
+        /// <see cref="Medication"/> object.</param>
+        /// <returns>The paginated list of <see cref="Medication"/>, in a <see cref="PaginatedResult{T}"/> object.</returns>
+        public Task<PaginatedResult<IEnumerable<Resource>>> GetMedicationList(PaginationRequest paginationRequest,
+            string name = null);
 
         /// <summary>
         /// Gets a single medication given an ID.

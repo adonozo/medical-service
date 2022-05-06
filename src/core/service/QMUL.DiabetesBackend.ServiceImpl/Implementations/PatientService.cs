@@ -1,6 +1,5 @@
 namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 {
-    using System.Collections.Generic;
     using System.Threading.Tasks;
     using DataInterfaces;
     using Hl7.Fhir.Model;
@@ -24,9 +23,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<Patient>> GetPatientList()
+        public async Task<PaginatedResult<Bundle>> GetPatientList(PaginationRequest paginationRequest)
         {
-            return await this.patientDao.GetPatients();
+            var paginatedPatients = await this.patientDao.GetPatients(paginationRequest);
+            return paginatedPatients.ToBundleResult();
         }
 
         /// <inheritdoc/>
