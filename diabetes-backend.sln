@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.Contro
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{62F37995-0617-44D1-A609-CA0E20831A81}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api-docs", "api-docs", "{62F37995-0617-44D1-A609-CA0E20831A81}"
 	ProjectSection(SolutionItems) = preProject
 		api\carePlan.json = api\carePlan.json
 		api\medication.json = api\medication.json
