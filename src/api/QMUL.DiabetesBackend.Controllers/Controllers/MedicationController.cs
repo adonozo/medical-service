@@ -18,8 +18,9 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         private readonly ILogger<MedicationController> logger;
         private readonly IResourceValidator<Medication> medicationValidator;
 
-        public MedicationController(IMedicationService medicationService, ILogger<MedicationController> logger,
-            IResourceValidator<Medication> medicationValidator)
+        public MedicationController(IMedicationService medicationService,
+            IResourceValidator<Medication> medicationValidator,
+            ILogger<MedicationController> logger)
         {
             this.medicationService = medicationService;
             this.logger = logger;

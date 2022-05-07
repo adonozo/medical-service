@@ -13,6 +13,8 @@
     using NSubstitute.ExceptionExtensions;
     using QMUL.DiabetesBackend.Api.Controllers;
     using ServiceInterfaces;
+    using ServiceInterfaces.Exceptions;
+    using ServiceInterfaces.Validators;
     using Xunit;
     using Task = System.Threading.Tasks.Task;
 
@@ -22,21 +24,14 @@
         public async Task GetAllMedications_WhenRequestIsCorrect_ReturnsOk()
         {
             // Arrange
-            var service = Substitute.For<IMedicationService>();
-            var logger = Substitute.For<ILogger<MedicationController>>();
-            
             var paginatedResult = new PaginatedResult<Bundle>
             {
                 Results = new Bundle()
             };
+            var service = Substitute.For<IMedicationService>();
             service.GetMedicationList(Arg.Any<PaginationRequest>()).Returns(paginatedResult);
-            var controller = new MedicationController(service, logger)
-            {
-                ControllerContext = new ControllerContext
-                {
-                    HttpContext = new DefaultHttpContext(),
-                }
-            };
+
+            var controller = this.GetMedicationController(service);
 
             // Act
             var medications = await controller.GetAllMedications();
@@ -51,15 +46,9 @@
         {
             // Arrange
             var service = Substitute.For<IMedicationService>();
-            var logger = Substitute.For<ILogger<MedicationController>>();
             service.GetMedicationList(Arg.Any<PaginationRequest>()).Throws(new Exception());
-            var controller = new MedicationController(service, logger)
-            {
-                ControllerContext = new ControllerContext
-                {
-                    HttpContext = new DefaultHttpContext(),
-                }
-            };
+
+            var controller = this.GetMedicationController(service);
 
             // Act
             var medications = await controller.GetAllMedications();
@@ -74,10 +63,10 @@
         {
             // Arrange
             var service = Substitute.For<IMedicationService>();
-            var logger = Substitute.For<ILogger<MedicationController>>();
             var id = Guid.NewGuid().ToString();
             service.GetSingleMedication(Arg.Any<string>()).Returns(new Medication());
-            var controller = new MedicationController(service, logger);
+
+            var controller = this.GetMedicationController(service);
 
             // Act
             var medication = await controller.GetMedication(id);
@@ -92,10 +81,10 @@
         {
             // Arrange
             var service = Substitute.For<IMedicationService>();
-            var logger = Substitute.For<ILogger<MedicationController>>();
             var id = Guid.NewGuid().ToString();
             service.GetSingleMedication(Arg.Any<string>()).Throws(new Exception());
-            var controller = new MedicationController(service, logger);
+
+            var controller = this.GetMedicationController(service);
 
             // Act
             var medicationResult = await controller.GetMedication(id);
@@ -110,10 +99,10 @@
         {
             // Arrange
             var service = Substitute.For<IMedicationService>();
-            var logger = Substitute.For<ILogger<MedicationController>>();
             var medication = this.GetTestMedication(Guid.NewGuid().ToString());
             service.CreateMedication(Arg.Any<Medication>()).Returns(medication);
-            var controller = new MedicationController(service, logger);
+
+            var controller = this.GetMedicationController(service);
 
             // Act
             var medicationCreated = await controller.CreateMedication(medication.ToJObject());
@@ -128,13 +117,15 @@
         {
             // Arrange
             var service = Substitute.For<IMedicationService>();
-            var logger = Substitute.For<ILogger<MedicationController>>();
-            var controller = new MedicationController(service, logger);
             var unformattedObject = new InternalPatient();
+            var validator = Substitute.For<IResourceValidator<Medication>>();
+            validator.ParseAndValidateAsync(Arg.Any<JObject>()).Throws(new ValidationException(string.Empty));
+
+            var controller = this.GetMedicationController(service, validator);
 
             // Act
-            var medicationCreated = await controller.CreateMedication(JObject.FromObject(unformattedObject));
-            var result = (StatusCodeResult)medicationCreated;
+            var createdResult = await controller.CreateMedication(JObject.FromObject(unformattedObject));
+            var result = (ObjectResult)createdResult;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
@@ -145,10 +136,10 @@
         {
             // Arrange
             var service = Substitute.For<IMedicationService>();
-            var logger = Substitute.For<ILogger<MedicationController>>();
             service.CreateMedication(Arg.Any<Medication>()).Throws(new Exception());
-            var controller = new MedicationController(service, logger);
             var medication = this.GetTestMedication(Guid.NewGuid().ToString());
+
+            var controller = this.GetMedicationController(service);
 
             // Act
             var medicationCreated = await controller.CreateMedication(medication.ToJObject());
@@ -167,6 +158,21 @@
                 Id = id,
                 Code = new CodeableConcept(),
                 Status = Medication.MedicationStatusCodes.Active
+            };
+        }
+
+        private MedicationController GetMedicationController(IMedicationService service,
+            IResourceValidator<Medication> validator = null)
+        {
+            var logger = Substitute.For<ILogger<MedicationController>>();
+            validator ??= Substitute.For<IResourceValidator<Medication>>();
+
+            return new MedicationController(service, validator, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
             };
         }
 
