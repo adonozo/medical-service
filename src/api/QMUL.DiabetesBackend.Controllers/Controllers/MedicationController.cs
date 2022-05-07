@@ -8,6 +8,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     using Model;
     using Newtonsoft.Json.Linq;
     using ServiceInterfaces;
+    using ServiceInterfaces.Validators;
     using Utils;
 
     [ApiController]
@@ -15,11 +16,14 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     {
         private readonly IMedicationService medicationService;
         private readonly ILogger<MedicationController> logger;
+        private readonly IResourceValidator<Medication> medicationValidator;
 
-        public MedicationController(IMedicationService medicationService, ILogger<MedicationController> logger)
+        public MedicationController(IMedicationService medicationService, ILogger<MedicationController> logger,
+            IResourceValidator<Medication> medicationValidator)
         {
             this.medicationService = medicationService;
             this.logger = logger;
+            this.medicationValidator = medicationValidator;
         }
 
         [HttpGet("medications")]
@@ -51,7 +55,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var parsedRequest = await Helpers.ParseResourceAsync<Medication>(request);
+                var parsedRequest = await this.medicationValidator.ParseAndValidateAsync(request);
                 var result = await this.medicationService.CreateMedication(parsedRequest);
                 return this.Ok(result.ToJObject());
             }, this.logger, this);

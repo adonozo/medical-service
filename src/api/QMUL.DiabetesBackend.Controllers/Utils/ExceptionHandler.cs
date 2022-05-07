@@ -36,10 +36,10 @@ namespace QMUL.DiabetesBackend.Api.Utils
             {
                 return context.BadRequest();
             }
-            catch (FormatException exception)
+            catch (ValidationException exception)
             {
-                logger.LogWarning(exception, "Couldn't parse the request");
-                return context.BadRequest();
+                logger.LogWarning(exception, "Validation Exception");
+                return context.BadRequest(exception.ValidationErrors);
             }
             catch (Exception e)
             {
