@@ -1,7 +1,6 @@
 ﻿namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
 {
     using System;
-    using System.Collections.Generic;
     using Api.Controllers;
     using Api.Models;
     using FluentAssertions;
@@ -16,6 +15,8 @@
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
     using ServiceInterfaces;
+    using ServiceInterfaces.Exceptions;
+    using ServiceInterfaces.Validators;
     using Xunit;
     using Task = System.Threading.Tasks.Task;
 
@@ -26,14 +27,8 @@
         {
             // Arrange
             var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             patientService.CreatePatient(Arg.Any<Patient>()).Returns(new Patient { Id = Guid.NewGuid().ToString() });
+            var controller = this.GetTestPatientController(patientService: patientService);
 
             // Act
             var createdPatient = await controller.CreatePatient(new Patient().ToJObject());
@@ -47,18 +42,13 @@
         public async Task PostGlucoseObservation_WhenRequestIsCorrect_ReturnsStatusOk()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
             var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             var id = Guid.NewGuid().ToString();
             var jObservation = new Observation { Id = id }.ToJObject();
             observationService.CreateObservation(Arg.Any<string>(), Arg.Any<Observation>())
                 .Returns(new Observation());
+
+            var controller = this.GetTestPatientController(observationService: observationService);
 
             // Act
             var createdObservation = await controller.PostGlucoseObservation(id, jObservation);
@@ -72,22 +62,17 @@
         public async Task PostGlucoseObservation_WhenBodyIsUnformatted_ReturnsBadRequest()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             var id = Guid.NewGuid().ToString();
-            observationService.CreateObservation(Arg.Any<string>(), Arg.Any<Observation>())
-                .Throws(new KeyNotFoundException());
+            var validator = Substitute.For<IResourceValidator<Observation>>();
+            validator.ParseAndValidateAsync(Arg.Any<JObject>())
+                .Throws(new ValidationException(string.Empty));
+
+            var controller = this.GetTestPatientController(observationValidator: validator);
 
             // Act
             var createdObservation =
                 await controller.PostGlucoseObservation(id, JObject.FromObject(new InternalPatient()));
-            var result = (StatusCodeResult)createdObservation;
+            var result = (ObjectResult)createdObservation;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
@@ -97,18 +82,13 @@
         public async Task PostGlucoseObservation_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
             var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             var id = Guid.NewGuid().ToString();
             var jObservation = new Observation { Id = id }.ToJObject();
             observationService.CreateObservation(Arg.Any<string>(), Arg.Any<Observation>())
                 .Throws(new Exception());
+
+            var controller = this.GetTestPatientController(observationService: observationService);
 
             // Act
             var createdObservation = await controller.PostGlucoseObservation(id, jObservation);
@@ -123,26 +103,13 @@
         {
             // Arrange
             var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger)
-            {
-                ControllerContext = new ControllerContext
-                {
-                    HttpContext = new DefaultHttpContext(),
-                }
-            };
-
             var paginatedResult = new PaginatedResult<Bundle>
             {
                 Results = new Bundle()
             };
             patientService.GetPatientList(Arg.Any<PaginationRequest>()).Returns(paginatedResult);
+
+            var controller = this.GetTestPatientController(patientService: patientService);
 
             // Act
             var patients = await controller.GetPatients();
@@ -157,14 +124,9 @@
         {
             // Arrange
             var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             patientService.GetPatient(Arg.Any<string>()).Returns(new Patient());
+
+            var controller = this.GetTestPatientController(patientService: patientService);
 
             // Act
             var patient = await controller.GetPatient("john@mail.com");
@@ -179,14 +141,9 @@
         {
             // Arrange
             var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             patientService.GetPatient(Arg.Any<string>()).Throws(new Exception());
+
+            var controller = this.GetTestPatientController(patientService: patientService);
 
             // Act
             var patient = await controller.GetPatient("john@mail.com");
@@ -200,15 +157,10 @@
         public async Task GetPatientCarePlans_WhenRequestIsCorrect_ReturnsStatusOk()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
             var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             carePlanService.GetCarePlanFor(Arg.Any<string>()).Returns(new Bundle());
+            
+            var controller = this.GetTestPatientController(carePlanService: carePlanService);
 
             // Act
             var carePlans = await controller.GetPatientCarePlans("john@mail.com");
@@ -222,15 +174,10 @@
         public async Task GetPatientCarePlans_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
             var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             carePlanService.GetCarePlanFor(Arg.Any<string>()).Throws(new Exception());
+            
+            var controller = this.GetTestPatientController(carePlanService: carePlanService);
 
             // Act
             var carePlans = await controller.GetPatientCarePlans("john@mail.com");
@@ -244,27 +191,15 @@
         public async Task GetActiveMedicationRequests_WhenRequestIsCorrect_ReturnsStatusOk()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
             var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger)
-            {
-                ControllerContext = new ControllerContext
-                {
-                    HttpContext = new DefaultHttpContext(),
-                }
-            };
-
             var paginatedResult = new PaginatedResult<Bundle>
             {
                 Results = new Bundle()
             };
             medicationRequestService.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>())
                 .Returns(paginatedResult);
+
+            var controller = this.GetTestPatientController(medicationRequestService: medicationRequestService);
 
             // Act
             var medicationRequests = await controller.GetActiveMedicationRequests("john@mail.com");
@@ -278,23 +213,11 @@
         public async Task GetActiveMedicationRequests_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
             var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger)
-            {
-                ControllerContext = new ControllerContext
-                {
-                    HttpContext = new DefaultHttpContext(),
-                }
-            };
-
             medicationRequestService.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>())
                 .Throws(new Exception());
+
+            var controller = this.GetTestPatientController(medicationRequestService: medicationRequestService);
 
             // Act
             var medicationRequests = await controller.GetActiveMedicationRequests("john@mail.com");
@@ -308,15 +231,10 @@
         public async Task GetActiveCarePlan_WhenRequestIsCorrect_ReturnsStatusOk()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
             var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             carePlanService.GetActiveCarePlans(Arg.Any<string>()).Returns(new Bundle());
+
+            var controller = this.GetTestPatientController(carePlanService: carePlanService);
 
             // Act
             var carePlan = await controller.GetActiveCarePlan("john@mail.com");
@@ -330,15 +248,10 @@
         public async Task GetActiveCarePlan_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
             var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             carePlanService.GetActiveCarePlans(Arg.Any<string>()).Throws(new Exception());
+
+            var controller = this.GetTestPatientController(carePlanService: carePlanService);
 
             // Act
             var carePlan = await controller.GetActiveCarePlan("john@mail.com");
@@ -352,15 +265,10 @@
         public async Task GetSingleObservation_WhenRequestIsCorrect_ReturnsStatusOk()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
             var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             observationService.GetSingleObservation(Arg.Any<string>()).Returns(new Observation());
+
+            var controller = this.GetTestPatientController(observationService: observationService);
 
             // Act
             var observation = await controller.GetSingleObservation("john@mail.com", Guid.NewGuid().ToString());
@@ -374,15 +282,10 @@
         public async Task GetSingleObservation_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
             var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             observationService.GetSingleObservation(Arg.Any<string>()).Throws(new Exception());
+
+            var controller = this.GetTestPatientController(observationService: observationService);
 
             // Act
             var observation = await controller.GetSingleObservation("john@mail.com", Guid.NewGuid().ToString());
@@ -396,21 +299,7 @@
         public async Task GetPatientObservations_WhenRequestIsCorrect_ReturnsStatusOk()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
             var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger)
-            {
-                ControllerContext = new ControllerContext
-                {
-                    HttpContext = new DefaultHttpContext(),
-                }
-            };
-
             var paginatedResult = new PaginatedResult<Bundle>
             {
                 Results = new Bundle()
@@ -419,6 +308,8 @@
             observationService.GetObservationsFor(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>(),
                     Arg.Any<PaginationRequest>(), Arg.Any<string>())
                 .Returns(paginatedResult);
+            
+            var controller = this.GetTestPatientController(observationService: observationService);
 
             // Act
             var observations = await controller.GetPatientObservations("john@mail.com", DateTime.Now);
@@ -432,24 +323,12 @@
         public async Task GetPatientObservations_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
             var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger)
-            {
-                ControllerContext = new ControllerContext
-                {
-                    HttpContext = new DefaultHttpContext(),
-                }
-            };
-
             observationService.GetObservationsFor(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>(),
                     Arg.Any<PaginationRequest>(), Arg.Any<string>())
                 .Throws(new Exception());
+
+            var controller = this.GetTestPatientController(observationService: observationService);
 
             // Act
             var observations = await controller.GetPatientObservations("john@mail.com", DateTime.Now);
@@ -463,27 +342,15 @@
         public async Task GetAllPatientObservations_WhenRequestIsCorrect_ReturnsStatusOk()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
             var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger)
-            {
-                ControllerContext = new ControllerContext
-                {
-                    HttpContext = new DefaultHttpContext(),
-                }
-            };
-
             var paginatedResult = new PaginatedResult<Bundle>
             {
                 Results = new Bundle()
             };
             observationService.GetAllObservationsFor(Arg.Any<string>(), Arg.Any<PaginationRequest>())
                 .Returns(paginatedResult);
+
+            var controller = this.GetTestPatientController(observationService: observationService);
 
             // Act
             var observations = await controller.GetAllPatientObservations("john@mail.com");
@@ -497,23 +364,11 @@
         public async Task GetAllPatientObservations_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
             var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger)
-            {
-                ControllerContext = new ControllerContext
-                {
-                    HttpContext = new DefaultHttpContext(),
-                }
-            };
-
             observationService.GetAllObservationsFor(Arg.Any<string>(), Arg.Any<PaginationRequest>())
                 .Throws(new Exception());
+
+            var controller = this.GetTestPatientController(observationService: observationService);
 
             // Act
             var observations = await controller.GetAllPatientObservations("john@mail.com");
@@ -527,16 +382,11 @@
         public async Task UpdatePatientTiming_WhenRequestIsCorrect_ReturnsNoContent()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
             var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>())
                 .Returns(true);
+
+            var controller = this.GetTestPatientController(alexaService: alexaService);
 
             // Act
             var updated = await controller.UpdatePatientTiming("john@mail.com", new PatientTimingRequest());
@@ -550,16 +400,11 @@
         public async Task UpdatePatientTiming_WhenDoesNotUpdate_ReturnsBadRequest()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
             var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>())
                 .Returns(false);
+            
+            var controller = this.GetTestPatientController(alexaService: alexaService);
 
             // Act
             var updated = await controller.UpdatePatientTiming("john@mail.com", new PatientTimingRequest());
@@ -573,16 +418,11 @@
         public async Task UpdatePatientTiming_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
             var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>())
                 .Throws(new Exception());
+
+            var controller = this.GetTestPatientController(alexaService: alexaService);
 
             // Act
             var updated = await controller.UpdatePatientTiming("john@mail.com", new PatientTimingRequest());
@@ -596,16 +436,11 @@
         public async Task UpdateDosageStartDate_WhenRequestIsCorrect_ReturnsNoContent()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
             var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             alexaService.UpsertDosageStartDate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTime>())
                 .Returns(true);
+            
+            var controller = this.GetTestPatientController(alexaService: alexaService);
 
             // Act
             var updated = await controller.UpdateDosageStartDate("john@mail.com", Guid.NewGuid().ToString(),
@@ -620,16 +455,11 @@
         public async Task UpdateDosageStartDate_WhenDoesNotUpdate_ReturnsBadRequest()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
             var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             alexaService.UpsertDosageStartDate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTime>())
                 .Returns(false);
+
+            var controller = this.GetTestPatientController(alexaService: alexaService);
 
             // Act
             var updated = await controller.UpdateDosageStartDate("john@mail.com", Guid.NewGuid().ToString(),
@@ -644,16 +474,11 @@
         public async Task UpdateDosageStartDate_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
-            var patientService = Substitute.For<IPatientService>();
             var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
             alexaService.UpsertDosageStartDate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTime>())
                 .Throws(new Exception());
+            
+            var controller = this.GetTestPatientController(alexaService: alexaService);
 
             // Act
             var updated = await controller.UpdateDosageStartDate("john@mail.com", Guid.NewGuid().ToString(),
@@ -669,15 +494,9 @@
         {
             // Arrange
             var patientService = Substitute.For<IPatientService>();
-            var alexaService = Substitute.For<IAlexaService>();
-            var carePlanService = Substitute.For<ICarePlanService>();
-            var observationService = Substitute.For<IObservationService>();
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            var logger = Substitute.For<ILogger<PatientController>>();
-            var controller = new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, logger);
-
             patientService.UpdatePatient(Arg.Any<string>(), Arg.Any<Patient>()).Returns(new Patient());
+
+            var controller = this.GetTestPatientController(patientService: patientService);
 
             // Act
             var updated = await controller.UpdatePatient(Guid.NewGuid().ToString(), new Patient().ToJObject());
@@ -685,6 +504,31 @@
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status202Accepted);
+        }
+
+        private PatientController GetTestPatientController(IPatientService patientService = null,
+            IAlexaService alexaService = null,
+            ICarePlanService carePlanService = null, 
+            IObservationService observationService = null,
+            IMedicationRequestService medicationRequestService = null,
+            IResourceValidator<Observation> observationValidator = null)
+        {
+            patientService ??= Substitute.For<IPatientService>();
+            alexaService ??= Substitute.For<IAlexaService>();
+            carePlanService ??= Substitute.For<ICarePlanService>();
+            observationService ??= Substitute.For<IObservationService>();
+            medicationRequestService ??= Substitute.For<IMedicationRequestService>();
+            observationValidator ??= Substitute.For<IResourceValidator<Observation>>();
+            var logger = Substitute.For<ILogger<PatientController>>();
+            
+            return new PatientController(patientService, alexaService, carePlanService, observationService,
+                medicationRequestService, observationValidator, logger)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
         }
     }
 }
