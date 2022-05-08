@@ -51,8 +51,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var parsedRequest = await Helpers.ParseResourceAsync<MedicationRequest>(request);
-                var result = await this.medicationRequestService.UpdateMedicationRequest(id, parsedRequest);
+                var medicationRequest = await this.validator.ParseAndValidateAsync(request);
+                var result = await this.medicationRequestService.UpdateMedicationRequest(id, medicationRequest);
                 return this.Accepted(result.ToJObject());
             }, this.logger, this);
         }
