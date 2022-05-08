@@ -13,7 +13,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Validators
             RuleFor(timing => timing.Repeat.Bounds)
                 .NotNull()
                 .Must(bounds => bounds is Period or Duration)
-                .WithMessage("Timing.Repeat.Bounds must be of type Period or Duration")
+                .WithMessage("Repeat.Bounds must be of type Period or Duration")
                 .When(timing => timing.Repeat != null);
             
             RuleFor(timing => timing.Repeat.Bounds)
