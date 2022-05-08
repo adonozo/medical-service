@@ -8,6 +8,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Validators
     using Newtonsoft.Json.Linq;
     using ServiceInterfaces.Validators;
     using Utils;
+    using Task = System.Threading.Tasks.Task;
     using ValidationException = ServiceInterfaces.Exceptions.ValidationException;
 
     public abstract class ResourceValidatorBase<T> : AbstractValidator<T>, IResourceValidator<T> where T : Resource
@@ -16,7 +17,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Validators
         public virtual async Task<T> ParseAndValidateAsync(JObject requestObject)
         {
             var resource = await this.ParseObjectAsync(requestObject);
-            this.ValidateResource(resource);
+            await this.ValidateResource(resource);
 
             return resource;
         }
@@ -41,9 +42,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Validators
             }
         }
 
-        private void ValidateResource(T resource)
+        private async Task ValidateResource(T resource)
         {
-            var validationResult = this.Validate(resource);
+            var validationResult = await this.ValidateAsync(resource);
             if (validationResult.IsValid)
             {
                 return;
