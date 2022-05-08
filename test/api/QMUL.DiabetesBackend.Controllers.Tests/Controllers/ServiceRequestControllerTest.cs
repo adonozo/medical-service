@@ -1,16 +1,20 @@
 ﻿namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
 {
     using System;
-    using System.Text.Json;
     using Api.Controllers;
     using FluentAssertions;
     using Hl7.Fhir.Model;
+    using Hl7.Fhir.Serialization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Model;
+    using Newtonsoft.Json.Linq;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
     using ServiceInterfaces;
+    using ServiceInterfaces.Exceptions;
+    using ServiceInterfaces.Validators;
     using Xunit;
     using Task = System.Threading.Tasks.Task;
 
@@ -21,13 +25,14 @@
         {
             // Arrange
             var service = Substitute.For<IServiceRequestService>();
+            var validator = Substitute.For<IResourceValidator<ServiceRequest>>();
             var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, logger);
+            var controller = new ServiceRequestController(service, validator, logger);
             service.GetServiceRequest(Arg.Any<string>()).Returns(new ServiceRequest());
 
             // Act
             var serviceRequest = await controller.GetServiceRequest(Guid.NewGuid().ToString());
-            var result = (ObjectResult) serviceRequest;
+            var result = (ObjectResult)serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -38,13 +43,14 @@
         {
             // Arrange
             var service = Substitute.For<IServiceRequestService>();
+            var validator = Substitute.For<IResourceValidator<ServiceRequest>>();
             var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, logger);
+            var controller = new ServiceRequestController(service, validator, logger);
             service.GetServiceRequest(Arg.Any<string>()).Throws(new Exception());
 
             // Act
             var serviceRequest = await controller.GetServiceRequest(Guid.NewGuid().ToString());
-            var result = (StatusCodeResult) serviceRequest;
+            var result = (StatusCodeResult)serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -55,14 +61,14 @@
         {
             // Arrange
             var service = Substitute.For<IServiceRequestService>();
+            var validator = Substitute.For<IResourceValidator<ServiceRequest>>();
             var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, logger);
-            var jsonService = JsonSerializer.Serialize(new ServiceRequest());
+            var controller = new ServiceRequestController(service, validator, logger);
             service.CreateServiceRequest(Arg.Any<ServiceRequest>()).Returns(new ServiceRequest());
 
             // Act
-            var serviceRequest = await controller.CreateServiceRequest(jsonService);
-            var result = (ObjectResult) serviceRequest;
+            var serviceRequest = await controller.CreateServiceRequest(new ServiceRequest().ToJObject());
+            var result = (ObjectResult)serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -73,12 +79,16 @@
         {
             // Arrange
             var service = Substitute.For<IServiceRequestService>();
+            var validator = Substitute.For<IResourceValidator<ServiceRequest>>();
+            validator.ParseAndValidateAsync(Arg.Any<JObject>())
+                .Throws(new ValidationException(string.Empty));
             var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, logger);
+            var unformattedObject = new InternalPatient();
+            var controller = new ServiceRequestController(service, validator, logger);
 
             // Act
-            var serviceRequest = await controller.CreateServiceRequest("invalid json");
-            var result = (StatusCodeResult) serviceRequest;
+            var serviceRequest = await controller.CreateServiceRequest(JObject.FromObject(unformattedObject));
+            var result = (ObjectResult)serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
@@ -89,14 +99,14 @@
         {
             // Arrange
             var service = Substitute.For<IServiceRequestService>();
+            var validator = Substitute.For<IResourceValidator<ServiceRequest>>();
             var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, logger);
+            var controller = new ServiceRequestController(service, validator, logger);
             service.CreateServiceRequest(Arg.Any<ServiceRequest>()).Throws(new Exception());
-            var jsonService = JsonSerializer.Serialize(new ServiceRequest());
 
             // Act
-            var serviceRequest = await controller.CreateServiceRequest(jsonService);
-            var result = (StatusCodeResult) serviceRequest;
+            var serviceRequest = await controller.CreateServiceRequest(new ServiceRequest().ToJObject());
+            var result = (StatusCodeResult)serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -107,16 +117,16 @@
         {
             // Arrange
             var service = Substitute.For<IServiceRequestService>();
+            var validator = Substitute.For<IResourceValidator<ServiceRequest>>();
             var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, logger);
+            var controller = new ServiceRequestController(service, validator, logger);
             var id = Guid.NewGuid().ToString();
-            var jsonService = JsonSerializer.Serialize(new ServiceRequest());
             service.UpdateServiceRequest(Arg.Any<string>(), Arg.Any<ServiceRequest>())
                 .Returns(new ServiceRequest());
 
             // Act
-            var serviceRequest = await controller.UpdateServiceRequest(id, jsonService);
-            var result = (ObjectResult) serviceRequest;
+            var serviceRequest = await controller.UpdateServiceRequest(id, new ServiceRequest().ToJObject());
+            var result = (ObjectResult)serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status202Accepted);
@@ -127,15 +137,16 @@
         {
             // Arrange
             var service = Substitute.For<IServiceRequestService>();
+            var validator = Substitute.For<IResourceValidator<ServiceRequest>>();
             var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, logger);
-            var jsonService = JsonSerializer.Serialize(new ServiceRequest());
+            var controller = new ServiceRequestController(service, validator, logger);
             service.UpdateServiceRequest(Arg.Any<string>(), Arg.Any<ServiceRequest>())
                 .Throws(new Exception());
 
             // Act
-            var serviceRequest = await controller.UpdateServiceRequest(Guid.NewGuid().ToString(), jsonService);
-            var result = (StatusCodeResult) serviceRequest;
+            var serviceRequest =
+                await controller.UpdateServiceRequest(Guid.NewGuid().ToString(), new ServiceRequest().ToJObject());
+            var result = (StatusCodeResult)serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -146,14 +157,15 @@
         {
             // Arrange
             var service = Substitute.For<IServiceRequestService>();
+            var validator = Substitute.For<IResourceValidator<ServiceRequest>>();
             var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, logger);
+            var controller = new ServiceRequestController(service, validator, logger);
             var id = Guid.NewGuid().ToString();
             service.DeleteServiceRequest(Arg.Any<string>()).Returns(true);
 
             // Act
             var serviceRequest = await controller.DeleteActionResult(id);
-            var result = (StatusCodeResult) serviceRequest;
+            var result = (StatusCodeResult)serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
@@ -164,14 +176,15 @@
         {
             // Arrange
             var service = Substitute.For<IServiceRequestService>();
+            var validator = Substitute.For<IResourceValidator<ServiceRequest>>();
             var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, logger);
+            var controller = new ServiceRequestController(service, validator, logger);
             var id = Guid.NewGuid().ToString();
             service.DeleteServiceRequest(Arg.Any<string>()).Throws(new Exception());
 
             // Act
             var serviceRequest = await controller.DeleteActionResult(id);
-            var result = (StatusCodeResult) serviceRequest;
+            var result = (StatusCodeResult)serviceRequest;
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);

@@ -5,19 +5,23 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     using Hl7.Fhir.Serialization;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json.Linq;
     using ServiceInterfaces;
+    using ServiceInterfaces.Validators;
     using Utils;
 
     [ApiController]
     public class ServiceRequestController : ControllerBase
     {
         private readonly IServiceRequestService serviceRequestService;
+        private readonly IResourceValidator<ServiceRequest> validator;
         private readonly ILogger<ServiceRequestController> logger;
 
         public ServiceRequestController(IServiceRequestService serviceRequestService,
-            ILogger<ServiceRequestController> logger)
+            IResourceValidator<ServiceRequest> validator, ILogger<ServiceRequestController> logger)
         {
             this.serviceRequestService = serviceRequestService;
+            this.validator = validator;
             this.logger = logger;
         }
 
@@ -32,27 +36,23 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpPost("serviceRequests")]
-        public async Task<IActionResult> CreateServiceRequest([FromBody] object request)
+        public async Task<IActionResult> CreateServiceRequest([FromBody] JObject request)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var parser = new FhirJsonParser(new ParserSettings
-                    {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
-                var parsedRequest = await parser.ParseAsync<ServiceRequest>(request.ToString());
-                var result = await this.serviceRequestService.CreateServiceRequest(parsedRequest);
+                var serviceRequest = await this.validator.ParseAndValidateAsync(request);
+                var result = await this.serviceRequestService.CreateServiceRequest(serviceRequest);
                 return this.Ok(result.ToJObject());
             }, this.logger, this);
         }
 
         [HttpPut("serviceRequests/{id}")]
-        public async Task<IActionResult> UpdateServiceRequest([FromRoute] string id, [FromBody] object request)
+        public async Task<IActionResult> UpdateServiceRequest([FromRoute] string id, [FromBody] JObject request)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var parser = new FhirJsonParser(new ParserSettings
-                    {AllowUnrecognizedEnums = true, AcceptUnknownMembers = true, PermissiveParsing = true});
-                var parsedRequest = await parser.ParseAsync<ServiceRequest>(request.ToString());
-                var result = await this.serviceRequestService.UpdateServiceRequest(id, parsedRequest);
+                var serviceRequest = await this.validator.ParseAndValidateAsync(request);
+                var result = await this.serviceRequestService.UpdateServiceRequest(id, serviceRequest);
                 return this.Accepted(result.ToJObject());
             }, this.logger, this);
         }

@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.Api
 {
     using System.Diagnostics.CodeAnalysis;
     using DataInterfaces;
+    using Hl7.Fhir.Model;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
@@ -13,7 +14,9 @@ namespace QMUL.DiabetesBackend.Api
     using MongoDB.Driver;
     using MongoDb.Mapper;
     using ServiceImpl.Implementations;
+    using ServiceImpl.Validators;
     using ServiceInterfaces;
+    using ServiceInterfaces.Validators;
     using Utils;
     using MongoDatabaseSettings = Model.MongoDatabaseSettings;
 
@@ -65,6 +68,12 @@ namespace QMUL.DiabetesBackend.Api
             services.AddSingleton<ICarePlanService, CarePlanService>();
             services.AddSingleton<IAlexaService, AlexaService>();
             services.AddSingleton<IObservationService, ObservationService>();
+
+            services.AddSingleton<IResourceValidator<Medication>, MedicationValidator>();
+            services.AddSingleton<IResourceValidator<MedicationRequest>, MedicationRequestValidator>();
+            services.AddSingleton<IResourceValidator<ServiceRequest>, ServiceRequestValidator>();
+            services.AddSingleton<IResourceValidator<Observation>, ObservationValidator>();
+            services.AddSingleton<IResourceValidator<Patient>, PatientValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
