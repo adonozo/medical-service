@@ -72,6 +72,7 @@ namespace QMUL.DiabetesBackend.Api
             services.AddSingleton<IResourceValidator<Medication>, MedicationValidator>();
             services.AddSingleton<IResourceValidator<MedicationRequest>, MedicationRequestValidator>();
             services.AddSingleton<IResourceValidator<ServiceRequest>, ServiceRequestValidator>();
+            services.AddSingleton<IResourceValidator<Observation>, ObservationValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

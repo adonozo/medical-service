@@ -11,6 +11,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     using Models;
     using Newtonsoft.Json.Linq;
     using ServiceInterfaces;
+    using ServiceInterfaces.Validators;
     using Utils;
 
     [ApiController]
@@ -21,15 +22,21 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         private readonly ICarePlanService carePlanService;
         private readonly IObservationService observationService;
         private readonly IMedicationRequestService medicationRequestService;
+        private readonly IResourceValidator<Observation> observationValidator;
         private readonly ILogger<PatientController> logger;
 
-        public PatientController(IPatientService patientService, IAlexaService alexaService,
-            ICarePlanService carePlanService, IObservationService observationService,
-            IMedicationRequestService medicationRequestService, ILogger<PatientController> logger)
+        public PatientController(IPatientService patientService, 
+            IAlexaService alexaService,
+            ICarePlanService carePlanService, 
+            IObservationService observationService,
+            IMedicationRequestService medicationRequestService,
+            IResourceValidator<Observation> observationValidator,
+            ILogger<PatientController> logger)
         {
             this.patientService = patientService;
             this.alexaService = alexaService;
             this.logger = logger;
+            this.observationValidator = observationValidator;
             this.carePlanService = carePlanService;
             this.observationService = observationService;
             this.medicationRequestService = medicationRequestService;
@@ -58,7 +65,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var observation = await Helpers.ParseResourceAsync<Observation>(newObservation);
+                var observation = await this.observationValidator.ParseAndValidateAsync(newObservation);
                 var result = await this.observationService.CreateObservation(idOrEmail, observation);
                 return this.Ok(result.ToJObject());
             }, this.logger, this);
