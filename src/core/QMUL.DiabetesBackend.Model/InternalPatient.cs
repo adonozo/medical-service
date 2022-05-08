@@ -10,9 +10,6 @@
     /// </summary>
     public class InternalPatient
     {
-        /// <summary>
-        /// This is usually a GUID string. This is not a <see cref="Guid"/> object to keep compatibility with FHIR objects.
-        /// </summary>
         public string Id { get; set; }
 
         public string AlexaUserId { get; set; }
