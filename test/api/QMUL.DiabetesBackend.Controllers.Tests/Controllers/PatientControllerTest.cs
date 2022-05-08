@@ -508,10 +508,11 @@
 
         private PatientController GetTestPatientController(IPatientService patientService = null,
             IAlexaService alexaService = null,
-            ICarePlanService carePlanService = null, 
+            ICarePlanService carePlanService = null,
             IObservationService observationService = null,
             IMedicationRequestService medicationRequestService = null,
-            IResourceValidator<Observation> observationValidator = null)
+            IResourceValidator<Observation> observationValidator = null,
+            IResourceValidator<Patient> patientValidator = null)
         {
             patientService ??= Substitute.For<IPatientService>();
             alexaService ??= Substitute.For<IAlexaService>();
@@ -519,10 +520,11 @@
             observationService ??= Substitute.For<IObservationService>();
             medicationRequestService ??= Substitute.For<IMedicationRequestService>();
             observationValidator ??= Substitute.For<IResourceValidator<Observation>>();
+            patientValidator ??= Substitute.For<IResourceValidator<Patient>>();
             var logger = Substitute.For<ILogger<PatientController>>();
             
             return new PatientController(patientService, alexaService, carePlanService, observationService,
-                medicationRequestService, observationValidator, logger)
+                medicationRequestService, observationValidator, patientValidator, logger)
             {
                 ControllerContext = new ControllerContext
                 {
