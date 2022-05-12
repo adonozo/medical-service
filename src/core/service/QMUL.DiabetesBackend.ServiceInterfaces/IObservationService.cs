@@ -57,12 +57,12 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <summary>
         /// Updates an existing <see cref="Observation"/> with the object.
         /// </summary>
-        /// <param name="observationId">The observation ID.</param>
+        /// <param name="id">The observation ID.</param>
         /// <param name="updatedObservation">The updated <see cref="Observation"/> to insert.</param>
         /// <returns>The updated observation.</returns>
         /// <exception cref="NotFoundException">If the observation was not found.</exception>
         /// <exception cref="UpdateException">If the medication request could not be updated.</exception>
-        public Task<Observation> UpdateObservation(string observationId, Observation updatedObservation);
+        public Task<Observation> UpdateObservation(string id, Observation updatedObservation);
 
         /// <summary>
         /// Updates the value of an <see cref="Observation"/>.
@@ -77,9 +77,9 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <summary>
         /// Deletes an <see cref="Observation"/> given an observation ID.
         /// </summary>
-        /// <param name="observationId">The observation ID to delete.</param>
+        /// <param name="id">The observation ID to delete.</param>
         /// <returns>A boolean, true if the operation was successful.</returns>
         /// <exception cref="NotFoundException">If the observation was not found.</exception>
-        public Task<bool> DeleteObservation(string observationId);
+        public Task<bool> DeleteObservation(string id);
     }
 }

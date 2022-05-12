@@ -93,19 +93,33 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return paginatedResult;
         }
 
-        public Task<Observation> UpdateObservation(string observationId, Observation updatedObservation)
+        public async Task<Observation> UpdateObservation(string id, Observation updatedObservation)
         {
-            throw new NotImplementedException();
+            await ExceptionHandler.ExecuteAndHandleAsync(async () => 
+                await this.observationDao.GetObservation(id), this.logger);
+
+            updatedObservation.Id = id;
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.observationDao.UpdateObservation(id, updatedObservation), this.logger);
         }
 
-        public Task<Observation> UpdateValue(string observationId, DataType value)
+        public async Task<Observation> UpdateValue(string observationId, DataType value)
         {
-            throw new NotImplementedException();
+            var observation = await ExceptionHandler.ExecuteAndHandleAsync(async () => 
+                await this.observationDao.GetObservation(observationId), this.logger);
+
+            observation.Value = value;
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.observationDao.UpdateObservation(observationId, observation), this.logger);
         }
 
-        public Task<bool> DeleteObservation(string observationId)
+        public async Task<bool> DeleteObservation(string id)
         {
-            throw new NotImplementedException();
+            await ExceptionHandler.ExecuteAndHandleAsync(async () => 
+                await this.observationDao.GetObservation(id), this.logger);
+
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.observationDao.DeleteObservation(id), this.logger);
         }
     }
 }

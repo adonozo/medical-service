@@ -5,7 +5,6 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     using Hl7.Fhir.Serialization;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
-    using Model;
     using Model.Utils;
     using Newtonsoft.Json.Linq;
     using ServiceInterfaces;
