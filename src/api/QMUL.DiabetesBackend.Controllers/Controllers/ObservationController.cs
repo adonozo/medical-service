@@ -1,12 +1,12 @@
 namespace QMUL.DiabetesBackend.Api.Controllers
 {
-    using System;
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Serialization;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
     using Model;
+    using Model.Utils;
     using Newtonsoft.Json.Linq;
     using ServiceInterfaces;
     using ServiceInterfaces.Validators;
@@ -69,7 +69,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             {
                 var observation = await this.observationValidator.ParseAndValidateAsync(request);
                 var updatedObservation = await this.observationService.UpdateObservation(id, observation);
-                return this.Ok(updatedObservation.ToJObject());
+                return this.Accepted(updatedObservation.ToJObject());
             }, this.logger, this);
         }
 
@@ -78,8 +78,19 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                throw new NotImplementedException();
-                return this.Ok();
+                var value = await Converter.ToDataTypeAsync<DataType>(request);
+                var updatedObservation = await this.observationService.UpdateValue(id, value);
+                return this.Accepted(updatedObservation);
+            }, this.logger, this);
+        }
+
+        [HttpDelete("observations/{id}")]
+        public async Task<IActionResult> DeleteObservation([FromRoute] string id)
+        {
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+            {
+                await this.observationService.DeleteObservation(id);
+                return this.NoContent();
             }, this.logger, this);
         }
     }
