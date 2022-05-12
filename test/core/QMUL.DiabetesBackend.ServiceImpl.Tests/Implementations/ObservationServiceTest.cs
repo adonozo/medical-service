@@ -80,8 +80,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 .Returns(paginatedResult);
 
             // Act
-            var result = await observationService.GetObservations(new PaginationRequest(20, null),
-                Guid.NewGuid().ToString());
+            var result = await observationService.GetObservations(Guid.NewGuid().ToString(), 
+                new PaginationRequest(20, null));
 
             // Assert
             await observationDao.Received(1).GetAllObservationsFor(Arg.Any<string>(), Arg.Any<PaginationRequest>());

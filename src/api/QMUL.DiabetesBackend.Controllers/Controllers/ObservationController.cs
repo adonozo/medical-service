@@ -27,20 +27,6 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             this.logger = logger;
         }
 
-        [HttpGet("observations")]
-        public async Task<IActionResult> GetObservations([FromQuery] string patientIdOrEmail = null,
-            [FromQuery] int? limit = null, [FromQuery] string after = null)
-        {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var pagination = new PaginationRequest(limit, after);
-                var paginatedResult = await this.observationService.GetObservations(pagination, patientIdOrEmail);
-
-                this.HttpContext.SetPaginatedResult(paginatedResult);
-                return this.Ok(paginatedResult.Results.ToJObject());
-            }, this.logger, this);
-        }
-
         [HttpGet("observations/{id}")]
         public async Task<IActionResult> GetObservation([FromRoute] string id)
         {

@@ -177,7 +177,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var pagination = new PaginationRequest(limit, after);
-                var paginatedResult = await this.observationService.GetObservations(pagination, idOrEmail);
+                var paginatedResult = await this.observationService.GetObservations(idOrEmail, pagination);
 
                 this.HttpContext.SetPaginatedResult(paginatedResult);
                 return this.Ok(paginatedResult.Results.ToJObject());

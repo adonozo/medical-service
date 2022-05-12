@@ -38,7 +38,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="paginationRequest">The paginated request parameters.</param>
         /// <returns>The list of <see cref="Observation"/> for a patient in a paginated <see cref="Bundle"/> object.</returns>
         /// <exception cref="NotFoundException">If the patient was not found.</exception>
-        public Task<PaginatedResult<Bundle>> GetObservations(PaginationRequest paginationRequest, string patientId = null);
+        public Task<PaginatedResult<Bundle>> GetObservations(string patientId, PaginationRequest paginationRequest);
 
         /// <summary>
         /// Gets the <see cref="Observation"/> for a patient given a <see cref="CustomEventTiming"/> event and a datetime.

@@ -54,7 +54,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public async Task<PaginatedResult<Bundle>> GetObservations(PaginationRequest paginationRequest, string patientId = null)
+        public async Task<PaginatedResult<Bundle>> GetObservations(string patientId, PaginationRequest paginationRequest)
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);

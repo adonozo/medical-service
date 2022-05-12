@@ -347,7 +347,7 @@
             {
                 Results = new Bundle()
             };
-            observationService.GetObservations(Arg.Any<PaginationRequest>(), Arg.Any<string>())
+            observationService.GetObservations(Arg.Any<string>(), Arg.Any<PaginationRequest>())
                 .Returns(paginatedResult);
 
             var controller = this.GetTestPatientController(observationService: observationService);
@@ -365,7 +365,7 @@
         {
             // Arrange
             var observationService = Substitute.For<IObservationService>();
-            observationService.GetObservations(Arg.Any<PaginationRequest>(), Arg.Any<string>())
+            observationService.GetObservations(Arg.Any<string>(), Arg.Any<PaginationRequest>())
                 .Throws(new Exception());
 
             var controller = this.GetTestPatientController(observationService: observationService);
