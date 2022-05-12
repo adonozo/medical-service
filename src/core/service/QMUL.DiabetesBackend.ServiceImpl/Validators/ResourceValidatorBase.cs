@@ -5,6 +5,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Validators
     using System.Threading.Tasks;
     using FluentValidation;
     using Hl7.Fhir.Model;
+    using Model.Utils;
     using Newtonsoft.Json.Linq;
     using ServiceInterfaces.Validators;
     using Utils;
@@ -26,7 +27,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Validators
         {
             try
             {
-                return await ValidationHelpers.ParseResourceAsync<T>(jObject);
+                return await Converter.ParseResourceAsync<T>(jObject);
             }
             catch (Exception e)
             {
