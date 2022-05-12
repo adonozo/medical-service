@@ -100,6 +100,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await Helpers.GetPaginatedResult(this.observationCollection, searchFilter, observations);
         }
 
+        /// <inheritdoc />
         public async Task<Observation> UpdateObservation(string id, Observation observation)
         {
             this.logger.LogDebug("Updating Observation with ID {Id}", id);
@@ -115,6 +116,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await this.GetObservation(id);
         }
 
+        /// <inheritdoc />
         public async Task<bool> DeleteObservation(string id)
         {
             this.logger.LogDebug("Deleting Observation with ID: {Id}", id);
