@@ -31,7 +31,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public async Task<Observation> CreateObservation(string patientId, Observation newObservation)
+        public async Task<Observation> CreateObservation(Observation newObservation, string patientId = null)
         {
             // Check if the patient exists
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -45,7 +45,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public async Task<Observation> GetSingleObservation(string observationId)
+        public async Task<Observation> GetObservation(string observationId)
         {
             var observation = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.observationDao.GetObservation(observationId), this.logger);
@@ -54,7 +54,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public async Task<PaginatedResult<Bundle>> GetAllObservationsFor(string patientId, PaginationRequest paginationRequest)
+        public async Task<PaginatedResult<Bundle>> GetObservations(PaginationRequest paginationRequest, string patientId = null)
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
@@ -91,6 +91,21 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId,
                 observations.Results.Count());
             return paginatedResult;
+        }
+
+        public Task<Observation> UpdateObservation(string observationId, Observation updatedObservation)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Observation> UpdateValue(string observationId, DataType value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> DeleteObservation(string observationId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

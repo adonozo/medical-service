@@ -27,5 +27,27 @@
     "unit": "mmol/l",
     "system": "http://unitsofmeasure.org",
     "code": "mmol/L"
-  }
+  },
+  "referenceRange": [
+    {
+      "low": {
+        "value": 3.1,
+        "unit": "mmol/l",
+        "system": "http://unitsofmeasure.org",
+        "code": "mmol/L"
+      },
+      "high": {
+        "value": 6.2,
+        "unit": "mmol/l",
+        "system": "http://unitsofmeasure.org",
+        "code": "mmol/L"
+      }
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://www.diabetesreminder.com/observationTiming",
+      "valueCode": "ACM"
+    }
+  ]
 }

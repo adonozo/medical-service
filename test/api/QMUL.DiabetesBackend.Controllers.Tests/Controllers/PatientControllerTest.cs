@@ -45,7 +45,7 @@
             var observationService = Substitute.For<IObservationService>();
             var id = Guid.NewGuid().ToString();
             var jObservation = new Observation { Id = id }.ToJObject();
-            observationService.CreateObservation(Arg.Any<string>(), Arg.Any<Observation>())
+            observationService.CreateObservation(Arg.Any<Observation>(), Arg.Any<string>())
                 .Returns(new Observation());
 
             var controller = this.GetTestPatientController(observationService: observationService);
@@ -85,7 +85,7 @@
             var observationService = Substitute.For<IObservationService>();
             var id = Guid.NewGuid().ToString();
             var jObservation = new Observation { Id = id }.ToJObject();
-            observationService.CreateObservation(Arg.Any<string>(), Arg.Any<Observation>())
+            observationService.CreateObservation(Arg.Any<Observation>(), Arg.Any<string>())
                 .Throws(new Exception());
 
             var controller = this.GetTestPatientController(observationService: observationService);
@@ -266,7 +266,7 @@
         {
             // Arrange
             var observationService = Substitute.For<IObservationService>();
-            observationService.GetSingleObservation(Arg.Any<string>()).Returns(new Observation());
+            observationService.GetObservation(Arg.Any<string>()).Returns(new Observation());
 
             var controller = this.GetTestPatientController(observationService: observationService);
 
@@ -283,7 +283,7 @@
         {
             // Arrange
             var observationService = Substitute.For<IObservationService>();
-            observationService.GetSingleObservation(Arg.Any<string>()).Throws(new Exception());
+            observationService.GetObservation(Arg.Any<string>()).Throws(new Exception());
 
             var controller = this.GetTestPatientController(observationService: observationService);
 
@@ -347,7 +347,7 @@
             {
                 Results = new Bundle()
             };
-            observationService.GetAllObservationsFor(Arg.Any<string>(), Arg.Any<PaginationRequest>())
+            observationService.GetObservations(Arg.Any<PaginationRequest>(), Arg.Any<string>())
                 .Returns(paginatedResult);
 
             var controller = this.GetTestPatientController(observationService: observationService);
@@ -365,7 +365,7 @@
         {
             // Arrange
             var observationService = Substitute.For<IObservationService>();
-            observationService.GetAllObservationsFor(Arg.Any<string>(), Arg.Any<PaginationRequest>())
+            observationService.GetObservations(Arg.Any<PaginationRequest>(), Arg.Any<string>())
                 .Throws(new Exception());
 
             var controller = this.GetTestPatientController(observationService: observationService);
