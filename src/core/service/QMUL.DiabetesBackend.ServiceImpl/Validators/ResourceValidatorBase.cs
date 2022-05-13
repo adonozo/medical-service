@@ -51,7 +51,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Validators
                 return;
             }
 
-            throw new ValidationException("Medication is invalid")
+            throw new ValidationException("Resource is invalid")
             {
                 ValidationErrors = validationResult.GetErrorsDictionary()
             };

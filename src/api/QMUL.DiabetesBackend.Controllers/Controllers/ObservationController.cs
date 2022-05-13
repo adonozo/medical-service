@@ -5,7 +5,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     using Hl7.Fhir.Serialization;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
-    using Model.Utils;
+    using Model;
     using Newtonsoft.Json.Linq;
     using ServiceInterfaces;
     using ServiceInterfaces.Validators;
@@ -16,13 +16,17 @@ namespace QMUL.DiabetesBackend.Api.Controllers
     {
         private readonly IObservationService observationService;
         private readonly IResourceValidator<Observation> observationValidator;
+        private readonly IDataTypeValidator dataTypeValidator;
         private readonly ILogger<ObservationController> logger;
 
         public ObservationController(IObservationService observationService,
-            IResourceValidator<Observation> observationValidator, ILogger<ObservationController> logger)
+            IResourceValidator<Observation> observationValidator,
+            IDataTypeValidator dataTypeValidator,
+            ILogger<ObservationController> logger)
         {
             this.observationService = observationService;
             this.observationValidator = observationValidator;
+            this.dataTypeValidator = dataTypeValidator;
             this.logger = logger;
         }
 
@@ -59,13 +63,13 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpPatch("observations/{id}/value")]
-        public async Task<IActionResult> PatchObservationValue([FromRoute] string id, [FromBody] JObject request)
+        public async Task<IActionResult> PatchObservationValue([FromRoute] string id, [FromBody] DataTypeWrapper wrapper)
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var value = await Converter.ToDataTypeAsync<DataType>(request);
+                var value = await this.dataTypeValidator.ParseAndValidateAsync(wrapper);
                 var updatedObservation = await this.observationService.UpdateValue(id, value);
-                return this.Accepted(updatedObservation);
+                return this.Accepted(updatedObservation.ToJObject());
             }, this.logger, this);
         }
 
