@@ -49,5 +49,21 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <see cref="PaginatedResult{T}"/> object.</returns>
         public Task<PaginatedResult<IEnumerable<Resource>>> GetObservationsFor(string patientId, DateTime start,
             DateTime end, PaginationRequest paginationRequest);
+
+        /// <summary>
+        /// Updates a given <see cref="Observation"/>.
+        /// </summary>
+        /// <param name="id">The observation ID.</param>
+        /// <param name="observation">The <see cref="Observation"/> to update.</param>
+        /// <returns>The updated observation if the update was successful</returns>
+        /// <exception cref="UpdateException">If the observation could not be updated</exception>
+        public Task<Observation> UpdateObservation(string id, Observation observation);
+
+        /// <summary>
+        /// Deletes an <see cref="Observation"/> given an ID.
+        /// </summary>
+        /// <param name="id">The observation ID to delete.</param>
+        /// <returns>True if the observation was deleted. False otherwise</returns>
+        public Task<bool> DeleteObservation(string id);
     }
 }

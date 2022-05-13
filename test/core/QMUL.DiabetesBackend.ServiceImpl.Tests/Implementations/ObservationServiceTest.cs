@@ -35,7 +35,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 .Returns(observation);
 
             // Act
-            var result = await observationService.CreateObservation(patient.Id, observation);
+            var result = await observationService.CreateObservation(observation, patient.Id);
 
             // Assert
             result.Should().BeOfType<Observation>();
@@ -55,7 +55,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             observationDao.GetObservation(Arg.Any<string>()).Returns(new Observation());
 
             // Act
-            var result = await observationService.GetSingleObservation(Guid.NewGuid().ToString());
+            var result = await observationService.GetObservation(Guid.NewGuid().ToString());
 
             // Assert
             result.Should().BeOfType<Observation>();
@@ -80,7 +80,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 .Returns(paginatedResult);
 
             // Act
-            var result = await observationService.GetAllObservationsFor(Guid.NewGuid().ToString(),
+            var result = await observationService.GetObservations(Guid.NewGuid().ToString(), 
                 new PaginationRequest(20, null));
 
             // Assert

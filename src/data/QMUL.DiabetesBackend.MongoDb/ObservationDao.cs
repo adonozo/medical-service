@@ -100,6 +100,30 @@ namespace QMUL.DiabetesBackend.MongoDb
             return await Helpers.GetPaginatedResult(this.observationCollection, searchFilter, observations);
         }
 
+        /// <inheritdoc />
+        public async Task<Observation> UpdateObservation(string id, Observation observation)
+        {
+            this.logger.LogDebug("Updating Observation with ID {Id}", id);
+            var document = await Helpers.ToBsonDocumentAsync(observation);
+            var result = await this.observationCollection.ReplaceOneAsync(Helpers.GetByIdFilter(id),
+                document);
+            
+            var errorMessage = $"There was an error updating the Observation {id}";
+            this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new UpdateException(errorMessage),
+                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
+            this.logger.LogDebug("Observation updated {Id}", id);
+
+            return await this.GetObservation(id);
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> DeleteObservation(string id)
+        {
+            this.logger.LogDebug("Deleting Observation with ID: {Id}", id);
+            var result = await this.observationCollection.DeleteOneAsync(Helpers.GetByIdFilter(id));
+            return result.IsAcknowledged;
+        }
+
         private async Task<Observation> ProjectToObservation(BsonDocument document)
         {
             document["issued"] = document["issued"].ToString();
