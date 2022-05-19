@@ -9,9 +9,6 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
     using Model.Constants;
     using MongoDB.Bson;
     using MongoDB.Driver;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-    using Newtonsoft.Json.Serialization;
 
     public static class Helpers
     {
@@ -36,7 +33,8 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
         /// <returns>The ID's "eq" filter definition.</returns>
         public static FilterDefinition<BsonDocument> GetByIdFilter(string id)
         {
-            return Builders<BsonDocument>.Filter.Eq("_id", new ObjectId(id));
+            var objectId = ObjectId.TryParse(id, out var parsedId) ? parsedId : ObjectId.GenerateNewId();
+            return Builders<BsonDocument>.Filter.Eq("_id", objectId);
         }
 
         /// <summary>
@@ -85,25 +83,6 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
             var resource = await parser.ParseAsync<T>(document.ToJson());
             resource.Id = id;
 
-            return resource;
-        }
-
-        /// <summary>
-        /// Converts an object to an instance of <see cref="DataType"/>, using JSON underneath.
-        /// </summary>
-        /// <param name="data">The object to convert.</param>
-        /// <typeparam name="T">The data type to convert into.</typeparam>
-        /// <returns>The converted object, or null if the conversion was not successful.</returns>
-        public static async Task<T> ToDataTypeAsync<T>(object data) where T : DataType
-        {
-            var serializer = new JsonSerializer
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            };
-            var jObject = JObject.FromObject(data, serializer);
-            var parser = new FhirJsonParser(new ParserSettings
-                { AllowUnrecognizedEnums = true, AcceptUnknownMembers = false, PermissiveParsing = false });
-            var resource = await parser.ParseAsync<T>(jObject.ToString());
             return resource;
         }
 

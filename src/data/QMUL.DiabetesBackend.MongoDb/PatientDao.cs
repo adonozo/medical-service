@@ -9,6 +9,7 @@ namespace QMUL.DiabetesBackend.MongoDb
     using Microsoft.Extensions.Logging;
     using Model;
     using Model.Extensions;
+    using Model.Utils;
     using MongoDB.Bson;
     using MongoDB.Driver;
     using Utils;
@@ -135,7 +136,7 @@ namespace QMUL.DiabetesBackend.MongoDb
 
             if (patient.Phones != null)
             {
-                var phonesTask = patient.Phones.Select(Helpers.ToDataTypeAsync<ContactPoint>);
+                var phonesTask = patient.Phones.Select(Converter.ToDataTypeAsync<ContactPoint>);
                 var phones = await Task.WhenAll(phonesTask);
                 oldPatient.Telecom = phones.ToList();
             }

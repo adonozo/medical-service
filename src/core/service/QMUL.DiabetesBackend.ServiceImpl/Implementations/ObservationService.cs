@@ -30,10 +30,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.logger = logger;
         }
 
-        /// <inheritdoc/>>
-        public async Task<Observation> CreateObservation(string patientId, Observation newObservation)
+        /// <inheritdoc/>
+        public async Task<Observation> CreateObservation(Observation newObservation, string patientId = null)
         {
             // Check if the patient exists
+            patientId ??= newObservation.Subject.GetPatientIdFromReference();
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
             newObservation.Subject.SetPatientReference(patientId);
@@ -44,8 +45,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return observation;
         }
 
-        /// <inheritdoc/>>
-        public async Task<Observation> GetSingleObservation(string observationId)
+        /// <inheritdoc/>
+        public async Task<Observation> GetObservation(string observationId)
         {
             var observation = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.observationDao.GetObservation(observationId), this.logger);
@@ -53,8 +54,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return observation;
         }
 
-        /// <inheritdoc/>>
-        public async Task<PaginatedResult<Bundle>> GetAllObservationsFor(string patientId, PaginationRequest paginationRequest)
+        /// <inheritdoc/>
+        public async Task<PaginatedResult<Bundle>> GetObservations(string patientId, PaginationRequest paginationRequest)
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
@@ -65,7 +66,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             return paginateResult;
         }
 
-        /// <inheritdoc/>>
+        /// <inheritdoc/>
         public async Task<PaginatedResult<Bundle>> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime,
             PaginationRequest paginationRequest, string patientTimezone = "UTC")
         {
@@ -91,6 +92,41 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId,
                 observations.Results.Count());
             return paginatedResult;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Observation> UpdateObservation(string id, Observation updatedObservation)
+        {
+            var patientId = updatedObservation.Subject.GetPatientIdFromReference();
+            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
+            await ExceptionHandler.ExecuteAndHandleAsync(async () => 
+                await this.observationDao.GetObservation(id), this.logger);
+
+            updatedObservation.Id = id;
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.observationDao.UpdateObservation(id, updatedObservation), this.logger);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Observation> UpdateValue(string observationId, DataType value)
+        {
+            var observation = await ExceptionHandler.ExecuteAndHandleAsync(async () => 
+                await this.observationDao.GetObservation(observationId), this.logger);
+
+            observation.Value = value;
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.observationDao.UpdateObservation(observationId, observation), this.logger);
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> DeleteObservation(string id)
+        {
+            await ExceptionHandler.ExecuteAndHandleAsync(async () => 
+                await this.observationDao.GetObservation(id), this.logger);
+
+            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.observationDao.DeleteObservation(id), this.logger);
         }
     }
 }

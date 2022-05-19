@@ -69,7 +69,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var observation = await this.observationValidator.ParseAndValidateAsync(newObservation);
-                var result = await this.observationService.CreateObservation(idOrEmail, observation);
+                var result = await this.observationService.CreateObservation(observation, idOrEmail);
                 return this.Ok(result.ToJObject());
             }, this.logger, this);
         }
@@ -146,7 +146,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         {
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
-                var result = await this.observationService.GetSingleObservation(observationId);
+                var result = await this.observationService.GetObservation(observationId);
                 return this.Ok(result.ToJObject());
             }, this.logger, this);
         }
@@ -177,7 +177,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
             {
                 var pagination = new PaginationRequest(limit, after);
-                var paginatedResult = await this.observationService.GetAllObservationsFor(idOrEmail, pagination);
+                var paginatedResult = await this.observationService.GetObservations(idOrEmail, pagination);
 
                 this.HttpContext.SetPaginatedResult(paginatedResult);
                 return this.Ok(paginatedResult.Results.ToJObject());
