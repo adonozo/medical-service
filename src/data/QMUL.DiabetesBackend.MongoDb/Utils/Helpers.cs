@@ -33,7 +33,8 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
         /// <returns>The ID's "eq" filter definition.</returns>
         public static FilterDefinition<BsonDocument> GetByIdFilter(string id)
         {
-            return Builders<BsonDocument>.Filter.Eq("_id", new ObjectId(id));
+            var objectId = ObjectId.TryParse(id, out var parsedId) ? parsedId : ObjectId.GenerateNewId();
+            return Builders<BsonDocument>.Filter.Eq("_id", objectId);
         }
 
         /// <summary>
