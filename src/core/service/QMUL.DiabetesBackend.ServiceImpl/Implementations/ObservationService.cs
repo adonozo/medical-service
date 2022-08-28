@@ -37,7 +37,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             patientId ??= newObservation.Subject.GetPatientIdFromReference();
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
-            newObservation.Subject.SetPatientReference(patientId);
+            newObservation.Subject.SetPatientReference(patient.Id);
             newObservation.Subject.Display = patient.Name[0].Family;
             var observation = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.observationDao.CreateObservation(newObservation), this.logger);
