@@ -103,7 +103,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// <param name="timing">The timing event.</param>
         /// <param name="timezone">The patient's timezone.</param>
         /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">If there is no a default value for the timing event.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If there is not a default value for the timing event.</exception>
         public static Tuple<DateTimeOffset, DateTimeOffset> GetIntervalFromCustomEventTiming(DateTimeOffset startTime, CustomEventTiming timing, string timezone)
         {
             DateTimeOffset endTime;
