@@ -104,5 +104,16 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <exception cref="NotFoundException">If the patient is not found.</exception>
         /// <exception cref="UpdateException">If there is an error updating the patient's timing</exception>
         Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, DateTime startDate);
+
+        /// <summary>
+        /// Updates / Adds a start date for a service request. Useful when the service request doesn't have an exact
+        /// start date and it has a duration rather than a period, e.g., for 7 days, for a month, etc.
+        /// The associated health events are updated as well by deleting old events and creating new ones.
+        /// </summary>
+        /// <param name="patientIdOrEmail">The patient's ID or email.</param>
+        /// <param name="serviceRequestId">The service request ID to update.</param>
+        /// <param name="startDate">The start date.</param>
+        /// <returns>A boolean value to indicate is the update was successful.</returns>
+        Task<bool> UpsertServiceRequestStartDate(string patientIdOrEmail, string serviceRequestId, DateTime startDate);
     }
 }
