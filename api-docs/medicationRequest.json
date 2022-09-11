@@ -105,10 +105,12 @@
           }
         }
       ],
-      "extension": {
-        "url": "http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate",
-        "valueDateTime": "2021-08-02T19:30:00.000+00:00"
-      }
+      "extension": [
+        {
+          "url": "http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate",
+          "valueDateTime": "2021-08-02T19:30:00.000+00:00"
+        }
+      ]
     },
     {
       "sequence": 2,
@@ -144,10 +146,12 @@
           }
         }
       ],
-      "extension": {
-        "url": "http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate",
-        "valueDateTime": "2021-08-02T19:30:00.000+00:00"
-      }
+      "extension": [
+        {
+          "url": "http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate",
+          "valueDateTime": "2021-08-02T19:30:00.000+00:00"
+        }
+      ]
     },
     {
       "sequence": 1,
@@ -183,10 +187,12 @@
           }
         }
       ],
-      "extension": {
-        "url": "http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate",
-        "valueDateTime": "2021-08-02T19:30:00.000+00:00"
-      }
+      "extension": [
+        {
+          "url": "http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate",
+          "valueDateTime": "2021-08-02T19:30:00.000+00:00"
+        }
+      ]
     }
   ]
 }
