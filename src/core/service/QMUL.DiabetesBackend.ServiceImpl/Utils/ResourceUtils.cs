@@ -58,6 +58,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             };
         }
 
+        public static IEnumerable<HealthEvent> GenerateEventsFrom(DomainResource request, InternalPatient patient) =>
+            request switch
+            {
+                ServiceRequest serviceRequest => GenerateEventsFrom(serviceRequest, patient),
+                MedicationRequest medicationRequest => GenerateEventsFrom(medicationRequest, patient),
+                _ => throw new ArgumentException("Request is not a service or medication request", nameof(request))
+            };
+
         /// <summary>
         /// Creates a list of events based on medication timings.
         /// </summary>
@@ -96,6 +104,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// <returns>A List of events for the medication request</returns>
         public static IEnumerable<HealthEvent> GenerateEventsFrom(ServiceRequest request, InternalPatient patient)
         {
+            // Occurrence must be expressed as a timing instance
+            if (request.Occurrence is not Timing timing)
+            {
+                throw new InvalidOperationException("Service Request Occurrence must be a Timing instance");
+            }
+
             var events = new List<HealthEvent>();
             var requestReference = new ResourceReference
             {
@@ -105,12 +119,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 Text = request.PatientInstruction,
                 StartDate = request.GetStartDate()?.UtcDateTime
             };
-
-            // Occurrence must be expressed as a timing instance
-            if (request.Occurrence is not Timing timing)
-            {
-                throw new InvalidOperationException("Service Request Occurrence must be a Timing instance");
-            }
 
             var eventsGenerator = new EventsGenerator(patient, timing, requestReference);
             events.AddRange(eventsGenerator.GetEvents());

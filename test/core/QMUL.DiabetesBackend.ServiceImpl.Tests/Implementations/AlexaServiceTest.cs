@@ -293,8 +293,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
             patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
             var dosageId = Guid.NewGuid().ToString();
+            var medicationRequestId = Guid.NewGuid().ToString();
+            var medicationRequest = GetTestMedicationRequest(dosageId, medicationRequestId);
             medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
-                .Returns(GetTestMedicationRequest(dosageId));
+                .Returns(medicationRequest);
             eventDao.DeleteEventSeries(Arg.Any<string>()).Returns(true);
             eventDao.CreateEvents(Arg.Any<IEnumerable<HealthEvent>>()).Returns(true);
             var expectedDate = DateTime.Now;
@@ -303,7 +305,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             await alexaService.UpsertDosageStartDate(Guid.NewGuid().ToString(), dosageId, expectedDate);
 
             // Assert
-            await eventDao.Received(1).DeleteEventSeries(dosageId);
+            await eventDao.Received(1).DeleteEventSeries(medicationRequestId);
             await eventDao.Received(1).CreateEvents(Arg.Any<IEnumerable<HealthEvent>>());
         }
 
@@ -445,10 +447,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
 
         #region Private methods
 
-        private MedicationRequest GetTestMedicationRequest(string dosageId)
+        private MedicationRequest GetTestMedicationRequest(string dosageId, string medicationRequestId = null)
         {
             return new()
             {
+                Id = medicationRequestId,
                 DosageInstruction = new List<Dosage>
                 {
                     new()

@@ -161,9 +161,20 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
             var internalPatient = patient.ToInternalPatient();
-            await this.UpdateHealthEvents(internalPatient, dosageId, startDate);
+            await this.SetDosageStartDate(internalPatient, dosageId, startDate);
             this.logger.LogDebug("Dosage start date updated for {IdOrEmail}: {DosageId}, {DateTime}", patientIdOrEmail,
                 dosageId, startDate);
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> UpsertServiceRequestStartDate(string patientIdOrEmail, string serviceRequestId,
+            DateTime startDate)
+        {
+            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
+            var internalPatient = patient.ToInternalPatient();
+            await this.SetServiceRequestStartDate(internalPatient, serviceRequestId, startDate);
             return true;
         }
 
@@ -345,6 +356,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <summary>
+        /// Sets the start date for a medication's request dosage.
         /// Updates a list of health events that belongs to a medication request that has a specific dosage ID. To update
         /// events, they are deleted and created again. 
         /// </summary>
@@ -353,17 +365,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <param name="startDate">When this dosage has been started.</param>
         /// <returns>True if the update was successful. False otherwise.</returns>
         /// <exception cref="ArgumentException">If the events were not deleted.</exception>
-        private async Task UpdateHealthEvents(InternalPatient patient, string dosageId, DateTime startDate)
+        private async Task SetDosageStartDate(InternalPatient patient, string dosageId, DateTime startDate)
         {
             var medicationRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.medicationRequestDao.GetMedicationRequestForDosage(patient.Id, dosageId), this.logger);
-            var deleteEvents = await this.eventDao.DeleteEventSeries(dosageId);
-            if (!deleteEvents)
-            {
-                this.logger.LogWarning("Could not delete events series for dosage {Id}", dosageId);
-                throw new UpdateException("Unable to delete events for requested dosage");
-            }
-
+            
             var index = medicationRequest.DosageInstruction.FindIndex(dose => dose.ElementId == dosageId);
             if (index < 0)
             {
@@ -375,9 +381,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 await this.medicationRequestDao.UpdateMedicationRequest(medicationRequest.Id, medicationRequest), this.logger);
 
             medicationRequest = GetMedicationRequestWithSingleDosage(medicationRequest, dosageId);
-            var events = ResourceUtils.GenerateEventsFrom(medicationRequest, patient);
+            
             await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.eventDao.CreateEvents(events), this.logger);
+                await this.UpdateHealthEvents(medicationRequest, patient), this.logger);
         }
 
         private static MedicationRequest GetMedicationRequestWithSingleDosage(MedicationRequest request,
@@ -391,6 +397,31 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
 
             request.DosageInstruction = new List<Dosage> {dosage};
             return request;
+        }
+
+        private async Task SetServiceRequestStartDate(InternalPatient patient, string serviceRequestId, DateTime startDate)
+        {
+            var serviceRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.serviceRequestDao.GetServiceRequest(serviceRequestId), this.logger);
+            serviceRequest.SetStartDate(startDate);
+            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.serviceRequestDao.UpdateServiceRequest(serviceRequestId, serviceRequest), this.logger);
+
+            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+                await this.UpdateHealthEvents(serviceRequest, patient), this.logger);
+        }
+
+        private async Task<bool> UpdateHealthEvents(DomainResource request, InternalPatient patient)
+        {
+            var deleteEvents = await this.eventDao.DeleteEventSeries(request.Id);
+            if (!deleteEvents)
+            {
+                this.logger.LogWarning("Could not delete events series for dosage {Id}", request.Id);
+                throw new UpdateException("Unable to delete events for requested dosage");
+            }
+            
+            var events = ResourceUtils.GenerateEventsFrom(request, patient);
+            return await this.eventDao.CreateEvents(events);
         }
     }
 }

@@ -26,9 +26,9 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         private readonly IResourceValidator<Patient> patientValidator;
         private readonly ILogger<PatientController> logger;
 
-        public PatientController(IPatientService patientService, 
+        public PatientController(IPatientService patientService,
             IAlexaService alexaService,
-            ICarePlanService carePlanService, 
+            ICarePlanService carePlanService,
             IObservationService observationService,
             IMedicationRequestService medicationRequestService,
             IResourceValidator<Observation> observationValidator,
@@ -218,6 +218,18 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
             {
                 var result = await this.alexaService.UpsertDosageStartDate(idOrEmail, dosageId, startDate.StartDate);
+                return result ? this.NoContent() : this.BadRequest();
+            }, this.logger, this);
+        }
+
+        [HttpPut("patients/{idOrEmail}/serviceRequest/{serviceRequestId}/startDate")]
+        public async Task<IActionResult> UpdateServiceRequestStartDate([FromRoute] string idOrEmail,
+            [FromRoute] string serviceRequestId, [FromBody] PatientStartDateRequest startDate)
+        {
+            return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
+            {
+                var result =
+                    await this.alexaService.UpsertServiceRequestStartDate(idOrEmail, serviceRequestId, startDate.StartDate);
                 return result ? this.NoContent() : this.BadRequest();
             }, this.logger, this);
         }
