@@ -384,9 +384,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             
             await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.UpdateHealthEvents(medicationRequest, patient), this.logger);
-            var events = ResourceUtils.GenerateEventsFrom(medicationRequest, patient);
-            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.eventDao.CreateEvents(events), this.logger);
         }
 
         private static MedicationRequest GetMedicationRequestWithSingleDosage(MedicationRequest request,
