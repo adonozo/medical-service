@@ -104,6 +104,12 @@
             "code": "U"
           }
         }
+      ],
+      "extension": [
+        {
+          "url": "http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate",
+          "valueDateTime": "2021-08-02T19:30:00.000+00:00"
+        }
       ]
     },
     {
@@ -139,6 +145,12 @@
             "code": "U"
           }
         }
+      ],
+      "extension": [
+        {
+          "url": "http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate",
+          "valueDateTime": "2021-08-02T19:30:00.000+00:00"
+        }
       ]
     },
     {
@@ -173,6 +185,12 @@
             "system": "http://unitsofmeasure.org",
             "code": "U"
           }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate",
+          "valueDateTime": "2021-08-02T19:30:00.000+00:00"
         }
       ]
     }

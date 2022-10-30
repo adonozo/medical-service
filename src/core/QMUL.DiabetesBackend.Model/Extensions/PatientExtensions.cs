@@ -21,12 +21,11 @@ namespace QMUL.DiabetesBackend.Model.Extensions
 
         public static Dictionary<CustomEventTiming, DateTimeOffset> GetTimingPreference(this Patient patient)
         {
-            var startDates = new Dictionary<CustomEventTiming, DateTimeOffset>();
             var preferenceExtension = patient
                 .GetExtension(Extensions.PatientTimingPreference);
             if (preferenceExtension == null)
             {
-                return startDates;
+                return new Dictionary<CustomEventTiming, DateTimeOffset>();
             }
 
             var preferences = preferenceExtension.Extension
@@ -48,20 +47,22 @@ namespace QMUL.DiabetesBackend.Model.Extensions
         public static void SetTimingPreferences(this Patient patient,
             Dictionary<CustomEventTiming, DateTimeOffset> preferences)
         {
-            patient.ModifierExtension = new List<Extension>();
-            var timingExtension = new Extension
-            {
-                Url = Extensions.PatientTimingPreference
-            };
+            var patientTimings = patient.GetExtension(Extensions.PatientTimingPreference);
+            var timingExtension = patientTimings
+                                  ?? new Extension
+                                  {
+                                      Url = Extensions.PatientTimingPreference
+                                  };
 
-            foreach (var preference in preferences)
+            foreach (var (timing, dateTimeOffset) in preferences)
             {
-                var uri = preference.Key.ToString();
-                var dateTime = new FhirDateTime(preference.Value);
+                var uri = timing.ToString();
+                var dateTime = new FhirDateTime(dateTimeOffset);
                 timingExtension.SetExtension(uri, dateTime);
             }
 
-            patient.ModifierExtension.Add(timingExtension);
+            patient.RemoveExtension(Extensions.PatientTimingPreference);
+            patient.Extension.Add(timingExtension);
         }
 
         public static void SetAlexaIdExtension(this Patient patient, string alexaId)

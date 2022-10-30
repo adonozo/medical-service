@@ -106,7 +106,7 @@
         {
             var filters = Builders<BsonDocument>.Filter.And(
                 Helpers.GetPatientReferenceFilter(patientId),
-                Builders<BsonDocument>.Filter.Eq("dosageInstruction.elementId", dosageId));
+                Builders<BsonDocument>.Filter.Eq("dosageInstruction.id", dosageId));
             var cursor = this.medicationRequestCollection.Find(filters);
             var errorMessage = $"Could not found the medication request for the dosage ID {dosageId}";
             var document = await this.GetSingleOrThrow(cursor, new NotFoundException(errorMessage));

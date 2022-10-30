@@ -34,5 +34,11 @@
       ]
     }
   },
-  "patientInstruction": "Measure your blood glucose before meals."
+  "patientInstruction": "Measure your blood glucose before meals.",
+  "extension": [
+    {
+      "url": "http://diabetes-assistant.com/fhir/StructureDefinition/ServiceRequestStartDate",
+      "valueDateTime": "2021-08-02T19:30:00.000+00:00"
+    }
+  ]
 }
