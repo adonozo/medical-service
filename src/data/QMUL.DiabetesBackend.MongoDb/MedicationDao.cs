@@ -1,14 +1,15 @@
 namespace QMUL.DiabetesBackend.MongoDb
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using MongoDB.Bson;
     using MongoDB.Driver;
     using DataInterfaces;
-    using DataInterfaces.Exceptions;
     using Microsoft.Extensions.Logging;
     using Model;
+    using Model.Exceptions;
     using Utils;
     using Task = System.Threading.Tasks.Task;
 
@@ -69,10 +70,10 @@ namespace QMUL.DiabetesBackend.MongoDb
             var newId = document["_id"].ToString();
             this.logger.LogDebug("Medication created with ID: {Id}", newId);
             var errorMessage = $"Could not create medication. ID assigned was: {newId}";
-            return await this.GetSingleMedicationOrThrow(newId, new CreateException(errorMessage));
+            return await this.GetSingleMedicationOrThrow(newId, new WriteResourceException(errorMessage));
         }
 
-        private async Task<Medication> GetSingleMedicationOrThrow(string id, DataExceptionBase exception)
+        private async Task<Medication> GetSingleMedicationOrThrow(string id, Exception exception)
         {
             var result = this.medicationCollection.Find(Helpers.GetByIdFilter(id));
             var document = await this.GetSingleOrThrow(result, exception);
