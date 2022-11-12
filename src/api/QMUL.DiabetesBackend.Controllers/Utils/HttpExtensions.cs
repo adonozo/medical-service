@@ -1,9 +1,10 @@
 namespace QMUL.DiabetesBackend.Api.Utils
 {
     using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
     using Model;
 
-    public static class Helpers
+    public static class HttpExtensions
     {
         /// <summary>
         /// Sets the HTTP response headers for a paginated result.
@@ -15,6 +16,16 @@ namespace QMUL.DiabetesBackend.Api.Utils
         {
             context.Response.Headers[HttpConstants.LastCursorHeader] = paginatedResult.LastDataCursor;
             context.Response.Headers[HttpConstants.RemainingCountHeader] = paginatedResult.RemainingCount.ToString();
+        }
+
+        public static IActionResult ReturnResultOrNotFound<T>(this ControllerBase controller, T result)
+        {
+            if (result is null)
+            {
+                return controller.NotFound();
+            }
+
+            return controller.Ok(result);
         }
     }
 }

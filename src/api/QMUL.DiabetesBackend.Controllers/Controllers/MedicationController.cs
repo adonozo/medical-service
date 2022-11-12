@@ -31,24 +31,18 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         public async Task<IActionResult> GetAllMedications([FromQuery] string name = null, [FromQuery] int? limit = null,
             [FromQuery] string after = null)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var pagination = new PaginationRequest(limit, after);
-                var paginatedResult = await this.medicationService.GetMedicationList(pagination, name);
+            var pagination = new PaginationRequest(limit, after);
+            var paginatedResult = await this.medicationService.GetMedicationList(pagination, name);
                 
-                this.HttpContext.SetPaginatedResult(paginatedResult);
-                return this.Ok(paginatedResult.Results.ToJObject());
-            }, this.logger, this);
+            this.HttpContext.SetPaginatedResult(paginatedResult);
+            return this.Ok(paginatedResult.Results.ToJObject());
         }
 
         [HttpGet("medications/{id}")]
         public async Task<IActionResult> GetMedication([FromRoute] string id)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var result = await this.medicationService.GetSingleMedication(id);
-                return this.Ok(result.ToJObject());
-            }, this.logger, this);
+            var result = await this.medicationService.GetSingleMedication(id);
+            return this.ReturnResultOrNotFound(result.ToJObject());
         }
 
         [HttpPost("medications")]

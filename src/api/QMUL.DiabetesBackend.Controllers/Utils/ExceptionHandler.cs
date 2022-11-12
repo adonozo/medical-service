@@ -26,11 +26,11 @@ namespace QMUL.DiabetesBackend.Api.Utils
             }
             catch (CreateException)
             {
-                return context.BadRequest();
+                return context.StatusCode(StatusCodes.Status500InternalServerError);
             }
             catch (UpdateException)
             {
-                return context.BadRequest();
+                return context.StatusCode(StatusCodes.Status500InternalServerError);
             }
             catch (ArgumentException)
             {

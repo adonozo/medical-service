@@ -55,8 +55,8 @@ namespace QMUL.DiabetesBackend.MongoDb
         /// <inheritdoc />
         public async Task<Medication> GetSingleMedication(string id)
         {
-            var errorMessage = $"Could not find a medication with ID {id}";
-            return await this.GetSingleMedicationOrThrow(id, new NotFoundException(errorMessage));
+            var result = await this.medicationCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
+            return await Helpers.ToResourceAsync<Medication>(result);
         }
 
         /// <inheritdoc />
