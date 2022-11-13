@@ -59,11 +59,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<PaginatedResult<Bundle>> GetObservations(string patientId,
             PaginationRequest paginationRequest)
         {
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
-            var observations = await this.observationDao.GetAllObservationsFor(patient.Id, paginationRequest);
-
+            var observations = await this.observationDao.GetAllObservationsFor(patientId, paginationRequest);
             var paginateResult = observations.ToBundleResult();
+
             this.logger.LogDebug("Found {Count} observations", observations.Results.Count());
             return paginateResult;
         }
@@ -75,8 +73,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             PaginationRequest paginationRequest,
             string patientTimezone = "UTC")
         {
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
+            var patientNotFoundException = new NotFoundException($"Patient not found: {patientId}");
+            var patient = await ResourceUtils.GetResourceOrThrow(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
             var timingPreferences = patient.GetTimingPreference();
 
             DateTimeOffset start, end;
@@ -119,8 +118,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
 
             updatedObservation.Id = id;
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.observationDao.UpdateObservation(id, updatedObservation), this.logger);
+            return await this.observationDao.UpdateObservation(id, updatedObservation);
         }
 
         /// <inheritdoc/>
