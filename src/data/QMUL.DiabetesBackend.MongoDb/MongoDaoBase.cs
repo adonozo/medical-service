@@ -2,7 +2,6 @@ namespace QMUL.DiabetesBackend.MongoDb
 {
     using System;
     using System.Threading.Tasks;
-    using DataInterfaces.Exceptions;
     using MongoDB.Bson.Serialization.Conventions;
     using MongoDB.Driver;
 

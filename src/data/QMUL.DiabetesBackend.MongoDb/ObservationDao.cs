@@ -4,10 +4,10 @@ namespace QMUL.DiabetesBackend.MongoDb
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using DataInterfaces;
-    using DataInterfaces.Exceptions;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
     using Model;
+    using Model.Exceptions;
     using MongoDB.Bson;
     using MongoDB.Driver;
     using Utils;
@@ -42,7 +42,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             this.logger.LogDebug("Observation created with ID: {Id}", newId);
             const string errorMessage = "Could not create observation";
             document = await this.GetSingleOrThrow(this.observationCollection.Find(Helpers.GetByIdFilter(newId)),
-                new CreateException(errorMessage));
+                new WriteResourceException(errorMessage));
             return await this.ProjectToObservation(document);
         }
 
@@ -50,8 +50,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         public async Task<Observation> GetObservation(string observationId)
         {
             var cursor = this.observationCollection.Find(Helpers.GetByIdFilter(observationId));
-            var errorMessage = $"Could not find observation with ID {observationId}";
-            var document = await this.GetSingleOrThrow(cursor, new NotFoundException(errorMessage));
+            var document = await cursor.FirstOrDefaultAsync();
             return await this.ProjectToObservation(document);
         }
 
@@ -105,11 +104,11 @@ namespace QMUL.DiabetesBackend.MongoDb
         {
             this.logger.LogDebug("Updating Observation with ID {Id}", id);
             var document = await Helpers.ToBsonDocumentAsync(observation);
-            var result = await this.observationCollection.ReplaceOneAsync(Helpers.GetByIdFilter(id),
-                document);
+            var result = await this.observationCollection
+                .ReplaceOneAsync(Helpers.GetByIdFilter(id), document);
             
             var errorMessage = $"There was an error updating the Observation {id}";
-            this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new UpdateException(errorMessage),
+            this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new WriteResourceException(errorMessage),
                 () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
             this.logger.LogDebug("Observation updated {Id}", id);
 

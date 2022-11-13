@@ -8,6 +8,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using Hl7.Fhir.Model;
     using Model;
     using Model.Enums;
+    using Model.Exceptions;
     using Model.Extensions;
     using ServiceInterfaces;
     using Utils;
@@ -33,14 +34,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>
         public async Task<Observation> CreateObservation(Observation newObservation, string patientId = null)
         {
-            // Check if the patient exists
             patientId ??= newObservation.Subject.GetPatientIdFromReference();
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
+            var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
+            var patient = await ResourceUtils.GetResourceOrThrow(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
+
             newObservation.Subject.SetPatientReference(patient.Id);
             newObservation.Subject.Display = patient.Name[0].Family;
-            var observation = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.observationDao.CreateObservation(newObservation), this.logger);
+
+            var observation = await this.observationDao.CreateObservation(newObservation);
             this.logger.LogDebug("Observation created with ID {Id}", observation.Id);
             return observation;
         }
@@ -48,27 +50,30 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>
         public async Task<Observation> GetObservation(string observationId)
         {
-            var observation = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.observationDao.GetObservation(observationId), this.logger);
+            var observation = await this.observationDao.GetObservation(observationId);
             this.logger.LogDebug("Observation found: {Id}", observationId);
             return observation;
         }
 
         /// <inheritdoc/>
-        public async Task<PaginatedResult<Bundle>> GetObservations(string patientId, PaginationRequest paginationRequest)
+        public async Task<PaginatedResult<Bundle>> GetObservations(string patientId,
+            PaginationRequest paginationRequest)
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
             var observations = await this.observationDao.GetAllObservationsFor(patient.Id, paginationRequest);
-            
+
             var paginateResult = observations.ToBundleResult();
             this.logger.LogDebug("Found {Count} observations", observations.Results.Count());
             return paginateResult;
         }
 
         /// <inheritdoc/>
-        public async Task<PaginatedResult<Bundle>> GetObservationsFor(string patientId, CustomEventTiming timing, DateTime dateTime,
-            PaginationRequest paginationRequest, string patientTimezone = "UTC")
+        public async Task<PaginatedResult<Bundle>> GetObservationsFor(string patientId,
+            CustomEventTiming timing,
+            DateTime dateTime,
+            PaginationRequest paginationRequest,
+            string patientTimezone = "UTC")
         {
             var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
@@ -82,12 +87,19 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             }
             else
             {
-                (start, end) =
-                    EventTimingMapper.GetIntervalForPatient(timingPreferences, dateTime, timing, patientTimezone, DefaultOffset);
+                (start, end) = EventTimingMapper.GetIntervalForPatient(
+                    preferences: timingPreferences,
+                    startTime: dateTime,
+                    timing: timing,
+                    timezone: patientTimezone,
+                    defaultOffset: DefaultOffset);
             }
 
-            var observations = await this.observationDao.GetObservationsFor(patient.Id, start.UtcDateTime,
-                end.UtcDateTime, paginationRequest);
+            var observations = await this.observationDao.GetObservationsFor(
+                patient.Id,
+                start.UtcDateTime,
+                end.UtcDateTime,
+                paginationRequest);
             var paginatedResult = observations.ToBundleResult();
             this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId,
                 observations.Results.Count());
@@ -97,11 +109,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>
         public async Task<Observation> UpdateObservation(string id, Observation updatedObservation)
         {
+            var observationNotFoundException = new NotFoundException($"Observation not found: {id}");
+            await ResourceUtils.GetResourceOrThrow(async () =>
+                await this.observationDao.GetObservation(id), observationNotFoundException);
+
             var patientId = updatedObservation.Subject.GetPatientIdFromReference();
-            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientId), this.logger);
-            await ExceptionHandler.ExecuteAndHandleAsync(async () => 
-                await this.observationDao.GetObservation(id), this.logger);
+            var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
+            await ResourceUtils.GetResourceOrThrow(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
 
             updatedObservation.Id = id;
             return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -111,22 +126,22 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>
         public async Task<Observation> UpdateValue(string observationId, DataType value)
         {
-            var observation = await ExceptionHandler.ExecuteAndHandleAsync(async () => 
-                await this.observationDao.GetObservation(observationId), this.logger);
+            var observationNotFoundException = new NotFoundException($"Observation not found: {observationId}");
+            var observation = await ResourceUtils.GetResourceOrThrow(async () =>
+                await this.observationDao.GetObservation(observationId), observationNotFoundException);
 
             observation.Value = value;
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.observationDao.UpdateObservation(observationId, observation), this.logger);
+            return await this.observationDao.UpdateObservation(observationId, observation);
         }
 
         /// <inheritdoc/>
         public async Task<bool> DeleteObservation(string id)
         {
-            await ExceptionHandler.ExecuteAndHandleAsync(async () => 
-                await this.observationDao.GetObservation(id), this.logger);
+            var observationNotFoundException = new NotFoundException($"Observation not found: {id}");
+            await ResourceUtils.GetResourceOrThrow(async () =>
+                await this.observationDao.GetObservation(id), observationNotFoundException);
 
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.observationDao.DeleteObservation(id), this.logger);
+            return await this.observationDao.DeleteObservation(id);
         }
     }
 }

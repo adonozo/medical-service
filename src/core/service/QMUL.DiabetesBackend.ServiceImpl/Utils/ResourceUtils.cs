@@ -3,6 +3,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Model;
     using Model.Enums;
@@ -37,6 +38,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 var url = $"{baseUrl}/{identity?.ResourceType}/{identity?.Id}";
                 bundle.AddSearchEntry(resource, url, Bundle.SearchEntryMode.Match);
             }
+
             return bundle;
         }
 
@@ -130,11 +132,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// </summary>
         /// <param name="paginatedResult">The paginated result with a <see cref="Resource"/> list.</param>
         /// <returns>The paginated search <see cref="Bundle"/>.</returns>
-        public static PaginatedResult<Bundle> ToBundleResult(this PaginatedResult<IEnumerable<Resource>> paginatedResult)
+        public static PaginatedResult<Bundle> ToBundleResult(
+            this PaginatedResult<IEnumerable<Resource>> paginatedResult)
         {
             var bundle = GenerateSearchBundle(paginatedResult.Results);
             bundle.Total = (int)paginatedResult.TotalResults;
-            
+
             return new PaginatedResult<Bundle>
             {
                 Results = bundle,
@@ -142,6 +145,17 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 LastDataCursor = paginatedResult.LastDataCursor,
                 RemainingCount = paginatedResult.RemainingCount
             };
+        }
+
+        public static async Task<T> GetResourceOrThrow<T>(Func<Task<T>> action, Exception exception) where T : Resource
+        {
+            var resource = await action.Invoke();
+            if (resource == null)
+            {
+                throw exception;
+            }
+
+            return resource;
         }
     }
 }

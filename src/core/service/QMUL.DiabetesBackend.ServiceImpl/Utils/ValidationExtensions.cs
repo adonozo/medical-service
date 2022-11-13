@@ -3,7 +3,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
     using System.Collections.Generic;
     using FluentValidation.Results;
 
-    public static class ValidationHelpers
+    public static class ValidationExtensions
     {
         /// <summary>
         /// Extracts errors from a <see cref="ValidationResult"/> into a dictionary where the keys are property names,
