@@ -91,8 +91,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [HttpGet("patients/{idOrEmail}")]
         public async Task<IActionResult> GetPatient([FromRoute] string idOrEmail)
         {
-            var result = await this.patientService.GetPatient(idOrEmail);
-            return this.ReturnResultOrNotFound(result.ToJObject());
+            var patient = await this.patientService.GetPatient(idOrEmail);
+            return this.OkOrNotFound(patient);
         }
 
         [HttpGet("patients/{idOrEmail}/carePlans")]
