@@ -28,11 +28,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [HttpGet("medicationRequests/{id}")]
         public async Task<IActionResult> GetMedicationRequest([FromRoute] string id)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var result = await this.medicationRequestService.GetMedicationRequest(id);
-                return this.Ok(result.ToJObject());
-            }, this.logger, this);
+            var result = await this.medicationRequestService.GetMedicationRequest(id);
+            return this.OkOrNotFound(result);
         }
 
         [HttpPost("medicationRequests")]

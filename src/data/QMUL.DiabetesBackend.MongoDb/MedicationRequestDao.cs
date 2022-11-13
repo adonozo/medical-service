@@ -5,11 +5,11 @@
     using System.Linq;
     using System.Threading.Tasks;
     using DataInterfaces;
-    using DataInterfaces.Exceptions;
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Utility;
     using Microsoft.Extensions.Logging;
     using Model;
+    using Model.Exceptions;
     using Model.Extensions;
     using MongoDB.Bson;
     using MongoDB.Driver;
@@ -44,7 +44,7 @@
 
             this.logger.LogDebug("Medication request created with ID {Id}", newId);
             var errorMessage = $"The medication request was not created";
-            return await this.GetSingleMedicationRequestOrThrow(newId, new CreateException(errorMessage));
+            return await this.GetSingleMedicationRequestOrThrow(newId, new WriteResourceException(errorMessage));
         }
 
         /// <inheritdoc />
@@ -53,30 +53,28 @@
             this.logger.LogDebug("Updating medication request with ID {Id}", id);
             SetDosageId(actualRequest);
 
-            var document =  await RequestToBsonDocument(actualRequest);
+            var document = await RequestToBsonDocument(actualRequest);
             var result = await this.medicationRequestCollection
                 .ReplaceOneAsync(Helpers.GetByIdFilter(id), document);
 
-            var errorMessage = $"There was an error updating the Medication Request {id}";
-            this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new UpdateException(errorMessage),
-                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
+            var updateException =
+                new WriteResourceException($"There was an error updating the Medication Request {id}");
+            this.CheckAcknowledgedOrThrow(result.IsAcknowledged, updateException);
             this.logger.LogDebug("Medication request updated {Id}", id);
-            return await this.GetSingleMedicationRequestOrThrow(id, new UpdateException(errorMessage));
+            return await this.GetSingleMedicationRequestOrThrow(id, updateException);
         }
 
         /// <inheritdoc />
         public async Task<MedicationRequest> GetMedicationRequest(string id)
         {
-            var errorMessage = $"Could not find medication request with ID {id}";
-            var result = await this.GetSingleMedicationRequestOrThrow(id, new NotFoundException(errorMessage));
-            return result;
+            var document = await this.medicationRequestCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
+            return await Helpers.ToResourceAsync<MedicationRequest>(document);
         }
 
         /// <inheritdoc />
         public async Task<IList<MedicationRequest>> GetMedicationRequestsByIds(string[] ids)
         {
-            var idFilter = Builders<BsonDocument>.Filter
-                .In("_id", ids);
+            var idFilter = Builders<BsonDocument>.Filter.In("_id", ids);
             var results = await this.medicationRequestCollection.Find(idFilter)
                 .Project(document => Helpers.ToResourceAsync<MedicationRequest>(document))
                 .ToListAsync();
@@ -107,9 +105,7 @@
             var filters = Builders<BsonDocument>.Filter.And(
                 Helpers.GetPatientReferenceFilter(patientId),
                 Builders<BsonDocument>.Filter.Eq("dosageInstruction.id", dosageId));
-            var cursor = this.medicationRequestCollection.Find(filters);
-            var errorMessage = $"Could not found the medication request for the dosage ID {dosageId}";
-            var document = await this.GetSingleOrThrow(cursor, new NotFoundException(errorMessage));
+            var document = await this.medicationRequestCollection.Find(filters).FirstOrDefaultAsync();
             return await Helpers.ToResourceAsync<MedicationRequest>(document);
         }
 
@@ -151,11 +147,10 @@
             return await Task.WhenAll(results);
         }
 
-        private async Task<MedicationRequest> GetSingleMedicationRequestOrThrow(string id, DataExceptionBase exception,
-            Action fallback = null)
+        private async Task<MedicationRequest> GetSingleMedicationRequestOrThrow(string id, Exception exception)
         {
             var cursor = this.medicationRequestCollection.Find(Helpers.GetByIdFilter(id));
-            var document = await this.GetSingleOrThrow(cursor, exception, fallback);
+            var document = await this.GetSingleOrThrow(cursor, exception);
             return await Helpers.ToResourceAsync<MedicationRequest>(document);
         }
 
@@ -171,7 +166,7 @@
 
         private static async Task<BsonDocument> RequestToBsonDocument(MedicationRequest request)
         {
-            var document =  await Helpers.ToBsonDocumentAsync(request);
+            var document = await Helpers.ToBsonDocumentAsync(request);
             document["isInsulin"] = request.HasInsulinFlag();
             return document;
         }
