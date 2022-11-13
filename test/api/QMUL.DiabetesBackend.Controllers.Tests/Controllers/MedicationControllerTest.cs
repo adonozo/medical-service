@@ -64,7 +64,7 @@
             // Arrange
             var service = Substitute.For<IMedicationService>();
             var id = Guid.NewGuid().ToString();
-            service.GetSingleMedication(Arg.Any<string>()).Returns(new Medication());
+            service.GetMedication(Arg.Any<string>()).Returns(new Medication());
 
             var controller = this.GetMedicationController(service);
 
@@ -82,7 +82,7 @@
             // Arrange
             var service = Substitute.For<IMedicationService>();
             var id = Guid.NewGuid().ToString();
-            service.GetSingleMedication(Arg.Any<string>()).Throws(new Exception());
+            service.GetMedication(Arg.Any<string>()).Throws(new Exception());
 
             var controller = this.GetMedicationController(service);
 
