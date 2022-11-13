@@ -72,9 +72,14 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
         /// </summary>
         /// <param name="document">The <see cref="BsonDocument"/> to convert.</param>
         /// <typeparam name="T">The resource type. Must be a <see cref="Resource"/> child.</typeparam>
-        /// <returns>The converted object.</returns>
+        /// <returns>The parsed resource.</returns>
         public static async Task<T> ToResourceAsync<T>(BsonDocument document) where T : Resource
         {
+            if (document is null)
+            {
+                return null;
+            }
+
             var id = document["_id"].ToString();
             document.Remove("_id");
 

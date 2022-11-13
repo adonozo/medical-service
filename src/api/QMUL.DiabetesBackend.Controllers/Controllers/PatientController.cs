@@ -81,25 +81,18 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [HttpGet("patients")]
         public async Task<IActionResult> GetPatients([FromQuery] int? limit = null, [FromQuery] string after = null)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                this.logger.LogDebug("Getting patients list");
-                var pagination = new PaginationRequest(limit, after);
-                var paginatedResult = await this.patientService.GetPatientList(pagination);
+            var pagination = new PaginationRequest(limit, after);
+            var paginatedResult = await this.patientService.GetPatientList(pagination);
 
-                this.HttpContext.SetPaginatedResult(paginatedResult);
-                return this.Ok(paginatedResult.Results.ToJObject());
-            }, this.logger, this);
+            this.HttpContext.SetPaginatedResult(paginatedResult);
+            return this.Ok(paginatedResult.Results.ToJObject());
         }
 
         [HttpGet("patients/{idOrEmail}")]
         public async Task<IActionResult> GetPatient([FromRoute] string idOrEmail)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var result = await this.patientService.GetPatient(idOrEmail);
-                return this.Ok(result.ToJObject());
-            }, this.logger, this);
+            var result = await this.patientService.GetPatient(idOrEmail);
+            return this.ReturnResultOrNotFound(result.ToJObject());
         }
 
         [HttpGet("patients/{idOrEmail}/carePlans")]
@@ -107,66 +100,57 @@ namespace QMUL.DiabetesBackend.Api.Controllers
                   "Use individual requests instead.")]
         public async Task<IActionResult> GetPatientCarePlans([FromRoute] string idOrEmail)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var result = await this.carePlanService.GetCarePlanFor(idOrEmail);
-                return this.Ok(result.ToJObject());
-            }, this.logger, this);
+            var result = await this.carePlanService.GetCarePlanFor(idOrEmail);
+            return this.Ok(result.ToJObject());
         }
 
         [HttpGet("patients/{idOrEmail}/medicationRequests/active")]
         public async Task<IActionResult> GetActiveMedicationRequests([FromRoute] string idOrEmail,
             [FromQuery] int? limit = null, [FromQuery] string after = null)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var paginationRequest = new PaginationRequest(limit, after);
-                var paginatedResult =
-                    await this.medicationRequestService.GetActiveMedicationRequests(idOrEmail, paginationRequest);
+            var paginationRequest = new PaginationRequest(limit, after);
+            var paginatedResult =
+                await this.medicationRequestService.GetActiveMedicationRequests(idOrEmail, paginationRequest);
 
-                this.HttpContext.SetPaginatedResult(paginatedResult);
-                return this.Ok(paginatedResult.Results.ToJObject());
-            }, this.logger, this);
+            this.HttpContext.SetPaginatedResult(paginatedResult);
+            return this.Ok(paginatedResult.Results.ToJObject());
         }
 
         // Alexa endpoint
         [HttpGet("patients/{idOrEmail}/carePlans/active")]
         public async Task<IActionResult> GetActiveCarePlan([FromRoute] string idOrEmail)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var result = await this.carePlanService.GetActiveCarePlans(idOrEmail);
-                return this.Ok(result.ToJObject());
-            }, this.logger, this);
+            var result = await this.carePlanService.GetActiveCarePlans(idOrEmail);
+            return this.Ok(result.ToJObject());
         }
 
         [HttpGet("patients/{idOrEmail}/observations/{observationId}")]
         public async Task<IActionResult> GetSingleObservation([FromRoute] string idOrEmail,
             [FromRoute] string observationId)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var result = await this.observationService.GetObservation(observationId);
-                return this.Ok(result.ToJObject());
-            }, this.logger, this);
+            var result = await this.observationService.GetObservation(observationId);
+            return this.Ok(result.ToJObject());
         }
 
         [HttpGet("patients/{idOrEmail}/observations/")]
-        public async Task<IActionResult> GetPatientObservations([FromRoute] string idOrEmail, [FromQuery] DateTime date,
+        public async Task<IActionResult> GetPatientObservations([FromRoute] string idOrEmail, 
+            [FromQuery] DateTime date,
             [FromQuery] string timezone = "UTC",
             [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT,
             [FromQuery] int? limit = null,
             [FromQuery] string after = null)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var pagination = new PaginationRequest(limit, after);
-                var paginatedResult =
-                    await this.observationService.GetObservationsFor(idOrEmail, timing, date, pagination, timezone);
+            var pagination = new PaginationRequest(limit, after);
+            var paginatedResult =
+                await this.observationService.GetObservationsFor(
+                    patientId: idOrEmail,
+                    timing: timing,
+                    dateTime: date,
+                    paginationRequest: pagination,
+                    patientTimezone: timezone);
 
-                this.HttpContext.SetPaginatedResult(paginatedResult);
-                return this.Ok(paginatedResult.Results.ToJObject());
-            }, this.logger, this);
+            this.HttpContext.SetPaginatedResult(paginatedResult);
+            return this.Ok(paginatedResult.Results.ToJObject());
         }
 
         [HttpGet("patients/{idOrEmail}/all/observations/")]
@@ -174,14 +158,11 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             [FromQuery] int? limit = null,
             [FromQuery] string after = null)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var pagination = new PaginationRequest(limit, after);
-                var paginatedResult = await this.observationService.GetObservations(idOrEmail, pagination);
+            var pagination = new PaginationRequest(limit, after);
+            var paginatedResult = await this.observationService.GetObservations(idOrEmail, pagination);
 
-                this.HttpContext.SetPaginatedResult(paginatedResult);
-                return this.Ok(paginatedResult.Results.ToJObject());
-            }, this.logger, this);
+            this.HttpContext.SetPaginatedResult(paginatedResult);
+            return this.Ok(paginatedResult.Results.ToJObject());
         }
 
         #endregion

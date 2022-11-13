@@ -4,10 +4,10 @@ namespace QMUL.DiabetesBackend.MongoDb
     using System.Linq;
     using System.Threading.Tasks;
     using DataInterfaces;
-    using DataInterfaces.Exceptions;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
     using Model;
+    using Model.Exceptions;
     using Model.Extensions;
     using Model.Utils;
     using MongoDB.Bson;
@@ -68,9 +68,7 @@ namespace QMUL.DiabetesBackend.MongoDb
             var filter = ObjectId.TryParse(idOrEmail, out _)
                 ? Helpers.GetByIdFilter(idOrEmail)
                 : Builders<BsonDocument>.Filter.Eq("email", idOrEmail);
-            var error = $"Could not find patient with ID or email {idOrEmail}";
-            var bsonPatient =
-                await this.GetSingleOrThrow(this.patientCollection.Find(filter), new NotFoundException(error));
+            var bsonPatient = await this.patientCollection.Find(filter).FirstOrDefaultAsync();
             return await Helpers.ToResourceAsync<Patient>(bsonPatient);
         }
 
@@ -83,7 +81,7 @@ namespace QMUL.DiabetesBackend.MongoDb
                 bson, new ReplaceOptions { IsUpsert = true });
 
             var errorMessage = $"Could not update patient with ID {actualPatient.Id}";
-            this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new UpdateException(errorMessage));
+            this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new WriteResourceException(errorMessage));
             logger.LogInformation("Patient with ID {Id} updated", actualPatient.Id);
             return await this.GetSinglePatientOrThrow(actualPatient.Id);
         }
@@ -99,8 +97,8 @@ namespace QMUL.DiabetesBackend.MongoDb
         private async Task<Patient> GetSinglePatientOrThrow(string id)
         {
             var cursor = this.patientCollection.Find(Helpers.GetByIdFilter(id));
-            const string errorMessage = "Could not find patient.";
-            var bsonDocument = await this.GetSingleOrThrow(cursor, new CreateException(errorMessage),
+            const string errorMessage = "Could not create or update the patient";
+            var bsonDocument = await this.GetSingleOrThrow(cursor, new WriteResourceException(errorMessage),
                 () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
             return await Helpers.ToResourceAsync<Patient>(bsonDocument);
         }
