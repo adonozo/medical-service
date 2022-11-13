@@ -25,7 +25,7 @@
         /// <param name="id">The <see cref="Medication"/> ID to look for.</param>
         /// <returns>A <see cref="Medication"/> object if found. An error otherwise.</returns>
         /// <exception cref="NotFoundException">If the medication was not found.</exception>
-        public Task<Medication> GetSingleMedication(string id);
+        public Task<Medication> GetMedication(string id);
 
         /// <summary>
         /// Creates a <see cref="Medication"/>.

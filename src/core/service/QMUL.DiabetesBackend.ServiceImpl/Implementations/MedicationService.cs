@@ -30,7 +30,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public Task<Medication> GetSingleMedication(string id)
+        public Task<Medication> GetMedication(string id)
         {
             return this.medicationDao.GetSingleMedication(id);
         }
