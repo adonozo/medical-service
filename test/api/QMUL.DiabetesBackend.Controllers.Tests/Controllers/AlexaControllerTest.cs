@@ -26,7 +26,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             service.ProcessMedicationRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
                     Arg.Any<CustomEventTiming>(), Arg.Any<string>())
                 .Returns(new Bundle());
-            var controller = new AlexaController(service, logger);
+            var controller = new AlexaController(service);
 
             // Act
             var result = await controller.GetMedicationRequest("test@mail.com", DateTime.Now,
@@ -46,7 +46,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             service.ProcessInsulinMedicationRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
                     Arg.Any<CustomEventTiming>(), Arg.Any<string>())
                 .Returns(new Bundle());
-            var controller = new AlexaController(service, logger);
+            var controller = new AlexaController(service);
 
             // Act
             var result = await controller.GetInsulinMedicationRequest("test@mail.com", DateTime.Now,
@@ -66,7 +66,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             service.ProcessGlucoseServiceRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
                     Arg.Any<CustomEventTiming>(), Arg.Any<string>())
                 .Returns(new Bundle());
-            var controller = new AlexaController(service, logger);
+            var controller = new AlexaController(service);
 
             // Act
             var result = await controller.GetGlucoseServiceRequest("test@mail.com", DateTime.Now,
@@ -86,7 +86,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             service.ProcessCarePlanRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
                     Arg.Any<CustomEventTiming>(), Arg.Any<string>())
                 .Returns(new Bundle());
-            var controller = new AlexaController(service, logger);
+            var controller = new AlexaController(service);
 
             // Act
             var result = await controller.GetCarePlan("test@mail.com", DateTime.Now,
@@ -104,7 +104,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             var service = Substitute.For<IAlexaService>();
             var logger = Substitute.For<ILogger<AlexaController>>();
             service.GetNextRequests(Arg.Any<string>(), Arg.Any<AlexaRequestType>()).Returns(new Bundle());
-            var controller = new AlexaController(service, logger);
+            var controller = new AlexaController(service);
 
             // Act
             var result = await controller.GetAlexaNextRequest("test@gmail.com", AlexaRequestType.Medication);
@@ -122,7 +122,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             var logger = Substitute.For<ILogger<AlexaController>>();
             service.GetNextRequests(Arg.Any<string>(), Arg.Any<AlexaRequestType>())
                 .Throws(new NotFoundException(string.Empty));
-            var controller = new AlexaController(service, logger);
+            var controller = new AlexaController(service);
 
             // Act
             var result = await controller.GetAlexaNextRequest("test@gmail.com", AlexaRequestType.Medication);
@@ -140,7 +140,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             var logger = Substitute.For<ILogger<AlexaController>>();
             service.GetNextRequests(Arg.Any<string>(), Arg.Any<AlexaRequestType>())
                 .Throws(new Exception());
-            var controller = new AlexaController(service, logger);
+            var controller = new AlexaController(service);
 
             // Act
             var result = await controller.GetAlexaNextRequest("test@gmail.com", AlexaRequestType.Medication);

@@ -101,7 +101,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         public async Task<IActionResult> GetPatientCarePlans([FromRoute] string idOrEmail)
         {
             var result = await this.carePlanService.GetCarePlanFor(idOrEmail);
-            return this.Ok(result.ToJObject());
+            return this.OkOrNotFound(result);
         }
 
         [HttpGet("patients/{idOrEmail}/medicationRequests/active")]
@@ -121,7 +121,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         public async Task<IActionResult> GetActiveCarePlan([FromRoute] string idOrEmail)
         {
             var result = await this.carePlanService.GetActiveCarePlans(idOrEmail);
-            return this.Ok(result.ToJObject());
+            return this.OkOrNotFound(result);
         }
 
         [HttpGet("patients/{idOrEmail}/observations/{observationId}")]
@@ -198,8 +198,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         {
             return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
             {
-                var result = await this.alexaService.UpsertDosageStartDate(idOrEmail, dosageId, startDate.StartDate);
-                return result ? this.NoContent() : this.BadRequest();
+                await this.alexaService.UpsertDosageStartDate(idOrEmail, dosageId, startDate.StartDate);
+                return this.NoContent();
             }, this.logger, this);
         }
 
@@ -209,9 +209,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         {
             return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
             {
-                var result =
-                    await this.alexaService.UpsertServiceRequestStartDate(idOrEmail, serviceRequestId, startDate.StartDate);
-                return result ? this.NoContent() : this.BadRequest();
+                await this.alexaService.UpsertServiceRequestStartDate(idOrEmail, serviceRequestId, startDate.StartDate);    
+                return this.NoContent();
             }, this.logger, this);
         }
 

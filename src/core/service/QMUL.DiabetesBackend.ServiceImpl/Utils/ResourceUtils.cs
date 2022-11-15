@@ -2,7 +2,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Model;
@@ -23,7 +22,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
         /// <returns>A <see cref="Bundle"/> search object.</returns>
         public static Bundle GenerateSearchBundle(IEnumerable<Resource> resources)
         {
-            var enumerable = resources.ToList();
             var bundle = new Bundle
             {
                 Id = Guid.NewGuid().ToString(),
@@ -31,7 +29,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
                 Timestamp = DateTimeOffset.UtcNow,
             };
 
-            foreach (var resource in enumerable)
+            foreach (var resource in resources)
             {
                 var identity = resource.ResourceIdentity();
                 var baseUrl = resource.ResourceBase?.ToString() ?? string.Empty;

@@ -9,11 +9,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using Microsoft.Extensions.Logging;
     using Model;
     using Model.Enums;
+    using Model.Exceptions;
     using Model.Extensions;
     using ServiceInterfaces;
-    using ServiceInterfaces.Exceptions;
     using Utils;
-    using NotFoundException = DataInterfaces.Exceptions.NotFoundException;
     using Task = System.Threading.Tasks.Task;
 
     /// <summary>
@@ -41,21 +40,33 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<Bundle> ProcessMedicationRequest(string patientEmailOrId, DateTime dateTime,
-            CustomEventTiming timing, string timezone = "UTC")
+        public async Task<Bundle> ProcessMedicationRequest(string patientEmailOrId,
+            DateTime dateTime,
+            CustomEventTiming timing,
+            string timezone = "UTC")
         {
             logger.LogTrace("Processing Alexa Medication request type");
-            return await this.GetMedicationRequests(patientEmailOrId, dateTime, timing, EventType.MedicationDosage,
-                timezone);
+            return await this.GetMedicationRequests(
+                patientEmailOrId: patientEmailOrId,
+                dateTime: dateTime,
+                timing: timing,
+                type: EventType.MedicationDosage,
+                timezone: timezone);
         }
 
         /// <inheritdoc/>
-        public async Task<Bundle> ProcessInsulinMedicationRequest(string patientEmailOrId, DateTime dateTime,
-            CustomEventTiming timing, string timezone = "UTC")
+        public async Task<Bundle> ProcessInsulinMedicationRequest(string patientEmailOrId,
+            DateTime dateTime,
+            CustomEventTiming timing,
+            string timezone = "UTC")
         {
             logger.LogTrace("Processing Alexa Insulin request type");
-            return await this.GetMedicationRequests(patientEmailOrId, dateTime, timing, EventType.InsulinDosage,
-                timezone);
+            return await this.GetMedicationRequests(
+                patientEmailOrId: patientEmailOrId,
+                dateTime: dateTime,
+                timing: timing,
+                type: EventType.InsulinDosage,
+                timezone: timezone);
         }
 
         /// <inheritdoc/>
@@ -63,21 +74,38 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             CustomEventTiming timing, string timezone = "UTC")
         {
             logger.LogTrace("Processing Alexa Glucose service request type");
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), this.logger);
+            var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
+            if (patient is null)
+            {
+                return null;
+            }
+
             var timingPreferences = patient.GetTimingPreference();
             var timings = EventTimingMapper.GetRelatedTimings(timing);
             IEnumerable<HealthEvent> events;
             if (timings.Length == 0)
             {
-                var (start, end) =
-                    EventTimingMapper.GetIntervalForPatient(timingPreferences, dateTime, timing, timezone, DefaultOffset);
-                events = await this.eventDao.GetEvents(patient.Id, EventType.Measurement, start.UtcDateTime, end.UtcDateTime);
+                var (start, end) = EventTimingMapper.GetIntervalForPatient(
+                    preferences: timingPreferences,
+                    startTime: dateTime,
+                    timing: timing,
+                    timezone: timezone,
+                    defaultOffset: DefaultOffset);
+                events = await this.eventDao.GetEvents(
+                    patientId: patient.Id,
+                    type: EventType.Measurement,
+                    start: start.UtcDateTime,
+                    end: end.UtcDateTime);
             }
             else
             {
                 var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, timezone);
-                events = await this.eventDao.GetEvents(patient.Id, EventType.Measurement, start.UtcDateTime, end.UtcDateTime, timings);
+                events = await this.eventDao.GetEvents(
+                    patientId: patient.Id,
+                    type: EventType.Measurement,
+                    start: start.UtcDateTime,
+                    end: end.UtcDateTime,
+                    timings: timings);
             }
 
             var bundle = await this.GenerateBundle(events.ToList());
@@ -89,22 +117,39 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             CustomEventTiming timing, string timezone = "UTC")
         {
             this.logger.LogTrace("Processing Alexa Care Plan request type");
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), this.logger);
+            var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
+            if (patient is null)
+            {
+                return null;
+            }
+
             var timingPreferences = patient.GetTimingPreference();
             var timings = EventTimingMapper.GetRelatedTimings(timing);
-            var types = new[] {EventType.Measurement, EventType.InsulinDosage, EventType.MedicationDosage};
+            var types = new[] { EventType.Measurement, EventType.InsulinDosage, EventType.MedicationDosage };
             IEnumerable<HealthEvent> events;
             if (timings.Length == 0)
             {
-                var (start, end) =
-                    EventTimingMapper.GetIntervalForPatient(timingPreferences, dateTime, timing, timezone, DefaultOffset);
-                events = await this.eventDao.GetEvents(patient.Id, types, start.UtcDateTime, end.UtcDateTime);
+                var (start, end) = EventTimingMapper.GetIntervalForPatient(
+                    preferences: timingPreferences,
+                    startTime: dateTime,
+                    timing: timing,
+                    timezone: timezone,
+                    defaultOffset: DefaultOffset);
+                events = await this.eventDao.GetEvents(
+                    patientId: patient.Id,
+                    types: types,
+                    start: start.UtcDateTime,
+                    end: end.UtcDateTime);
             }
             else
             {
                 var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, timezone);
-                events = await this.eventDao.GetEvents(patient.Id, types, start.UtcDateTime, end.UtcDateTime, timings);
+                events = await this.eventDao.GetEvents(
+                    patientId: patient.Id,
+                    types: types,
+                    start: start.UtcDateTime,
+                    end: end.UtcDateTime,
+                    timings: timings);
             }
 
             var bundle = await this.GenerateBundle(events.ToList());
@@ -114,12 +159,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>
         public async Task<Bundle> GetNextRequests(string patientEmailOrId, AlexaRequestType type)
         {
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), this.logger);
+            var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
+            if (patient is null)
+            {
+                return null;
+            }
+
             if (type is not (AlexaRequestType.Glucose or AlexaRequestType.Insulin or AlexaRequestType.Medication))
             {
-                this.logger.LogDebug("Unsupported request type: {Type}", type);
-                throw new NotSupportedException("Request type not supported");
+                return ResourceUtils.GenerateSearchBundle(Array.Empty<Resource>());
             }
 
             var evenType = ResourceUtils.MapRequestToEventType(type);
@@ -131,9 +179,13 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>
         public async Task<Bundle> GetNextRequests(string patientEmailOrId)
         {
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), this.logger);
-            var types = new[] {EventType.Measurement, EventType.InsulinDosage, EventType.MedicationDosage};
+            var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
+            if (patient is null)
+            {
+                return null;
+            }
+
+            var types = new[] { EventType.Measurement, EventType.InsulinDosage, EventType.MedicationDosage };
             var events = await this.eventDao.GetNextEvents(patient.Id, types);
             var bundle = await this.GenerateBundle(events.ToList());
             return bundle;
@@ -143,13 +195,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming,
             DateTime dateTime)
         {
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
+            var patient = await ResourceUtils.GetResourceOrThrow(
+                () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
+                new ValidationException("PatientNotFound"));
+
             var timingPreferences = patient.GetTimingPreference();
             timingPreferences = SetRelatedTimings(timingPreferences, eventTiming, dateTime);
             patient.SetTimingPreferences(timingPreferences);
-            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.UpdatePatient(patient), this.logger);
+
+            await this.patientDao.UpdatePatient(patient);
             this.logger.LogDebug("Timing event updated for {IdOrEmail}: {Timing}, {DateTime}", patientIdOrEmail,
                 eventTiming, dateTime);
             return await this.UpdateRelatedTimingEvents(patient.Id, timingPreferences, eventTiming, dateTime);
@@ -158,8 +212,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>
         public async Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, DateTime startDate)
         {
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
+            var patient = await ResourceUtils.GetResourceOrThrow(
+                () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
+                new ValidationException("PatientNotFound"));
+
             var internalPatient = patient.ToInternalPatient();
             await this.SetDosageStartDate(internalPatient, dosageId, startDate);
             this.logger.LogDebug("Dosage start date updated for {IdOrEmail}: {DosageId}, {DateTime}", patientIdOrEmail,
@@ -171,9 +227,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<bool> UpsertServiceRequestStartDate(string patientIdOrEmail, string serviceRequestId,
             DateTime startDate)
         {
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
+            var patient = await ResourceUtils.GetResourceOrThrow(
+                () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
+                new ValidationException("PatientNotFound"));
             var internalPatient = patient.ToInternalPatient();
+
             await this.SetServiceRequestStartDate(internalPatient, serviceRequestId, startDate);
             return true;
         }
@@ -186,7 +244,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <param name="timing">The timing to compare</param>
         /// <param name="dateTime">The exact time of the event</param>
         /// <returns>The updated event times for the patient.</returns>
-        private static Dictionary<CustomEventTiming, DateTimeOffset> SetRelatedTimings(Dictionary<CustomEventTiming, DateTimeOffset> preferences,
+        private static Dictionary<CustomEventTiming, DateTimeOffset> SetRelatedTimings(
+            Dictionary<CustomEventTiming, DateTimeOffset> preferences,
             CustomEventTiming timing, DateTime dateTime)
         {
             dateTime = AdjustOffsetTiming(timing, dateTime);
@@ -238,24 +297,44 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             };
         }
 
-        private async Task<Bundle> GetMedicationRequests(string patientEmailOrId, DateTime dateTime,
-            CustomEventTiming timing, EventType type, string timezone = "UTC")
+        private async Task<Bundle> GetMedicationRequests(string patientEmailOrId,
+            DateTime dateTime,
+            CustomEventTiming timing,
+            EventType type,
+            string timezone = "UTC")
         {
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), this.logger);
+            var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
+            if (patient is null)
+            {
+                return null;
+            }
+
             var timingPreferences = patient.GetTimingPreference();
             var timings = EventTimingMapper.GetRelatedTimings(timing);
             IEnumerable<HealthEvent> events;
             if (timings.Length == 0)
             {
-                var (start, end) =
-                    EventTimingMapper.GetIntervalForPatient(timingPreferences, dateTime, timing, timezone, DefaultOffset);
-                events = await this.eventDao.GetEvents(patient.Id, type, start.UtcDateTime, end.UtcDateTime);
+                var (start, end) = EventTimingMapper.GetIntervalForPatient(
+                    preferences: timingPreferences,
+                    startTime: dateTime,
+                    timing: timing,
+                    timezone: timezone,
+                    defaultOffset: DefaultOffset);
+                events = await this.eventDao.GetEvents(
+                    patientId: patient.Id,
+                    type: type,
+                    start: start.UtcDateTime,
+                    end: end.UtcDateTime);
             }
             else
             {
                 var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, timezone);
-                events = await this.eventDao.GetEvents(patient.Id, type, start.UtcDateTime, end.UtcDateTime, timings);
+                events = await this.eventDao.GetEvents(
+                    patientId: patient.Id,
+                    type: type,
+                    start: start.UtcDateTime,
+                    end: end.UtcDateTime,
+                    timings: timings);
             }
 
             return await this.GenerateBundle(events.ToList());
@@ -269,7 +348,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 ? await this.GetServiceBundle(serviceEvents)
                 : new List<ServiceRequest>();
             var medicationEvents = healthEvents.Where(healthEvent =>
-                healthEvent.ResourceReference.EventType is EventType.MedicationDosage or EventType.InsulinDosage).ToArray();
+                    healthEvent.ResourceReference.EventType is EventType.MedicationDosage or EventType.InsulinDosage)
+                .ToArray();
             var medicationRequests = medicationEvents.Any()
                 ? await this.GetMedicationBundle(medicationEvents)
                 : new List<MedicationRequest>();
@@ -367,23 +447,23 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <exception cref="ArgumentException">If the events were not deleted.</exception>
         private async Task SetDosageStartDate(InternalPatient patient, string dosageId, DateTime startDate)
         {
-            var medicationRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.medicationRequestDao.GetMedicationRequestForDosage(patient.Id, dosageId), this.logger);
-            
+            var medicationRequest = await this.medicationRequestDao.GetMedicationRequestForDosage(patient.Id, dosageId);
+            if (medicationRequest is null)
+            {
+                throw new NotFoundException();
+            }
+
             var index = medicationRequest.DosageInstruction.FindIndex(dose => dose.ElementId == dosageId);
             if (index < 0)
             {
-                throw new NotFoundException("Could not get the dosage from the medication request");
+                throw new ValidationException($"Could not get the dosage from the medication request {dosageId}");
             }
-            
+
             medicationRequest.DosageInstruction[index].SetStartDate(startDate);
-            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.medicationRequestDao.UpdateMedicationRequest(medicationRequest.Id, medicationRequest), this.logger);
+            await this.medicationRequestDao.UpdateMedicationRequest(medicationRequest.Id, medicationRequest);
 
             medicationRequest = GetMedicationRequestWithSingleDosage(medicationRequest, dosageId);
-            
-            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.UpdateHealthEvents(medicationRequest, patient), this.logger);
+            await this.UpdateHealthEvents(medicationRequest, patient);
         }
 
         private static MedicationRequest GetMedicationRequestWithSingleDosage(MedicationRequest request,
@@ -392,36 +472,38 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             var dosage = request.DosageInstruction.FirstOrDefault(dose => dose.ElementId == dosageId);
             if (dosage == null)
             {
-                throw new NotFoundException("Could not get the dosage from the medication request");
+                throw new ValidationException($"Could not get the dosage from the medication request {dosageId}");
             }
 
-            request.DosageInstruction = new List<Dosage> {dosage};
+            request.DosageInstruction = new List<Dosage> { dosage };
             return request;
         }
 
-        private async Task SetServiceRequestStartDate(InternalPatient patient, string serviceRequestId, DateTime startDate)
+        private async Task SetServiceRequestStartDate(InternalPatient patient, string serviceRequestId,
+            DateTime startDate)
         {
-            var serviceRequest = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.serviceRequestDao.GetServiceRequest(serviceRequestId), this.logger);
-            serviceRequest.SetStartDate(startDate);
-            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.serviceRequestDao.UpdateServiceRequest(serviceRequestId, serviceRequest), this.logger);
+            var serviceRequest = await this.serviceRequestDao.GetServiceRequest(serviceRequestId);
+            if (serviceRequest is null)
+            {
+                throw new NotFoundException();
+            }
 
-            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.UpdateHealthEvents(serviceRequest, patient), this.logger);
+            serviceRequest.SetStartDate(startDate);
+            await this.serviceRequestDao.UpdateServiceRequest(serviceRequestId, serviceRequest);
+            await this.UpdateHealthEvents(serviceRequest, patient);
         }
 
-        private async Task<bool> UpdateHealthEvents(DomainResource request, InternalPatient patient)
+        private async Task UpdateHealthEvents(DomainResource request, InternalPatient patient)
         {
             var deleteEvents = await this.eventDao.DeleteEventSeries(request.Id);
             if (!deleteEvents)
             {
                 this.logger.LogWarning("Could not delete events series for dosage {Id}", request.Id);
-                throw new UpdateException("Unable to delete events for requested dosage");
+                throw new WriteResourceException("Unable to delete events for requested dosage");
             }
-            
+
             var events = ResourceUtils.GenerateEventsFrom(request, patient);
-            return await this.eventDao.CreateEvents(events);
+            await this.eventDao.CreateEvents(events);
         }
     }
 }

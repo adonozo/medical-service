@@ -48,11 +48,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<Observation> GetObservation(string observationId)
+        public Task<Observation> GetObservation(string observationId)
         {
-            var observation = await this.observationDao.GetObservation(observationId);
-            this.logger.LogDebug("Observation found: {Id}", observationId);
-            return observation;
+            return this.observationDao.GetObservation(observationId);
         }
 
         /// <inheritdoc/>

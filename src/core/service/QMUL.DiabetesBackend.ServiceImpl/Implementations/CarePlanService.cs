@@ -32,8 +32,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<Bundle> GetActiveCarePlans(string patientIdOrEmail)
         {
             this.logger.LogTrace("Getting active care plans for {IdOrEmail}", patientIdOrEmail);
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
+            var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
+            if (patient is null)
+            {
+                return null;
+            }
+
             var medicationRequests = await this.medicationRequestDao.GetAllActiveMedicationRequests(patient.Id);
             var serviceRequests = await this.serviceRequestDao.GetActiveServiceRequests(patient.Id);
             var entries = new List<Resource>(medicationRequests);
@@ -48,8 +52,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<Bundle> GetCarePlanFor(string patientIdOrEmail)
         {
             this.logger.LogTrace("Getting care plans for {IdOrEmail}", patientIdOrEmail);
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), this.logger);
+            var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
+            if (patient is null)
+            {
+                return null;
+            }
+
             var medicationRequests = await this.medicationRequestDao.GetMedicationRequestFor(patient.Id);
             var serviceRequests = await this.serviceRequestDao.GetServiceRequestsFor(patient.Id);
             var entries = new List<Resource>(medicationRequests);
