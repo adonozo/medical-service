@@ -2,7 +2,6 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
 {
     using System;
     using System.Threading.Tasks;
-    using Exceptions;
     using Hl7.Fhir.Model;
     using Model;
     using Model.Enums;

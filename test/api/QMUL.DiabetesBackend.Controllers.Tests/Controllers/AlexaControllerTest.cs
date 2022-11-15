@@ -11,7 +11,6 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
     using ServiceInterfaces;
-    using ServiceInterfaces.Exceptions;
     using Xunit;
     using Task = System.Threading.Tasks.Task;
 
@@ -119,9 +118,8 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
         {
             // Arrange
             var service = Substitute.For<IAlexaService>();
-            var logger = Substitute.For<ILogger<AlexaController>>();
             service.GetNextRequests(Arg.Any<string>(), Arg.Any<AlexaRequestType>())
-                .Throws(new NotFoundException(string.Empty));
+                .Returns(Task.FromResult<Bundle>(null));
             var controller = new AlexaController(service);
 
             // Act

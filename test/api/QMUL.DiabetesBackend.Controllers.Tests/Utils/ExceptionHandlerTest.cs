@@ -7,8 +7,8 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Utils
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Model.Exceptions;
     using NSubstitute;
-    using ServiceInterfaces.Exceptions;
     using Xunit;
 
     public class ExceptionHandlerTest
@@ -52,7 +52,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Utils
             var controller = Substitute.For<ControllerBase>();
             controller.BadRequest().Returns(new BadRequestResult());
             var logger = Substitute.For<ILogger>();
-            var method = new Func<Task<IActionResult>>(() => throw new CreateException(string.Empty));
+            var method = new Func<Task<IActionResult>>(() => throw new WriteResourceException(string.Empty));
 
             // Act
             var result = await ExceptionHandler.ExecuteAndHandleAsync(method, logger, controller);
@@ -62,13 +62,13 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Utils
         }
 
         [Fact]
-        public async Task ExecuteAndHandleAsync_WhenMethodThrowsUpdateException_ReturnsBadRequest()
+        public async Task ExecuteAndHandleAsync_WhenMethodThrowsValidationException_ReturnsBadRequest()
         {
             // Arrange
             var controller = Substitute.For<ControllerBase>();
             controller.BadRequest().Returns(new BadRequestResult());
             var logger = Substitute.For<ILogger>();
-            var method = new Func<Task<IActionResult>>(() => throw new UpdateException(string.Empty));
+            var method = new Func<Task<IActionResult>>(() => throw new ValidationException(string.Empty));
 
             // Act
             var result = await ExceptionHandler.ExecuteAndHandleAsync(method, logger, controller);

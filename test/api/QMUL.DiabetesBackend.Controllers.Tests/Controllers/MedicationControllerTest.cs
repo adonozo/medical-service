@@ -11,9 +11,9 @@
     using Newtonsoft.Json.Linq;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
-    using QMUL.DiabetesBackend.Api.Controllers;
+    using Api.Controllers;
+    using Model.Exceptions;
     using ServiceInterfaces;
-    using ServiceInterfaces.Exceptions;
     using ServiceInterfaces.Validators;
     using Xunit;
     using Task = System.Threading.Tasks.Task;

@@ -10,7 +10,6 @@ namespace QMUL.DiabetesBackend.Api.Utils
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
     using Model.Exceptions;
-    using ServiceInterfaces.Exceptions;
 
     internal static class ExceptionHandler
     {
@@ -28,14 +27,6 @@ namespace QMUL.DiabetesBackend.Api.Utils
             catch (WriteResourceException)
             {
                 return context.StatusCode(StatusCodes.Status500InternalServerError);
-            }
-            catch (UpdateException)
-            {
-                return context.StatusCode(StatusCodes.Status500InternalServerError);
-            }
-            catch (ArgumentException)
-            {
-                return context.BadRequest();
             }
             catch (ValidationException exception)
             {

@@ -11,11 +11,11 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
     using Microsoft.Extensions.Logging;
     using Model;
     using Model.Enums;
+    using Model.Exceptions;
     using Model.Extensions;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
     using ServiceImpl.Implementations;
-    using ServiceInterfaces.Exceptions;
     using Xunit;
     using ResourceReference = Model.ResourceReference;
     using Task = System.Threading.Tasks.Task;
@@ -333,7 +333,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
                 alexaService.UpsertDosageStartDate(Guid.NewGuid().ToString(), dosageId, DateTime.Now));
 
             // Assert
-            await action.Should().ThrowAsync<UpdateException>();
+            await action.Should().ThrowAsync<WriteResourceException>();
         }
 
         [Fact]

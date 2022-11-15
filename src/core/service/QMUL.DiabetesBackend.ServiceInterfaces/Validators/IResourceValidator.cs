@@ -1,7 +1,6 @@
 namespace QMUL.DiabetesBackend.ServiceInterfaces.Validators
 {
     using System.Threading.Tasks;
-    using Exceptions;
     using Hl7.Fhir.Model;
     using Newtonsoft.Json.Linq;
 

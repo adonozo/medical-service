@@ -11,11 +11,11 @@
     using Microsoft.Extensions.Logging;
     using Model;
     using Model.Enums;
+    using Model.Exceptions;
     using Newtonsoft.Json.Linq;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
     using ServiceInterfaces;
-    using ServiceInterfaces.Exceptions;
     using ServiceInterfaces.Validators;
     using Xunit;
     using Task = System.Threading.Tasks.Task;

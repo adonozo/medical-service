@@ -9,7 +9,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Validators
     using Model.Utils;
     using ServiceInterfaces.Validators;
     using Utils;
-    using ValidationException = ServiceInterfaces.Exceptions.ValidationException;
+    using ValidationException = Model.Exceptions.ValidationException;
 
     public class DataTypeValidator : AbstractValidator<DataTypeWrapper>, IDataTypeValidator
     {
