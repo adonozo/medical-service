@@ -394,45 +394,42 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             IReadOnlyDictionary<CustomEventTiming, DateTimeOffset> preferences, CustomEventTiming timing,
             DateTimeOffset dateTime)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+            bool result;
+            switch (timing)
             {
-                bool result;
-                switch (timing)
-                {
-                    case CustomEventTiming.CM:
-                    case CustomEventTiming.ACM:
-                    case CustomEventTiming.PCM:
-                        result = await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.CM,
-                            preferences[CustomEventTiming.CM]);
-                        result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.ACM,
-                            preferences[CustomEventTiming.ACM]);
-                        result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.PCM,
-                            preferences[CustomEventTiming.PCM]);
-                        return result;
-                    case CustomEventTiming.CD:
-                    case CustomEventTiming.ACD:
-                    case CustomEventTiming.PCD:
-                        result = await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.CD,
-                            preferences[CustomEventTiming.CD]);
-                        result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.ACD,
-                            preferences[CustomEventTiming.ACD]);
-                        result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.PCD,
-                            preferences[CustomEventTiming.PCD]);
-                        return result;
-                    case CustomEventTiming.CV:
-                    case CustomEventTiming.ACV:
-                    case CustomEventTiming.PCV:
-                        result = await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.CV,
-                            preferences[CustomEventTiming.CV]);
-                        result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.ACV,
-                            preferences[CustomEventTiming.ACV]);
-                        result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.PCV,
-                            preferences[CustomEventTiming.PCV]);
-                        return result;
-                    default:
-                        return await this.eventDao.UpdateEventsTiming(patientId, timing, dateTime);
-                }
-            }, this.logger);
+                case CustomEventTiming.CM:
+                case CustomEventTiming.ACM:
+                case CustomEventTiming.PCM:
+                    result = await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.CM,
+                        preferences[CustomEventTiming.CM]);
+                    result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.ACM,
+                        preferences[CustomEventTiming.ACM]);
+                    result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.PCM,
+                        preferences[CustomEventTiming.PCM]);
+                    return result;
+                case CustomEventTiming.CD:
+                case CustomEventTiming.ACD:
+                case CustomEventTiming.PCD:
+                    result = await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.CD,
+                        preferences[CustomEventTiming.CD]);
+                    result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.ACD,
+                        preferences[CustomEventTiming.ACD]);
+                    result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.PCD,
+                        preferences[CustomEventTiming.PCD]);
+                    return result;
+                case CustomEventTiming.CV:
+                case CustomEventTiming.ACV:
+                case CustomEventTiming.PCV:
+                    result = await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.CV,
+                        preferences[CustomEventTiming.CV]);
+                    result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.ACV,
+                        preferences[CustomEventTiming.ACV]);
+                    result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.PCV,
+                        preferences[CustomEventTiming.PCV]);
+                    return result;
+                default:
+                    return await this.eventDao.UpdateEventsTiming(patientId, timing, dateTime);
+            }
         }
 
         /// <summary>

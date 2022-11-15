@@ -3,7 +3,6 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Exceptions;
     using Model;
     using Model.Enums;
 
