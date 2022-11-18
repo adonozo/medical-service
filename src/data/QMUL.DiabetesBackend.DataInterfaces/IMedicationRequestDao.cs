@@ -4,6 +4,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Model;
+    using Model.Exceptions;
 
     /// <summary>
     /// The Medication Request Dao interface.
@@ -15,7 +16,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="newRequest">The <see cref="MedicationRequest"/> to create.</param>
         /// <returns>The newly created medication request.</returns>
-        /// <exception cref="CreateException">If the medication was not inserted or found after being inserted.</exception>
+        /// <exception cref="WriteResourceException">If the medication was not inserted or found after being inserted.</exception>
         public Task<MedicationRequest> CreateMedicationRequest(MedicationRequest newRequest);
 
         /// <summary>
@@ -24,7 +25,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="id">The medication request's ID</param>
         /// <param name="actualRequest">The <see cref="MedicationRequest"/> to update</param>
         /// <returns>The updated medication request</returns>
-        /// <exception cref="UpdateException">If the medication request was not updated or found after the update.</exception>
+        /// <exception cref="WriteResourceException">If the medication request was not updated or found after the update.</exception>
         public Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest actualRequest);
 
         /// <summary>
@@ -32,7 +33,6 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="id">The medication request's ID.</param>
         /// <returns>The medication request found.</returns>
-        /// <exception cref="NotFoundException">If the medication request was not found.</exception>
         public Task<MedicationRequest?> GetMedicationRequest(string id);
 
         /// <summary>
@@ -62,7 +62,6 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="patientId">The patient ID.</param>
         /// <param name="dosageId">The dosage ID.</param>
         /// <returns>The <see cref="MedicationRequest"/> that contains the Dosage reference.</returns>
-        /// <exception cref="NotFoundException">If the medication request or the dosage ID were not found.</exception>
         public Task<MedicationRequest?> GetMedicationRequestForDosage(string patientId, string dosageId);
 
         /// <summary>

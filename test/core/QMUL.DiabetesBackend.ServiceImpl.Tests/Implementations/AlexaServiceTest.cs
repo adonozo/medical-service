@@ -145,7 +145,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
         }
 
         [Fact]
-        public async Task GetNextRequests_WhenRequestTypeIsAppointment_ThrowsException()
+        public async Task GetNextRequests_WhenRequestTypeIsAppointment_ReturnsEmptyBundle()
         {
             // Arrange
             var patientDao = Substitute.For<IPatientDao>();
@@ -158,11 +158,12 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 
             // Act
-            var action = new Func<Task<Bundle>>(() =>
-                alexaService.GetNextRequests(Guid.NewGuid().ToString(), AlexaRequestType.Appointment));
+            var result = await alexaService.GetNextRequests(Guid.NewGuid().ToString(), AlexaRequestType.Appointment);
 
             // Assert
-            await action.Should().ThrowAsync<NotSupportedException>();
+            await eventDao.Received(0).GetNextEvents(Arg.Any<string>(), Arg.Any<EventType>());
+            result.Should().BeOfType<Bundle>();
+            result.Entry.Should().BeEmpty();
         }
 
         [Fact]

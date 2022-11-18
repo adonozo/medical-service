@@ -67,15 +67,19 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var patientDao = Substitute.For<IPatientDao>();
             var eventDao = Substitute.For<IEventDao>();
             var logger = Substitute.For<ILogger<ServiceRequestService>>();
-            var serviceRequestService = new ServiceRequestService(serviceRequestDao, patientDao, eventDao, logger);
 
+            var patient = TestUtils.GetStubPatient();
+            var serviceRequest = this.GetTestServiceRequest(patient.Id);
+            
+            var serviceRequestService = new ServiceRequestService(serviceRequestDao, patientDao, eventDao, logger);
+            patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
             serviceRequestDao.GetServiceRequest(Arg.Any<string>()).Returns(new ServiceRequest());
             serviceRequestDao.UpdateServiceRequest(Arg.Any<string>(), Arg.Any<ServiceRequest>())
-                .Returns(new ServiceRequest());
+                .Returns(serviceRequest);
 
             // Act
             var result =
-                await serviceRequestService.UpdateServiceRequest(Guid.NewGuid().ToString(), new ServiceRequest());
+                await serviceRequestService.UpdateServiceRequest(Guid.NewGuid().ToString(), serviceRequest);
 
             // Assert
             result.Should().BeOfType<ServiceRequest>();
@@ -90,8 +94,8 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             var patientDao = Substitute.For<IPatientDao>();
             var eventDao = Substitute.For<IEventDao>();
             var logger = Substitute.For<ILogger<ServiceRequestService>>();
-            var serviceRequestService = new ServiceRequestService(serviceRequestDao, patientDao, eventDao, logger);
 
+            var serviceRequestService = new ServiceRequestService(serviceRequestDao, patientDao, eventDao, logger);
             serviceRequestDao.GetServiceRequest(Arg.Any<string>()).Returns(new ServiceRequest());
             serviceRequestDao.DeleteServiceRequest(Arg.Any<string>()).Returns(true);
 

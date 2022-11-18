@@ -69,6 +69,11 @@ namespace QMUL.DiabetesBackend.MongoDb
             throw exception;
         }
 
+        /// <summary>
+        /// Gets the document's ID from a BSON document.
+        /// </summary>
+        /// <param name="document">A BSON document.</param>
+        /// <returns>The document ID or an empty string if the id is null</returns>
         protected string GetIdFromDocument(BsonDocument document)
         {
             return document["_id"].ToString() ?? string.Empty;

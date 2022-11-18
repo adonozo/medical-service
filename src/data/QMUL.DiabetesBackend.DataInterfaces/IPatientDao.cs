@@ -4,6 +4,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Model;
+    using Model.Exceptions;
 
     /// <summary>
     /// The Patient Dao interface.
@@ -21,7 +22,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="newPatient">The patient to create.</param>
         /// <returns>The created patient.</returns>
-        /// <exception cref="CreateException">If the patient could not be created.</exception>
+        /// <exception cref="WriteResourceException">If the patient could not be created.</exception>
         public Task<Patient> CreatePatient(Patient newPatient);
 
         /// <summary>
@@ -29,8 +30,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// a single result.
         /// </summary>
         /// <param name="idOrEmail">The patient's ID or email.</param>
-        /// <returns>The patient.</returns>
-        /// <exception cref="NotFoundException">If the patient is not found.</exception>
+        /// <returns>The patient or null if the patient does not exist</returns>
         public Task<Patient?> GetPatientByIdOrEmail(string idOrEmail);
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="actualPatient">The patient to update.</param>
         /// <returns>The updated patient.</returns>
-        /// <exception cref="UpdateException">If the patient could not be updated</exception>
+        /// <exception cref="WriteResourceException">If the patient could not be updated</exception>
         public Task<Patient> UpdatePatient(Patient actualPatient);
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         ///     be ignored</param>
         /// <param name="oldPatient">The old patient data to update.</param>
         /// <returns>The updated patient.</returns>
-        /// <exception cref="UpdateException">If the patient could not be updated</exception>
+        /// <exception cref="WriteResourceException">If the patient could not be updated</exception>
         public Task<Patient> PatchPatient(InternalPatient actualPatient, Patient oldPatient);
     }
 }
