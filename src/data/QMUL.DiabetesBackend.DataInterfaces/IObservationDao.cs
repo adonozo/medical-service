@@ -22,10 +22,10 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <summary>
         /// Gets a single observation given an ID.
         /// </summary>
-        /// <param name="observationId">The observation ID to look for.</param>
+        /// <param name="id">The observation ID to look for.</param>
         /// <returns>A <see cref="Observation"/></returns>
         /// <exception cref="NotFoundException">If the observation is not found.</exception>
-        public Task<Observation> GetObservation(string observationId);
+        public Task<Observation?> GetObservation(string id);
 
         /// <summary>
         /// Gets all the observations for a given patient.

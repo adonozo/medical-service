@@ -57,18 +57,23 @@ namespace QMUL.DiabetesBackend.MongoDb
             var document = await this.PatientToBsonDocument(newPatient);
             await this.patientCollection.InsertOneAsync(document);
 
-            var newId = document["_id"].ToString();
+            var newId = this.GetIdFromDocument(document);
             this.logger.LogInformation("Patient created with ID: {Id}", newId);
             return await this.GetSinglePatientOrThrow(newId);
         }
 
         /// <inheritdoc />
-        public async Task<Patient> GetPatientByIdOrEmail(string idOrEmail)
+        public async Task<Patient?> GetPatientByIdOrEmail(string idOrEmail)
         {
             var filter = ObjectId.TryParse(idOrEmail, out _)
                 ? Helpers.GetByIdFilter(idOrEmail)
                 : Builders<BsonDocument>.Filter.Eq("email", idOrEmail);
             var bsonPatient = await this.patientCollection.Find(filter).FirstOrDefaultAsync();
+            if (bsonPatient is null)
+            {
+                return null;
+            }
+
             return await Helpers.ToResourceAsync<Patient>(bsonPatient);
         }
 

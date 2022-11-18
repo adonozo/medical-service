@@ -36,17 +36,22 @@ namespace QMUL.DiabetesBackend.MongoDb
             var document = await Helpers.ToBsonDocumentAsync(newRequest);
             await this.serviceRequestCollection.InsertOneAsync(document);
 
-            var newId = document["_id"].ToString();
+            var newId = this.GetIdFromDocument(document);
             this.logger.LogDebug("Service request created with ID: {Id}", newId);
             const string exceptionMessage = "Could not create the service request";
             return await this.GetSingleRequestOrThrow(newId, new WriteResourceException(exceptionMessage));
         }
 
         /// <inheritdoc />
-        public async Task<ServiceRequest> GetServiceRequest(string id)
+        public async Task<ServiceRequest?> GetServiceRequest(string id)
         {
-            var result = await this.serviceRequestCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
-            return await Helpers.ToResourceAsync<ServiceRequest>(result);
+            var document = await this.serviceRequestCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
+            if (document is null)
+            {
+                return null;
+            }
+
+            return await Helpers.ToResourceAsync<ServiceRequest>(document);
         }
 
         /// <inheritdoc />
@@ -110,11 +115,10 @@ namespace QMUL.DiabetesBackend.MongoDb
             return result.IsAcknowledged;
         }
 
-        private async Task<ServiceRequest> GetSingleRequestOrThrow(string id, Exception exception,
-            Action fallback = null)
+        private async Task<ServiceRequest> GetSingleRequestOrThrow(string id, Exception exception)
         {
             var cursor = this.serviceRequestCollection.Find(Helpers.GetByIdFilter(id));
-            var document = await this.GetSingleOrThrow(cursor, exception, fallback);
+            var document = await this.GetSingleOrThrow(cursor, exception);
             return await Helpers.ToResourceAsync<ServiceRequest>(document);
         }
     }

@@ -23,7 +23,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
             var json = await resource.ToJsonAsync();
             var bson = BsonDocument.Parse(json);
 
-            return bson;
+            return bson ?? throw new ArgumentException("Invalid resource", nameof(resource));
         }
 
         /// <summary>
@@ -75,11 +75,6 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils
         /// <returns>The parsed resource.</returns>
         public static async Task<T> ToResourceAsync<T>(BsonDocument document) where T : Resource
         {
-            if (document is null)
-            {
-                return null;
-            }
-
             var id = document["_id"].ToString();
             document.Remove("_id");
 

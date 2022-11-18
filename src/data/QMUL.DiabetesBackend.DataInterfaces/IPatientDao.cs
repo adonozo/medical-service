@@ -31,7 +31,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="idOrEmail">The patient's ID or email.</param>
         /// <returns>The patient.</returns>
         /// <exception cref="NotFoundException">If the patient is not found.</exception>
-        public Task<Patient> GetPatientByIdOrEmail(string idOrEmail);
+        public Task<Patient?> GetPatientByIdOrEmail(string idOrEmail);
 
         /// <summary>
         /// Updates (replaces) a patient.

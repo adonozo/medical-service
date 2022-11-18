@@ -33,7 +33,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="id">The medication request's ID.</param>
         /// <returns>The medication request found.</returns>
         /// <exception cref="NotFoundException">If the medication request was not found.</exception>
-        public Task<MedicationRequest> GetMedicationRequest(string id);
+        public Task<MedicationRequest?> GetMedicationRequest(string id);
 
         /// <summary>
         /// Gets a list of medication requests matching an array of medication IDs.
@@ -63,7 +63,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="dosageId">The dosage ID.</param>
         /// <returns>The <see cref="MedicationRequest"/> that contains the Dosage reference.</returns>
         /// <exception cref="NotFoundException">If the medication request or the dosage ID were not found.</exception>
-        public Task<MedicationRequest> GetMedicationRequestForDosage(string patientId, string dosageId);
+        public Task<MedicationRequest?> GetMedicationRequestForDosage(string patientId, string dosageId);
 
         /// <summary>
         /// Gets the active medication requests for the patient, i.e., the ones that the patient needs to follow. Does

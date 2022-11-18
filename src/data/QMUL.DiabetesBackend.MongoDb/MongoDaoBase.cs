@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.MongoDb
 {
     using System;
     using System.Threading.Tasks;
+    using MongoDB.Bson;
     using MongoDB.Bson.Serialization.Conventions;
     using MongoDB.Driver;
 
@@ -37,7 +38,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         /// <returns>A document found in the database.</returns>
         /// <exception cref="Exception">Thrown if the result is not found.</exception>
         protected async Task<TProjection> GetSingleOrThrow<TDocument, TProjection>(
-            IFindFluent<TDocument, TProjection> find, Exception exception, Action fallback = null)
+            IFindFluent<TDocument, TProjection> find, Exception exception, Action? fallback = null)
         {
             var result = await find.FirstOrDefaultAsync();
             if (result != null)
@@ -57,7 +58,7 @@ namespace QMUL.DiabetesBackend.MongoDb
         /// <param name="exception">A <see cref="Exception"/> exception to throw if the result is false.</param>
         /// <param name="fallback">An <see cref="Action"/> to execute before throwing the exception.</param>
         /// <exception cref="Exception">Thrown if the result is false.</exception>
-        protected void CheckAcknowledgedOrThrow(bool result, Exception exception, Action fallback = null)
+        protected void CheckAcknowledgedOrThrow(bool result, Exception exception, Action? fallback = null)
         {
             if (result)
             {
@@ -66,6 +67,11 @@ namespace QMUL.DiabetesBackend.MongoDb
 
             fallback?.Invoke();
             throw exception;
+        }
+
+        protected string GetIdFromDocument(BsonDocument document)
+        {
+            return document["_id"].ToString() ?? string.Empty;
         }
     }
 }

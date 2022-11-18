@@ -40,7 +40,7 @@
 
             var document = await RequestToBsonDocument(newRequest);
             await this.medicationRequestCollection.InsertOneAsync(document);
-            var newId = document["_id"].ToString();
+            var newId = this.GetIdFromDocument(document);
 
             this.logger.LogDebug("Medication request created with ID {Id}", newId);
             var errorMessage = $"The medication request was not created";
@@ -65,9 +65,14 @@
         }
 
         /// <inheritdoc />
-        public async Task<MedicationRequest> GetMedicationRequest(string id)
+        public async Task<MedicationRequest?> GetMedicationRequest(string id)
         {
             var document = await this.medicationRequestCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
+            if (document is null)
+            {
+                return null;
+            }
+
             return await Helpers.ToResourceAsync<MedicationRequest>(document);
         }
 
@@ -100,12 +105,17 @@
         }
 
         /// <inheritdoc />
-        public async Task<MedicationRequest> GetMedicationRequestForDosage(string patientId, string dosageId)
+        public async Task<MedicationRequest?> GetMedicationRequestForDosage(string patientId, string dosageId)
         {
             var filters = Builders<BsonDocument>.Filter.And(
                 Helpers.GetPatientReferenceFilter(patientId),
                 Builders<BsonDocument>.Filter.Eq("dosageInstruction.id", dosageId));
             var document = await this.medicationRequestCollection.Find(filters).FirstOrDefaultAsync();
+            if (document is null)
+            {
+                return null;
+            }
+
             return await Helpers.ToResourceAsync<MedicationRequest>(document);
         }
 
