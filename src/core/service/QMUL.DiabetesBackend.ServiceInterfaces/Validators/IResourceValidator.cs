@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces.Validators
 {
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
+    using Model.Exceptions;
     using Newtonsoft.Json.Linq;
 
     public interface IResourceValidator<T> where T : Resource

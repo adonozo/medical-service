@@ -3,6 +3,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces.Validators
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Model;
+    using Model.Exceptions;
 
     public interface IDataTypeValidator
     {

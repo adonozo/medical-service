@@ -5,6 +5,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
     using Hl7.Fhir.Model;
     using Model;
     using Model.Enums;
+    using Model.Exceptions;
 
     /// <summary>
     /// The Observation Service Interface. Observations are glucose self-measurements for a patient. 
@@ -18,16 +19,15 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="patientId">The patient's ID or email.</param>
         /// <param name="newObservation">The <see cref="Observation"/> to create.</param>
         /// <returns>The <see cref="Observation"/> created with a new ID.</returns>
-        /// <exception cref="NotFoundException">If the patient was not found.</exception>
-        /// <exception cref="CreateException">If the observation could not be created.</exception>
+        /// <exception cref="ValidationException">If the patient was not found.</exception>
+        /// <exception cref="WriteResourceException">If the observation could not be created.</exception>
         public Task<Observation> CreateObservation(Observation newObservation, string? patientId = null);
 
         /// <summary>
         /// Gets a single <see cref="Observation"/>.
         /// </summary>
         /// <param name="observationId">The observation ID to look for.</param>
-        /// <returns>A single <see cref="Observation"/> object if found. An error otherwise.</returns>
-        /// <exception cref="NotFoundException">If the observation was not found.</exception>
+        /// <returns>A single <see cref="Observation"/> object if found; null otherwise.</returns>
         public Task<Observation?> GetObservation(string observationId);
 
         /// <summary>
@@ -36,7 +36,6 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="patientId">The patient ID who owns the observations.</param>
         /// <param name="paginationRequest">The paginated request parameters.</param>
         /// <returns>The list of <see cref="Observation"/> for a patient in a paginated <see cref="Bundle"/> object.</returns>
-        /// <exception cref="NotFoundException">If the patient was not found.</exception>
         public Task<PaginatedResult<Bundle>> GetObservations(string patientId, PaginationRequest paginationRequest);
 
         /// <summary>
@@ -60,7 +59,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="updatedObservation">The updated <see cref="Observation"/> to insert.</param>
         /// <returns>The updated observation.</returns>
         /// <exception cref="NotFoundException">If the observation was not found.</exception>
-        /// <exception cref="UpdateException">If the medication request could not be updated.</exception>
+        /// <exception cref="WriteResourceException">If the medication request could not be updated.</exception>
         public Task<Observation> UpdateObservation(string id, Observation updatedObservation);
 
         /// <summary>
@@ -70,7 +69,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="value">The new value.</param>
         /// <returns>The updated observation.</returns>
         /// <exception cref="NotFoundException">If the observation was not found.</exception>
-        /// <exception cref="UpdateException">If the medication request could not be updated.</exception>
+        /// <exception cref="WriteResourceException">If the medication request could not be updated.</exception>
         public Task<Observation> UpdateValue(string observationId, DataType value);
 
         /// <summary>

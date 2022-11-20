@@ -3,6 +3,7 @@
     using System.Threading.Tasks;
     using Hl7.Fhir.Model;
     using Model;
+    using Model.Exceptions;
 
     /// <summary>
     /// The Medication Service Interface.
@@ -22,8 +23,7 @@
         /// Gets a single <see cref="Medication"/> given an ID.
         /// </summary>
         /// <param name="id">The <see cref="Medication"/> ID to look for.</param>
-        /// <returns>A <see cref="Medication"/> object if found. An error otherwise.</returns>
-        /// <exception cref="NotFoundException">If the medication was not found.</exception>
+        /// <returns>A <see cref="Medication"/> object if found; null otherwise.</returns>
         public Task<Medication?> GetMedication(string id);
 
         /// <summary>
@@ -31,7 +31,7 @@
         /// </summary>
         /// <param name="newMedication">The <see cref="Medication"/> object to create.</param>
         /// <returns>The created <see cref="Medication"/> with a new ID.</returns>
-        /// <exception cref="CreateException">If the medication was not created.</exception>
+        /// <exception cref="WriteResourceException">If the medication was not created.</exception>
         public Task<Medication> CreateMedication(Medication newMedication);
     }
 }
