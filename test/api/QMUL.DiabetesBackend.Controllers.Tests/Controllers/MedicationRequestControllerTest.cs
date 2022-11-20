@@ -108,7 +108,7 @@ public class MedicationRequestControllerTest
         var validator = Substitute.For<IResourceValidator<MedicationRequest>>();
         var logger = Substitute.For<ILogger<MedicationRequestController>>();
         var medicationRequest = new MedicationRequest { Id = id };
-        service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>()).Returns(medicationRequest);
+        service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>()).Returns(Task.CompletedTask);
         var controller = new MedicationRequestController(service, validator, logger);
 
         // Act
@@ -130,9 +130,8 @@ public class MedicationRequestControllerTest
         validator.ParseAndValidateAsync(Arg.Any<JObject>())
             .Throws(new ValidationException(string.Empty));
         var logger = Substitute.For<ILogger<MedicationRequestController>>();
-        var medicationRequest = new MedicationRequest { Id = id };
 
-        service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>()).Returns(medicationRequest);
+        service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>()).Returns(Task.CompletedTask);
         var controller = new MedicationRequestController(service, validator, logger);
         var unformattedObject = new InternalPatient();
 

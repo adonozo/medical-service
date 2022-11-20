@@ -49,8 +49,8 @@ public class MedicationRequestController : ControllerBase
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
         {
             var medicationRequest = await this.validator.ParseAndValidateAsync(request);
-            var result = await this.medicationRequestService.UpdateMedicationRequest(id, medicationRequest);
-            return this.Accepted(result.ToJObject());
+            await this.medicationRequestService.UpdateMedicationRequest(id, medicationRequest);
+            return this.Accepted();
         }, this.logger, this);
     }
 

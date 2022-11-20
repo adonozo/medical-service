@@ -90,7 +90,7 @@ public class MedicationRequestServiceTest
     }
 
     [Fact]
-    public async Task UpdateMedicationRequest_WhenMedicationRequestExists_ReturnsTrue()
+    public async Task UpdateMedicationRequest_WhenMedicationRequestExists_CallsDaoMethod()
     {
         // Arrange
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
@@ -103,14 +103,13 @@ public class MedicationRequestServiceTest
 
         medicationRequestDao.GetMedicationRequest(Arg.Any<string>()).Returns(new MedicationRequest());
         medicationRequestDao.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>())
-            .Returns(new MedicationRequest());
+            .Returns(Task.CompletedTask);
 
         // Act
-        var result = await medicationRequestService.UpdateMedicationRequest(Guid.NewGuid().ToString(),
+        await medicationRequestService.UpdateMedicationRequest(Guid.NewGuid().ToString(),
             new MedicationRequest());
 
         // Assert
-        result.Should().BeOfType<MedicationRequest>();
         await medicationRequestDao.Received(1)
             .UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>());
     }

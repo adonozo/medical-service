@@ -46,7 +46,7 @@ public class AlexaControllerTest
         var controller = new AlexaController(service);
 
         // Act
-        var result = await controller.GetMedicationRequest(
+        var result = await controller.GetInsulinMedicationRequest(
             idOrEmail: "test@mail.com",
             date: DateTime.Now,
             timing: CustomEventTiming.ALL_DAY);
@@ -67,7 +67,7 @@ public class AlexaControllerTest
         var controller = new AlexaController(service);
 
         // Act
-        var result = await controller.GetMedicationRequest(
+        var result = await controller.GetGlucoseServiceRequest(
             idOrEmail: "test@mail.com",
             date: DateTime.Now,
             timing: CustomEventTiming.ALL_DAY);
@@ -88,7 +88,7 @@ public class AlexaControllerTest
         var controller = new AlexaController(service);
 
         // Act
-        var result = await controller.GetMedicationRequest(
+        var result = await controller.GetCarePlan(
             idOrEmail: "test@mail.com",
             date: DateTime.Now,
             timing: CustomEventTiming.ALL_DAY);

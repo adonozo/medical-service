@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
 using Model.Exceptions;
+using Task = System.Threading.Tasks.Task;
 
 /// <summary>
 /// The Medication Request Dao interface.
@@ -26,7 +27,7 @@ public interface IMedicationRequestDao
     /// <param name="actualRequest">The <see cref="MedicationRequest"/> to update</param>
     /// <returns>The updated medication request</returns>
     /// <exception cref="WriteResourceException">If the medication request was not updated or found after the update.</exception>
-    Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest actualRequest);
+    Task UpdateMedicationRequest(string id, MedicationRequest actualRequest);
 
     /// <summary>
     /// Gets a <see cref="MedicationRequest"/> based on the ID.

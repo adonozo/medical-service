@@ -60,16 +60,15 @@ public class MedicationRequestService : IMedicationRequestService
     }
 
     /// <inheritdoc/>>
-    public async Task<MedicationRequest> UpdateMedicationRequest(string id, MedicationRequest request)
+    public async Task UpdateMedicationRequest(string id, MedicationRequest request)
     {
         await ResourceUtils.GetResourceOrThrow(() => this.medicationRequestDao.GetMedicationRequest(id),
             new NotFoundException());
         await this.SetInsulinRequest(request);
 
         request.Id = id;
-        var updatedResult = await this.medicationRequestDao.UpdateMedicationRequest(id, request);
+        await this.medicationRequestDao.UpdateMedicationRequest(id, request);
         this.logger.LogDebug("Medication request with ID {Id} updated", id);
-        return updatedResult;
     }
 
     /// <inheritdoc/>>

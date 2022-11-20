@@ -265,7 +265,7 @@ public class AlexaServiceTest
             .Returns(medicationRequest);
         medicationRequestDao.UpdateMedicationRequest(Arg.Any<string>(),
                 Arg.Do<MedicationRequest>(med => medicationRequest = med))
-            .Returns(medicationRequest);
+            .Returns(Task.CompletedTask);
         eventDao.DeleteEventSeries(Arg.Any<string>()).Returns(true);
         eventDao.CreateEvents(Arg.Any<IEnumerable<HealthEvent>>()).Returns(true);
         var expectedDate = DateTime.Now;
