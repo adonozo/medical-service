@@ -56,15 +56,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         /// <inheritdoc/>>
         public async Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest request)
         {
+            var serviceNotFoundException = new NotFoundException($"Service not found: {id}");
+            await ResourceUtils.GetResourceOrThrow(async () =>
+                await this.serviceRequestDao.GetServiceRequest(id), serviceNotFoundException);
+
             var patientId = request.Subject.GetPatientIdFromReference();
             var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
             var patient = await ResourceUtils.GetResourceOrThrow(async () =>
                 await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
             var internalPatient = patient.ToInternalPatient();
-
-            var serviceNotFoundException = new NotFoundException($"Service not found: {id}");
-            await ResourceUtils.GetResourceOrThrow(async () =>
-                await this.serviceRequestDao.GetServiceRequest(id), serviceNotFoundException);
 
             request.Id = id;
             var result = await this.serviceRequestDao.UpdateServiceRequest(id, request);

@@ -28,8 +28,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         }
 
         [HttpGet("medications")]
-        public async Task<IActionResult> GetAllMedications([FromQuery] string name = null, [FromQuery] int? limit = null,
-            [FromQuery] string after = null)
+        public async Task<IActionResult> GetAllMedications([FromQuery] string? name = null, [FromQuery] int? limit = null,
+            [FromQuery] string? after = null)
         {
             var pagination = new PaginationRequest(limit, after);
             var paginatedResult = await this.medicationService.GetMedicationList(pagination, name);

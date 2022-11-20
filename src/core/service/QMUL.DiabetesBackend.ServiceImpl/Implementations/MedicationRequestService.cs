@@ -86,7 +86,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         public async Task<PaginatedResult<Bundle>> GetActiveMedicationRequests(string patientIdOrEmail,
             PaginationRequest paginationRequest)
         {
-            var patientException = new ValidationException($"Patient not found: {patientIdOrEmail}");
+            var patientException = new NotFoundException($"Patient not found: {patientIdOrEmail}");
             var patient = await ResourceUtils.GetResourceOrThrow(() =>
                 this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), patientException);
 
@@ -113,11 +113,15 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             }
 
             var resource = request.FindContainedResource(reference.Reference);
-            Medication? medication = null;
+            Medication? medication;
             if (resource is not Medication)
             {
                 var medicationId = reference.GetPatientIdFromReference();
                 medication = await this.medicationDao.GetSingleMedication(medicationId);
+            }
+            else
+            {
+                medication = resource as Medication;
             }
 
             if (medication != null && medication.HasInsulinFlag())

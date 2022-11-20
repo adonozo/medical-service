@@ -20,7 +20,7 @@ namespace QMUL.DiabetesBackend.Api.Utils
             context.Response.Headers[HttpConstants.RemainingCountHeader] = paginatedResult.RemainingCount.ToString();
         }
 
-        public static IActionResult OkOrNotFound<T>(this ControllerBase controller, T result) where T: Resource
+        public static IActionResult OkOrNotFound<T>(this ControllerBase controller, T? result) where T: Resource
         {
             if (result is null)
             {

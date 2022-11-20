@@ -62,7 +62,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         public async Task<IActionResult> GetAlexaNextRequest([FromRoute] string idOrEmail,
             [FromQuery] AlexaRequestType type)
         {
-            Bundle result;
+            Bundle? result;
             if (type == AlexaRequestType.CarePlan)
             {
                 result = await this.alexaService.GetNextRequests(idOrEmail);

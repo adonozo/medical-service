@@ -79,7 +79,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         #region GET
 
         [HttpGet("patients")]
-        public async Task<IActionResult> GetPatients([FromQuery] int? limit = null, [FromQuery] string after = null)
+        public async Task<IActionResult> GetPatients([FromQuery] int? limit = null, [FromQuery] string? after = null)
         {
             var pagination = new PaginationRequest(limit, after);
             var paginatedResult = await this.patientService.GetPatientList(pagination);
@@ -106,7 +106,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
 
         [HttpGet("patients/{idOrEmail}/medicationRequests/active")]
         public async Task<IActionResult> GetActiveMedicationRequests([FromRoute] string idOrEmail,
-            [FromQuery] int? limit = null, [FromQuery] string after = null)
+            [FromQuery] int? limit = null, [FromQuery] string? after = null)
         {
             var paginationRequest = new PaginationRequest(limit, after);
             var paginatedResult =
@@ -138,7 +138,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
             [FromQuery] string timezone = "UTC",
             [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT,
             [FromQuery] int? limit = null,
-            [FromQuery] string after = null)
+            [FromQuery] string? after = null)
         {
             var pagination = new PaginationRequest(limit, after);
             var paginatedResult =
@@ -156,7 +156,7 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [HttpGet("patients/{idOrEmail}/all/observations/")]
         public async Task<IActionResult> GetAllPatientObservations([FromRoute] string idOrEmail,
             [FromQuery] int? limit = null,
-            [FromQuery] string after = null)
+            [FromQuery] string? after = null)
         {
             var pagination = new PaginationRequest(limit, after);
             var paginatedResult = await this.observationService.GetObservations(idOrEmail, pagination);
