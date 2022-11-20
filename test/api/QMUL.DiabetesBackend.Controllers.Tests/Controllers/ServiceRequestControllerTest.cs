@@ -104,7 +104,7 @@ public class ServiceRequestControllerTest
         var controller = new ServiceRequestController(service, validator, logger);
         var id = Guid.NewGuid().ToString();
         service.UpdateServiceRequest(Arg.Any<string>(), Arg.Any<ServiceRequest>())
-            .Returns(new ServiceRequest());
+            .Returns(Task.FromResult(true));
 
         // Act
         var serviceRequest = await controller.UpdateServiceRequest(id, new ServiceRequest().ToJObject());

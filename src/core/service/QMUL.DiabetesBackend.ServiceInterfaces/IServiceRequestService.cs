@@ -30,11 +30,10 @@ public interface IServiceRequestService
     /// </summary>
     /// <param name="id">The service request's ID to look for.</param>
     /// <param name="request">The <see cref="ServiceRequest"/> with updated data.</param>
-    /// <returns>The updated <see cref="ServiceRequest"/> if found and updated. An error otherwise.</returns>
+    /// <returns>A bool indicating the result.</returns>
     /// <exception cref="NotFoundException">If the service request was not found.</exception>
     /// <exception cref="ValidationException">If the linked patient was not found.</exception>
-    /// <exception cref="WriteResourceException">If the service request could not be updated.</exception>
-    Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest request);
+    Task<bool> UpdateServiceRequest(string id, ServiceRequest request);
 
     /// <summary>
     /// Deletes a <see cref="ServiceRequest"/> given an ID.

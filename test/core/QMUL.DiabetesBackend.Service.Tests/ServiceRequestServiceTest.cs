@@ -75,14 +75,14 @@ public class ServiceRequestServiceTest
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
         serviceRequestDao.GetServiceRequest(Arg.Any<string>()).Returns(new ServiceRequest());
         serviceRequestDao.UpdateServiceRequest(Arg.Any<string>(), Arg.Any<ServiceRequest>())
-            .Returns(serviceRequest);
+            .Returns(Task.FromResult(true));
 
         // Act
         var result =
             await serviceRequestService.UpdateServiceRequest(Guid.NewGuid().ToString(), serviceRequest);
 
         // Assert
-        result.Should().BeOfType<ServiceRequest>();
+        result.Should().BeTrue();
         await serviceRequestDao.Received(1).UpdateServiceRequest(Arg.Any<string>(), Arg.Any<ServiceRequest>());
     }
 

@@ -44,9 +44,8 @@ public interface IServiceRequestDao
     /// </summary>
     /// <param name="id">The service request ID.</param>
     /// <param name="actualRequest">The service request with updated data.</param>
-    /// <returns>The updated <see cref="ServiceRequest"/>.</returns>
-    /// <exception cref="WriteResourceException">If the service request was not updated.</exception>
-    Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest actualRequest);
+    /// <returns>A bool indicating the result.</returns>
+    Task<bool> UpdateServiceRequest(string id, ServiceRequest actualRequest);
 
     /// <summary>
     /// Deletes a service request from the database.

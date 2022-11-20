@@ -54,7 +54,7 @@ public class ServiceRequestService : IServiceRequestService
     }
 
     /// <inheritdoc/>>
-    public async Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest request)
+    public async Task<bool> UpdateServiceRequest(string id, ServiceRequest request)
     {
         var serviceNotFoundException = new NotFoundException();
         await ResourceUtils.GetResourceOrThrow(async () =>
@@ -69,11 +69,16 @@ public class ServiceRequestService : IServiceRequestService
         request.Id = id;
         var result = await this.serviceRequestDao.UpdateServiceRequest(id, request);
 
+        if (!result)
+        {
+            return false;
+        }
+
         await this.eventDao.DeleteRelatedEvents(id);
-        var events = ResourceUtils.GenerateEventsFrom(result, internalPatient);
+        var events = ResourceUtils.GenerateEventsFrom(request, internalPatient);
         await this.eventDao.CreateEvents(events);
 
-        return result;
+        return true;
     }
 
     /// <inheritdoc/>>

@@ -95,16 +95,13 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     }
 
     /// <inheritdoc />
-    public async Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest actualRequest)
+    public async Task<bool> UpdateServiceRequest(string id, ServiceRequest actualRequest)
     {
         logger.LogDebug("Updating service request {Id}", id);
         var document = await Helpers.ToBsonDocumentAsync(actualRequest);
         var result = await this.serviceRequestCollection.ReplaceOneAsync(Helpers.GetByIdFilter(id), document);
 
-        var updateException = new WriteResourceException($"Could not update service request with ID {id}");
-        this.CheckAcknowledgedOrThrow(result.IsAcknowledged, updateException);
-        this.logger.LogDebug("Service Request with ID {Id} updated", id);
-        return await this.GetSingleRequestOrThrow(id, updateException);
+        return result.IsAcknowledged;
     }
 
     /// <inheritdoc />
