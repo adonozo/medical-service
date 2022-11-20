@@ -7,7 +7,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
     using Hl7.Fhir.Model;
     using Model;
     using Model.Enums;
-    using ServiceImpl.Utils;
+    using Service.Utils;
     using Xunit;
 
     public class ResourceUtilsTest

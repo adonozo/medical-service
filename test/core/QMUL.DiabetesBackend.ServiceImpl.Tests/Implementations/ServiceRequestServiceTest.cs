@@ -8,7 +8,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
     using Microsoft.Extensions.Logging;
     using Model;
     using NSubstitute;
-    using ServiceImpl.Implementations;
+    using Service;
     using Xunit;
     using ResourceReference = Hl7.Fhir.Model.ResourceReference;
     using Task = System.Threading.Tasks.Task;

@@ -15,7 +15,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
     using Model.Extensions;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
-    using ServiceImpl.Implementations;
+    using Service;
     using Xunit;
     using ResourceReference = Model.ResourceReference;
     using Task = System.Threading.Tasks.Task;

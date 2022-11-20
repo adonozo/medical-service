@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\src\core\service\QMUL.DiabetesBackend.ServiceImpl\QMUL.DiabetesBackend.ServiceImpl.csproj" />
+      <ProjectReference Include="..\..\..\src\core\service\QMUL.DiabetesBackend.Service\QMUL.DiabetesBackend.Service.csproj" />
     </ItemGroup>
 
 </Project>

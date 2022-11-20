@@ -5,7 +5,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Utils
     using FluentAssertions;
     using Hl7.Fhir.Model;
     using Model.Enums;
-    using ServiceImpl.Utils;
+    using Service.Utils;
     using Xunit;
     using static System.Enum;
 

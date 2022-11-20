@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 
 [assembly:InternalsVisibleTo("QMUL.DiabetesBackend.ServiceImpl.Tests")]
-namespace QMUL.DiabetesBackend.ServiceImpl.Utils
+namespace QMUL.DiabetesBackend.Service.Utils
 {
     using System;
     using System.Collections.Generic;

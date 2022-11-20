@@ -1,4 +1,4 @@
-namespace QMUL.DiabetesBackend.ServiceImpl.Validators
+namespace QMUL.DiabetesBackend.Service.Validators
 {
     using FluentValidation;
     using Hl7.Fhir.Model;

@@ -13,8 +13,8 @@ namespace QMUL.DiabetesBackend.Api
     using MongoDb;
     using MongoDB.Driver;
     using MongoDb.Mapper;
-    using ServiceImpl.Implementations;
-    using ServiceImpl.Validators;
+    using Service;
+    using Service.Validators;
     using ServiceInterfaces;
     using ServiceInterfaces.Validators;
     using Utils;

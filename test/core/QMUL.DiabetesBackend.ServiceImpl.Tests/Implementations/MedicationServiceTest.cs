@@ -9,7 +9,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
     using Microsoft.Extensions.Logging;
     using Model;
     using NSubstitute;
-    using ServiceImpl.Implementations;
+    using Service;
     using Xunit;
     using Task = System.Threading.Tasks.Task;
 

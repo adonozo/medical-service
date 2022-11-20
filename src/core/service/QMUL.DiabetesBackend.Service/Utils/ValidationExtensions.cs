@@ -1,4 +1,4 @@
-namespace QMUL.DiabetesBackend.ServiceImpl.Utils
+namespace QMUL.DiabetesBackend.Service.Utils
 {
     using System.Collections.Generic;
     using FluentValidation.Results;

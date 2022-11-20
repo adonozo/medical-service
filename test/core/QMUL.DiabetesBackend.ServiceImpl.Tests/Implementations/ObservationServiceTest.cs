@@ -11,7 +11,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
     using Model;
     using Model.Enums;
     using NSubstitute;
-    using ServiceImpl.Implementations;
+    using Service;
     using Xunit;
     using ResourceReference = Hl7.Fhir.Model.ResourceReference;
     using Task = System.Threading.Tasks.Task;
