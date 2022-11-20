@@ -54,8 +54,8 @@ public class ObservationController : ControllerBase
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
         {
             var observation = await this.observationValidator.ParseAndValidateAsync(request);
-            var updatedObservation = await this.observationService.UpdateObservation(id, observation);
-            return this.Accepted(updatedObservation.ToJObject());
+            await this.observationService.UpdateObservation(id, observation);
+            return this.Accepted();
         }, this.logger, this);
     }
 
@@ -65,8 +65,8 @@ public class ObservationController : ControllerBase
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
         {
             var value = await this.dataTypeValidator.ParseAndValidateAsync(wrapper);
-            var updatedObservation = await this.observationService.UpdateValue(id, value);
-            return this.Accepted(updatedObservation.ToJObject());
+            await this.observationService.UpdateValue(id, value);
+            return this.Accepted();
         }, this.logger, this);
     }
 

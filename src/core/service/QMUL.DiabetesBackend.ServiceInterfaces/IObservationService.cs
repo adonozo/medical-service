@@ -6,6 +6,7 @@ using Hl7.Fhir.Model;
 using Model;
 using Model.Enums;
 using Model.Exceptions;
+using Task = System.Threading.Tasks.Task;
 
 /// <summary>
 /// The Observation Service Interface. Observations are glucose self-measurements for a patient. 
@@ -61,7 +62,7 @@ public interface IObservationService
     /// <returns>The updated observation.</returns>
     /// <exception cref="NotFoundException">If the observation was not found.</exception>
     /// <exception cref="WriteResourceException">If the medication request could not be updated.</exception>
-    Task<Observation> UpdateObservation(string id, Observation updatedObservation);
+    Task UpdateObservation(string id, Observation updatedObservation);
 
     /// <summary>
     /// Updates the value of an <see cref="Observation"/>.
@@ -71,7 +72,7 @@ public interface IObservationService
     /// <returns>The updated observation.</returns>
     /// <exception cref="NotFoundException">If the observation was not found.</exception>
     /// <exception cref="WriteResourceException">If the medication request could not be updated.</exception>
-    Task<Observation> UpdateValue(string observationId, DataType value);
+    Task UpdateValue(string observationId, DataType value);
 
     /// <summary>
     /// Deletes an <see cref="Observation"/> given an observation ID.

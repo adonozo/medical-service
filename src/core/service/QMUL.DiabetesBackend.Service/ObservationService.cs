@@ -12,6 +12,7 @@ using Model.Exceptions;
 using Model.Extensions;
 using ServiceInterfaces;
 using Utils;
+using Task = System.Threading.Tasks.Task;
 
 /// <summary>
 /// The Observation Service manages patients' clinical results, e.g., a blood glucose measurement. 
@@ -104,7 +105,7 @@ public class ObservationService : IObservationService
     }
 
     /// <inheritdoc/>
-    public async Task<Observation> UpdateObservation(string id, Observation updatedObservation)
+    public async Task UpdateObservation(string id, Observation updatedObservation)
     {
         var observationNotFoundException = new NotFoundException();
         await ResourceUtils.GetResourceOrThrow(async () =>
@@ -116,18 +117,18 @@ public class ObservationService : IObservationService
             await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
 
         updatedObservation.Id = id;
-        return await this.observationDao.UpdateObservation(id, updatedObservation);
+        await this.observationDao.UpdateObservation(id, updatedObservation);
     }
 
     /// <inheritdoc/>
-    public async Task<Observation> UpdateValue(string observationId, DataType value)
+    public async Task UpdateValue(string observationId, DataType value)
     {
         var observationNotFoundException = new NotFoundException();
         var observation = await ResourceUtils.GetResourceOrThrow(async () =>
             await this.observationDao.GetObservation(observationId), observationNotFoundException);
 
         observation.Value = value;
-        return await this.observationDao.UpdateObservation(observationId, observation);
+        await this.observationDao.UpdateObservation(observationId, observation);
     }
 
     /// <inheritdoc/>
