@@ -47,7 +47,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Tests.Implementations
             medicationDao.GetSingleMedication(Arg.Any<string>()).Returns(new Medication());
             
             // Act
-            var result = await medicationService.GetSingleMedication(Guid.NewGuid().ToString());
+            var result = await medicationService.GetMedication(Guid.NewGuid().ToString());
 
             // Assert
             result.Should().BeOfType<Medication>();

@@ -1,14 +1,15 @@
 namespace QMUL.DiabetesBackend.Controllers.Tests.Utils
 {
     using System;
+    using System.Net;
     using System.Threading.Tasks;
     using Api.Utils;
     using FluentAssertions;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Model.Exceptions;
     using NSubstitute;
-    using ServiceInterfaces.Exceptions;
     using Xunit;
 
     public class ExceptionHandlerTest
@@ -46,35 +47,36 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Utils
         }
 
         [Fact]
-        public async Task ExecuteAndHandleAsync_WhenMethodThrowsCreateException_ReturnsBadRequest()
+        public async Task ExecuteAndHandleAsync_WhenMethodThrowsWriteException_ReturnsInternalError()
         {
             // Arrange
             var controller = Substitute.For<ControllerBase>();
-            controller.BadRequest().Returns(new BadRequestResult());
+            controller.StatusCode(500).Returns(new StatusCodeResult(StatusCodes.Status500InternalServerError));
             var logger = Substitute.For<ILogger>();
-            var method = new Func<Task<IActionResult>>(() => throw new CreateException(string.Empty));
+            var method = new Func<Task<IActionResult>>(() => throw new WriteResourceException(string.Empty));
 
             // Act
             var result = await ExceptionHandler.ExecuteAndHandleAsync(method, logger, controller);
 
             // Assert
-            result.Should().BeOfType<BadRequestResult>();
+            result.Should().BeOfType<StatusCodeResult>();
+            ((StatusCodeResult)result).StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
         }
 
         [Fact]
-        public async Task ExecuteAndHandleAsync_WhenMethodThrowsUpdateException_ReturnsBadRequest()
+        public async Task ExecuteAndHandleAsync_WhenMethodThrowsValidationException_ReturnsBadRequest()
         {
             // Arrange
             var controller = Substitute.For<ControllerBase>();
-            controller.BadRequest().Returns(new BadRequestResult());
+            controller.BadRequest(Arg.Any<object>()).Returns(new BadRequestObjectResult(new {}));
             var logger = Substitute.For<ILogger>();
-            var method = new Func<Task<IActionResult>>(() => throw new UpdateException(string.Empty));
+            var method = new Func<Task<IActionResult>>(() => throw new ValidationException(string.Empty));
 
             // Act
             var result = await ExceptionHandler.ExecuteAndHandleAsync(method, logger, controller);
 
             // Assert
-            result.Should().BeOfType<BadRequestResult>();
+            result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         [Fact]

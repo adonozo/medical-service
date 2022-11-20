@@ -4,10 +4,10 @@ namespace QMUL.DiabetesBackend.MongoDb
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using DataInterfaces;
-    using DataInterfaces.Exceptions;
     using Hl7.Fhir.Model;
     using Microsoft.Extensions.Logging;
     using Model;
+    using Model.Exceptions;
     using MongoDB.Bson;
     using MongoDB.Driver;
     using Utils;
@@ -38,20 +38,23 @@ namespace QMUL.DiabetesBackend.MongoDb
             Helpers.SetBsonDateTimeValue(document, "issued", observation.Issued);
             await this.observationCollection.InsertOneAsync(document);
 
-            var newId = document["_id"].ToString();
+            var newId = this.GetIdFromDocument(document);
             this.logger.LogDebug("Observation created with ID: {Id}", newId);
             const string errorMessage = "Could not create observation";
             document = await this.GetSingleOrThrow(this.observationCollection.Find(Helpers.GetByIdFilter(newId)),
-                new CreateException(errorMessage));
+                new WriteResourceException(errorMessage));
             return await this.ProjectToObservation(document);
         }
 
         /// <inheritdoc />
-        public async Task<Observation> GetObservation(string observationId)
+        public async Task<Observation?> GetObservation(string id)
         {
-            var cursor = this.observationCollection.Find(Helpers.GetByIdFilter(observationId));
-            var errorMessage = $"Could not find observation with ID {observationId}";
-            var document = await this.GetSingleOrThrow(cursor, new NotFoundException(errorMessage));
+            var document = await this.observationCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
+            if (document is null)
+            {
+                return null;
+            }
+
             return await this.ProjectToObservation(document);
         }
 
@@ -105,15 +108,17 @@ namespace QMUL.DiabetesBackend.MongoDb
         {
             this.logger.LogDebug("Updating Observation with ID {Id}", id);
             var document = await Helpers.ToBsonDocumentAsync(observation);
-            var result = await this.observationCollection.ReplaceOneAsync(Helpers.GetByIdFilter(id),
-                document);
+            var result = await this.observationCollection
+                .ReplaceOneAsync(Helpers.GetByIdFilter(id), document);
             
             var errorMessage = $"There was an error updating the Observation {id}";
-            this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new UpdateException(errorMessage),
+            var exception = new WriteResourceException(errorMessage);
+            this.CheckAcknowledgedOrThrow(result.IsAcknowledged, exception,
                 () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
             this.logger.LogDebug("Observation updated {Id}", id);
 
-            return await this.GetObservation(id);
+            document = await this.GetSingleOrThrow(this.observationCollection.Find(Helpers.GetByIdFilter(id)), exception);
+            return await Helpers.ToResourceAsync<Observation>(document);
         }
 
         /// <inheritdoc />

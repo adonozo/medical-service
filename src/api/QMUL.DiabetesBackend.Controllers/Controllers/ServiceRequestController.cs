@@ -28,11 +28,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [HttpGet("serviceRequests/{id}")]
         public async Task<IActionResult> GetServiceRequest(string id)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var result = await this.serviceRequestService.GetServiceRequest(id);
-                return this.Ok(result.ToJObject());
-            }, this.logger, this);
+            var serviceRequest = await this.serviceRequestService.GetServiceRequest(id);
+            return this.OkOrNotFound(serviceRequest);
         }
 
         [HttpPost("serviceRequests")]

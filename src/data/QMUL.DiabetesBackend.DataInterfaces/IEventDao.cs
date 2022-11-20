@@ -3,9 +3,9 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Exceptions;
     using Model;
     using Model.Enums;
+    using Model.Exceptions;
 
     /// <summary>
     /// The Event Dao Interface
@@ -17,7 +17,6 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="events">The list of <see cref="HealthEvent"/> to insert.</param>
         /// <returns>A boolean value to indicate if the list was inserted.</returns>
-        /// <exception cref="CreateException">If the events could not be inserted.</exception>
         public Task<bool> CreateEvents(IEnumerable<HealthEvent> events);
 
         /// <summary>
@@ -42,7 +41,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="timing">The timing to match</param>
         /// <param name="time">The time to change. Date is ignored</param>
         /// <returns>A boolean value to indicate if the update was successful.</returns>
-        /// <exception cref="UpdateException">If any of the events were not updated.</exception>
+        /// <exception cref="WriteResourceException">If any of the events were not updated.</exception>
         public Task<bool> UpdateEventsTiming(string patientId, CustomEventTiming timing, DateTimeOffset time);
 
         /// <summary>

@@ -1,5 +1,5 @@
 // ReSharper disable UnusedAutoPropertyAccessor.Global
-
+#nullable disable
 namespace QMUL.DiabetesBackend.MongoDb.Models
 {
     using System;

@@ -3,9 +3,9 @@ namespace QMUL.DiabetesBackend.DataInterfaces
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Exceptions;
     using Hl7.Fhir.Model;
     using Model;
+    using Model.Exceptions;
 
     /// <summary>
     /// The Observation Dao interface.
@@ -17,16 +17,15 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="observation">The <see cref="Observation"/> to insert to the Database</param>
         /// <returns>The inserted <see cref="Observation"/> with a new ID.</returns>
-        /// <exception cref="CreateException">If the observation is not created.</exception>
+        /// <exception cref="WriteResourceException">If the observation is not created.</exception>
         public Task<Observation> CreateObservation(Observation observation);
 
         /// <summary>
         /// Gets a single observation given an ID.
         /// </summary>
-        /// <param name="observationId">The observation ID to look for.</param>
+        /// <param name="id">The observation ID to look for.</param>
         /// <returns>A <see cref="Observation"/></returns>
-        /// <exception cref="NotFoundException">If the observation is not found.</exception>
-        public Task<Observation> GetObservation(string observationId);
+        public Task<Observation?> GetObservation(string id);
 
         /// <summary>
         /// Gets all the observations for a given patient.
@@ -56,7 +55,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="id">The observation ID.</param>
         /// <param name="observation">The <see cref="Observation"/> to update.</param>
         /// <returns>The updated observation if the update was successful</returns>
-        /// <exception cref="UpdateException">If the observation could not be updated</exception>
+        /// <exception cref="WriteResourceException">If the observation could not be updated</exception>
         public Task<Observation> UpdateObservation(string id, Observation observation);
 
         /// <summary>

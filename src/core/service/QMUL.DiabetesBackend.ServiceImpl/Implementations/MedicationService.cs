@@ -23,24 +23,22 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public async Task<PaginatedResult<Bundle>> GetMedicationList(PaginationRequest paginationRequest, string name = null)
+        public async Task<PaginatedResult<Bundle>> GetMedicationList(PaginationRequest paginationRequest, string? name = null)
         {
             var paginatedMedications = await this.medicationDao.GetMedicationList(paginationRequest, name);
             return paginatedMedications.ToBundleResult();
         }
 
         /// <inheritdoc/>>
-        public async Task<Medication> GetSingleMedication(string id)
+        public Task<Medication?> GetMedication(string id)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.medicationDao.GetSingleMedication(id), this.logger);
+            return this.medicationDao.GetSingleMedication(id);
         }
 
         /// <inheritdoc/>>
         public async Task<Medication> CreateMedication(Medication newMedication)
         {
-            var medication = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.medicationDao.CreateMedication(newMedication), this.logger);
+            var medication = await this.medicationDao.CreateMedication(newMedication);
             this.logger.LogDebug("Medication created with ID: {Id}", medication.Id);
             return medication;
         }

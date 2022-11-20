@@ -10,7 +10,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Validators
     using ServiceInterfaces.Validators;
     using Utils;
     using Task = System.Threading.Tasks.Task;
-    using ValidationException = ServiceInterfaces.Exceptions.ValidationException;
+    using ValidationException = Model.Exceptions.ValidationException;
 
     public abstract class ResourceValidatorBase<T> : AbstractValidator<T>, IResourceValidator<T> where T : Resource
     {

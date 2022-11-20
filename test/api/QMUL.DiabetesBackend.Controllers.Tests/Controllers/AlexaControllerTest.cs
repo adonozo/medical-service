@@ -11,7 +11,6 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
     using ServiceInterfaces;
-    using ServiceInterfaces.Exceptions;
     using Xunit;
     using Task = System.Threading.Tasks.Task;
 
@@ -26,7 +25,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             service.ProcessMedicationRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
                     Arg.Any<CustomEventTiming>(), Arg.Any<string>())
                 .Returns(new Bundle());
-            var controller = new AlexaController(service, logger);
+            var controller = new AlexaController(service);
 
             // Act
             var result = await controller.GetMedicationRequest("test@mail.com", DateTime.Now,
@@ -46,7 +45,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             service.ProcessInsulinMedicationRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
                     Arg.Any<CustomEventTiming>(), Arg.Any<string>())
                 .Returns(new Bundle());
-            var controller = new AlexaController(service, logger);
+            var controller = new AlexaController(service);
 
             // Act
             var result = await controller.GetInsulinMedicationRequest("test@mail.com", DateTime.Now,
@@ -66,7 +65,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             service.ProcessGlucoseServiceRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
                     Arg.Any<CustomEventTiming>(), Arg.Any<string>())
                 .Returns(new Bundle());
-            var controller = new AlexaController(service, logger);
+            var controller = new AlexaController(service);
 
             // Act
             var result = await controller.GetGlucoseServiceRequest("test@mail.com", DateTime.Now,
@@ -86,7 +85,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             service.ProcessCarePlanRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
                     Arg.Any<CustomEventTiming>(), Arg.Any<string>())
                 .Returns(new Bundle());
-            var controller = new AlexaController(service, logger);
+            var controller = new AlexaController(service);
 
             // Act
             var result = await controller.GetCarePlan("test@mail.com", DateTime.Now,
@@ -104,7 +103,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             var service = Substitute.For<IAlexaService>();
             var logger = Substitute.For<ILogger<AlexaController>>();
             service.GetNextRequests(Arg.Any<string>(), Arg.Any<AlexaRequestType>()).Returns(new Bundle());
-            var controller = new AlexaController(service, logger);
+            var controller = new AlexaController(service);
 
             // Act
             var result = await controller.GetAlexaNextRequest("test@gmail.com", AlexaRequestType.Medication);
@@ -119,10 +118,9 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
         {
             // Arrange
             var service = Substitute.For<IAlexaService>();
-            var logger = Substitute.For<ILogger<AlexaController>>();
             service.GetNextRequests(Arg.Any<string>(), Arg.Any<AlexaRequestType>())
-                .Throws(new NotFoundException(string.Empty));
-            var controller = new AlexaController(service, logger);
+                .Returns(Task.FromResult<Bundle>(null));
+            var controller = new AlexaController(service);
 
             // Act
             var result = await controller.GetAlexaNextRequest("test@gmail.com", AlexaRequestType.Medication);
@@ -130,24 +128,6 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
 
             // Assert
             status.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        }
-
-        [Fact]
-        public async Task GetAlexaNextRequest_WhenException_ReturnsInternalError()
-        {
-            // Arrange
-            var service = Substitute.For<IAlexaService>();
-            var logger = Substitute.For<ILogger<AlexaController>>();
-            service.GetNextRequests(Arg.Any<string>(), Arg.Any<AlexaRequestType>())
-                .Throws(new Exception());
-            var controller = new AlexaController(service, logger);
-
-            // Act
-            var result = await controller.GetAlexaNextRequest("test@gmail.com", AlexaRequestType.Medication);
-            var status = (StatusCodeResult) result;
-
-            // Assert
-            status.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
     }
 }

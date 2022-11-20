@@ -33,11 +33,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         [HttpGet("observations/{id}")]
         public async Task<IActionResult> GetObservation([FromRoute] string id)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var observation = await this.observationService.GetObservation(id);
-                return this.Ok(observation.ToJObject());
-            }, this.logger, this);
+            var observation = await this.observationService.GetObservation(id);
+            return this.OkOrNotFound(observation);
         }
 
         [HttpPost("observations")]

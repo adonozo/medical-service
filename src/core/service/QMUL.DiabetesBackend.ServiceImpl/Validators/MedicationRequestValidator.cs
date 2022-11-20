@@ -42,7 +42,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Validators
                     var reference = requestMedication as ResourceReference;
                     try
                     {
-                        await medicationService.GetSingleMedication(reference?.Reference);
+                        await medicationService.GetMedication(reference?.Reference ?? string.Empty);
                     }
                     catch (Exception)
                     {

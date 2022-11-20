@@ -2,8 +2,8 @@ namespace QMUL.DiabetesBackend.DataInterfaces
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Exceptions;
     using Hl7.Fhir.Model;
+    using Model.Exceptions;
 
     /// <summary>
     /// The Service Request Dao interface.
@@ -15,7 +15,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="newRequest">The <see cref="ServiceRequest"/> to insert.</param>
         /// <returns>The new <see cref="ServiceRequest"/> with a generated ID.</returns>
-        /// <exception cref="CreateException">If the service request could not be created.</exception>
+        /// <exception cref="WriteResourceException">If the service request could not be created.</exception>
         public Task<ServiceRequest> CreateServiceRequest(ServiceRequest newRequest);
 
         /// <summary>
@@ -23,8 +23,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// </summary>
         /// <param name="id">The service request ID.</param>
         /// <returns>A single <see cref="ServiceRequest"/></returns>
-        /// <exception cref="NotFoundException">If the service request was not found.</exception>
-        public Task<ServiceRequest> GetServiceRequest(string id);
+        public Task<ServiceRequest?> GetServiceRequest(string id);
 
         /// <summary>
         /// Gets the list of all <see cref="ServiceRequest"/> for a given patient.
@@ -46,7 +45,7 @@ namespace QMUL.DiabetesBackend.DataInterfaces
         /// <param name="id">The service request ID.</param>
         /// <param name="actualRequest">The service request with updated data.</param>
         /// <returns>The updated <see cref="ServiceRequest"/>.</returns>
-        /// <exception cref="UpdateException">If the service request was not updated.</exception>
+        /// <exception cref="WriteResourceException">If the service request was not updated.</exception>
         public Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest actualRequest);
 
         /// <summary>

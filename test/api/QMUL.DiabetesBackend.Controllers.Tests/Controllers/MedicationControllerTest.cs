@@ -11,9 +11,9 @@
     using Newtonsoft.Json.Linq;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
-    using QMUL.DiabetesBackend.Api.Controllers;
+    using Api.Controllers;
+    using Model.Exceptions;
     using ServiceInterfaces;
-    using ServiceInterfaces.Exceptions;
     using ServiceInterfaces.Validators;
     using Xunit;
     using Task = System.Threading.Tasks.Task;
@@ -42,29 +42,12 @@
         }
 
         [Fact]
-        public async Task GetAllMedications_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var service = Substitute.For<IMedicationService>();
-            service.GetMedicationList(Arg.Any<PaginationRequest>()).Throws(new Exception());
-
-            var controller = this.GetMedicationController(service);
-
-            // Act
-            var medications = await controller.GetAllMedications();
-            var result = (StatusCodeResult)medications;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
-        }
-
-        [Fact]
         public async Task GetMedication_WhenRequestIsCorrect_ReturnsOk()
         {
             // Arrange
             var service = Substitute.For<IMedicationService>();
             var id = Guid.NewGuid().ToString();
-            service.GetSingleMedication(Arg.Any<string>()).Returns(new Medication());
+            service.GetMedication(Arg.Any<string>()).Returns(new Medication());
 
             var controller = this.GetMedicationController(service);
 
@@ -74,24 +57,6 @@
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetMedication_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var service = Substitute.For<IMedicationService>();
-            var id = Guid.NewGuid().ToString();
-            service.GetSingleMedication(Arg.Any<string>()).Throws(new Exception());
-
-            var controller = this.GetMedicationController(service);
-
-            // Act
-            var medicationResult = await controller.GetMedication(id);
-            var result = (StatusCodeResult)medicationResult;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [Fact]

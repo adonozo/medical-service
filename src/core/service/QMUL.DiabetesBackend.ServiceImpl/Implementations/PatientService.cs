@@ -6,6 +6,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
     using ServiceInterfaces;
     using Microsoft.Extensions.Logging;
     using Model;
+    using Model.Exceptions;
     using Utils;
 
     /// <summary>
@@ -30,40 +31,38 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<Patient> CreatePatient(Patient newInternalPatient)
+        public Task<Patient> CreatePatient(Patient newInternalPatient)
         {
             this.logger.LogDebug("Creating new patient");
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.CreatePatient(newInternalPatient), this.logger);
+            return this.patientDao.CreatePatient(newInternalPatient);
         }
 
         /// <inheritdoc/>
-        public async Task<Patient> GetPatient(string idOrEmail)
+        public Task<Patient?> GetPatient(string idOrEmail)
         {
-            var patient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(idOrEmail), this.logger);
-            this.logger.LogDebug("Patient found: {IdOrEmail}", idOrEmail);
-            return patient;
+            return this.patientDao.GetPatientByIdOrEmail(idOrEmail);
         }
 
         /// <inheritdoc/>
         public async Task<Patient> UpdatePatient(string idOrEmail, Patient updatedInternalPatient)
         {
-            await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(idOrEmail), this.logger);
+            var patientNotFoundException = new NotFoundException($"Patient not found: {idOrEmail}");
+            await ResourceUtils.GetResourceOrThrow(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(idOrEmail), patientNotFoundException);
+
             updatedInternalPatient.Id = idOrEmail;
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.UpdatePatient(updatedInternalPatient), this.logger);
+            return await this.patientDao.UpdatePatient(updatedInternalPatient);
         }
 
         /// <inheritdoc/>
         public async Task<Patient> PatchPatient(string idOrEmail, InternalPatient updatedInternalPatient)
         {
-            var oldPatient = await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.GetPatientByIdOrEmail(idOrEmail), this.logger);
+            var patientNotFoundException = new NotFoundException($"Patient not found: {idOrEmail}");
+            var oldPatient = await ResourceUtils.GetResourceOrThrow(async () =>
+                await this.patientDao.GetPatientByIdOrEmail(idOrEmail), patientNotFoundException);
+
             updatedInternalPatient.Id = idOrEmail;
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-                await this.patientDao.PatchPatient(updatedInternalPatient, oldPatient), this.logger);
+            return await this.patientDao.PatchPatient(updatedInternalPatient, oldPatient);
         }
     }
 }

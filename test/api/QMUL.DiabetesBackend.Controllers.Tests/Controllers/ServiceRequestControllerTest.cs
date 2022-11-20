@@ -9,11 +9,11 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
     using Model;
+    using Model.Exceptions;
     using Newtonsoft.Json.Linq;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
     using ServiceInterfaces;
-    using ServiceInterfaces.Exceptions;
     using ServiceInterfaces.Validators;
     using Xunit;
     using Task = System.Threading.Tasks.Task;
@@ -36,24 +36,6 @@
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetServiceRequest_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var service = Substitute.For<IServiceRequestService>();
-            var validator = Substitute.For<IResourceValidator<ServiceRequest>>();
-            var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, validator, logger);
-            service.GetServiceRequest(Arg.Any<string>()).Throws(new Exception());
-
-            // Act
-            var serviceRequest = await controller.GetServiceRequest(Guid.NewGuid().ToString());
-            var result = (StatusCodeResult)serviceRequest;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [Fact]

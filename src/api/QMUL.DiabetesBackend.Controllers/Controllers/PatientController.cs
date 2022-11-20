@@ -79,27 +79,20 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         #region GET
 
         [HttpGet("patients")]
-        public async Task<IActionResult> GetPatients([FromQuery] int? limit = null, [FromQuery] string after = null)
+        public async Task<IActionResult> GetPatients([FromQuery] int? limit = null, [FromQuery] string? after = null)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                this.logger.LogDebug("Getting patients list");
-                var pagination = new PaginationRequest(limit, after);
-                var paginatedResult = await this.patientService.GetPatientList(pagination);
+            var pagination = new PaginationRequest(limit, after);
+            var paginatedResult = await this.patientService.GetPatientList(pagination);
 
-                this.HttpContext.SetPaginatedResult(paginatedResult);
-                return this.Ok(paginatedResult.Results.ToJObject());
-            }, this.logger, this);
+            this.HttpContext.SetPaginatedResult(paginatedResult);
+            return this.Ok(paginatedResult.Results.ToJObject());
         }
 
         [HttpGet("patients/{idOrEmail}")]
         public async Task<IActionResult> GetPatient([FromRoute] string idOrEmail)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var result = await this.patientService.GetPatient(idOrEmail);
-                return this.Ok(result.ToJObject());
-            }, this.logger, this);
+            var patient = await this.patientService.GetPatient(idOrEmail);
+            return this.OkOrNotFound(patient);
         }
 
         [HttpGet("patients/{idOrEmail}/carePlans")]
@@ -107,81 +100,69 @@ namespace QMUL.DiabetesBackend.Api.Controllers
                   "Use individual requests instead.")]
         public async Task<IActionResult> GetPatientCarePlans([FromRoute] string idOrEmail)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var result = await this.carePlanService.GetCarePlanFor(idOrEmail);
-                return this.Ok(result.ToJObject());
-            }, this.logger, this);
+            var result = await this.carePlanService.GetCarePlanFor(idOrEmail);
+            return this.OkOrNotFound(result);
         }
 
         [HttpGet("patients/{idOrEmail}/medicationRequests/active")]
         public async Task<IActionResult> GetActiveMedicationRequests([FromRoute] string idOrEmail,
-            [FromQuery] int? limit = null, [FromQuery] string after = null)
+            [FromQuery] int? limit = null, [FromQuery] string? after = null)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var paginationRequest = new PaginationRequest(limit, after);
-                var paginatedResult =
-                    await this.medicationRequestService.GetActiveMedicationRequests(idOrEmail, paginationRequest);
+            var paginationRequest = new PaginationRequest(limit, after);
+            var paginatedResult =
+                await this.medicationRequestService.GetActiveMedicationRequests(idOrEmail, paginationRequest);
 
-                this.HttpContext.SetPaginatedResult(paginatedResult);
-                return this.Ok(paginatedResult.Results.ToJObject());
-            }, this.logger, this);
+            this.HttpContext.SetPaginatedResult(paginatedResult);
+            return this.Ok(paginatedResult.Results.ToJObject());
         }
 
         // Alexa endpoint
         [HttpGet("patients/{idOrEmail}/carePlans/active")]
         public async Task<IActionResult> GetActiveCarePlan([FromRoute] string idOrEmail)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var result = await this.carePlanService.GetActiveCarePlans(idOrEmail);
-                return this.Ok(result.ToJObject());
-            }, this.logger, this);
+            var result = await this.carePlanService.GetActiveCarePlans(idOrEmail);
+            return this.OkOrNotFound(result);
         }
 
         [HttpGet("patients/{idOrEmail}/observations/{observationId}")]
         public async Task<IActionResult> GetSingleObservation([FromRoute] string idOrEmail,
             [FromRoute] string observationId)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var result = await this.observationService.GetObservation(observationId);
-                return this.Ok(result.ToJObject());
-            }, this.logger, this);
+            var result = await this.observationService.GetObservation(observationId);
+            return this.Ok(result.ToJObject());
         }
 
         [HttpGet("patients/{idOrEmail}/observations/")]
-        public async Task<IActionResult> GetPatientObservations([FromRoute] string idOrEmail, [FromQuery] DateTime date,
+        public async Task<IActionResult> GetPatientObservations([FromRoute] string idOrEmail, 
+            [FromQuery] DateTime date,
             [FromQuery] string timezone = "UTC",
             [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT,
             [FromQuery] int? limit = null,
-            [FromQuery] string after = null)
+            [FromQuery] string? after = null)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var pagination = new PaginationRequest(limit, after);
-                var paginatedResult =
-                    await this.observationService.GetObservationsFor(idOrEmail, timing, date, pagination, timezone);
+            var pagination = new PaginationRequest(limit, after);
+            var paginatedResult =
+                await this.observationService.GetObservationsFor(
+                    patientId: idOrEmail,
+                    timing: timing,
+                    dateTime: date,
+                    paginationRequest: pagination,
+                    patientTimezone: timezone);
 
-                this.HttpContext.SetPaginatedResult(paginatedResult);
-                return this.Ok(paginatedResult.Results.ToJObject());
-            }, this.logger, this);
+            this.HttpContext.SetPaginatedResult(paginatedResult);
+            return this.Ok(paginatedResult.Results.ToJObject());
         }
 
         [HttpGet("patients/{idOrEmail}/all/observations/")]
         public async Task<IActionResult> GetAllPatientObservations([FromRoute] string idOrEmail,
             [FromQuery] int? limit = null,
-            [FromQuery] string after = null)
+            [FromQuery] string? after = null)
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var pagination = new PaginationRequest(limit, after);
-                var paginatedResult = await this.observationService.GetObservations(idOrEmail, pagination);
+            var pagination = new PaginationRequest(limit, after);
+            var paginatedResult = await this.observationService.GetObservations(idOrEmail, pagination);
 
-                this.HttpContext.SetPaginatedResult(paginatedResult);
-                return this.Ok(paginatedResult.Results.ToJObject());
-            }, this.logger, this);
+            this.HttpContext.SetPaginatedResult(paginatedResult);
+            return this.Ok(paginatedResult.Results.ToJObject());
         }
 
         #endregion
@@ -217,8 +198,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         {
             return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
             {
-                var result = await this.alexaService.UpsertDosageStartDate(idOrEmail, dosageId, startDate.StartDate);
-                return result ? this.NoContent() : this.BadRequest();
+                await this.alexaService.UpsertDosageStartDate(idOrEmail, dosageId, startDate.StartDate);
+                return this.NoContent();
             }, this.logger, this);
         }
 
@@ -228,9 +209,8 @@ namespace QMUL.DiabetesBackend.Api.Controllers
         {
             return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
             {
-                var result =
-                    await this.alexaService.UpsertServiceRequestStartDate(idOrEmail, serviceRequestId, startDate.StartDate);
-                return result ? this.NoContent() : this.BadRequest();
+                await this.alexaService.UpsertServiceRequestStartDate(idOrEmail, serviceRequestId, startDate.StartDate);    
+                return this.NoContent();
             }, this.logger, this);
         }
 
