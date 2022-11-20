@@ -1,138 +1,137 @@
-namespace QMUL.DiabetesBackend.MongoDb
+namespace QMUL.DiabetesBackend.MongoDb;
+
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using DataInterfaces;
+using Hl7.Fhir.Model;
+using Microsoft.Extensions.Logging;
+using Model;
+using Model.Exceptions;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using Utils;
+using Task = System.Threading.Tasks.Task;
+
+/// <summary>
+/// The Observation Dao
+/// </summary>
+public class ObservationDao : MongoDaoBase, IObservationDao
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using DataInterfaces;
-    using Hl7.Fhir.Model;
-    using Microsoft.Extensions.Logging;
-    using Model;
-    using Model.Exceptions;
-    using MongoDB.Bson;
-    using MongoDB.Driver;
-    using Utils;
-    using Task = System.Threading.Tasks.Task;
+    private const string CollectionName = "observation";
 
-    /// <summary>
-    /// The Observation Dao
-    /// </summary>
-    public class ObservationDao : MongoDaoBase, IObservationDao
+    private readonly IMongoCollection<BsonDocument> observationCollection;
+    private readonly ILogger<ObservationDao> logger;
+
+    /// <inheritdoc />
+    public ObservationDao(IMongoDatabase database, ILogger<ObservationDao> logger) : base(database)
     {
-        private const string CollectionName = "observation";
+        this.logger = logger;
+        this.observationCollection = this.Database.GetCollection<BsonDocument>(CollectionName);
+    }
 
-        private readonly IMongoCollection<BsonDocument> observationCollection;
-        private readonly ILogger<ObservationDao> logger;
+    /// <inheritdoc />
+    public async Task<Observation> CreateObservation(Observation observation)
+    {
+        this.logger.LogDebug("Creating observation...");
+        var document = await Helpers.ToBsonDocumentAsync(observation);
+        Helpers.SetBsonDateTimeValue(document, "issued", observation.Issued);
+        await this.observationCollection.InsertOneAsync(document);
 
-        /// <inheritdoc />
-        public ObservationDao(IMongoDatabase database, ILogger<ObservationDao> logger) : base(database)
+        var newId = this.GetIdFromDocument(document);
+        this.logger.LogDebug("Observation created with ID: {Id}", newId);
+        const string errorMessage = "Could not create observation";
+        document = await this.GetSingleOrThrow(this.observationCollection.Find(Helpers.GetByIdFilter(newId)),
+            new WriteResourceException(errorMessage));
+        return await this.ProjectToObservation(document);
+    }
+
+    /// <inheritdoc />
+    public async Task<Observation?> GetObservation(string id)
+    {
+        var document = await this.observationCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
+        if (document is null)
         {
-            this.logger = logger;
-            this.observationCollection = this.Database.GetCollection<BsonDocument>(CollectionName);
+            return null;
         }
 
-        /// <inheritdoc />
-        public async Task<Observation> CreateObservation(Observation observation)
-        {
-            this.logger.LogDebug("Creating observation...");
-            var document = await Helpers.ToBsonDocumentAsync(observation);
-            Helpers.SetBsonDateTimeValue(document, "issued", observation.Issued);
-            await this.observationCollection.InsertOneAsync(document);
+        return await this.ProjectToObservation(document);
+    }
 
-            var newId = this.GetIdFromDocument(document);
-            this.logger.LogDebug("Observation created with ID: {Id}", newId);
-            const string errorMessage = "Could not create observation";
-            document = await this.GetSingleOrThrow(this.observationCollection.Find(Helpers.GetByIdFilter(newId)),
-                new WriteResourceException(errorMessage));
-            return await this.ProjectToObservation(document);
+    /// <inheritdoc />
+    public async Task<PaginatedResult<IEnumerable<Resource>>> GetAllObservationsFor(string patientId,
+        PaginationRequest paginationRequest)
+    {
+        var searchFilter = Helpers.GetPatientReferenceFilter(patientId);
+        var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
+
+        var results = await this.observationCollection.Find(resultsFilter)
+            .Limit(paginationRequest.Limit)
+            .Project(document => this.ProjectToObservation(document))
+            .ToListAsync();
+        Resource[] observations = await Task.WhenAll(results);
+
+        if (observations.Length == 0)
+        {
+            return new PaginatedResult<IEnumerable<Resource>> { Results = observations };
         }
 
-        /// <inheritdoc />
-        public async Task<Observation?> GetObservation(string id)
-        {
-            var document = await this.observationCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
-            if (document is null)
-            {
-                return null;
-            }
+        return await Helpers.GetPaginatedResult(this.observationCollection, searchFilter, observations);
+    }
 
-            return await this.ProjectToObservation(document);
+    /// <inheritdoc />
+    public async Task<PaginatedResult<IEnumerable<Resource>>> GetObservationsFor(string patientId, DateTime start,
+        DateTime end, PaginationRequest paginationRequest)
+    {
+        var searchFilter = Builders<BsonDocument>.Filter.And(
+            Helpers.GetPatientReferenceFilter(patientId),
+            Builders<BsonDocument>.Filter.Gt("issued", start),
+            Builders<BsonDocument>.Filter.Lt("issued", end));
+
+        var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
+        var result = await this.observationCollection.Find(resultsFilter)
+            .Limit(paginationRequest.Limit)
+            .Project(document => this.ProjectToObservation(document))
+            .ToListAsync();
+
+        Resource[] observations = await Task.WhenAll(result);
+        if (observations.Length == 0)
+        {
+            return new PaginatedResult<IEnumerable<Resource>> { Results = observations };
         }
 
-        /// <inheritdoc />
-        public async Task<PaginatedResult<IEnumerable<Resource>>> GetAllObservationsFor(string patientId,
-            PaginationRequest paginationRequest)
-        {
-            var searchFilter = Helpers.GetPatientReferenceFilter(patientId);
-            var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
+        return await Helpers.GetPaginatedResult(this.observationCollection, searchFilter, observations);
+    }
 
-            var results = await this.observationCollection.Find(resultsFilter)
-                .Limit(paginationRequest.Limit)
-                .Project(document => this.ProjectToObservation(document))
-                .ToListAsync();
-            Resource[] observations = await Task.WhenAll(results);
+    /// <inheritdoc />
+    public async Task<Observation> UpdateObservation(string id, Observation observation)
+    {
+        this.logger.LogDebug("Updating Observation with ID {Id}", id);
+        var document = await Helpers.ToBsonDocumentAsync(observation);
+        var result = await this.observationCollection
+            .ReplaceOneAsync(Helpers.GetByIdFilter(id), document);
 
-            if (observations.Length == 0)
-            {
-                return new PaginatedResult<IEnumerable<Resource>> { Results = observations };
-            }
+        var errorMessage = $"There was an error updating the Observation {id}";
+        var exception = new WriteResourceException(errorMessage);
+        this.CheckAcknowledgedOrThrow(result.IsAcknowledged, exception,
+            () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
+        this.logger.LogDebug("Observation updated {Id}", id);
 
-            return await Helpers.GetPaginatedResult(this.observationCollection, searchFilter, observations);
-        }
+        document = await this.GetSingleOrThrow(this.observationCollection.Find(Helpers.GetByIdFilter(id)), exception);
+        return await Helpers.ToResourceAsync<Observation>(document);
+    }
 
-        /// <inheritdoc />
-        public async Task<PaginatedResult<IEnumerable<Resource>>> GetObservationsFor(string patientId, DateTime start,
-            DateTime end, PaginationRequest paginationRequest)
-        {
-            var searchFilter = Builders<BsonDocument>.Filter.And(
-                Helpers.GetPatientReferenceFilter(patientId),
-                Builders<BsonDocument>.Filter.Gt("issued", start),
-                Builders<BsonDocument>.Filter.Lt("issued", end));
+    /// <inheritdoc />
+    public async Task<bool> DeleteObservation(string id)
+    {
+        this.logger.LogDebug("Deleting Observation with ID: {Id}", id);
+        var result = await this.observationCollection.DeleteOneAsync(Helpers.GetByIdFilter(id));
+        return result.IsAcknowledged;
+    }
 
-            var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
-            var result = await this.observationCollection.Find(resultsFilter)
-                .Limit(paginationRequest.Limit)
-                .Project(document => this.ProjectToObservation(document))
-                .ToListAsync();
-
-            Resource[] observations = await Task.WhenAll(result);
-            if (observations.Length == 0)
-            {
-                return new PaginatedResult<IEnumerable<Resource>> { Results = observations };
-            }
-
-            return await Helpers.GetPaginatedResult(this.observationCollection, searchFilter, observations);
-        }
-
-        /// <inheritdoc />
-        public async Task<Observation> UpdateObservation(string id, Observation observation)
-        {
-            this.logger.LogDebug("Updating Observation with ID {Id}", id);
-            var document = await Helpers.ToBsonDocumentAsync(observation);
-            var result = await this.observationCollection
-                .ReplaceOneAsync(Helpers.GetByIdFilter(id), document);
-            
-            var errorMessage = $"There was an error updating the Observation {id}";
-            var exception = new WriteResourceException(errorMessage);
-            this.CheckAcknowledgedOrThrow(result.IsAcknowledged, exception,
-                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
-            this.logger.LogDebug("Observation updated {Id}", id);
-
-            document = await this.GetSingleOrThrow(this.observationCollection.Find(Helpers.GetByIdFilter(id)), exception);
-            return await Helpers.ToResourceAsync<Observation>(document);
-        }
-
-        /// <inheritdoc />
-        public async Task<bool> DeleteObservation(string id)
-        {
-            this.logger.LogDebug("Deleting Observation with ID: {Id}", id);
-            var result = await this.observationCollection.DeleteOneAsync(Helpers.GetByIdFilter(id));
-            return result.IsAcknowledged;
-        }
-
-        private async Task<Observation> ProjectToObservation(BsonDocument document)
-        {
-            document["issued"] = document["issued"].ToString();
-            return await Helpers.ToResourceAsync<Observation>(document);
-        }
+    private async Task<Observation> ProjectToObservation(BsonDocument document)
+    {
+        document["issued"] = document["issued"].ToString();
+        return await Helpers.ToResourceAsync<Observation>(document);
     }
 }

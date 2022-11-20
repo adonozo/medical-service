@@ -1,68 +1,67 @@
-namespace QMUL.DiabetesBackend.DataInterfaces
+namespace QMUL.DiabetesBackend.DataInterfaces;
+
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Hl7.Fhir.Model;
+using Model;
+using Model.Exceptions;
+
+/// <summary>
+/// The Observation Dao interface.
+/// </summary>
+public interface IObservationDao
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using Hl7.Fhir.Model;
-    using Model;
-    using Model.Exceptions;
+    /// <summary>
+    /// Creates a given <see cref="Observation"/>. It generates an ID.
+    /// </summary>
+    /// <param name="observation">The <see cref="Observation"/> to insert to the Database</param>
+    /// <returns>The inserted <see cref="Observation"/> with a new ID.</returns>
+    /// <exception cref="WriteResourceException">If the observation is not created.</exception>
+    Task<Observation> CreateObservation(Observation observation);
 
     /// <summary>
-    /// The Observation Dao interface.
+    /// Gets a single observation given an ID.
     /// </summary>
-    public interface IObservationDao
-    {
-        /// <summary>
-        /// Creates a given <see cref="Observation"/>. It generates an ID.
-        /// </summary>
-        /// <param name="observation">The <see cref="Observation"/> to insert to the Database</param>
-        /// <returns>The inserted <see cref="Observation"/> with a new ID.</returns>
-        /// <exception cref="WriteResourceException">If the observation is not created.</exception>
-        public Task<Observation> CreateObservation(Observation observation);
+    /// <param name="id">The observation ID to look for.</param>
+    /// <returns>A <see cref="Observation"/></returns>
+    Task<Observation?> GetObservation(string id);
 
-        /// <summary>
-        /// Gets a single observation given an ID.
-        /// </summary>
-        /// <param name="id">The observation ID to look for.</param>
-        /// <returns>A <see cref="Observation"/></returns>
-        public Task<Observation?> GetObservation(string id);
+    /// <summary>
+    /// Gets all the observations for a given patient.
+    /// </summary>
+    /// <param name="patientId">The patient ID.</param>
+    /// <param name="paginationRequest">The paginated request parameters.</param>
+    /// <returns>The patient's list of <see cref="Observation"/> in a paginated <see cref="PaginatedResult{T}"/>
+    /// object.</returns>
+    Task<PaginatedResult<IEnumerable<Resource>>> GetAllObservationsFor(string patientId,
+        PaginationRequest paginationRequest);
 
-        /// <summary>
-        /// Gets all the observations for a given patient.
-        /// </summary>
-        /// <param name="patientId">The patient ID.</param>
-        /// <param name="paginationRequest">The paginated request parameters.</param>
-        /// <returns>The patient's list of <see cref="Observation"/> in a paginated <see cref="PaginatedResult{T}"/>
-        /// object.</returns>
-        public Task<PaginatedResult<IEnumerable<Resource>>> GetAllObservationsFor(string patientId,
-            PaginationRequest paginationRequest);
+    /// <summary>
+    /// Gets the list of <see cref="Observation"/> for a given patient in a defined time range.
+    /// </summary>
+    /// <param name="patientId">The patient ID.</param>
+    /// <param name="start">The range start datetime.</param>
+    /// <param name="end">The range end datetime.</param>
+    /// <param name="paginationRequest">The paginated request parameters.</param>
+    /// <returns>An <see cref="Observation"/> list within the start and end dates; contained within a paginated
+    /// <see cref="PaginatedResult{T}"/> object.</returns>
+    Task<PaginatedResult<IEnumerable<Resource>>> GetObservationsFor(string patientId, DateTime start,
+        DateTime end, PaginationRequest paginationRequest);
 
-        /// <summary>
-        /// Gets the list of <see cref="Observation"/> for a given patient in a defined time range.
-        /// </summary>
-        /// <param name="patientId">The patient ID.</param>
-        /// <param name="start">The range start datetime.</param>
-        /// <param name="end">The range end datetime.</param>
-        /// <param name="paginationRequest">The paginated request parameters.</param>
-        /// <returns>An <see cref="Observation"/> list within the start and end dates; contained within a paginated
-        /// <see cref="PaginatedResult{T}"/> object.</returns>
-        public Task<PaginatedResult<IEnumerable<Resource>>> GetObservationsFor(string patientId, DateTime start,
-            DateTime end, PaginationRequest paginationRequest);
+    /// <summary>
+    /// Updates a given <see cref="Observation"/>.
+    /// </summary>
+    /// <param name="id">The observation ID.</param>
+    /// <param name="observation">The <see cref="Observation"/> to update.</param>
+    /// <returns>The updated observation if the update was successful</returns>
+    /// <exception cref="WriteResourceException">If the observation could not be updated</exception>
+    Task<Observation> UpdateObservation(string id, Observation observation);
 
-        /// <summary>
-        /// Updates a given <see cref="Observation"/>.
-        /// </summary>
-        /// <param name="id">The observation ID.</param>
-        /// <param name="observation">The <see cref="Observation"/> to update.</param>
-        /// <returns>The updated observation if the update was successful</returns>
-        /// <exception cref="WriteResourceException">If the observation could not be updated</exception>
-        public Task<Observation> UpdateObservation(string id, Observation observation);
-
-        /// <summary>
-        /// Deletes an <see cref="Observation"/> given an ID.
-        /// </summary>
-        /// <param name="id">The observation ID to delete.</param>
-        /// <returns>True if the observation was deleted. False otherwise</returns>
-        public Task<bool> DeleteObservation(string id);
-    }
+    /// <summary>
+    /// Deletes an <see cref="Observation"/> given an ID.
+    /// </summary>
+    /// <param name="id">The observation ID to delete.</param>
+    /// <returns>True if the observation was deleted. False otherwise</returns>
+    Task<bool> DeleteObservation(string id);
 }
