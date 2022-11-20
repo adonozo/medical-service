@@ -38,7 +38,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public Task<Patient> GetPatient(string idOrEmail)
+        public Task<Patient?> GetPatient(string idOrEmail)
         {
             return this.patientDao.GetPatientByIdOrEmail(idOrEmail);
         }

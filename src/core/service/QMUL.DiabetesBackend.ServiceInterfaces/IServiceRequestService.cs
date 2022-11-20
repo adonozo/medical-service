@@ -23,7 +23,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="id">The service request's ID to look for.</param>
         /// <returns>A <see cref="ServiceRequest"/> object if found. An error otherwise.</returns>
         /// <exception cref="NotFoundException">If the service request was not found.</exception>
-        public Task<ServiceRequest> GetServiceRequest(string id);
+        public Task<ServiceRequest?> GetServiceRequest(string id);
 
         /// <summary>
         /// Updates a <see cref="ServiceRequest"/>.

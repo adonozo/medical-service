@@ -23,14 +23,14 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public async Task<PaginatedResult<Bundle>> GetMedicationList(PaginationRequest paginationRequest, string name = null)
+        public async Task<PaginatedResult<Bundle>> GetMedicationList(PaginationRequest paginationRequest, string? name = null)
         {
             var paginatedMedications = await this.medicationDao.GetMedicationList(paginationRequest, name);
             return paginatedMedications.ToBundleResult();
         }
 
         /// <inheritdoc/>>
-        public Task<Medication> GetMedication(string id)
+        public Task<Medication?> GetMedication(string id)
         {
             return this.medicationDao.GetSingleMedication(id);
         }

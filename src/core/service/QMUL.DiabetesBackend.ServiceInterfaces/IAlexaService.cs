@@ -20,7 +20,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="timezone">The user's timezone. Defaults to UTC</param>
         /// <returns>A <see cref="Bundle"/> with the results</returns>
         /// <exception cref="NotFoundException">If the patient was not found.</exception>
-        public Task<Bundle> ProcessMedicationRequest(string patientEmailOrId, DateTime dateTime,
+        public Task<Bundle?> ProcessMedicationRequest(string patientEmailOrId, DateTime dateTime,
             CustomEventTiming timing, string timezone = "UTC");
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="timezone">The user's timezone. Defaults to UTC</param>
         /// <returns>A <see cref="Bundle"/> with the results</returns>
         /// <exception cref="NotFoundException">If the patient was not found.</exception>
-        public Task<Bundle> ProcessInsulinMedicationRequest(string patientEmailOrId, DateTime dateTime,
+        public Task<Bundle?> ProcessInsulinMedicationRequest(string patientEmailOrId, DateTime dateTime,
             CustomEventTiming timing, string timezone = "UTC");
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="timezone">The user's timezone. Defaults to UTC</param>
         /// <returns>A <see cref="Bundle"/> with the results</returns>
         /// <exception cref="NotFoundException">If the patient is not found.</exception>
-        public Task<Bundle> ProcessGlucoseServiceRequest(string patientEmailOrId, DateTime dateTime,
+        public Task<Bundle?> ProcessGlucoseServiceRequest(string patientEmailOrId, DateTime dateTime,
             CustomEventTiming timing, string timezone = "UTC");
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="timezone">The user's timezone. Defaults to UTC</param>
         /// <returns>A <see cref="Bundle"/> with the results</returns>
         /// <exception cref="NotFoundException">If the patient is not found.</exception>
-        public Task<Bundle> ProcessCarePlanRequest(string patientEmailOrId, DateTime dateTime, CustomEventTiming timing,
+        public Task<Bundle?> ProcessCarePlanRequest(string patientEmailOrId, DateTime dateTime, CustomEventTiming timing,
             string timezone = "UTC");
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="type">The <see cref="AlexaRequestType"/></param>
         /// <returns>A <see cref="Bundle"/> object with the list of requests.</returns>
         /// <exception cref="NotFoundException">If the patient is not found.</exception>
-        public Task<Bundle> GetNextRequests(string patientEmailOrId, AlexaRequestType type);
+        public Task<Bundle?> GetNextRequests(string patientEmailOrId, AlexaRequestType type);
 
         /// <summary>
         /// Gets the next requests for a patient to follow without filtering the request type.
@@ -78,7 +78,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="patientEmailOrId">The patient's ID or email who owns the requests.</param>
         /// <returns>A <see cref="Bundle"/> object with the list of requests.</returns>
         /// <exception cref="NotFoundException">If the patient is not found.</exception>
-        public Task<Bundle> GetNextRequests(string patientEmailOrId);
+        public Task<Bundle?> GetNextRequests(string patientEmailOrId);
 
         /// <summary>
         /// Updates / Adds a specific time for a event timing to the patient's list. e.g., a specific time for breakfast.  

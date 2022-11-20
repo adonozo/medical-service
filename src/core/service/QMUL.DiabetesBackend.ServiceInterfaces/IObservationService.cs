@@ -20,7 +20,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <returns>The <see cref="Observation"/> created with a new ID.</returns>
         /// <exception cref="NotFoundException">If the patient was not found.</exception>
         /// <exception cref="CreateException">If the observation could not be created.</exception>
-        public Task<Observation> CreateObservation(Observation newObservation, string patientId = null);
+        public Task<Observation> CreateObservation(Observation newObservation, string? patientId = null);
 
         /// <summary>
         /// Gets a single <see cref="Observation"/>.
@@ -28,7 +28,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="observationId">The observation ID to look for.</param>
         /// <returns>A single <see cref="Observation"/> object if found. An error otherwise.</returns>
         /// <exception cref="NotFoundException">If the observation was not found.</exception>
-        public Task<Observation> GetObservation(string observationId);
+        public Task<Observation?> GetObservation(string observationId);
 
         /// <summary>
         /// Gets all the observations for a given patient.

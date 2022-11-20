@@ -32,7 +32,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<Observation> CreateObservation(Observation newObservation, string patientId = null)
+        public async Task<Observation> CreateObservation(Observation newObservation, string? patientId = null)
         {
             patientId ??= newObservation.Subject.GetPatientIdFromReference();
             var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
@@ -48,7 +48,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public Task<Observation> GetObservation(string observationId)
+        public Task<Observation?> GetObservation(string observationId)
         {
             return this.observationDao.GetObservation(observationId);
         }

@@ -29,7 +29,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<Bundle> GetActiveCarePlans(string patientIdOrEmail)
+        public async Task<Bundle?> GetActiveCarePlans(string patientIdOrEmail)
         {
             this.logger.LogTrace("Getting active care plans for {IdOrEmail}", patientIdOrEmail);
             var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
@@ -49,7 +49,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<Bundle> GetCarePlanFor(string patientIdOrEmail)
+        public async Task<Bundle?> GetCarePlanFor(string patientIdOrEmail)
         {
             this.logger.LogTrace("Getting care plans for {IdOrEmail}", patientIdOrEmail);
             var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);

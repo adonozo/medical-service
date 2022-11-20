@@ -54,7 +54,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public Task<MedicationRequest> GetMedicationRequest(string id)
+        public Task<MedicationRequest?> GetMedicationRequest(string id)
         {
             return this.medicationRequestDao.GetMedicationRequest(id);
         }
@@ -112,7 +112,9 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
                 return;
             }
 
-            if (request.FindContainedResource(reference.Reference) is not Medication medication)
+            var resource = request.FindContainedResource(reference.Reference);
+            Medication? medication = null;
+            if (resource is not Medication)
             {
                 var medicationId = reference.GetPatientIdFromReference();
                 medication = await this.medicationDao.GetSingleMedication(medicationId);

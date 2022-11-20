@@ -145,10 +145,10 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Utils
             };
         }
 
-        public static async Task<T> GetResourceOrThrow<T>(Func<Task<T>> action, Exception exception) where T : Resource
+        public static async Task<T> GetResourceOrThrow<T>(Func<Task<T?>> action, Exception exception) where T : Resource
         {
             var resource = await action.Invoke();
-            if (resource == null)
+            if (resource is null)
             {
                 throw exception;
             }

@@ -48,7 +48,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>>
-        public Task<ServiceRequest> GetServiceRequest(string id)
+        public Task<ServiceRequest?> GetServiceRequest(string id)
         {
             return this.serviceRequestDao.GetServiceRequest(id);
         }

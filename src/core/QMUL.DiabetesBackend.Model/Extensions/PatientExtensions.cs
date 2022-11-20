@@ -21,9 +21,8 @@ namespace QMUL.DiabetesBackend.Model.Extensions
 
         public static Dictionary<CustomEventTiming, DateTimeOffset> GetTimingPreference(this Patient patient)
         {
-            var preferenceExtension = patient
-                .GetExtension(Extensions.PatientTimingPreference);
-            if (preferenceExtension == null)
+            var preferenceExtension = patient.GetExtension(Extensions.PatientTimingPreference);
+            if (preferenceExtension is null)
             {
                 return new Dictionary<CustomEventTiming, DateTimeOffset>();
             }

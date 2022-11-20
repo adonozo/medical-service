@@ -25,7 +25,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces
         /// <param name="id">The <see cref="MedicationRequest"/> ID to look for.</param>
         /// <returns>The <see cref="MedicationRequest"/> if found. An error otherwise.</returns>
         /// <exception cref="NotFoundException">If the medication was not found.</exception>
-        public Task<MedicationRequest> GetMedicationRequest(string id);
+        public Task<MedicationRequest?> GetMedicationRequest(string id);
 
         /// <summary>
         /// Updates a medication request; the ID cannot be updated. The method validates that the ID is valid before

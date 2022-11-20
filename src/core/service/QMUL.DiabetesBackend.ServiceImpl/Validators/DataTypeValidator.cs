@@ -41,7 +41,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Validators
             var validationResult = this.Validate(wrapper);
             if (!validationResult.IsValid)
             {
-                throw new ValidationException($"DataType {wrapper?.Type} is invalid")
+                throw new ValidationException($"DataType {wrapper.Type} is invalid")
                 {
                     ValidationErrors = validationResult.GetErrorsDictionary()
                 };
@@ -59,7 +59,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Validators
                     nameof(Quantity) => await Converter.ToDataTypeAsync<Quantity>(wrapper.Value),
                     "string" => new FhirString(wrapper.Value as string),
                     "boolean" => new FhirBoolean(wrapper.Value as bool?),
-                    "integer" => new Integer(int.Parse(wrapper.Value.ToString())),
+                    "integer" => new Integer(int.Parse(wrapper.Value.ToString() ?? string.Empty)),
                     _ => throw new ValidationException($"DataType {wrapper.Type} is invalid")
                 };
             }

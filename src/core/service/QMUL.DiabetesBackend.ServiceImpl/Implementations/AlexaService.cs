@@ -40,7 +40,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<Bundle> ProcessMedicationRequest(string patientEmailOrId,
+        public async Task<Bundle?> ProcessMedicationRequest(string patientEmailOrId,
             DateTime dateTime,
             CustomEventTiming timing,
             string timezone = "UTC")
@@ -55,7 +55,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<Bundle> ProcessInsulinMedicationRequest(string patientEmailOrId,
+        public async Task<Bundle?> ProcessInsulinMedicationRequest(string patientEmailOrId,
             DateTime dateTime,
             CustomEventTiming timing,
             string timezone = "UTC")
@@ -70,7 +70,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<Bundle> ProcessGlucoseServiceRequest(string patientEmailOrId, DateTime dateTime,
+        public async Task<Bundle?> ProcessGlucoseServiceRequest(string patientEmailOrId, DateTime dateTime,
             CustomEventTiming timing, string timezone = "UTC")
         {
             logger.LogTrace("Processing Alexa Glucose service request type");
@@ -113,7 +113,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<Bundle> ProcessCarePlanRequest(string patientEmailOrId, DateTime dateTime,
+        public async Task<Bundle?> ProcessCarePlanRequest(string patientEmailOrId, DateTime dateTime,
             CustomEventTiming timing, string timezone = "UTC")
         {
             this.logger.LogTrace("Processing Alexa Care Plan request type");
@@ -157,7 +157,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<Bundle> GetNextRequests(string patientEmailOrId, AlexaRequestType type)
+        public async Task<Bundle?> GetNextRequests(string patientEmailOrId, AlexaRequestType type)
         {
             var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
             if (patient is null)
@@ -177,7 +177,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task<Bundle> GetNextRequests(string patientEmailOrId)
+        public async Task<Bundle?> GetNextRequests(string patientEmailOrId)
         {
             var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
             if (patient is null)
@@ -251,7 +251,6 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             dateTime = AdjustOffsetTiming(timing, dateTime);
             var before = dateTime.AddMinutes(DefaultTimingOffset * -1);
             var after = dateTime.AddMinutes(DefaultTimingOffset);
-            preferences ??= new Dictionary<CustomEventTiming, DateTimeOffset>();
             switch (timing)
             {
                 case CustomEventTiming.CM:
@@ -297,7 +296,7 @@ namespace QMUL.DiabetesBackend.ServiceImpl.Implementations
             };
         }
 
-        private async Task<Bundle> GetMedicationRequests(string patientEmailOrId,
+        private async Task<Bundle?> GetMedicationRequests(string patientEmailOrId,
             DateTime dateTime,
             CustomEventTiming timing,
             EventType type,

@@ -16,7 +16,7 @@
         /// <param name="name">The medication display name to look for. Maps to the Coding property of the
         /// <see cref="Medication"/> object.</param>
         /// <returns>A <see cref="PaginatedResult{T}"/> of a <see cref="Bundle"/> object with the medication list.</returns>
-        public Task<PaginatedResult<Bundle>> GetMedicationList(PaginationRequest paginationRequest, string name = null);
+        public Task<PaginatedResult<Bundle>> GetMedicationList(PaginationRequest paginationRequest, string? name = null);
 
         /// <summary>
         /// Gets a single <see cref="Medication"/> given an ID.
@@ -24,7 +24,7 @@
         /// <param name="id">The <see cref="Medication"/> ID to look for.</param>
         /// <returns>A <see cref="Medication"/> object if found. An error otherwise.</returns>
         /// <exception cref="NotFoundException">If the medication was not found.</exception>
-        public Task<Medication> GetMedication(string id);
+        public Task<Medication?> GetMedication(string id);
 
         /// <summary>
         /// Creates a <see cref="Medication"/>.
