@@ -1,4 +1,4 @@
-namespace QMUL.DiabetesBackend.Service.Tests.Implementations;
+namespace QMUL.DiabetesBackend.Service.Tests;
 
 using System;
 using System.Collections.Generic;
@@ -184,7 +184,7 @@ public class MedicationRequestServiceTest
 
         var request = this.GetTestMedicationRequest(Guid.NewGuid().ToString());
         var medication = this.GetMedicationTest();
-        medication.SetBoolExtension(isInsulin ? Extensions.InsulinFlag : string.Empty, isInsulin);
+        medication.SetBoolExtension(isInsulin ? Model.Constants.Extensions.InsulinFlag : string.Empty, isInsulin);
         request.Contained = new List<Resource> { medication };
 
         // Act
@@ -210,7 +210,7 @@ public class MedicationRequestServiceTest
 
         var medicationId = Guid.NewGuid().ToString();
         var medication = this.GetMedicationTest(medicationId);
-        medication.SetBoolExtension(isInsulin ? Extensions.InsulinFlag : string.Empty, isInsulin);
+        medication.SetBoolExtension(isInsulin ? Model.Constants.Extensions.InsulinFlag : string.Empty, isInsulin);
         medicationDao.GetSingleMedication(Arg.Any<string>()).Returns(medication);
 
         var request = this.GetTestMedicationRequest(Guid.NewGuid().ToString());

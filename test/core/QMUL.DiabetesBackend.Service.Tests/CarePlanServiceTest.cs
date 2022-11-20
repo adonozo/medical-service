@@ -1,4 +1,4 @@
-namespace QMUL.DiabetesBackend.Service.Tests.Implementations;
+namespace QMUL.DiabetesBackend.Service.Tests;
 
 using System;
 using System.Collections.Generic;
