@@ -37,7 +37,7 @@ public interface IMedicationRequestService
     /// <returns>The updated <see cref="MedicationRequest"/> if found and updated. An error otherwise.</returns>
     /// <exception cref="ValidationException">If the medication request was not found.</exception>
     /// <exception cref="WriteResourceException">If the medication request could not be updated.</exception>
-    Task UpdateMedicationRequest(string id, MedicationRequest request);
+    Task<bool> UpdateMedicationRequest(string id, MedicationRequest request);
 
     /// <summary>
     /// Deletes a medication Request given an ID.

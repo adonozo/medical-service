@@ -48,7 +48,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     }
 
     /// <inheritdoc />
-    public async Task UpdateMedicationRequest(string id, MedicationRequest actualRequest)
+    public async Task<bool> UpdateMedicationRequest(string id, MedicationRequest actualRequest)
     {
         this.logger.LogDebug("Updating medication request with ID {Id}", id);
         SetDosageId(actualRequest);
@@ -57,10 +57,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
         var result = await this.medicationRequestCollection
             .ReplaceOneAsync(Helpers.GetByIdFilter(id), document);
 
-        var updateException =
-            new WriteResourceException($"There was an error updating the Medication Request {id}");
-        this.CheckAcknowledgedOrThrow(result.IsAcknowledged, updateException);
-        this.logger.LogDebug("Medication request updated {Id}", id);
+        return result.IsAcknowledged;
     }
 
     /// <inheritdoc />

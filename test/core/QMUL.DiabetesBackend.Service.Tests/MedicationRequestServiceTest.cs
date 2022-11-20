@@ -103,7 +103,7 @@ public class MedicationRequestServiceTest
 
         medicationRequestDao.GetMedicationRequest(Arg.Any<string>()).Returns(new MedicationRequest());
         medicationRequestDao.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>())
-            .Returns(Task.CompletedTask);
+            .Returns(Task.FromResult(true));
 
         // Act
         await medicationRequestService.UpdateMedicationRequest(Guid.NewGuid().ToString(),

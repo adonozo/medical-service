@@ -3,6 +3,7 @@ namespace QMUL.DiabetesBackend.Controllers.Controllers;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -46,11 +47,11 @@ public class MedicationRequestController : ControllerBase
     [HttpPut("medicationRequests/{id}")]
     public async Task<IActionResult> UpdateMedicationRequest([FromRoute] string id, [FromBody] JObject request)
     {
-        return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+        return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
         {
             var medicationRequest = await this.validator.ParseAndValidateAsync(request);
-            await this.medicationRequestService.UpdateMedicationRequest(id, medicationRequest);
-            return this.Accepted();
+            var resourceUpdated = await this.medicationRequestService.UpdateMedicationRequest(id, medicationRequest);
+            return resourceUpdated? this.Accepted() : this.StatusCode(StatusCodes.Status500InternalServerError);
         }, this.logger, this);
     }
 

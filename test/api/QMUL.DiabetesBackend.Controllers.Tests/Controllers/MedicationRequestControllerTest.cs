@@ -108,7 +108,8 @@ public class MedicationRequestControllerTest
         var validator = Substitute.For<IResourceValidator<MedicationRequest>>();
         var logger = Substitute.For<ILogger<MedicationRequestController>>();
         var medicationRequest = new MedicationRequest { Id = id };
-        service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>()).Returns(Task.CompletedTask);
+        service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>())
+            .Returns(Task.FromResult(true));
         var controller = new MedicationRequestController(service, validator, logger);
 
         // Act
@@ -131,7 +132,8 @@ public class MedicationRequestControllerTest
             .Throws(new ValidationException(string.Empty));
         var logger = Substitute.For<ILogger<MedicationRequestController>>();
 
-        service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>()).Returns(Task.CompletedTask);
+        service.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>())
+            .Returns(Task.FromResult(true));
         var controller = new MedicationRequestController(service, validator, logger);
         var unformattedObject = new InternalPatient();
 

@@ -27,7 +27,7 @@ public interface IMedicationRequestDao
     /// <param name="actualRequest">The <see cref="MedicationRequest"/> to update</param>
     /// <returns>The updated medication request</returns>
     /// <exception cref="WriteResourceException">If the medication request was not updated or found after the update.</exception>
-    Task UpdateMedicationRequest(string id, MedicationRequest actualRequest);
+    Task<bool> UpdateMedicationRequest(string id, MedicationRequest actualRequest);
 
     /// <summary>
     /// Gets a <see cref="MedicationRequest"/> based on the ID.
