@@ -104,18 +104,14 @@ public class ObservationDao : MongoDaoBase, IObservationDao
     }
 
     /// <inheritdoc />
-    public async Task UpdateObservation(string id, Observation observation)
+    public async Task<bool> UpdateObservation(string id, Observation observation)
     {
         this.logger.LogDebug("Updating Observation with ID {Id}", id);
         var document = await Helpers.ToBsonDocumentAsync(observation);
         var result = await this.observationCollection
             .ReplaceOneAsync(Helpers.GetByIdFilter(id), document);
 
-        var errorMessage = $"There was an error updating the Observation {id}";
-        var exception = new WriteResourceException(errorMessage);
-        this.CheckAcknowledgedOrThrow(result.IsAcknowledged, exception,
-            () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
-        this.logger.LogDebug("Observation updated {Id}", id);
+        return result.IsAcknowledged;
     }
 
     /// <inheritdoc />

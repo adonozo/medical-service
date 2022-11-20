@@ -59,20 +59,18 @@ public interface IObservationService
     /// </summary>
     /// <param name="id">The observation ID.</param>
     /// <param name="updatedObservation">The updated <see cref="Observation"/> to insert.</param>
-    /// <returns>The updated observation.</returns>
+    /// <returns>A bool value indicating the operation result</returns>
     /// <exception cref="NotFoundException">If the observation was not found.</exception>
-    /// <exception cref="WriteResourceException">If the medication request could not be updated.</exception>
-    Task UpdateObservation(string id, Observation updatedObservation);
+    Task<bool> UpdateObservation(string id, Observation updatedObservation);
 
     /// <summary>
     /// Updates the value of an <see cref="Observation"/>.
     /// </summary>
     /// <param name="observationId">The observation's ID to update.</param>
     /// <param name="value">The new value.</param>
-    /// <returns>The updated observation.</returns>
+    /// <returns>A bool value indicating the operation result</returns>
     /// <exception cref="NotFoundException">If the observation was not found.</exception>
-    /// <exception cref="WriteResourceException">If the medication request could not be updated.</exception>
-    Task UpdateValue(string observationId, DataType value);
+    Task<bool> UpdateValue(string observationId, DataType value);
 
     /// <summary>
     /// Deletes an <see cref="Observation"/> given an observation ID.

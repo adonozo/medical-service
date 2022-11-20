@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
 using Model.Exceptions;
-using Task = System.Threading.Tasks.Task;
 
 /// <summary>
 /// The Observation Dao interface.
@@ -55,9 +54,8 @@ public interface IObservationDao
     /// </summary>
     /// <param name="id">The observation ID.</param>
     /// <param name="observation">The <see cref="Observation"/> to update.</param>
-    /// <returns>The updated observation if the update was successful</returns>
-    /// <exception cref="WriteResourceException">If the observation could not be updated</exception>
-    Task UpdateObservation(string id, Observation observation);
+    /// <returns>A bool value indicating the operation result</returns>
+    Task<bool> UpdateObservation(string id, Observation observation);
 
     /// <summary>
     /// Deletes an <see cref="Observation"/> given an ID.

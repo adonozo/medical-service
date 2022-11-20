@@ -3,6 +3,7 @@ namespace QMUL.DiabetesBackend.Controllers.Controllers;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Model;
@@ -51,22 +52,22 @@ public class ObservationController : ControllerBase
     [HttpPut("observations/{id}")]
     public async Task<IActionResult> PutObservation([FromRoute] string id, [FromBody] JObject request)
     {
-        return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+        return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
         {
             var observation = await this.observationValidator.ParseAndValidateAsync(request);
-            await this.observationService.UpdateObservation(id, observation);
-            return this.Accepted();
+            var observationUpdated = await this.observationService.UpdateObservation(id, observation);
+            return observationUpdated? this.Accepted() : this.StatusCode(StatusCodes.Status500InternalServerError);
         }, this.logger, this);
     }
 
     [HttpPatch("observations/{id}/value")]
     public async Task<IActionResult> PatchObservationValue([FromRoute] string id, [FromBody] DataTypeWrapper wrapper)
     {
-        return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+        return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
         {
             var value = await this.dataTypeValidator.ParseAndValidateAsync(wrapper);
-            await this.observationService.UpdateValue(id, value);
-            return this.Accepted();
+            var observationUpdated = await this.observationService.UpdateValue(id, value);
+            return observationUpdated? this.Accepted() : this.StatusCode(StatusCodes.Status500InternalServerError);
         }, this.logger, this);
     }
 
