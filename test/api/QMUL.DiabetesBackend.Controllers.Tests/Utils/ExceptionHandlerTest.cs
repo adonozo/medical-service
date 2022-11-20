@@ -37,7 +37,7 @@ public class ExceptionHandlerTest
         var controller = Substitute.For<ControllerBase>();
         controller.NotFound().Returns(new NotFoundResult());
         var logger = Substitute.For<ILogger>();
-        var method = new Func<Task<IActionResult>>(() => throw new NotFoundException(string.Empty));
+        var method = new Func<Task<IActionResult>>(() => throw new NotFoundException());
 
         // Act
         var result = await ExceptionHandler.ExecuteAndHandleAsync(method, logger, controller);

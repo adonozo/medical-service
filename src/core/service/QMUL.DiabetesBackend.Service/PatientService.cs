@@ -46,7 +46,7 @@ public class PatientService : IPatientService
     /// <inheritdoc/>
     public async Task<Patient> UpdatePatient(string idOrEmail, Patient updatedInternalPatient)
     {
-        var patientNotFoundException = new NotFoundException($"Patient not found: {idOrEmail}");
+        var patientNotFoundException = new NotFoundException();
         await ResourceUtils.GetResourceOrThrow(async () =>
             await this.patientDao.GetPatientByIdOrEmail(idOrEmail), patientNotFoundException);
 
@@ -57,7 +57,7 @@ public class PatientService : IPatientService
     /// <inheritdoc/>
     public async Task<Patient> PatchPatient(string idOrEmail, InternalPatient updatedInternalPatient)
     {
-        var patientNotFoundException = new NotFoundException($"Patient not found: {idOrEmail}");
+        var patientNotFoundException = new NotFoundException();
         var oldPatient = await ResourceUtils.GetResourceOrThrow(async () =>
             await this.patientDao.GetPatientByIdOrEmail(idOrEmail), patientNotFoundException);
 

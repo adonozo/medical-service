@@ -56,7 +56,7 @@ public class ServiceRequestService : IServiceRequestService
     /// <inheritdoc/>>
     public async Task<ServiceRequest> UpdateServiceRequest(string id, ServiceRequest request)
     {
-        var serviceNotFoundException = new NotFoundException($"Service not found: {id}");
+        var serviceNotFoundException = new NotFoundException();
         await ResourceUtils.GetResourceOrThrow(async () =>
             await this.serviceRequestDao.GetServiceRequest(id), serviceNotFoundException);
 
@@ -79,7 +79,7 @@ public class ServiceRequestService : IServiceRequestService
     /// <inheritdoc/>>
     public async Task<bool> DeleteServiceRequest(string id)
     {
-        var serviceNotFoundException = new NotFoundException($"Service not found: {id}");
+        var serviceNotFoundException = new NotFoundException();
         await ResourceUtils.GetResourceOrThrow(async () =>
             await this.serviceRequestDao.GetServiceRequest(id), serviceNotFoundException);
 

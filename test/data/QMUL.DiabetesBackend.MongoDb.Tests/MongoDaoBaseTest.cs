@@ -39,7 +39,7 @@ public class MongoDaoBaseTest
         // Arrange
         var database = Substitute.For<IMongoDatabase>();
         var mongoDao = new MongoTestDao(database);
-        var expectedException = new NotFoundException(string.Empty);
+        var expectedException = new NotFoundException();
         var fallback = Substitute.For<Action>();
 
         var cursorMock = Substitute.For<IAsyncCursor<string>>();

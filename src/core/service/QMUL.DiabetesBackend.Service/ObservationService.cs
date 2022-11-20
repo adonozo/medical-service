@@ -71,7 +71,7 @@ public class ObservationService : IObservationService
         PaginationRequest paginationRequest,
         string patientTimezone = "UTC")
     {
-        var patientNotFoundException = new NotFoundException($"Patient not found: {patientId}");
+        var patientNotFoundException = new NotFoundException();
         var patient = await ResourceUtils.GetResourceOrThrow(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
         var timingPreferences = patient.GetTimingPreference();
@@ -106,7 +106,7 @@ public class ObservationService : IObservationService
     /// <inheritdoc/>
     public async Task<Observation> UpdateObservation(string id, Observation updatedObservation)
     {
-        var observationNotFoundException = new NotFoundException($"Observation not found: {id}");
+        var observationNotFoundException = new NotFoundException();
         await ResourceUtils.GetResourceOrThrow(async () =>
             await this.observationDao.GetObservation(id), observationNotFoundException);
 
@@ -122,7 +122,7 @@ public class ObservationService : IObservationService
     /// <inheritdoc/>
     public async Task<Observation> UpdateValue(string observationId, DataType value)
     {
-        var observationNotFoundException = new NotFoundException($"Observation not found: {observationId}");
+        var observationNotFoundException = new NotFoundException();
         var observation = await ResourceUtils.GetResourceOrThrow(async () =>
             await this.observationDao.GetObservation(observationId), observationNotFoundException);
 
@@ -133,7 +133,7 @@ public class ObservationService : IObservationService
     /// <inheritdoc/>
     public async Task<bool> DeleteObservation(string id)
     {
-        var observationNotFoundException = new NotFoundException($"Observation not found: {id}");
+        var observationNotFoundException = new NotFoundException();
         await ResourceUtils.GetResourceOrThrow(async () =>
             await this.observationDao.GetObservation(id), observationNotFoundException);
 

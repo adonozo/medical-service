@@ -86,7 +86,7 @@ public class MedicationRequestService : IMedicationRequestService
     public async Task<PaginatedResult<Bundle>> GetActiveMedicationRequests(string patientIdOrEmail,
         PaginationRequest paginationRequest)
     {
-        var patientException = new NotFoundException($"Patient not found: {patientIdOrEmail}");
+        var patientException = new NotFoundException();
         var patient = await ResourceUtils.GetResourceOrThrow(() =>
             this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), patientException);
 
