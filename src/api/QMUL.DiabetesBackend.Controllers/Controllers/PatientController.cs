@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Model;
@@ -173,11 +174,11 @@ public class PatientController : ControllerBase
     public async Task<IActionResult> UpdatePatient([FromRoute] string idOrEmail,
         [FromBody] JObject updatedPatient)
     {
-        return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+        return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
         {
             var patient = await this.patientValidator.ParseAndValidateAsync(updatedPatient);
-            var result = await this.patientService.UpdatePatient(idOrEmail, patient);
-            return this.Accepted(result.ToJObject());
+            var patientUpdated = await this.patientService.UpdatePatient(idOrEmail, patient);
+            return patientUpdated ? this.Accepted() : this.StatusCode(StatusCodes.Status500InternalServerError);
         }, this.logger, this);
     }
 
@@ -220,10 +221,10 @@ public class PatientController : ControllerBase
     public async Task<IActionResult> PatchPatient([FromRoute] string idOrEmail,
         [FromBody] InternalPatient updatedPatient)
     {
-        return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+        return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
         {
-            var result = await this.patientService.PatchPatient(idOrEmail, updatedPatient);
-            return this.Accepted(result.ToJObject());
+            var patientUpdated = await this.patientService.PatchPatient(idOrEmail, updatedPatient);
+            return patientUpdated ? this.Accepted() : this.StatusCode(StatusCodes.Status500InternalServerError);
         }, this.logger, this);
     }
 }

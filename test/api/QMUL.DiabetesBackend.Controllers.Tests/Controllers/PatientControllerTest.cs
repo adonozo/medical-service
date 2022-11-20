@@ -352,7 +352,7 @@ public class PatientControllerTest
     {
         // Arrange
         var patientService = Substitute.For<IPatientService>();
-        patientService.UpdatePatient(Arg.Any<string>(), Arg.Any<Patient>()).Returns(new Patient());
+        patientService.UpdatePatient(Arg.Any<string>(), Arg.Any<Patient>()).Returns(Task.FromResult(true));
 
         var controller = this.GetTestPatientController(patientService: patientService);
 

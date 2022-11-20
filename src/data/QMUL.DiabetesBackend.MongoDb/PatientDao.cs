@@ -78,25 +78,22 @@ public class PatientDao : MongoDaoBase, IPatientDao
     }
 
     /// <inheritdoc />
-    public async Task<Patient> UpdatePatient(Patient actualPatient)
+    public async Task<bool> UpdatePatient(Patient actualPatient)
     {
         logger.LogInformation("Updating patient with ID: {Id}", actualPatient.Id);
         var bson = await this.PatientToBsonDocument(actualPatient);
         var result = await this.patientCollection.ReplaceOneAsync(Helpers.GetByIdFilter(actualPatient.Id),
             bson, new ReplaceOptions { IsUpsert = true });
 
-        var errorMessage = $"Could not update patient with ID {actualPatient.Id}";
-        this.CheckAcknowledgedOrThrow(result.IsAcknowledged, new WriteResourceException(errorMessage));
-        logger.LogInformation("Patient with ID {Id} updated", actualPatient.Id);
-        return await this.GetSinglePatientOrThrow(actualPatient.Id);
+        return result.IsAcknowledged;
     }
 
     /// <inheritdoc />
-    public async Task<Patient> PatchPatient(InternalPatient actualPatient, Patient oldPatient)
+    public async Task<bool> PatchPatient(InternalPatient actualPatient, Patient oldPatient)
     {
         logger.LogInformation("Updating patient with ID: {Id}", actualPatient.Id);
         var updatedPatient = await this.SetPatientData(actualPatient, oldPatient);
-        return await UpdatePatient(updatedPatient);
+        return await this.UpdatePatient(updatedPatient);
     }
 
     private async Task<Patient> GetSinglePatientOrThrow(string id)

@@ -73,7 +73,7 @@ public class PatientServiceTest
     }
 
     [Fact]
-    public async Task UpdatePatient_WhenPatientIsUpdated_ReturnsPatient()
+    public async Task UpdatePatient_WhenPatientIsUpdated_CallsDaoMethod()
     {
         // Arrange
         var patientDao = Substitute.For<IPatientDao>();
@@ -81,13 +81,12 @@ public class PatientServiceTest
         var patientService = new PatientService(patientDao, logger);
 
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(new Patient());
-        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
+        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
 
         // Act
-        var result = await patientService.UpdatePatient(Guid.NewGuid().ToString(), new Patient());
+        await patientService.UpdatePatient(Guid.NewGuid().ToString(), new Patient());
 
         // Assert
-        result.Should().BeOfType<Patient>();
         await patientDao.Received(1).UpdatePatient(Arg.Any<Patient>());
     }
 }

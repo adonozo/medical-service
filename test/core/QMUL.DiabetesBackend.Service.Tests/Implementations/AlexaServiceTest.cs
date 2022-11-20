@@ -202,7 +202,7 @@ public class AlexaServiceTest
         var patient = TestUtils.GetStubPatient();
         var expectedTimingKeys = new[] { CustomEventTiming.CM, CustomEventTiming.ACM, CustomEventTiming.PCM };
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(patient);
+        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
         eventDao.UpdateEventsTiming(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTimeOffset>())
             .Returns(true);
 
@@ -230,7 +230,7 @@ public class AlexaServiceTest
         var patient = TestUtils.GetStubPatient();
         var expectedDate = DateTime.Now;
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(patient);
+        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
         eventDao.UpdateEventsTiming(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTimeOffset>())
             .Returns(true);
 
@@ -259,7 +259,7 @@ public class AlexaServiceTest
 
         var patient = TestUtils.GetStubPatient();
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
+        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
 
         medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
             .Returns(medicationRequest);
@@ -292,7 +292,7 @@ public class AlexaServiceTest
 
         var patient = TestUtils.GetStubPatient();
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
+        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
         var dosageId = Guid.NewGuid().ToString();
         var medicationRequestId = Guid.NewGuid().ToString();
         var medicationRequest = GetTestMedicationRequest(dosageId, medicationRequestId);
@@ -323,7 +323,7 @@ public class AlexaServiceTest
 
         var patient = TestUtils.GetStubPatient();
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
+        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
         var dosageId = Guid.NewGuid().ToString();
         medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
             .Returns(GetTestMedicationRequest(dosageId));
@@ -350,7 +350,7 @@ public class AlexaServiceTest
 
         var patient = TestUtils.GetStubPatient();
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(new Patient());
+        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
         var dosageId = Guid.NewGuid().ToString();
         medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
             .Returns(GetTestMedicationRequest(dosageId));

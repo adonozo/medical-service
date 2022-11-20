@@ -40,7 +40,7 @@ public interface IPatientService
     /// <returns>The updated <see cref="Patient"/>.</returns>
     /// <exception cref="NotFoundException">If the patient was not found.</exception>
     /// <exception cref="WriteResourceException">If there was an error during update</exception>
-    Task<Patient> UpdatePatient(string idOrEmail, Patient updatedPatient);
+    Task<bool> UpdatePatient(string idOrEmail, Patient updatedPatient);
 
     /// <summary>
     /// Updates a patient's fields that are not empty or default.
@@ -50,5 +50,5 @@ public interface IPatientService
     /// <returns>The updated <see cref="Patient"/>.</returns>
     /// <exception cref="NotFoundException">If the patient was not found.</exception>
     /// <exception cref="WriteResourceException">If there was an error during update</exception>
-    Task<Patient> PatchPatient(string idOrEmail, InternalPatient updatedPatient);
+    Task<bool> PatchPatient(string idOrEmail, InternalPatient updatedPatient);
 }
