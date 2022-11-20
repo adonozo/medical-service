@@ -1,12 +1,11 @@
-namespace QMUL.DiabetesBackend.Model.Enums
+namespace QMUL.DiabetesBackend.Model.Enums;
+
+/// <summary>
+/// The health event type: Medication dosage, Insulin dosage, or Measurement
+/// </summary>
+public enum EventType
 {
-    /// <summary>
-    /// The health event type: Medication dosage, Insulin dosage, or Measurement
-    /// </summary>
-    public enum EventType
-    {
-        MedicationDosage,
-        InsulinDosage,
-        Measurement
-    }
+    MedicationDosage,
+    InsulinDosage,
+    Measurement
 }
