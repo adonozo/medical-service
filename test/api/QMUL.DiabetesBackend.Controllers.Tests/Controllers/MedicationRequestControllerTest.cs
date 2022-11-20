@@ -39,24 +39,6 @@
         }
 
         [Fact]
-        public async Task GetMedicationRequest_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var service = Substitute.For<IMedicationRequestService>();
-            var validator = Substitute.For<IResourceValidator<MedicationRequest>>();
-            var logger = Substitute.For<ILogger<MedicationRequestController>>();
-            service.GetMedicationRequest(Arg.Any<string>()).Throws(new Exception());
-            var controller = new MedicationRequestController(service, validator, logger);
-
-            // Act
-            var medicationRequest = await controller.GetMedicationRequest(Guid.NewGuid().ToString());
-            var result = (StatusCodeResult)medicationRequest;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
-        }
-
-        [Fact]
         public async Task CreateMedicationRequest_WhenRequestIsCorrect_ReturnsStatusOk()
         {
             // Arrange

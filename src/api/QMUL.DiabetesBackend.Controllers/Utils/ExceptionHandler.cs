@@ -28,6 +28,10 @@ namespace QMUL.DiabetesBackend.Api.Utils
             {
                 return context.StatusCode(StatusCodes.Status500InternalServerError);
             }
+            catch (ArgumentException)
+            {
+                return context.BadRequest();
+            }
             catch (ValidationException exception)
             {
                 logger.LogWarning(exception, "Validation Exception");

@@ -129,23 +129,5 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers
             // Assert
             status.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
-
-        [Fact]
-        public async Task GetAlexaNextRequest_WhenException_ReturnsInternalError()
-        {
-            // Arrange
-            var service = Substitute.For<IAlexaService>();
-            var logger = Substitute.For<ILogger<AlexaController>>();
-            service.GetNextRequests(Arg.Any<string>(), Arg.Any<AlexaRequestType>())
-                .Throws(new Exception());
-            var controller = new AlexaController(service);
-
-            // Act
-            var result = await controller.GetAlexaNextRequest("test@gmail.com", AlexaRequestType.Medication);
-            var status = (StatusCodeResult) result;
-
-            // Assert
-            status.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
-        }
     }
 }

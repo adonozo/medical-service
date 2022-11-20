@@ -39,24 +39,6 @@
         }
 
         [Fact]
-        public async Task GetServiceRequest_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var service = Substitute.For<IServiceRequestService>();
-            var validator = Substitute.For<IResourceValidator<ServiceRequest>>();
-            var logger = Substitute.For<ILogger<ServiceRequestController>>();
-            var controller = new ServiceRequestController(service, validator, logger);
-            service.GetServiceRequest(Arg.Any<string>()).Throws(new Exception());
-
-            // Act
-            var serviceRequest = await controller.GetServiceRequest(Guid.NewGuid().ToString());
-            var result = (StatusCodeResult)serviceRequest;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
-        }
-
-        [Fact]
         public async Task CreateServiceRequest_WhenRequestIsCorrect_ReturnsStatusOk()
         {
             // Arrange

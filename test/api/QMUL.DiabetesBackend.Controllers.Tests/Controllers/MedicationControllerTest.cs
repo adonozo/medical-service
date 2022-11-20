@@ -42,23 +42,6 @@
         }
 
         [Fact]
-        public async Task GetAllMedications_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var service = Substitute.For<IMedicationService>();
-            service.GetMedicationList(Arg.Any<PaginationRequest>()).Throws(new Exception());
-
-            var controller = this.GetMedicationController(service);
-
-            // Act
-            var medications = await controller.GetAllMedications();
-            var result = (StatusCodeResult)medications;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
-        }
-
-        [Fact]
         public async Task GetMedication_WhenRequestIsCorrect_ReturnsOk()
         {
             // Arrange
@@ -74,24 +57,6 @@
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetMedication_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var service = Substitute.For<IMedicationService>();
-            var id = Guid.NewGuid().ToString();
-            service.GetMedication(Arg.Any<string>()).Throws(new Exception());
-
-            var controller = this.GetMedicationController(service);
-
-            // Act
-            var medicationResult = await controller.GetMedication(id);
-            var result = (StatusCodeResult)medicationResult;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [Fact]

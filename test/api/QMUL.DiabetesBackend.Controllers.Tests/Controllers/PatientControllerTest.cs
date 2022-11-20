@@ -137,29 +137,12 @@
         }
 
         [Fact]
-        public async Task GetPatient_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var patientService = Substitute.For<IPatientService>();
-            patientService.GetPatient(Arg.Any<string>()).Throws(new Exception());
-
-            var controller = this.GetTestPatientController(patientService: patientService);
-
-            // Act
-            var patient = await controller.GetPatient("john@mail.com");
-            var result = (StatusCodeResult)patient;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
-        }
-
-        [Fact]
         public async Task GetPatientCarePlans_WhenRequestIsCorrect_ReturnsStatusOk()
         {
             // Arrange
             var carePlanService = Substitute.For<ICarePlanService>();
             carePlanService.GetCarePlanFor(Arg.Any<string>()).Returns(new Bundle());
-            
+
             var controller = this.GetTestPatientController(carePlanService: carePlanService);
 
             // Act
@@ -168,23 +151,6 @@
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetPatientCarePlans_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var carePlanService = Substitute.For<ICarePlanService>();
-            carePlanService.GetCarePlanFor(Arg.Any<string>()).Throws(new Exception());
-            
-            var controller = this.GetTestPatientController(carePlanService: carePlanService);
-
-            // Act
-            var carePlans = await controller.GetPatientCarePlans("john@mail.com");
-            var result = (StatusCodeResult)carePlans;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [Fact]
@@ -210,24 +176,6 @@
         }
 
         [Fact]
-        public async Task GetActiveMedicationRequests_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var medicationRequestService = Substitute.For<IMedicationRequestService>();
-            medicationRequestService.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>())
-                .Throws(new Exception());
-
-            var controller = this.GetTestPatientController(medicationRequestService: medicationRequestService);
-
-            // Act
-            var medicationRequests = await controller.GetActiveMedicationRequests("john@mail.com");
-            var result = (StatusCodeResult)medicationRequests;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
-        }
-
-        [Fact]
         public async Task GetActiveCarePlan_WhenRequestIsCorrect_ReturnsStatusOk()
         {
             // Arrange
@@ -242,23 +190,6 @@
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetActiveCarePlan_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var carePlanService = Substitute.For<ICarePlanService>();
-            carePlanService.GetActiveCarePlans(Arg.Any<string>()).Throws(new Exception());
-
-            var controller = this.GetTestPatientController(carePlanService: carePlanService);
-
-            // Act
-            var carePlan = await controller.GetActiveCarePlan("john@mail.com");
-            var result = (StatusCodeResult)carePlan;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [Fact]
@@ -279,23 +210,6 @@
         }
 
         [Fact]
-        public async Task GetSingleObservation_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var observationService = Substitute.For<IObservationService>();
-            observationService.GetObservation(Arg.Any<string>()).Throws(new Exception());
-
-            var controller = this.GetTestPatientController(observationService: observationService);
-
-            // Act
-            var observation = await controller.GetSingleObservation("john@mail.com", Guid.NewGuid().ToString());
-            var result = (StatusCodeResult)observation;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
-        }
-
-        [Fact]
         public async Task GetPatientObservations_WhenRequestIsCorrect_ReturnsStatusOk()
         {
             // Arrange
@@ -308,7 +222,7 @@
             observationService.GetObservationsFor(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>(),
                     Arg.Any<PaginationRequest>(), Arg.Any<string>())
                 .Returns(paginatedResult);
-            
+
             var controller = this.GetTestPatientController(observationService: observationService);
 
             // Act
@@ -317,25 +231,6 @@
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetPatientObservations_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var observationService = Substitute.For<IObservationService>();
-            observationService.GetObservationsFor(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>(),
-                    Arg.Any<PaginationRequest>(), Arg.Any<string>())
-                .Throws(new Exception());
-
-            var controller = this.GetTestPatientController(observationService: observationService);
-
-            // Act
-            var observations = await controller.GetPatientObservations("john@mail.com", DateTime.Now);
-            var result = (StatusCodeResult)observations;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [Fact]
@@ -358,24 +253,6 @@
 
             // Assert
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Fact]
-        public async Task GetAllPatientObservations_WhenRequestFails_ReturnsInternalError()
-        {
-            // Arrange
-            var observationService = Substitute.For<IObservationService>();
-            observationService.GetObservations(Arg.Any<string>(), Arg.Any<PaginationRequest>())
-                .Throws(new Exception());
-
-            var controller = this.GetTestPatientController(observationService: observationService);
-
-            // Act
-            var observations = await controller.GetAllPatientObservations("john@mail.com");
-            var result = (StatusCodeResult)observations;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [Fact]
@@ -403,7 +280,7 @@
             var alexaService = Substitute.For<IAlexaService>();
             alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>())
                 .Returns(false);
-            
+
             var controller = this.GetTestPatientController(alexaService: alexaService);
 
             // Act
@@ -439,7 +316,7 @@
             var alexaService = Substitute.For<IAlexaService>();
             alexaService.UpsertDosageStartDate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTime>())
                 .Returns(true);
-            
+
             var controller = this.GetTestPatientController(alexaService: alexaService);
 
             // Act
@@ -452,32 +329,13 @@
         }
 
         [Fact]
-        public async Task UpdateDosageStartDate_WhenDoesNotUpdate_ReturnsBadRequest()
-        {
-            // Arrange
-            var alexaService = Substitute.For<IAlexaService>();
-            alexaService.UpsertDosageStartDate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTime>())
-                .Returns(false);
-
-            var controller = this.GetTestPatientController(alexaService: alexaService);
-
-            // Act
-            var updated = await controller.UpdateDosageStartDate("john@mail.com", Guid.NewGuid().ToString(),
-                new PatientStartDateRequest());
-            var result = (StatusCodeResult)updated;
-
-            // Assert
-            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
-        [Fact]
         public async Task UpdateDosageStartDate_WhenRequestFails_ReturnsInternalError()
         {
             // Arrange
             var alexaService = Substitute.For<IAlexaService>();
             alexaService.UpsertDosageStartDate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTime>())
                 .Throws(new Exception());
-            
+
             var controller = this.GetTestPatientController(alexaService: alexaService);
 
             // Act
@@ -522,7 +380,7 @@
             observationValidator ??= Substitute.For<IResourceValidator<Observation>>();
             patientValidator ??= Substitute.For<IResourceValidator<Patient>>();
             var logger = Substitute.For<ILogger<PatientController>>();
-            
+
             return new PatientController(patientService, alexaService, carePlanService, observationService,
                 medicationRequestService, observationValidator, patientValidator, logger)
             {

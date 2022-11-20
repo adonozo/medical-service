@@ -1,6 +1,7 @@
 namespace QMUL.DiabetesBackend.Controllers.Tests.Utils
 {
     using System;
+    using System.Net;
     using System.Threading.Tasks;
     using Api.Utils;
     using FluentAssertions;
@@ -46,11 +47,11 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Utils
         }
 
         [Fact]
-        public async Task ExecuteAndHandleAsync_WhenMethodThrowsCreateException_ReturnsBadRequest()
+        public async Task ExecuteAndHandleAsync_WhenMethodThrowsWriteException_ReturnsInternalError()
         {
             // Arrange
             var controller = Substitute.For<ControllerBase>();
-            controller.BadRequest().Returns(new BadRequestResult());
+            controller.StatusCode(500).Returns(new StatusCodeResult(StatusCodes.Status500InternalServerError));
             var logger = Substitute.For<ILogger>();
             var method = new Func<Task<IActionResult>>(() => throw new WriteResourceException(string.Empty));
 
@@ -58,7 +59,8 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Utils
             var result = await ExceptionHandler.ExecuteAndHandleAsync(method, logger, controller);
 
             // Assert
-            result.Should().BeOfType<BadRequestResult>();
+            result.Should().BeOfType<StatusCodeResult>();
+            ((StatusCodeResult)result).StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
         }
 
         [Fact]
@@ -66,7 +68,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Utils
         {
             // Arrange
             var controller = Substitute.For<ControllerBase>();
-            controller.BadRequest().Returns(new BadRequestResult());
+            controller.BadRequest(Arg.Any<object>()).Returns(new BadRequestObjectResult(new {}));
             var logger = Substitute.For<ILogger>();
             var method = new Func<Task<IActionResult>>(() => throw new ValidationException(string.Empty));
 
@@ -74,7 +76,7 @@ namespace QMUL.DiabetesBackend.Controllers.Tests.Utils
             var result = await ExceptionHandler.ExecuteAndHandleAsync(method, logger, controller);
 
             // Assert
-            result.Should().BeOfType<BadRequestResult>();
+            result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         [Fact]
