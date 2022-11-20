@@ -1,19 +1,18 @@
-namespace QMUL.DiabetesBackend.Service.Validators
+namespace QMUL.DiabetesBackend.Service.Validators;
+
+using FluentValidation;
+using Hl7.Fhir.Model;
+
+public class MedicationValidator : ResourceValidatorBase<Medication>
 {
-    using FluentValidation;
-    using Hl7.Fhir.Model;
-
-    public class MedicationValidator : ResourceValidatorBase<Medication>
+    public MedicationValidator()
     {
-        public MedicationValidator()
-        {
-            RuleFor(medication => medication.Code)
-                .NotNull();
+        RuleFor(medication => medication.Code)
+            .NotNull();
 
-            RuleFor(medication => medication.Code.Coding)
-                .NotEmpty()
-                .ForEach(codingRule => codingRule.NotNull())
-                .When(medication => medication.Code != null);
-        }
+        RuleFor(medication => medication.Code.Coding)
+            .NotEmpty()
+            .ForEach(codingRule => codingRule.NotNull())
+            .When(medication => medication.Code != null);
     }
 }
