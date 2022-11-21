@@ -98,7 +98,7 @@ public class PatientController : ControllerBase
 
     [HttpGet("patients/{idOrEmail}/carePlans")]
     [Obsolete("This merges services and medication requests. Won't work with pagination. " +
-              "Use individual requests instead.")]
+              "Use individual requests instead/Replace when care plan is in place")]
     public async Task<IActionResult> GetPatientCarePlans([FromRoute] string idOrEmail)
     {
         var result = await this.carePlanService.GetCarePlanFor(idOrEmail);
@@ -123,14 +123,6 @@ public class PatientController : ControllerBase
     {
         var result = await this.carePlanService.GetActiveCarePlans(idOrEmail);
         return this.OkOrNotFound(result);
-    }
-
-    [HttpGet("patients/{idOrEmail}/observations/{observationId}")]
-    public async Task<IActionResult> GetSingleObservation([FromRoute] string idOrEmail,
-        [FromRoute] string observationId)
-    {
-        var result = await this.observationService.GetObservation(observationId);
-        return this.Ok(result.ToJObject());
     }
 
     [HttpGet("patients/{idOrEmail}/observations/")]

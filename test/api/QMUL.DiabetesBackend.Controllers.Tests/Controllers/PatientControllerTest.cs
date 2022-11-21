@@ -193,23 +193,6 @@ public class PatientControllerTest
     }
 
     [Fact]
-    public async Task GetSingleObservation_WhenRequestIsCorrect_ReturnsStatusOk()
-    {
-        // Arrange
-        var observationService = Substitute.For<IObservationService>();
-        observationService.GetObservation(Arg.Any<string>()).Returns(new Observation());
-
-        var controller = this.GetTestPatientController(observationService: observationService);
-
-        // Act
-        var observation = await controller.GetSingleObservation("john@mail.com", Guid.NewGuid().ToString());
-        var result = (ObjectResult)observation;
-
-        // Assert
-        result.StatusCode.Should().Be(StatusCodes.Status200OK);
-    }
-
-    [Fact]
     public async Task GetPatientObservations_WhenRequestIsCorrect_ReturnsStatusOk()
     {
         // Arrange
