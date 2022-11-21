@@ -1,17 +1,16 @@
-namespace QMUL.DiabetesBackend.Model
+namespace QMUL.DiabetesBackend.Model;
+
+public class PaginationRequest
 {
-    public class PaginationRequest
+    private const int DefaultLimit = 20;
+
+    public PaginationRequest(int? limit, string lastCursorId)
     {
-        private const int DefaultLimit = 20;
-
-        public PaginationRequest(int? limit, string lastCursorId)
-        {
-            this.Limit = limit ?? DefaultLimit;
-            this.LastCursorId = lastCursorId;
-        }
-
-        public int Limit { get; }
-
-        public string LastCursorId { get; }
+        this.Limit = limit ?? DefaultLimit;
+        this.LastCursorId = lastCursorId;
     }
+
+    public int Limit { get; }
+
+    public string LastCursorId { get; }
 }

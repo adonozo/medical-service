@@ -1,88 +1,87 @@
-namespace QMUL.DiabetesBackend.MongoDb
+namespace QMUL.DiabetesBackend.MongoDb;
+
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Hl7.Fhir.Model;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using DataInterfaces;
+using Microsoft.Extensions.Logging;
+using Model;
+using Model.Exceptions;
+using Utils;
+using Task = System.Threading.Tasks.Task;
+
+/// <summary>
+/// The Mongo Medication Dao
+/// </summary>
+public class MedicationDao : MongoDaoBase, IMedicationDao
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using Hl7.Fhir.Model;
-    using MongoDB.Bson;
-    using MongoDB.Driver;
-    using DataInterfaces;
-    using Microsoft.Extensions.Logging;
-    using Model;
-    using Model.Exceptions;
-    using Utils;
-    using Task = System.Threading.Tasks.Task;
+    private const string CollectionName = "medication";
 
-    /// <summary>
-    /// The Mongo Medication Dao
-    /// </summary>
-    public class MedicationDao : MongoDaoBase, IMedicationDao
+    private readonly IMongoCollection<BsonDocument> medicationCollection;
+    private readonly ILogger<MedicationDao> logger;
+
+    public MedicationDao(IMongoDatabase database, ILogger<MedicationDao> logger) : base(database)
     {
-        private const string CollectionName = "medication";
+        this.logger = logger;
+        this.medicationCollection = this.Database.GetCollection<BsonDocument>(CollectionName);
+    }
 
-        private readonly IMongoCollection<BsonDocument> medicationCollection;
-        private readonly ILogger<MedicationDao> logger;
+    /// <inheritdoc />
+    public async Task<PaginatedResult<IEnumerable<Resource>>> GetMedicationList(PaginationRequest paginationRequest,
+        string? name = null)
+    {
+        this.logger.LogTrace("Getting all medications...");
+        var searchFilter = name is null
+            ? FilterDefinition<BsonDocument>.Empty
+            : Builders<BsonDocument>.Filter.Regex("code.coding.display", new BsonRegularExpression(name, "i"));
+        var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
+        var result = await this.medicationCollection.Find(resultsFilter)
+            .Limit(paginationRequest.Limit)
+            .Project(document => Helpers.ToResourceAsync<Medication>(document))
+            .ToListAsync();
 
-        public MedicationDao(IMongoDatabase database, ILogger<MedicationDao> logger) : base(database)
+        Resource[] medications = await Task.WhenAll(result);
+        this.logger.LogTrace("Found {Count} medications", medications.Length);
+        if (medications.Length == 0)
         {
-            this.logger = logger;
-            this.medicationCollection = this.Database.GetCollection<BsonDocument>(CollectionName);
+            return new PaginatedResult<IEnumerable<Resource>> { Results = Array.Empty<Resource>() };
         }
 
-        /// <inheritdoc />
-        public async Task<PaginatedResult<IEnumerable<Resource>>> GetMedicationList(PaginationRequest paginationRequest,
-            string? name = null)
+        return await Helpers.GetPaginatedResult(this.medicationCollection, searchFilter, medications);
+    }
+
+    /// <inheritdoc />
+    public async Task<Medication?> GetSingleMedication(string id)
+    {
+        var result = await this.medicationCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
+        if (result is null)
         {
-            this.logger.LogTrace("Getting all medications...");
-            var searchFilter = name is null
-                ? FilterDefinition<BsonDocument>.Empty
-                : Builders<BsonDocument>.Filter.Regex("code.coding.display", new BsonRegularExpression(name, "i"));
-            var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
-            var result = await this.medicationCollection.Find(resultsFilter)
-                .Limit(paginationRequest.Limit)
-                .Project(document => Helpers.ToResourceAsync<Medication>(document))
-                .ToListAsync();
-
-            Resource[] medications = await Task.WhenAll(result);
-            this.logger.LogTrace("Found {Count} medications", medications.Length);
-            if (medications.Length == 0)
-            {
-                return new PaginatedResult<IEnumerable<Resource>> { Results = Array.Empty<Resource>() };
-            }
-
-            return await Helpers.GetPaginatedResult(this.medicationCollection, searchFilter, medications);
+            return null;
         }
 
-        /// <inheritdoc />
-        public async Task<Medication?> GetSingleMedication(string id)
-        {
-            var result = await this.medicationCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
-            if (result is null)
-            {
-                return null;
-            }
+        return await Helpers.ToResourceAsync<Medication>(result);
+    }
 
-            return await Helpers.ToResourceAsync<Medication>(result);
-        }
+    /// <inheritdoc />
+    public async Task<Medication> CreateMedication(Medication newMedication)
+    {
+        this.logger.LogDebug("Creating medication...");
+        var document = await Helpers.ToBsonDocumentAsync(newMedication);
+        await this.medicationCollection.InsertOneAsync(document);
 
-        /// <inheritdoc />
-        public async Task<Medication> CreateMedication(Medication newMedication)
-        {
-            this.logger.LogDebug("Creating medication...");
-            var document = await Helpers.ToBsonDocumentAsync(newMedication);
-            await this.medicationCollection.InsertOneAsync(document);
+        var newId = this.GetIdFromDocument(document);
+        this.logger.LogDebug("Medication created with ID: {Id}", newId);
+        var errorMessage = $"Could not create medication. ID assigned was: {newId}";
+        return await this.GetSingleMedicationOrThrow(newId, new WriteResourceException(errorMessage));
+    }
 
-            var newId = this.GetIdFromDocument(document);
-            this.logger.LogDebug("Medication created with ID: {Id}", newId);
-            var errorMessage = $"Could not create medication. ID assigned was: {newId}";
-            return await this.GetSingleMedicationOrThrow(newId, new WriteResourceException(errorMessage));
-        }
-
-        private async Task<Medication> GetSingleMedicationOrThrow(string id, Exception exception)
-        {
-            var result = this.medicationCollection.Find(Helpers.GetByIdFilter(id));
-            var document = await this.GetSingleOrThrow(result, exception);
-            return await Helpers.ToResourceAsync<Medication>(document);
-        }
+    private async Task<Medication> GetSingleMedicationOrThrow(string id, Exception exception)
+    {
+        var result = this.medicationCollection.Find(Helpers.GetByIdFilter(id));
+        var document = await this.GetSingleOrThrow(result, exception);
+        return await Helpers.ToResourceAsync<Medication>(document);
     }
 }

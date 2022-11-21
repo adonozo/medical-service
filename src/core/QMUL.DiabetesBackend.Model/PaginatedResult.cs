@@ -1,13 +1,12 @@
-namespace QMUL.DiabetesBackend.Model
+namespace QMUL.DiabetesBackend.Model;
+
+public class PaginatedResult<T>
 {
-    public class PaginatedResult<T>
-    {
-        public long TotalResults { get; set; }
+    public long TotalResults { get; set; }
 
-        public long RemainingCount { get; set; }
+    public long RemainingCount { get; set; }
 
-        public string LastDataCursor { get; set; }
+    public string LastDataCursor { get; set; }
 
-        public T Results { get; set; }
-    }
+    public T Results { get; set; }
 }
