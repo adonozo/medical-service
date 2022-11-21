@@ -1,0 +1,46 @@
+namespace QMUL.DiabetesBackend.Service.Validators;
+
+using FluentValidation;
+using Hl7.Fhir.Model;
+using Model.Constants;
+
+public class ObservationValidator : ResourceValidatorBase<Observation>
+{
+    public ObservationValidator()
+    {
+        RuleFor(observation => observation.Status)
+            .NotNull();
+
+        RuleFor(observation => observation.Subject)
+            .NotNull();
+        
+        RuleFor(request => request.Subject)
+            .Must(subject => subject.Reference.StartsWith(Constants.PatientPath))
+            .WithMessage("Subject must reference a Patient resource")
+            .When(subject => subject is not null);
+
+        RuleFor(observation => observation.Code)
+            .NotNull();
+
+        RuleFor(observation => observation.Code.Coding)
+            .NotEmpty()
+            .When(observation => observation.Code != null);
+
+        RuleFor(observation => observation.Value)
+            .NotNull();
+
+        RuleFor(observation => observation.Effective)
+            .NotNull();
+
+        RuleFor(observation => observation.Issued)
+            .NotNull();
+
+        RuleFor(observation => observation.ReferenceRange)
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty()
+            .ForEach(referenceRules => referenceRules
+                .Must(referenceRange => referenceRange.Low != null || referenceRange.High != null
+                                                                   || referenceRange.Text != null)
+                .WithMessage("The reference value must have a low, a high, or a text value"));
+    }
+}

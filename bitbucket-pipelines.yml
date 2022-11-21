@@ -1,6 +1,6 @@
-# Dotnet Core 5 Pipelines
+# Dotnet Core 6 Pipelines
 
-image: mcr.microsoft.com/dotnet/sdk:5.0-bullseye-slim
+image: mcr.microsoft.com/dotnet/sdk:6.0-alpine
 
 pipelines:
   branches: 

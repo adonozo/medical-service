@@ -31,7 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{0D53E1E1-5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "data", "data", "{EAD4DE48-A301-46FE-ACA5-F5FAFF2C2D77}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.ServiceImpl", "src\core\service\QMUL.DiabetesBackend.ServiceImpl\QMUL.DiabetesBackend.ServiceImpl.csproj", "{3EC47315-091C-4843-8DB3-748898CB66CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.Service", "src\core\service\QMUL.DiabetesBackend.Service\QMUL.DiabetesBackend.Service.csproj", "{3EC47315-091C-4843-8DB3-748898CB66CF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.DataInterfaces", "src\data\QMUL.DiabetesBackend.DataInterfaces\QMUL.DiabetesBackend.DataInterfaces.csproj", "{194EAA1E-F28C-472F-8557-16AED3E8E2FB}"
 EndProject
@@ -41,7 +41,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3723FF2D-0
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{83BD7429-F05E-42EC-8F4C-6C03388BD35D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.ServiceImpl.Tests", "test\core\QMUL.DiabetesBackend.ServiceImpl.Tests\QMUL.DiabetesBackend.ServiceImpl.Tests.csproj", "{725B549D-8509-4DCD-A843-061F3C9537EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.Service.Tests", "test\core\QMUL.DiabetesBackend.Service.Tests\QMUL.DiabetesBackend.Service.Tests.csproj", "{725B549D-8509-4DCD-A843-061F3C9537EE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{584D014C-B66E-4434-B5F8-EC9E96ED4FBC}"
 EndProject

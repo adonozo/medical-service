@@ -1,18 +1,17 @@
-namespace QMUL.DiabetesBackend.MongoDb.Mapper
+namespace QMUL.DiabetesBackend.MongoDb.Mapper;
+
+using AutoMapper;
+using Model;
+using Models;
+
+public class MapperProfile : Profile
 {
-    using AutoMapper;
-    using Model;
-    using Models;
-
-    public class MapperProfile : Profile
+    public MapperProfile()
     {
-        public MapperProfile()
-        {
-            CreateMap<ResourceReference, MongoEvent.MongoResourceReference>()
-                .ReverseMap();
+        CreateMap<ResourceReference, MongoEvent.MongoResourceReference>()
+            .ReverseMap();
 
-            CreateMap<HealthEvent, MongoEvent>()
-                .ReverseMap();
-        }
+        CreateMap<HealthEvent, MongoEvent>()
+            .ReverseMap();
     }
 }

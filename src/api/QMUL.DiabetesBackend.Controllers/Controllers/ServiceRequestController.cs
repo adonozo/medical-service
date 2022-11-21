@@ -1,70 +1,67 @@
-namespace QMUL.DiabetesBackend.Api.Controllers
+namespace QMUL.DiabetesBackend.Controllers.Controllers;
+
+using System.Threading.Tasks;
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using ServiceInterfaces;
+using ServiceInterfaces.Validators;
+using Utils;
+
+[ApiController]
+public class ServiceRequestController : ControllerBase
 {
-    using System.Threading.Tasks;
-    using Hl7.Fhir.Model;
-    using Hl7.Fhir.Serialization;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Logging;
-    using Newtonsoft.Json.Linq;
-    using ServiceInterfaces;
-    using ServiceInterfaces.Validators;
-    using Utils;
+    private readonly IServiceRequestService serviceRequestService;
+    private readonly IResourceValidator<ServiceRequest> validator;
+    private readonly ILogger<ServiceRequestController> logger;
 
-    [ApiController]
-    public class ServiceRequestController : ControllerBase
+    public ServiceRequestController(IServiceRequestService serviceRequestService,
+        IResourceValidator<ServiceRequest> validator, ILogger<ServiceRequestController> logger)
     {
-        private readonly IServiceRequestService serviceRequestService;
-        private readonly IResourceValidator<ServiceRequest> validator;
-        private readonly ILogger<ServiceRequestController> logger;
+        this.serviceRequestService = serviceRequestService;
+        this.validator = validator;
+        this.logger = logger;
+    }
 
-        public ServiceRequestController(IServiceRequestService serviceRequestService,
-            IResourceValidator<ServiceRequest> validator, ILogger<ServiceRequestController> logger)
-        {
-            this.serviceRequestService = serviceRequestService;
-            this.validator = validator;
-            this.logger = logger;
-        }
+    [HttpGet("serviceRequests/{id}")]
+    public async Task<IActionResult> GetServiceRequest(string id)
+    {
+        var serviceRequest = await this.serviceRequestService.GetServiceRequest(id);
+        return this.OkOrNotFound(serviceRequest);
+    }
 
-        [HttpGet("serviceRequests/{id}")]
-        public async Task<IActionResult> GetServiceRequest(string id)
+    [HttpPost("serviceRequests")]
+    public async Task<IActionResult> CreateServiceRequest([FromBody] JObject request)
+    {
+        return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var result = await this.serviceRequestService.GetServiceRequest(id);
-                return this.Ok(result.ToJObject());
-            }, this.logger, this);
-        }
+            var serviceRequest = await this.validator.ParseAndValidateAsync(request);
+            var result = await this.serviceRequestService.CreateServiceRequest(serviceRequest);
+            return this.Ok(result.ToJObject());
+        }, this.logger, this);
+    }
 
-        [HttpPost("serviceRequests")]
-        public async Task<IActionResult> CreateServiceRequest([FromBody] JObject request)
+    [HttpPut("serviceRequests/{id}")]
+    public async Task<IActionResult> UpdateServiceRequest([FromRoute] string id, [FromBody] JObject request)
+    {
+        return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var serviceRequest = await this.validator.ParseAndValidateAsync(request);
-                var result = await this.serviceRequestService.CreateServiceRequest(serviceRequest);
-                return this.Ok(result.ToJObject());
-            }, this.logger, this);
-        }
+            var serviceRequest = await this.validator.ParseAndValidateAsync(request);
+            var resourceUpdated = await this.serviceRequestService.UpdateServiceRequest(id, serviceRequest);
+            return resourceUpdated? this.Accepted() : this.StatusCode(StatusCodes.Status500InternalServerError);
+        }, this.logger, this);
+    }
 
-        [HttpPut("serviceRequests/{id}")]
-        public async Task<IActionResult> UpdateServiceRequest([FromRoute] string id, [FromBody] JObject request)
+    [HttpDelete("serviceRequests/{id}")]
+    public async Task<IActionResult> DeleteActionResult([FromRoute] string id)
+    {
+        return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
         {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                var serviceRequest = await this.validator.ParseAndValidateAsync(request);
-                var result = await this.serviceRequestService.UpdateServiceRequest(id, serviceRequest);
-                return this.Accepted(result.ToJObject());
-            }, this.logger, this);
-        }
-
-        [HttpDelete("serviceRequests/{id}")]
-        public async Task<IActionResult> DeleteActionResult([FromRoute] string id)
-        {
-            return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
-            {
-                await this.serviceRequestService.DeleteServiceRequest(id);
-                return this.NoContent();
-            }, this.logger, this);
-        }
+            await this.serviceRequestService.DeleteServiceRequest(id);
+            return this.NoContent();
+        }, this.logger, this);
     }
 }

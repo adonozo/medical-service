@@ -1,8 +1,7 @@
-namespace QMUL.DiabetesBackend.Api.Utils
+namespace QMUL.DiabetesBackend.Controllers.Utils;
+
+public static class HttpConstants
 {
-    public static class HttpConstants
-    {
-        public const string LastCursorHeader = "Pagination-Last";
-        public const string RemainingCountHeader = "Pagination-Remaining";
-    }
+    public const string LastCursorHeader = "Pagination-Last";
+    public const string RemainingCountHeader = "Pagination-Remaining";
 }
