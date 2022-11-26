@@ -123,6 +123,30 @@ public class CarePlanService : ICarePlanService
         return await this.carePlanDao.UpdateCarePlan(carePlanId, carePlan);
     }
 
+    public async Task<bool> DeleteServiceRequest(string carePlanId, string serviceRequestId)
+    {
+        var carePlan = await ResourceUtils.GetResourceOrThrow(() => this.carePlanDao.GetCarePlan(carePlanId),
+            new NotFoundException());
+
+        await this.serviceRequestService.DeleteServiceRequest(serviceRequestId);
+
+        carePlan.Activity ??= new List<CarePlan.ActivityComponent>();
+        carePlan.Activity.RemoveAll(activity => activity.Reference.Reference.Contains(serviceRequestId));
+        return await this.carePlanDao.UpdateCarePlan(carePlanId, carePlan);
+    }
+
+    public async Task<bool> DeleteMedicationRequest(string carePlanId, string medicationRequestId)
+    {
+        var carePlan = await ResourceUtils.GetResourceOrThrow(() => this.carePlanDao.GetCarePlan(carePlanId),
+            new NotFoundException());
+
+        await this.medicationRequestService.DeleteMedicationRequest(medicationRequestId);
+
+        carePlan.Activity ??= new List<CarePlan.ActivityComponent>();
+        carePlan.Activity.RemoveAll(activity => activity.Reference.Reference.Contains(medicationRequestId));
+        return await this.carePlanDao.UpdateCarePlan(carePlanId, carePlan);
+    }
+
     public Task<CarePlan?> GetCarePlan(string id)
     {
         return this.carePlanDao.GetCarePlan(id);
@@ -164,7 +188,8 @@ public class CarePlanService : ICarePlanService
         return this.GetSearchBundle(medicationRequests, serviceRequests);
     }
 
-    private Bundle GetSearchBundle(ICollection<MedicationRequest> medicationRequests, ICollection<ServiceRequest> serviceRequests)
+    private Bundle GetSearchBundle(ICollection<MedicationRequest> medicationRequests,
+        ICollection<ServiceRequest> serviceRequests)
     {
         var entries = new List<Resource>(medicationRequests);
         entries.AddRange(serviceRequests);

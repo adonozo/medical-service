@@ -26,8 +26,12 @@ public interface ICarePlanService
     Task<CarePlan> CreateCarePlan(CarePlan carePlan);
 
     Task<bool> AddServiceRequest(string carePlanId, ServiceRequest request);
-    
+
     Task<bool> AddMedicationRequest(string carePlanId, MedicationRequest request);
+
+    Task<bool> DeleteServiceRequest(string carePlanId, string serviceRequestId);
+
+    Task<bool> DeleteMedicationRequest(string carePlanId, string medicationRequestId);
 
     Task<CarePlan?> GetCarePlan(string id);
 
