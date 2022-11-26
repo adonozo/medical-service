@@ -68,6 +68,7 @@ public class Startup
         services.AddSingleton<IObservationService, ObservationService>();
 
         services.AddSingleton<IResourceValidator<Medication>, MedicationValidator>();
+        services.AddSingleton<IResourceValidator<CarePlan>, CarePlanValidator>();
         services.AddSingleton<IResourceValidator<MedicationRequest>, MedicationRequestValidator>();
         services.AddSingleton<IResourceValidator<ServiceRequest>, ServiceRequestValidator>();
         services.AddSingleton<IResourceValidator<Observation>, ObservationValidator>();
