@@ -18,14 +18,13 @@ public static class FhirExtensions
     }
 
     /// <summary>
-    /// Gets the patient ID from a <see cref="ResourceReference"/> object. It basically removes the path from the
+    /// Gets an ID from a <see cref="ResourceReference"/> object. It basically removes the path from the
     /// original string. The retrieved ID is not guaranteed to exist.
     /// </summary>
     /// <param name="resource">The <see cref="ResourceReference"/> to extract the ID from.</param>
-    /// <returns>The patient ID.</returns>
-    public static string GetPatientIdFromReference(this ResourceReference resource)
+    /// <returns>An ID or an empty string.</returns>
+    public static string GetIdFromReference(this ResourceReference resource)
     {
-        return resource.Reference?.Replace(Constants.PatientPath, "")
-               ?? string.Empty;
+        return resource.Reference is null ? string.Empty : resource.Reference[(resource.Reference.IndexOf('/') + 1)..];
     }
 }

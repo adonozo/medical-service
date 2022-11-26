@@ -32,7 +32,7 @@ public class ServiceRequestService : IServiceRequestService
     /// <inheritdoc/>>
     public async Task<ServiceRequest> CreateServiceRequest(ServiceRequest request)
     {
-        var patientId = request.Subject.GetPatientIdFromReference();
+        var patientId = request.Subject.GetIdFromReference();
         var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
         var patient = await ResourceUtils.GetResourceOrThrow(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
@@ -60,7 +60,7 @@ public class ServiceRequestService : IServiceRequestService
         await ResourceUtils.GetResourceOrThrow(async () =>
             await this.serviceRequestDao.GetServiceRequest(id), serviceNotFoundException);
 
-        var patientId = request.Subject.GetPatientIdFromReference();
+        var patientId = request.Subject.GetIdFromReference();
         var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
         var patient = await ResourceUtils.GetResourceOrThrow(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);

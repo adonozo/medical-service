@@ -34,7 +34,7 @@ public class ObservationService : IObservationService
     /// <inheritdoc/>
     public async Task<Observation> CreateObservation(Observation newObservation, string? patientId = null)
     {
-        patientId ??= newObservation.Subject.GetPatientIdFromReference();
+        patientId ??= newObservation.Subject.GetIdFromReference();
         var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
         var patient = await ResourceUtils.GetResourceOrThrow(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
@@ -106,11 +106,10 @@ public class ObservationService : IObservationService
     /// <inheritdoc/>
     public async Task<bool> UpdateObservation(string id, Observation updatedObservation)
     {
-        var observationNotFoundException = new NotFoundException();
         await ResourceUtils.GetResourceOrThrow(async () =>
-            await this.observationDao.GetObservation(id), observationNotFoundException);
+            await this.observationDao.GetObservation(id), new NotFoundException());
 
-        var patientId = updatedObservation.Subject.GetPatientIdFromReference();
+        var patientId = updatedObservation.Subject.GetIdFromReference();
         var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
         await ResourceUtils.GetResourceOrThrow(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);

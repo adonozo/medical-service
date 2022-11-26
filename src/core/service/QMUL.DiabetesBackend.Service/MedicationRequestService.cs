@@ -38,7 +38,7 @@ public class MedicationRequestService : IMedicationRequestService
     /// <inheritdoc/>>
     public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
     {
-        var patientId = request.Subject.GetPatientIdFromReference();
+        var patientId = request.Subject.GetIdFromReference();
         var patientException = new ValidationException($"Patient not found: {patientId}");
         var patient = await ResourceUtils.GetResourceOrThrow(() =>
             this.patientDao.GetPatientByIdOrEmail(patientId), patientException);
@@ -114,7 +114,7 @@ public class MedicationRequestService : IMedicationRequestService
         Medication? medication;
         if (resource is not Medication)
         {
-            var medicationId = reference.GetPatientIdFromReference();
+            var medicationId = reference.GetIdFromReference();
             medication = await this.medicationDao.GetSingleMedication(medicationId);
         }
         else
