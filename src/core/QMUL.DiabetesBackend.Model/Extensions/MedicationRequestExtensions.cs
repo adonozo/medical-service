@@ -23,4 +23,13 @@ public static class MedicationRequestExtensions
     {
         medicationRequest.SetBoolExtension(Extensions.InsulinFlag, true);
     }
+
+    public static ResourceReference GetReference(this MedicationRequest medicationRequest)
+    {
+        return new ResourceReference
+        {
+            Type = nameof(MedicationRequest),
+            Reference = Constants.MedicationRequestPath + medicationRequest.Id
+        };
+    }
 }

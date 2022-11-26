@@ -22,4 +22,14 @@ public interface ICarePlanService
     /// <param name="patientIdOrEmail">The patient ID.</param>
     /// <returns>A <see cref="Bundle"/> with all medication and service requests for the patient, or null if the patient was not found.</returns>
     Task<Bundle?> GetCarePlanFor(string patientIdOrEmail);
+
+    Task<CarePlan> CreateCarePlan(CarePlan carePlan);
+
+    Task<bool> AddServiceRequest(string carePlanId, ServiceRequest request);
+    
+    Task<bool> AddMedicationRequest(string carePlanId, MedicationRequest request);
+
+    Task<CarePlan?> GetCarePlan(string id);
+
+    Task<Bundle?> GetDetailedCarePan(string id);
 }

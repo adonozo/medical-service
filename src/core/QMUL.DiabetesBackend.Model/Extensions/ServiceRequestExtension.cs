@@ -30,4 +30,13 @@ public static class ServiceRequestExtension
         var fhirDate = new FhirDateTime(date);
         serviceRequest.SetExtension(Extensions.ServiceRequestStartDate, fhirDate);
     }
+
+    public static ResourceReference GetReference(this ServiceRequest serviceRequest)
+    {
+        return new ResourceReference
+        {
+            Type = nameof(ServiceRequest),
+            Reference = Constants.ServiceRequestPath + serviceRequest.Id
+        };
+    }
 }

@@ -57,6 +57,7 @@ public class Startup
         services.AddSingleton<IPatientDao, PatientDao>();
         services.AddSingleton<IServiceRequestDao, ServiceRequestDao>();
         services.AddSingleton<IObservationDao, ObservationDao>();
+        services.AddSingleton<ICarePlanDao, CarePlanDao>();
 
         services.AddSingleton<IMedicationService, MedicationService>();
         services.AddSingleton<IPatientService, PatientService>();
