@@ -36,7 +36,7 @@ public class ObservationService : IObservationService
     {
         patientId ??= newObservation.Subject.GetIdFromReference();
         var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
-        var patient = await ResourceUtils.GetResourceOrThrow(async () =>
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
 
         newObservation.Subject.SetPatientReference(patient.Id);
@@ -72,7 +72,7 @@ public class ObservationService : IObservationService
         string patientTimezone = "UTC")
     {
         var patientNotFoundException = new NotFoundException();
-        var patient = await ResourceUtils.GetResourceOrThrow(async () =>
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
         var timingPreferences = patient.GetTimingPreference();
 
@@ -106,12 +106,12 @@ public class ObservationService : IObservationService
     /// <inheritdoc/>
     public async Task<bool> UpdateObservation(string id, Observation updatedObservation)
     {
-        await ResourceUtils.GetResourceOrThrow(async () =>
+        await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.observationDao.GetObservation(id), new NotFoundException());
 
         var patientId = updatedObservation.Subject.GetIdFromReference();
         var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
-        await ResourceUtils.GetResourceOrThrow(async () =>
+        await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
 
         updatedObservation.Id = id;
@@ -122,7 +122,7 @@ public class ObservationService : IObservationService
     public async Task<bool> UpdateValue(string observationId, DataType value)
     {
         var observationNotFoundException = new NotFoundException();
-        var observation = await ResourceUtils.GetResourceOrThrow(async () =>
+        var observation = await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.observationDao.GetObservation(observationId), observationNotFoundException);
 
         observation.Value = value;
@@ -133,7 +133,7 @@ public class ObservationService : IObservationService
     public async Task<bool> DeleteObservation(string id)
     {
         var observationNotFoundException = new NotFoundException();
-        await ResourceUtils.GetResourceOrThrow(async () =>
+        await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.observationDao.GetObservation(id), observationNotFoundException);
 
         return await this.observationDao.DeleteObservation(id);

@@ -34,7 +34,7 @@ public class ServiceRequestService : IServiceRequestService
     {
         var patientId = request.Subject.GetIdFromReference();
         var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
-        var patient = await ResourceUtils.GetResourceOrThrow(async () =>
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
         var internalPatient = patient.ToInternalPatient();
 
@@ -57,12 +57,12 @@ public class ServiceRequestService : IServiceRequestService
     public async Task<bool> UpdateServiceRequest(string id, ServiceRequest request)
     {
         var serviceNotFoundException = new NotFoundException();
-        await ResourceUtils.GetResourceOrThrow(async () =>
+        await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.serviceRequestDao.GetServiceRequest(id), serviceNotFoundException);
 
         var patientId = request.Subject.GetIdFromReference();
         var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
-        var patient = await ResourceUtils.GetResourceOrThrow(async () =>
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
         var internalPatient = patient.ToInternalPatient();
 
@@ -85,7 +85,7 @@ public class ServiceRequestService : IServiceRequestService
     public async Task<bool> DeleteServiceRequest(string id)
     {
         var serviceNotFoundException = new NotFoundException();
-        await ResourceUtils.GetResourceOrThrow(async () =>
+        await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.serviceRequestDao.GetServiceRequest(id), serviceNotFoundException);
 
         await this.eventDao.DeleteRelatedEvents(id);

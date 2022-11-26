@@ -77,7 +77,7 @@ public class CarePlanService : ICarePlanService
     {
         var patientId = carePlan.Subject.GetIdFromReference();
         var patientException = new ValidationException($"Patient not found: {patientId}");
-        await ResourceUtils.GetResourceOrThrow(() =>
+        await ResourceUtils.GetResourceOrThrowAsync(() =>
             this.patientDao.GetPatientByIdOrEmail(patientId), patientException);
 
         carePlan.Status = RequestStatus.Draft;
@@ -87,7 +87,7 @@ public class CarePlanService : ICarePlanService
 
     public async Task<bool> AddServiceRequest(string carePlanId, ServiceRequest request)
     {
-        var carePlan = await ResourceUtils.GetResourceOrThrow(() => this.carePlanDao.GetCarePlan(carePlanId),
+        var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(carePlanId),
             new NotFoundException());
 
         request.Subject.SetPatientReference(carePlan.Subject.GetIdFromReference());
@@ -106,7 +106,7 @@ public class CarePlanService : ICarePlanService
 
     public async Task<bool> AddMedicationRequest(string carePlanId, MedicationRequest request)
     {
-        var carePlan = await ResourceUtils.GetResourceOrThrow(() => this.carePlanDao.GetCarePlan(carePlanId),
+        var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(carePlanId),
             new NotFoundException());
 
         request.Subject.SetPatientReference(carePlan.Subject.GetIdFromReference());
@@ -125,7 +125,7 @@ public class CarePlanService : ICarePlanService
 
     public async Task<bool> DeleteServiceRequest(string carePlanId, string serviceRequestId)
     {
-        var carePlan = await ResourceUtils.GetResourceOrThrow(() => this.carePlanDao.GetCarePlan(carePlanId),
+        var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(carePlanId),
             new NotFoundException());
 
         await this.serviceRequestService.DeleteServiceRequest(serviceRequestId);
@@ -137,7 +137,7 @@ public class CarePlanService : ICarePlanService
 
     public async Task<bool> DeleteMedicationRequest(string carePlanId, string medicationRequestId)
     {
-        var carePlan = await ResourceUtils.GetResourceOrThrow(() => this.carePlanDao.GetCarePlan(carePlanId),
+        var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(carePlanId),
             new NotFoundException());
 
         await this.medicationRequestService.DeleteMedicationRequest(medicationRequestId);

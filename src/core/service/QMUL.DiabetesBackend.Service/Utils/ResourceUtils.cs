@@ -145,7 +145,7 @@ public static class ResourceUtils
         };
     }
 
-    public static async Task<T> GetResourceOrThrow<T>(Func<Task<T?>> action, Exception exception) where T : Resource
+    public static async Task<T> GetResourceOrThrowAsync<T>(Func<Task<T?>> action, Exception exception) where T : Resource
     {
         var resource = await action.Invoke();
         if (resource is null)

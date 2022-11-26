@@ -195,7 +195,7 @@ public class AlexaService : IAlexaService
     public async Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming,
         DateTime dateTime)
     {
-        var patient = await ResourceUtils.GetResourceOrThrow(
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(
             () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
             new ValidationException("PatientNotFound"));
 
@@ -212,7 +212,7 @@ public class AlexaService : IAlexaService
     /// <inheritdoc/>
     public async Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, DateTime startDate)
     {
-        var patient = await ResourceUtils.GetResourceOrThrow(
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(
             () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
             new ValidationException("PatientNotFound"));
 
@@ -227,7 +227,7 @@ public class AlexaService : IAlexaService
     public async Task<bool> UpsertServiceRequestStartDate(string patientIdOrEmail, string serviceRequestId,
         DateTime startDate)
     {
-        var patient = await ResourceUtils.GetResourceOrThrow(
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(
             () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
             new ValidationException("PatientNotFound"));
         var internalPatient = patient.ToInternalPatient();

@@ -40,7 +40,7 @@ public class MedicationRequestService : IMedicationRequestService
     {
         var patientId = request.Subject.GetIdFromReference();
         var patientException = new ValidationException($"Patient not found: {patientId}");
-        var patient = await ResourceUtils.GetResourceOrThrow(() =>
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(() =>
             this.patientDao.GetPatientByIdOrEmail(patientId), patientException);
         var internalPatient = patient.ToInternalPatient();
 
@@ -62,7 +62,7 @@ public class MedicationRequestService : IMedicationRequestService
     /// <inheritdoc/>>
     public async Task<bool> UpdateMedicationRequest(string id, MedicationRequest request)
     {
-        await ResourceUtils.GetResourceOrThrow(() => this.medicationRequestDao.GetMedicationRequest(id),
+        await ResourceUtils.GetResourceOrThrowAsync(() => this.medicationRequestDao.GetMedicationRequest(id),
             new NotFoundException());
         await this.SetInsulinRequest(request);
 
@@ -73,7 +73,7 @@ public class MedicationRequestService : IMedicationRequestService
     /// <inheritdoc/>>
     public async Task<bool> DeleteMedicationRequest(string id)
     {
-        await ResourceUtils.GetResourceOrThrow(() => this.medicationRequestDao.GetMedicationRequest(id),
+        await ResourceUtils.GetResourceOrThrowAsync(() => this.medicationRequestDao.GetMedicationRequest(id),
             new NotFoundException());
 
         await this.eventDao.DeleteRelatedEvents(id);
@@ -85,7 +85,7 @@ public class MedicationRequestService : IMedicationRequestService
         PaginationRequest paginationRequest)
     {
         var patientException = new NotFoundException();
-        var patient = await ResourceUtils.GetResourceOrThrow(() =>
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(() =>
             this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), patientException);
 
         var medicationRequests =
