@@ -90,7 +90,7 @@ public class CarePlanController : Controller
             return this.NoContent();
         }, this.logger, this);
     }
-    
+
     [HttpDelete("carePlans/{carePlanId}/medicationRequest/{medicationRequestId}")]
     public Task<IActionResult> DeleteMedicationRequest([FromRoute] string carePlanId,
         [FromRoute] string medicationRequestId)

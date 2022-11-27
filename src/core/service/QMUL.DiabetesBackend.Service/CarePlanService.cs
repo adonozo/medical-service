@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using DataInterfaces;
 using Hl7.Fhir.Model;
 using Microsoft.Extensions.Logging;
+using Model;
 using Model.Exceptions;
 using Model.Extensions;
 using ServiceInterfaces;
 using Utils;
+using ResourceReference = Hl7.Fhir.Model.ResourceReference;
 
 /// <summary>
 /// The care plan service handles care plans which are the set of medication and service requests for a patients
@@ -71,6 +73,15 @@ public class CarePlanService : ICarePlanService
         var medicationRequests = await this.medicationRequestDao.GetMedicationRequestFor(patient.Id);
         var serviceRequests = await this.serviceRequestDao.GetServiceRequestsFor(patient.Id);
         return this.GetSearchBundle(medicationRequests, serviceRequests);
+    }
+
+    public async Task<PaginatedResult<Bundle>> GetCarePlansFor(string patientIdOrEmail, PaginationRequest paginationRequest)
+    {
+        await ResourceUtils.GetResourceOrThrowAsync(async () =>
+            await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), new NotFoundException());
+
+        var carePlans = await this.carePlanDao.GetCarePlans(patientIdOrEmail, paginationRequest);
+        return carePlans.ToBundleResult();
     }
 
     public async Task<CarePlan> CreateCarePlan(CarePlan carePlan)

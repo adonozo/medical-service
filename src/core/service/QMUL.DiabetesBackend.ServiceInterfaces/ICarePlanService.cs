@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces;
 
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
+using Model;
 
 /// <summary>
 /// The Care Plan Service Interface
@@ -22,6 +23,8 @@ public interface ICarePlanService
     /// <param name="patientIdOrEmail">The patient ID.</param>
     /// <returns>A <see cref="Bundle"/> with all medication and service requests for the patient, or null if the patient was not found.</returns>
     Task<Bundle?> GetCarePlanFor(string patientIdOrEmail);
+
+    Task<PaginatedResult<Bundle>> GetCarePlansFor(string patientIdOrEmail, PaginationRequest paginationRequest);
 
     Task<CarePlan> CreateCarePlan(CarePlan carePlan);
 

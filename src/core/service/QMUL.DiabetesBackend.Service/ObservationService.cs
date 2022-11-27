@@ -71,9 +71,8 @@ public class ObservationService : IObservationService
         PaginationRequest paginationRequest,
         string patientTimezone = "UTC")
     {
-        var patientNotFoundException = new NotFoundException();
         var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
-            await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
+            await this.patientDao.GetPatientByIdOrEmail(patientId), new NotFoundException());
         var timingPreferences = patient.GetTimingPreference();
 
         DateTimeOffset start, end;
