@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.MongoDb;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DataInterfaces;
 using Hl7.Fhir.Model;
@@ -86,8 +87,9 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     /// <inheritdoc />
     public async Task<IList<ServiceRequest>> GetServiceRequestsByIds(string[] ids)
     {
+        var objectIds = ids.Select(id => new ObjectId(id));
         var idFilter = Builders<BsonDocument>.Filter
-            .In("_id", ids);
+            .In("_id", objectIds);
         var results = await this.serviceRequestCollection.Find(idFilter)
             .Project(document => Helpers.ToResourceAsync<ServiceRequest>(document))
             .ToListAsync();

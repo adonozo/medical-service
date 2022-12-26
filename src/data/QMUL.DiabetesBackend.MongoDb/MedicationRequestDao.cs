@@ -75,7 +75,8 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     /// <inheritdoc />
     public async Task<IList<MedicationRequest>> GetMedicationRequestsByIds(string[] ids)
     {
-        var idFilter = Builders<BsonDocument>.Filter.In("_id", ids);
+        var objectIds = ids.Select(id => new ObjectId(id));
+        var idFilter = Builders<BsonDocument>.Filter.In("_id", objectIds);
         var results = await this.medicationRequestCollection.Find(idFilter)
             .Project(document => Helpers.ToResourceAsync<MedicationRequest>(document))
             .ToListAsync();
