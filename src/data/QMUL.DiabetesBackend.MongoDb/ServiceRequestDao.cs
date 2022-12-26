@@ -2,7 +2,6 @@ namespace QMUL.DiabetesBackend.MongoDb;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using DataInterfaces;
 using Hl7.Fhir.Model;
@@ -87,10 +86,7 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     /// <inheritdoc />
     public async Task<IList<ServiceRequest>> GetServiceRequestsByIds(string[] ids)
     {
-        var objectIds = ids.Select(id => new ObjectId(id));
-        var idFilter = Builders<BsonDocument>.Filter
-            .In("_id", objectIds);
-        var results = await this.serviceRequestCollection.Find(idFilter)
+        var results = await this.serviceRequestCollection.Find(Helpers.GetInIdsFilter(ids))
             .Project(document => Helpers.ToResourceAsync<ServiceRequest>(document))
             .ToListAsync();
         return await Task.WhenAll(results);
@@ -111,6 +107,12 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     {
         this.logger.LogDebug("Deleting service requests with ID: {Id}", id);
         var result = await this.serviceRequestCollection.DeleteOneAsync(Helpers.GetByIdFilter(id));
+        return result.IsAcknowledged;
+    }
+    
+    public async Task<bool> DeleteServiceRequests(string[] ids)
+    {
+        var result = await this.serviceRequestCollection.DeleteManyAsync(Helpers.GetInIdsFilter(ids));
         return result.IsAcknowledged;
     }
 

@@ -55,6 +55,8 @@ public interface IMedicationRequestDao
     /// <returns>True if the medication request was deleted. False if it was not deleted or it does not exist.</returns>
     Task<bool> DeleteMedicationRequest(string id);
 
+    Task<bool> DeleteMedicationRequests(string[] ids);
+
     /// <summary>
     /// Gets the medication request that holds a given Dosage ID for a patient.
     /// </summary>

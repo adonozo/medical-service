@@ -71,4 +71,10 @@ public class CarePlanDao : MongoDaoBase, ICarePlanDao
 
         return result.IsAcknowledged;
     }
+
+    public async Task<bool> DeleteCarePlan(string id)
+    {
+        var result = await this.carePlanCollection.DeleteOneAsync(Helpers.GetByIdFilter(id));
+        return result.IsAcknowledged;
+    }
 }

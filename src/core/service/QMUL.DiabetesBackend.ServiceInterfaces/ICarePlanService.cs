@@ -32,6 +32,8 @@ public interface ICarePlanService
 
     Task<bool> AddMedicationRequest(string carePlanId, MedicationRequest request);
 
+    Task<bool> DeleteCarePlan(string id);
+
     Task<bool> DeleteServiceRequest(string carePlanId, string serviceRequestId);
 
     Task<bool> DeleteMedicationRequest(string carePlanId, string medicationRequestId);

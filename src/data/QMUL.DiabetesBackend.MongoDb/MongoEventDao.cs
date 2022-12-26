@@ -38,13 +38,23 @@ public class MongoEventDao : MongoDaoBase, IEventDao
         this.logger.LogDebug("Creating health events");
         var mongoEvents = events.Select(this.mapper.Map<MongoEvent>).ToArray();
 
-        using var session = await this.Database.Client.StartSessionAsync();
-        session.StartTransaction();
-        await this.eventCollection.InsertManyAsync(session, mongoEvents);
+        await this.eventCollection.InsertManyAsync(mongoEvents);
         this.logger.LogDebug("Created {Count} events", mongoEvents.Length);
-        await session.CommitTransactionAsync();
 
         return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> DeleteAllRelatedResources(string[] resourceIds)
+    {
+        if (resourceIds.Length == 0)
+        {
+            return true;
+        }
+
+        var filter = Builders<MongoEvent>.Filter.In(@event => @event.ResourceReference.ResourceId, resourceIds);
+        var result = await this.eventCollection.DeleteManyAsync(filter);
+        return result.IsAcknowledged;
     }
 
     /// <inheritdoc />

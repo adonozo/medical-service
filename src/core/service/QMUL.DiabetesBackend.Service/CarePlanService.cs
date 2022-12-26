@@ -24,6 +24,7 @@ public class CarePlanService : ICarePlanService
     private readonly IServiceRequestDao serviceRequestDao;
     private readonly IPatientDao patientDao;
     private readonly ICarePlanDao carePlanDao;
+    private readonly IEventDao eventDao;
     private readonly IServiceRequestService serviceRequestService;
     private readonly IMedicationRequestService medicationRequestService;
     private readonly ILogger<CarePlanService> logger;
@@ -32,6 +33,7 @@ public class CarePlanService : ICarePlanService
         IMedicationRequestDao medicationRequestDao,
         IPatientDao patientDao,
         ICarePlanDao carePlanDao,
+        IEventDao eventDao,
         IServiceRequestService serviceRequestService,
         IMedicationRequestService medicationRequestService,
         ILogger<CarePlanService> logger)
@@ -41,6 +43,7 @@ public class CarePlanService : ICarePlanService
         this.patientDao = patientDao;
         this.carePlanDao = carePlanDao;
         this.logger = logger;
+        this.eventDao = eventDao;
         this.serviceRequestService = serviceRequestService;
         this.medicationRequestService = medicationRequestService;
     }
@@ -134,6 +137,27 @@ public class CarePlanService : ICarePlanService
         return await this.carePlanDao.UpdateCarePlan(carePlanId, carePlan);
     }
 
+    public async Task<bool> DeleteCarePlan(string id)
+    {
+        var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(id),
+            new NotFoundException());
+
+        var (medicationRequestReferences, serviceRequestReferences) = this.GetReferences(carePlan);
+        var medicationRequestsIds = medicationRequestReferences
+            .Select(reference => reference.GetIdFromReference())
+            .ToArray();
+        var serviceRequestIds = serviceRequestReferences
+            .Select(reference => reference.GetIdFromReference())
+            .ToArray();
+        var resourceIds = medicationRequestsIds.Union(serviceRequestIds);
+
+        await this.eventDao.DeleteAllRelatedResources(resourceIds.ToArray());
+        await this.medicationRequestDao.DeleteMedicationRequests(medicationRequestsIds);
+        await this.serviceRequestDao.DeleteServiceRequests(serviceRequestIds);
+        
+        return await this.carePlanDao.DeleteCarePlan(id);
+    }
+
     public async Task<bool> DeleteServiceRequest(string carePlanId, string serviceRequestId)
     {
         var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(carePlanId),
@@ -171,21 +195,7 @@ public class CarePlanService : ICarePlanService
             return null;
         }
 
-        var medicationRequestsReferences = new List<ResourceReference>();
-        var serviceRequestsReferences = new List<ResourceReference>();
-
-        foreach (var activity in carePlan.Activity)
-        {
-            switch (activity.Reference.Type)
-            {
-                case nameof(ServiceRequest):
-                    serviceRequestsReferences.Add(activity.Reference);
-                    break;
-                case nameof(MedicationRequest):
-                    medicationRequestsReferences.Add(activity.Reference);
-                    break;
-            }
-        }
+        var (medicationRequestsReferences, serviceRequestsReferences) = this.GetReferences(carePlan);
 
         var medicationRequestIds = medicationRequestsReferences
             .Select(reference => reference.GetIdFromReference())
@@ -208,5 +218,26 @@ public class CarePlanService : ICarePlanService
         this.logger.LogTrace("Found {Count} medication requests", medicationRequests.Count);
         this.logger.LogTrace("Found {Count} service requests", serviceRequests.Count);
         return ResourceUtils.GenerateSearchBundle(entries);
+    }
+
+    private (List<ResourceReference> MedicationReferences, List<ResourceReference> ServiceReferences) GetReferences(CarePlan carePlan)
+    {
+        var medicationRequestsReferences = new List<ResourceReference>();
+        var serviceRequestsReferences = new List<ResourceReference>();
+
+        foreach (var activity in carePlan.Activity)
+        {
+            switch (activity.Reference.Type)
+            {
+                case nameof(ServiceRequest):
+                    serviceRequestsReferences.Add(activity.Reference);
+                    break;
+                case nameof(MedicationRequest):
+                    medicationRequestsReferences.Add(activity.Reference);
+                    break;
+            }
+        }
+
+        return (medicationRequestsReferences, serviceRequestsReferences);
     }
 }

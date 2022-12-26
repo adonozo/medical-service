@@ -22,6 +22,7 @@ public class CarePlanServiceTest
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var patientDao = Substitute.For<IPatientDao>();
         var carePlanDao = Substitute.For<ICarePlanDao>();
+        var eventDao = Substitute.For<IEventDao>();
         var serviceRequestService = Substitute.For<IServiceRequestService>();
         var medicationRequestService = Substitute.For<IMedicationRequestService>();
         var logger = Substitute.For<ILogger<CarePlanService>>();
@@ -29,6 +30,7 @@ public class CarePlanServiceTest
             medicationRequestDao,
             patientDao,
             carePlanDao,
+            eventDao,
             serviceRequestService,
             medicationRequestService,
             logger);
@@ -57,6 +59,7 @@ public class CarePlanServiceTest
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var patientDao = Substitute.For<IPatientDao>();
         var carePlanDao = Substitute.For<ICarePlanDao>();
+        var eventDao = Substitute.For<IEventDao>();
         var serviceRequestService = Substitute.For<IServiceRequestService>();
         var medicationRequestService = Substitute.For<IMedicationRequestService>();
         var logger = Substitute.For<ILogger<CarePlanService>>();
@@ -64,6 +67,7 @@ public class CarePlanServiceTest
             medicationRequestDao,
             patientDao,
             carePlanDao,
+            eventDao,
             serviceRequestService,
             medicationRequestService,
             logger);

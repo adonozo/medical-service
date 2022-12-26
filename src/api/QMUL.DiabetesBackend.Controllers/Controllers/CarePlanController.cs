@@ -58,7 +58,7 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
-    [HttpPut("carePlans/{id}/serviceRequest")]
+    [HttpPut("carePlans/{id}/serviceRequests")]
     public async Task<IActionResult> AddServiceRequest([FromRoute] string id, [FromBody] JObject request)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
@@ -69,7 +69,7 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
-    [HttpPut("carePlans/{id}/medicationRequest")]
+    [HttpPut("carePlans/{id}/medicationRequests")]
     public async Task<IActionResult> AddMedicationRequest([FromRoute] string id, [FromBody] JObject request)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
@@ -77,6 +77,16 @@ public class CarePlanController : Controller
             var medicationRequest = await this.medicationRequestValidator.ParseAndValidateAsync(request);
             var carePlanUpdated = await this.carePlanService.AddMedicationRequest(id, medicationRequest);
             return carePlanUpdated ? this.Accepted() : this.StatusCode(StatusCodes.Status500InternalServerError);
+        }, this.logger, this);
+    }
+
+    [HttpDelete("carePlans/{id}")]
+    public Task<IActionResult> DeleteCarePlan([FromRoute] string id)
+    {
+        return ExceptionHandler.ExecuteAndHandleAsync(async () =>
+        {
+            await this.carePlanService.DeleteCarePlan(id);
+            return this.NoContent();
         }, this.logger, this);
     }
 

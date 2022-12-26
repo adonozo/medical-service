@@ -14,4 +14,6 @@ public interface ICarePlanDao
     Task<CarePlan?> GetCarePlan(string id);
 
     Task<bool> UpdateCarePlan(string id, CarePlan carePlan);
+
+    Task<bool> DeleteCarePlan(string id);
 }

@@ -75,9 +75,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     /// <inheritdoc />
     public async Task<IList<MedicationRequest>> GetMedicationRequestsByIds(string[] ids)
     {
-        var objectIds = ids.Select(id => new ObjectId(id));
-        var idFilter = Builders<BsonDocument>.Filter.In("_id", objectIds);
-        var results = await this.medicationRequestCollection.Find(idFilter)
+        var results = await this.medicationRequestCollection.Find(Helpers.GetInIdsFilter(ids))
             .Project(document => Helpers.ToResourceAsync<MedicationRequest>(document))
             .ToListAsync();
         return await Task.WhenAll(results);
@@ -98,6 +96,12 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     {
         this.logger.LogDebug("Deleting medication request with ID: {Id}", id);
         var result = await this.medicationRequestCollection.DeleteOneAsync(Helpers.GetByIdFilter(id));
+        return result.IsAcknowledged;
+    }
+
+    public async Task<bool> DeleteMedicationRequests(string[] ids)
+    {
+        var result = await this.medicationRequestCollection.DeleteManyAsync(Helpers.GetInIdsFilter(ids));
         return result.IsAcknowledged;
     }
 

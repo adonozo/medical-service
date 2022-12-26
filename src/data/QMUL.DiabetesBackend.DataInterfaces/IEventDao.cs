@@ -19,6 +19,8 @@ public interface IEventDao
     /// <returns>A boolean value to indicate if the list was inserted.</returns>
     Task<bool> CreateEvents(IEnumerable<HealthEvent> events);
 
+    Task<bool> DeleteAllRelatedResources(string[] resourceIds);
+
     /// <summary>
     /// Deletes all events related to a resource, i.e., Medication or Service requests. Should be called to tidy up
     /// resources. 
