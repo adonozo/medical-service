@@ -107,6 +107,7 @@ public static class Helpers
             return searchFilters;
         }
 
+        // todo pagination filter must be sorted by some field. _id is naturally DESC, but won't work for observations
         return Builders<BsonDocument>.Filter.And(searchFilters,
             Builders<BsonDocument>.Filter.Lt("_id", lastId));
     }

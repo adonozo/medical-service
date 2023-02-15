@@ -14,7 +14,7 @@ using Models;
 using MongoDB.Driver;
 
 /// <summary>
-/// The Mongo Event Dao
+/// The Mongo Event Dao TODO rename to EventDao
 /// </summary>
 public class MongoEventDao : MongoDaoBase, IEventDao
 {

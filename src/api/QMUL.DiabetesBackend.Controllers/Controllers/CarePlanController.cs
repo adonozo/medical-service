@@ -33,6 +33,7 @@ public class CarePlanController : Controller
         this.carePlanValidator = carePlanValidator;
     }
 
+    // todo routes should be snake-case
     [HttpGet("carePlans/{id}")]
     public async Task<IActionResult> GetCarePlan([FromRoute] string id)
     {
@@ -90,7 +91,7 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
-    [HttpDelete("carePlans/{carePlanId}/serviceRequest/{medicationRequestId}")]
+    [HttpDelete("carePlans/{carePlanId}/serviceRequests/{medicationRequestId}")]
     public Task<IActionResult> DeleteServiceRequest([FromRoute] string carePlanId,
         [FromRoute] string medicationRequestId)
     {
@@ -101,7 +102,7 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
-    [HttpDelete("carePlans/{carePlanId}/medicationRequest/{medicationRequestId}")]
+    [HttpDelete("carePlans/{carePlanId}/medicationRequests/{medicationRequestId}")]
     public Task<IActionResult> DeleteMedicationRequest([FromRoute] string carePlanId,
         [FromRoute] string medicationRequestId)
     {

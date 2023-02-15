@@ -8,6 +8,7 @@ public class CarePlanValidator : ResourceValidatorBase<CarePlan>
 {
     public CarePlanValidator()
     {
+        // TODO add subject validator
         RuleFor(plan => plan.Subject)
             .NotNull();
 

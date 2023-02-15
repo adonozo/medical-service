@@ -1,6 +1,8 @@
 namespace QMUL.DiabetesBackend.Service;
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DataInterfaces;
 using Hl7.Fhir.Model;
@@ -39,12 +41,19 @@ public class ServiceRequestService : IServiceRequestService
         var internalPatient = patient.ToInternalPatient();
 
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
-        var serviceRequest = await this.serviceRequestDao.CreateServiceRequest(request);
+        if (!this.ValidateContainedResources(request, out var containedRequests))
+        {
+            throw new ValidationException("Contained resources are not of type Service Request");
+        }
 
-        var events = ResourceUtils.GenerateEventsFrom(serviceRequest, internalPatient);
+        // TODO validate that service request has contained service requests (and that those are valid too)
+        // TODO update GenerateEventsFrom to create events using the array. Need to solve the resource reference in the event
+        request = await this.serviceRequestDao.CreateServiceRequest(request);
+        var events = containedRequests.SelectMany(r => ResourceUtils.GenerateEventsFrom(r, internalPatient));
+
         await this.eventDao.CreateEvents(events);
-        this.logger.LogDebug("Service Request created with ID: {Id}", serviceRequest.Id);
-        return serviceRequest;
+        this.logger.LogDebug("Service Request created with ID: {Id}", request.Id);
+        return request;
     }
 
     /// <inheritdoc/>>
@@ -90,5 +99,23 @@ public class ServiceRequestService : IServiceRequestService
 
         await this.eventDao.DeleteRelatedEvents(id);
         return await this.serviceRequestDao.DeleteServiceRequest(id);
+    }
+
+    private bool ValidateContainedResources(ServiceRequest serviceRequest, out List<ServiceRequest> serviceRequests)
+    {
+        serviceRequests = new List<ServiceRequest>();
+        foreach (var resource in serviceRequest.Contained)
+        {
+            if (resource is ServiceRequest request)
+            {
+                serviceRequests.Add(request);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

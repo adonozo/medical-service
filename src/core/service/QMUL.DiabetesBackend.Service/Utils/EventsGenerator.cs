@@ -53,10 +53,13 @@ internal class EventsGenerator
                 days = (endDate - startDate).Days + 1; // Period is end-date inclusive, thus, +1 day.
                 break;
             case Duration { Unit: "d" } duration:
-                days = duration.Value == null
-                    ? throw new InvalidOperationException("Duration is not defined")
-                    : (int)duration.Value;
-                startDate = this.resourceReference.StartDate?.UtcDateTime ?? DateTime.UtcNow;
+                (days, startDate) = GetDurationDays(duration.Value, 1);
+                break;
+            case Duration { Unit: "wk" } duration:
+                (days, startDate) = GetDurationDays(duration.Value, 7);
+                break;
+            case Duration { Unit: "mo" } duration:
+                (days, startDate) = GetDurationDays(duration.Value, 30);
                 break;
             default:
                 throw new InvalidOperationException("Dosage or occurrence does not have a valid timing");
@@ -75,6 +78,15 @@ internal class EventsGenerator
             1 when timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D => this.GenerateDailyEvents(days, startDate),
             _ => throw new InvalidOperationException("Dosage timing not supported yet. Please review the period.")
         };
+    }
+
+    private (int, DateTime) GetDurationDays(decimal? durationValue, int daysMultiplier)
+    {
+        var days = durationValue == null
+            ? throw new InvalidOperationException("Duration is not defined")
+            : (int)durationValue * daysMultiplier;
+        var startDate = this.resourceReference.StartDate?.UtcDateTime ?? DateTime.UtcNow;
+        return (days, startDate);
     }
 
     private IEnumerable<HealthEvent> GenerateDailyEvents(int days, DateTime startDate)
