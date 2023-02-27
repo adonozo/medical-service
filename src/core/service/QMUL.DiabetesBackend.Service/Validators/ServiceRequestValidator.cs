@@ -1,12 +1,13 @@
 namespace QMUL.DiabetesBackend.Service.Validators;
 
+using System.Linq;
 using FluentValidation;
 using Hl7.Fhir.Model;
 using Model.Constants;
 
 public class ServiceRequestValidator : ResourceValidatorBase<ServiceRequest>
 {
-    public ServiceRequestValidator()
+    public ServiceRequestValidator(bool validateContained = false)
     {
         RuleFor(request => request.Status)
             .NotNull();
@@ -30,5 +31,22 @@ public class ServiceRequestValidator : ResourceValidatorBase<ServiceRequest>
         Transform(request => request.Occurrence, occurrence => occurrence as Timing ?? new Timing())
             .NotEmpty()
             .SetValidator(new TimingValidator());
+
+        if (!validateContained)
+        {
+            return;
+        }
+
+        RuleFor(request => request.Contained)
+            .Cascade(CascadeMode.Stop)
+            .NotNull()
+            .NotEmpty()
+            .Must(contained => contained.All(r => r is ServiceRequest))
+            .WithMessage("Contained elements are not of type ServiceRequest");
+
+        RuleForEach(request => request.Contained.Select(r => (r as ServiceRequest) ?? new ServiceRequest()).ToArray())
+            .Cascade(CascadeMode.Stop)
+            .NotNull()
+            .SetValidator(new ServiceRequestValidator(true));
     }
 }
