@@ -33,6 +33,7 @@ public class ServiceRequestController : ControllerBase
         return this.OkOrNotFound(serviceRequest);
     }
 
+    // TODO no longer required? there is another one in carePlanController 
     [HttpPost("serviceRequests")]
     public async Task<IActionResult> CreateServiceRequest([FromBody] JObject request)
     {

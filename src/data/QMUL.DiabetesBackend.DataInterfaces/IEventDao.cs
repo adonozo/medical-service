@@ -15,9 +15,9 @@ public interface IEventDao
     /// <summary>
     /// Creates a series of <see cref="HealthEvent"/> 
     /// </summary>
-    /// <param name="events">The list of <see cref="HealthEvent"/> to insert.</param>
+    /// <param name="events">An array of <see cref="HealthEvent"/> to insert.</param>
     /// <returns>A boolean value to indicate if the list was inserted.</returns>
-    Task<bool> CreateEvents(IEnumerable<HealthEvent> events);
+    Task<bool> CreateEvents(List<HealthEvent> events);
 
     Task<bool> DeleteAllRelatedResources(string[] resourceIds);
 

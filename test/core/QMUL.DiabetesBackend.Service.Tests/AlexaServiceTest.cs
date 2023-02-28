@@ -267,7 +267,7 @@ public class AlexaServiceTest
                 Arg.Do<MedicationRequest>(med => medicationRequest = med))
             .Returns(Task.FromResult(true));
         eventDao.DeleteEventSeries(Arg.Any<string>()).Returns(true);
-        eventDao.CreateEvents(Arg.Any<IEnumerable<HealthEvent>>()).Returns(true);
+        eventDao.CreateEvents(Arg.Any<List<HealthEvent>>()).Returns(true);
         var expectedDate = DateTime.Now;
 
         // Act
@@ -299,7 +299,7 @@ public class AlexaServiceTest
         medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
             .Returns(medicationRequest);
         eventDao.DeleteEventSeries(Arg.Any<string>()).Returns(true);
-        eventDao.CreateEvents(Arg.Any<IEnumerable<HealthEvent>>()).Returns(true);
+        eventDao.CreateEvents(Arg.Any<List<HealthEvent>>()).Returns(true);
         var expectedDate = DateTime.Now;
 
         // Act
@@ -307,7 +307,7 @@ public class AlexaServiceTest
 
         // Assert
         await eventDao.Received(1).DeleteEventSeries(medicationRequestId);
-        await eventDao.Received(1).CreateEvents(Arg.Any<IEnumerable<HealthEvent>>());
+        await eventDao.Received(1).CreateEvents(Arg.Any<List<HealthEvent>>());
     }
 
     [Fact]
@@ -355,7 +355,7 @@ public class AlexaServiceTest
         medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
             .Returns(GetTestMedicationRequest(dosageId));
         eventDao.DeleteEventSeries(Arg.Any<string>()).Returns(true);
-        eventDao.CreateEvents(Arg.Any<IEnumerable<HealthEvent>>()).Throws(new Exception());
+        eventDao.CreateEvents(Arg.Any<List<HealthEvent>>()).Throws(new Exception());
 
         // Act
         var action = new Func<Task<bool>>(() =>

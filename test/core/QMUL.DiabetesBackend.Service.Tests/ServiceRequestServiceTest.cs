@@ -29,7 +29,7 @@ public class ServiceRequestServiceTest
         var serviceRequest = this.GetTestServiceRequest(patient.Id);
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
         serviceRequestDao.CreateServiceRequest(Arg.Any<ServiceRequest>()).Returns(serviceRequest);
-        eventDao.CreateEvents(Arg.Any<IEnumerable<HealthEvent>>()).Returns(true);
+        eventDao.CreateEvents(Arg.Any<List<HealthEvent>>()).Returns(true);
 
         // Act
         var result = await serviceRequestService.CreateServiceRequest(serviceRequest);

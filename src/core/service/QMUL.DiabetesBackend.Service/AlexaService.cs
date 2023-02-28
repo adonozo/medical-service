@@ -433,8 +433,8 @@ public class AlexaService : IAlexaService
 
     /// <summary>
     /// Sets the start date for a medication's request dosage.
-    /// Updates a list of health events that belongs to a medication request that has a specific dosage ID. To update
-    /// events, they are deleted and created again. 
+    /// Updates a list of health events that belongs to a medication request that has a specific dosage ID. Events are
+    /// deleted and created again. 
     /// </summary>
     /// <param name="patient">The <see cref="InternalPatient"/> related to the medication request</param>
     /// <param name="dosageId">The dosage ID to update. A medication request will be fetched using this value.</param>
@@ -486,6 +486,7 @@ public class AlexaService : IAlexaService
 
         serviceRequest.SetStartDate(startDate);
         await this.serviceRequestDao.UpdateServiceRequest(serviceRequestId, serviceRequest);
+        // TODO this is break because events must be generated for the contained resource (maybe move that logic into the events generator?)
         await this.UpdateHealthEvents(serviceRequest, patient);
     }
 

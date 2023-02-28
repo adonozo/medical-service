@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.Service.Utils;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
@@ -58,7 +59,7 @@ public static class ResourceUtils
         };
     }
 
-    public static IEnumerable<HealthEvent> GenerateEventsFrom(DomainResource request, InternalPatient patient) =>
+    public static List<HealthEvent> GenerateEventsFrom(DomainResource request, InternalPatient patient) =>
         request switch
         {
             ServiceRequest serviceRequest => GenerateEventsFrom(serviceRequest, patient),
@@ -72,7 +73,7 @@ public static class ResourceUtils
     /// <param name="request">The medication request</param>
     /// <param name="patient">The medication request's subject</param>
     /// <returns>A List of events for the medication request</returns>
-    public static IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request, InternalPatient patient)
+    public static List<HealthEvent> GenerateEventsFrom(MedicationRequest request, InternalPatient patient)
     {
         var events = new List<HealthEvent>();
         var isInsulin = request.HasInsulinFlag();
@@ -102,15 +103,8 @@ public static class ResourceUtils
     /// <param name="request">The medication request</param>
     /// <param name="patient">The medication request's subject</param>
     /// <returns>A List of events for the medication request</returns>
-    public static IEnumerable<HealthEvent> GenerateEventsFrom(ServiceRequest request, InternalPatient patient)
+    public static List<HealthEvent> GenerateEventsFrom(ServiceRequest request, InternalPatient patient)
     {
-        // Occurrence must be expressed as a timing instance
-        if (request.Occurrence is not Timing timing)
-        {
-            throw new InvalidOperationException("Service Request Occurrence must be a Timing instance");
-        }
-
-        var events = new List<HealthEvent>();
         var requestReference = new ResourceReference
         {
             EventType = EventType.Measurement,
@@ -120,9 +114,21 @@ public static class ResourceUtils
             StartDate = request.GetStartDate()?.UtcDateTime
         };
 
-        var eventsGenerator = new EventsGenerator(patient, timing, requestReference);
-        events.AddRange(eventsGenerator.GetEvents());
-        return events;
+        return GenerateEventsFrom(patient, request.Occurrence, requestReference);
+    }
+    
+    public static List<HealthEvent> GenerateEventsFrom(ServiceRequest parentServiceRequest, ServiceRequest containedRequest, InternalPatient patient)
+    {
+        var requestReference = new ResourceReference
+        {
+            EventType = EventType.Measurement,
+            ResourceId = parentServiceRequest.Id,
+            EventReferenceId = parentServiceRequest.Id,
+            Text = containedRequest.PatientInstruction,
+            StartDate = parentServiceRequest.GetStartDate()?.UtcDateTime
+        };
+
+        return GenerateEventsFrom(patient, containedRequest.Occurrence, requestReference);
     }
 
     /// <summary>
@@ -154,5 +160,17 @@ public static class ResourceUtils
         }
 
         return resource;
+    }
+
+    private static List<HealthEvent> GenerateEventsFrom(InternalPatient patient, DataType occurrence,
+        ResourceReference requestReference)
+    {
+        if (occurrence is not Timing timing)
+        {
+            throw new InvalidOperationException("ServiceRequest.Occurrence must be a Timing instance");
+        }
+
+        var eventsGenerator = new EventsGenerator(patient, timing, requestReference);
+        return eventsGenerator.GetEvents().ToList();
     }
 }

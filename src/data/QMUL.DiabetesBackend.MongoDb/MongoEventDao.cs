@@ -33,8 +33,14 @@ public class MongoEventDao : MongoDaoBase, IEventDao
     }
 
     /// <inheritdoc />
-    public async Task<bool> CreateEvents(IEnumerable<HealthEvent> events)
+    public async Task<bool> CreateEvents(List<HealthEvent> events)
     {
+        if (events.Count == 0)
+        {
+            this.logger.LogDebug("No health events added");
+            return true;
+        }
+
         this.logger.LogDebug("Creating health events");
         var mongoEvents = events.Select(this.mapper.Map<MongoEvent>).ToArray();
 

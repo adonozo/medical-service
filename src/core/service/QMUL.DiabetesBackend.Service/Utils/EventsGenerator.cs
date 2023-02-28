@@ -43,23 +43,23 @@ internal class EventsGenerator
     /// <exception cref="InvalidOperationException">If the timing is not properly configured</exception>
     public IEnumerable<HealthEvent> GetEvents()
     {
-        int days;
+        int durationInDays;
         DateTime startDate;
         switch (timing.Repeat.Bounds)
         {
             case Period bounds:
                 startDate = DateTime.Parse(bounds.Start);
                 var endDate = DateTime.Parse(bounds.End);
-                days = (endDate - startDate).Days + 1; // Period is end-date inclusive, thus, +1 day.
+                durationInDays = (endDate - startDate).Days + 1; // Period is end-date inclusive, thus, +1 day.
                 break;
             case Duration { Unit: "d" } duration:
-                (days, startDate) = GetDurationDays(duration.Value, 1);
+                (durationInDays, startDate) = GetDurationDays(duration.Value, 1);
                 break;
             case Duration { Unit: "wk" } duration:
-                (days, startDate) = GetDurationDays(duration.Value, 7);
+                (durationInDays, startDate) = GetDurationDays(duration.Value, 7);
                 break;
             case Duration { Unit: "mo" } duration:
-                (days, startDate) = GetDurationDays(duration.Value, 30);
+                (durationInDays, startDate) = GetDurationDays(duration.Value, 30);
                 break;
             default:
                 throw new InvalidOperationException("Dosage or occurrence does not have a valid timing");
@@ -67,15 +67,15 @@ internal class EventsGenerator
 
         if (timing.Repeat.DayOfWeek.Any())
         {
-            return this.GenerateWeaklyEvents(days, startDate, timing.Repeat.DayOfWeek);
+            return this.GenerateWeaklyEvents(durationInDays, startDate, timing.Repeat.DayOfWeek.ToArray());
         }
 
         // For now, only a period of 1 is supported; e.g., 3 times a day: frequency = 3, period = 1
         return timing.Repeat.Period switch
         {
             1 when timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D && timing.Repeat.Frequency > 1 => this
-                .GenerateEventsOnMultipleFrequency(days, startDate),
-            1 when timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D => this.GenerateDailyEvents(days, startDate),
+                .GenerateEventsOnMultipleFrequency(durationInDays, startDate),
+            1 when timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D => this.GenerateDailyEvents(durationInDays, startDate),
             _ => throw new InvalidOperationException("Dosage timing not supported yet. Please review the period.")
         };
     }
@@ -101,15 +101,14 @@ internal class EventsGenerator
         return events;
     }
 
-    private IEnumerable<HealthEvent> GenerateWeaklyEvents(int days, DateTime startDate,
-        IEnumerable<DaysOfWeek?> daysOfWeek)
+    private IEnumerable<HealthEvent> GenerateWeaklyEvents(int durationInDays, DateTime startDate,
+        DaysOfWeek?[] daysOfWeek)
     {
         var events = new List<HealthEvent>();
-        var daysOfWeeks = daysOfWeek as DaysOfWeek?[] ?? daysOfWeek.ToArray();
-        for (var i = 0; i < days; i++)
+        for (var i = 0; i < durationInDays; i++)
         {
             var day = startDate.AddDays(i).DayOfWeek;
-            if (daysOfWeeks.Any(item => item.ToDayOfWeek() == day))
+            if (daysOfWeek.Any(dayOfWeek => dayOfWeek.ToDayOfWeek() == day))
             {
                 events.AddRange(this.GenerateEventsOnSingleFrequency(startDate.AddDays(i)));
             }
@@ -161,10 +160,6 @@ internal class EventsGenerator
                 };
                 events.Add(healthEvent);
             }
-        }
-        else
-        {
-            throw new InvalidOperationException("Dosage does not have a valid frequency by day");
         }
 
         return events;

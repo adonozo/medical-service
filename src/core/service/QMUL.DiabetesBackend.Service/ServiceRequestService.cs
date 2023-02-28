@@ -46,10 +46,9 @@ public class ServiceRequestService : IServiceRequestService
             throw new ValidationException("Contained resources are not of type Service Request");
         }
 
-        // TODO validate that service request has contained service requests (and that those are valid too)
-        // TODO update GenerateEventsFrom to create events using the array. Need to solve the resource reference in the event
         request = await this.serviceRequestDao.CreateServiceRequest(request);
-        var events = containedRequests.SelectMany(r => ResourceUtils.GenerateEventsFrom(r, internalPatient));
+        var events = containedRequests.SelectMany(containedRequest => 
+            ResourceUtils.GenerateEventsFrom(request, containedRequest, internalPatient)).ToList();
 
         await this.eventDao.CreateEvents(events);
         this.logger.LogDebug("Service Request created with ID: {Id}", request.Id);
@@ -76,6 +75,11 @@ public class ServiceRequestService : IServiceRequestService
         var internalPatient = patient.ToInternalPatient();
 
         request.Id = id;
+        if (!this.ValidateContainedResources(request, out var containedRequests))
+        {
+            throw new ValidationException("Contained resources are not of type Service Request");
+        }
+
         var result = await this.serviceRequestDao.UpdateServiceRequest(id, request);
 
         if (!result)
@@ -84,7 +88,8 @@ public class ServiceRequestService : IServiceRequestService
         }
 
         await this.eventDao.DeleteRelatedEvents(id);
-        var events = ResourceUtils.GenerateEventsFrom(request, internalPatient);
+        var events = containedRequests.SelectMany(containedRequest => 
+            ResourceUtils.GenerateEventsFrom(request, containedRequest, internalPatient)).ToList();
         await this.eventDao.CreateEvents(events);
 
         return true;
