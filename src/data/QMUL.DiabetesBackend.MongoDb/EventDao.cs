@@ -14,18 +14,18 @@ using Models;
 using MongoDB.Driver;
 
 /// <summary>
-/// The Mongo Event Dao TODO rename to EventDao
+/// The Mongo Event Dao
 /// </summary>
-public class MongoEventDao : MongoDaoBase, IEventDao
+public class EventDao : MongoDaoBase, IEventDao
 {
     private readonly IMongoCollection<MongoEvent> eventCollection;
-    private readonly ILogger<MongoEventDao> logger;
+    private readonly ILogger<EventDao> logger;
     private readonly IMapper mapper;
 
     private const string CollectionName = "healthEvent";
     private const int DefaultLimit = 3;
 
-    public MongoEventDao(IMongoDatabase database, IMapper mapper, ILogger<MongoEventDao> logger) : base(database)
+    public EventDao(IMongoDatabase database, IMapper mapper, ILogger<EventDao> logger) : base(database)
     {
         this.logger = logger;
         this.mapper = mapper;

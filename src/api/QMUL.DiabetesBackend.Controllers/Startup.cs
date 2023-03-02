@@ -53,7 +53,7 @@ public class Startup
         });
         services.AddSingleton<IMedicationRequestDao, MedicationRequestDao>();
         services.AddSingleton<IMedicationDao, MedicationDao>();
-        services.AddSingleton<IEventDao, MongoEventDao>();
+        services.AddSingleton<IEventDao, EventDao>();
         services.AddSingleton<IPatientDao, PatientDao>();
         services.AddSingleton<IServiceRequestDao, ServiceRequestDao>();
         services.AddSingleton<IObservationDao, ObservationDao>();
