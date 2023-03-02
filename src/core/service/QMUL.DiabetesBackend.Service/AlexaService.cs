@@ -364,7 +364,7 @@ public class AlexaService : IAlexaService
         var uniqueDosageIds = new HashSet<string>();
         foreach (var item in events)
         {
-            uniqueRequestIds.Add(item.ResourceReference.ResourceId);
+            uniqueRequestIds.Add(item.ResourceReference.DomainResourceId);
             uniqueDosageIds.Add(item.ResourceReference.EventReferenceId);
         }
 
@@ -382,7 +382,7 @@ public class AlexaService : IAlexaService
     private async Task<IList<ServiceRequest>> GetServiceBundle(IEnumerable<HealthEvent> events)
     {
         var uniqueIds = new HashSet<string>();
-        uniqueIds.UnionWith(events.Select(item => item.ResourceReference.ResourceId).ToArray());
+        uniqueIds.UnionWith(events.Select(item => item.ResourceReference.DomainResourceId).ToArray());
         return await this.serviceRequestDao.GetServiceRequestsByIds(uniqueIds.ToArray());
     }
 

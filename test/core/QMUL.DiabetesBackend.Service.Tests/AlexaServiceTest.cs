@@ -389,7 +389,7 @@ public class AlexaServiceTest
             {
                 ResourceReference = new ResourceReference
                 {
-                    ResourceId = medicationId,
+                    DomainResourceId = medicationId,
                     EventReferenceId = dosageId
                 }
             }
@@ -429,9 +429,9 @@ public class AlexaServiceTest
         var serviceId2 = Guid.NewGuid().ToString();
         var events = new List<HealthEvent>
         {
-            new() { ResourceReference = new ResourceReference { ResourceId = serviceId1 } },
-            new() { ResourceReference = new ResourceReference { ResourceId = serviceId2 } },
-            new() { ResourceReference = new ResourceReference { ResourceId = serviceId1 } },
+            new() { ResourceReference = new ResourceReference { DomainResourceId = serviceId1 } },
+            new() { ResourceReference = new ResourceReference { DomainResourceId = serviceId2 } },
+            new() { ResourceReference = new ResourceReference { DomainResourceId = serviceId1 } },
         };
         var expectedIds = Array.Empty<string>();
         serviceRequestDao.GetServiceRequestsByIds(Arg.Do<string[]>(ids => expectedIds = ids))

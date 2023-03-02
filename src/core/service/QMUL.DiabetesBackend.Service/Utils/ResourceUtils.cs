@@ -83,7 +83,7 @@ public static class ResourceUtils
             var requestReference = new ResourceReference
             {
                 EventType = isInsulin ? EventType.InsulinDosage : EventType.MedicationDosage,
-                ResourceId = request.Id,
+                DomainResourceId = request.Id,
                 Text = dosage.Text,
                 EventReferenceId = dosage.ElementId,
                 StartDate = dosage.GetStartDate()?.UtcDateTime
@@ -108,7 +108,7 @@ public static class ResourceUtils
         var requestReference = new ResourceReference
         {
             EventType = EventType.Measurement,
-            ResourceId = request.Id,
+            DomainResourceId = request.Id,
             EventReferenceId = request.Id,
             Text = request.PatientInstruction,
             StartDate = request.GetStartDate()?.UtcDateTime
@@ -122,7 +122,7 @@ public static class ResourceUtils
         var requestReference = new ResourceReference
         {
             EventType = EventType.Measurement,
-            ResourceId = parentServiceRequest.Id,
+            DomainResourceId = parentServiceRequest.Id,
             EventReferenceId = parentServiceRequest.Id,
             Text = containedRequest.PatientInstruction,
             StartDate = parentServiceRequest.GetStartDate()?.UtcDateTime

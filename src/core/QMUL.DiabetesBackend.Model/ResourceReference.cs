@@ -16,8 +16,7 @@ public class ResourceReference
     /// <summary>
     /// The main DomainResource's ID. e.g., the medication or service request ID. 
     /// </summary>
-    // TODO rename to DomainResourceId
-    public string ResourceId { get; set; }
+    public string DomainResourceId { get; set; }
 
     /// <summary>
     /// The ID of the related resource, e.g., the dosageInstruction ID from the medication request.

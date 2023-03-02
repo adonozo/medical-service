@@ -309,7 +309,7 @@ public class EventsGeneratorTest
     {
         return new ResourceReference
         {
-            ResourceId = string.Empty,
+            DomainResourceId = string.Empty,
             EventReferenceId = string.Empty,
             EventType = EventType.MedicationDosage
         };

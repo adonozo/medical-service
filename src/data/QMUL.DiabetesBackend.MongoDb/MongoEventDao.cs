@@ -58,7 +58,7 @@ public class MongoEventDao : MongoDaoBase, IEventDao
             return true;
         }
 
-        var filter = Builders<MongoEvent>.Filter.In(@event => @event.ResourceReference.ResourceId, resourceIds);
+        var filter = Builders<MongoEvent>.Filter.In(@event => @event.ResourceReference.DomainResourceId, resourceIds);
         var result = await this.eventCollection.DeleteManyAsync(filter);
         return result.IsAcknowledged;
     }
@@ -68,7 +68,7 @@ public class MongoEventDao : MongoDaoBase, IEventDao
     {
         this.logger.LogDebug("Deleting events with a resource ID: {Id}", resourceId);
         var result = await this.eventCollection.DeleteManyAsync(request =>
-            request.ResourceReference.ResourceId == resourceId);
+            request.ResourceReference.DomainResourceId == resourceId);
         return result.IsAcknowledged;
     }
 
