@@ -33,7 +33,6 @@ public class CarePlanController : Controller
         this.carePlanValidator = carePlanValidator;
     }
 
-    // todo routes should be snake-case
     [HttpGet("carePlans/{id}")]
     public async Task<IActionResult> GetCarePlan([FromRoute] string id)
     {
