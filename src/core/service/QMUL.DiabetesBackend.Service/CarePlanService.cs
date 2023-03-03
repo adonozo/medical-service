@@ -104,6 +104,11 @@ public class CarePlanService : ICarePlanService
         var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(carePlanId),
             new NotFoundException());
 
+        if (carePlan.Status != RequestStatus.Draft)
+        {
+            throw new ValidationException($"Cannot add a service request to a care plan with status {carePlan.Status}");
+        }
+
         request.Subject.SetPatientReference(carePlan.Subject.GetIdFromReference());
         var newRequest = await this.serviceRequestService.CreateServiceRequest(request);
 
@@ -122,6 +127,11 @@ public class CarePlanService : ICarePlanService
     {
         var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(carePlanId),
             new NotFoundException());
+        
+        if (carePlan.Status != RequestStatus.Draft)
+        {
+            throw new ValidationException($"Cannot add a medication request to a care plan with status {carePlan.Status}");
+        }
 
         request.Subject.SetPatientReference(carePlan.Subject.GetIdFromReference());
         var newRequest = await this.medicationRequestService.CreateMedicationRequest(request);

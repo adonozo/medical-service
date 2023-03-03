@@ -58,7 +58,7 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
-    [HttpPut("carePlans/{id}/serviceRequests")]
+    [HttpPost("carePlans/{id}/serviceRequests")]
     public async Task<IActionResult> AddServiceRequest([FromRoute] string id, [FromBody] JObject request)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
@@ -69,7 +69,7 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
-    [HttpPut("carePlans/{id}/medicationRequests")]
+    [HttpPost("carePlans/{id}/medicationRequests")]
     public async Task<IActionResult> AddMedicationRequest([FromRoute] string id, [FromBody] JObject request)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
