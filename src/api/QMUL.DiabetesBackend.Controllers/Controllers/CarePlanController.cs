@@ -80,6 +80,16 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
+    [HttpPut("carePlans/{id}/activate")]
+    public async Task<IActionResult> ActivateCarePlan([FromRoute] string id)
+    {
+        return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+        {
+            var carePlanActivated = await this.carePlanService.ActivateCarePlan(id);
+            return carePlanActivated ? this.NoContent() : this.StatusCode(StatusCodes.Status500InternalServerError);
+        }, this.logger, this);
+    }
+
     [HttpDelete("carePlans/{id}")]
     public Task<IActionResult> DeleteCarePlan([FromRoute] string id)
     {

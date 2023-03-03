@@ -137,6 +137,15 @@ public class CarePlanService : ICarePlanService
         return await this.carePlanDao.UpdateCarePlan(carePlanId, carePlan);
     }
 
+    public async Task<bool> ActivateCarePlan(string carePlanId)
+    {
+        var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(carePlanId),
+            new NotFoundException());
+
+        carePlan.Status = RequestStatus.Active;
+        return await this.carePlanDao.UpdateCarePlan(carePlanId, carePlan);
+    }
+
     public async Task<bool> DeleteCarePlan(string id)
     {
         var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(id),
