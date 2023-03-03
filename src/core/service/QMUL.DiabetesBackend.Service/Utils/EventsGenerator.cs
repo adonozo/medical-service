@@ -38,6 +38,7 @@ internal class EventsGenerator
     /// <summary>
     /// Creates a list of <see cref="HealthEvent"/> based on a timing instance, a patient and a resource reference.
     /// For instance, a medication request for 14 days - daily would produce 14 health events.
+    /// If the timing is 'duration' and resource doesn't have a start date, no event will be generated
     /// </summary>
     /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="HealthEvent"/> corresponding to the timing.</returns>
     /// <exception cref="InvalidOperationException">If the timing is not properly configured</exception>
@@ -82,11 +83,15 @@ internal class EventsGenerator
 
     private (int, DateTime) GetDurationDays(decimal? durationValue, int daysMultiplier)
     {
+        if (!this.resourceReference.StartDate.HasValue)
+        {
+            return (0, DateTime.UtcNow);
+        }
+
         var days = durationValue == null
             ? throw new InvalidOperationException("Duration is not defined")
             : (int)durationValue * daysMultiplier;
-        var startDate = this.resourceReference.StartDate?.UtcDateTime ?? DateTime.UtcNow;
-        return (days, startDate);
+        return (days, this.resourceReference.StartDate.Value.UtcDateTime);
     }
 
     private IEnumerable<HealthEvent> GenerateDailyEvents(int days, DateTime startDate)
