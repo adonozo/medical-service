@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
 using Model.Enums;
+using Model.Exceptions;
 using Model.Extensions;
 using ResourceReference = Model.ResourceReference;
 
@@ -105,6 +106,7 @@ public static class ResourceUtils
     /// <returns>A List of events for the medication request</returns>
     public static List<HealthEvent> GenerateEventsFrom(ServiceRequest request, InternalPatient patient)
     {
+        var events = new List<HealthEvent>();
         var requestReference = new ResourceReference
         {
             EventType = EventType.Measurement,
@@ -113,22 +115,18 @@ public static class ResourceUtils
             Text = request.PatientInstruction,
             StartDate = request.GetStartDate()?.UtcDateTime
         };
-
-        return GenerateEventsFrom(patient, request.Occurrence, requestReference);
-    }
-    
-    public static List<HealthEvent> GenerateEventsFrom(ServiceRequest parentServiceRequest, ServiceRequest containedRequest, InternalPatient patient)
-    {
-        var requestReference = new ResourceReference
+        
+        request.Contained.ForEach(resource =>
         {
-            EventType = EventType.Measurement,
-            DomainResourceId = parentServiceRequest.Id,
-            EventReferenceId = parentServiceRequest.Id,
-            Text = containedRequest.PatientInstruction,
-            StartDate = parentServiceRequest.GetStartDate()?.UtcDateTime
-        };
+            if (resource is not ServiceRequest serviceRequest)
+            {
+                throw new ValidationException("Contained resources are not of type Service Request");
+            }
 
-        return GenerateEventsFrom(patient, containedRequest.Occurrence, requestReference);
+            events.AddRange(GenerateEventsFrom(patient, serviceRequest.Occurrence, requestReference));
+        });
+
+        return events;
     }
 
     /// <summary>

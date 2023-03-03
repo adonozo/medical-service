@@ -1,8 +1,6 @@
 namespace QMUL.DiabetesBackend.Service;
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using DataInterfaces;
 using Hl7.Fhir.Model;
@@ -41,15 +39,9 @@ public class ServiceRequestService : IServiceRequestService
         var internalPatient = patient.ToInternalPatient();
 
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
-        if (!this.ValidateContainedResources(request, out var containedRequests))
-        {
-            throw new ValidationException("Contained resources are not of type Service Request");
-        }
-
         request = await this.serviceRequestDao.CreateServiceRequest(request);
-        var events = containedRequests.SelectMany(containedRequest => 
-            ResourceUtils.GenerateEventsFrom(request, containedRequest, internalPatient)).ToList();
 
+        var events = ResourceUtils.GenerateEventsFrom(request, internalPatient);
         await this.eventDao.CreateEvents(events);
         this.logger.LogDebug("Service Request created with ID: {Id}", request.Id);
         return request;
@@ -75,21 +67,14 @@ public class ServiceRequestService : IServiceRequestService
         var internalPatient = patient.ToInternalPatient();
 
         request.Id = id;
-        if (!this.ValidateContainedResources(request, out var containedRequests))
-        {
-            throw new ValidationException("Contained resources are not of type Service Request");
-        }
-
         var result = await this.serviceRequestDao.UpdateServiceRequest(id, request);
-
         if (!result)
         {
             return false;
         }
 
         await this.eventDao.DeleteRelatedEvents(id);
-        var events = containedRequests.SelectMany(containedRequest => 
-            ResourceUtils.GenerateEventsFrom(request, containedRequest, internalPatient)).ToList();
+        var events = ResourceUtils.GenerateEventsFrom(request, internalPatient);
         await this.eventDao.CreateEvents(events);
 
         return true;
@@ -104,23 +89,5 @@ public class ServiceRequestService : IServiceRequestService
 
         await this.eventDao.DeleteRelatedEvents(id);
         return await this.serviceRequestDao.DeleteServiceRequest(id);
-    }
-
-    private bool ValidateContainedResources(ServiceRequest serviceRequest, out List<ServiceRequest> serviceRequests)
-    {
-        serviceRequests = new List<ServiceRequest>();
-        foreach (var resource in serviceRequest.Contained)
-        {
-            if (resource is ServiceRequest request)
-            {
-                serviceRequests.Add(request);
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

@@ -486,7 +486,6 @@ public class AlexaService : IAlexaService
 
         serviceRequest.SetStartDate(startDate);
         await this.serviceRequestDao.UpdateServiceRequest(serviceRequestId, serviceRequest);
-        // TODO this is break because events must be generated for the contained resource (maybe move that logic into the events generator?)
         await this.UpdateHealthEvents(serviceRequest, patient);
     }
 
