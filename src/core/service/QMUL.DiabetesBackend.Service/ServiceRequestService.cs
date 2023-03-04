@@ -64,8 +64,8 @@ public class ServiceRequestService : IServiceRequestService
 
         var internalPatient = await this.dataGatherer.GetReferenceInternalPatientOrThrow(request.Subject);
         request.Id = id;
-        var result = await this.serviceRequestDao.UpdateServiceRequest(id, request);
-        if (!result)
+        var updateResult = await this.serviceRequestDao.UpdateServiceRequest(id, request);
+        if (!updateResult)
         {
             return false;
         }
@@ -80,9 +80,13 @@ public class ServiceRequestService : IServiceRequestService
     /// <inheritdoc/>>
     public async Task<bool> DeleteServiceRequest(string id)
     {
-        var serviceNotFoundException = new NotFoundException();
-        await ResourceUtils.GetResourceOrThrowAsync(async () =>
-            await this.serviceRequestDao.GetServiceRequest(id), serviceNotFoundException);
+        var serviceRequest = await ResourceUtils.GetResourceOrThrowAsync(async () =>
+            await this.serviceRequestDao.GetServiceRequest(id), new NotFoundException());
+        
+        if (await this.dataGatherer.ResourceHasActiveCarePlan(serviceRequest))
+        {
+            throw new ValidationException($"Service request {id} is part of an active care plan");
+        }
 
         await this.eventDao.DeleteRelatedEvents(id);
         return await this.serviceRequestDao.DeleteServiceRequest(id);
