@@ -7,6 +7,7 @@ using Hl7.Fhir.Model;
 using Model;
 using Model.Extensions;
 using ServiceInterfaces.Utils;
+using ResourceReference = Hl7.Fhir.Model.ResourceReference;
 
 public class DataGatherer : IDataGatherer
 {
@@ -19,17 +20,23 @@ public class DataGatherer : IDataGatherer
         this.carePlanDao = carePlanDao;
     }
 
-    public async Task<Patient> GetPatientOrThrow(string patientId)
+    public async Task<InternalPatient> GetReferenceInternalPatientOrThrow(ResourceReference reference)
     {
+        var patient = await this.GetReferencePatientOrThrow(reference);
+        return patient.ToInternalPatient();
+    }
+
+    public async Task<Patient> GetReferencePatientOrThrow(ResourceReference reference)
+    {
+        var patientId = reference.GetIdFromReference();
+        if (string.IsNullOrEmpty(patientId))
+        {
+            throw new ValidationException("Subject is not a Patient reference");
+        }
+
         var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
         return await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
-    }
-
-    public async Task<InternalPatient> GetInternalPatientOrThrow(string patientId)
-    {
-        var patient = await this.GetPatientOrThrow(patientId);
-        return patient.ToInternalPatient();
     }
 
     public async Task<bool> ResourceHasActiveCarePlan(DomainResource resource)

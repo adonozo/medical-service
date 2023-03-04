@@ -6,8 +6,8 @@ using DataInterfaces;
 using Hl7.Fhir.Model;
 using Microsoft.Extensions.Logging;
 using Model.Exceptions;
-using Model.Extensions;
 using ServiceInterfaces;
+using ServiceInterfaces.Utils;
 using Utils;
 
 /// <summary>
@@ -16,28 +16,26 @@ using Utils;
 public class ServiceRequestService : IServiceRequestService
 {
     private readonly IServiceRequestDao serviceRequestDao;
-    private readonly IPatientDao patientDao;
     private readonly IEventDao eventDao;
+    private readonly IDataGatherer dataGatherer;
     private readonly ILogger<ServiceRequestService> logger;
 
-    public ServiceRequestService(IServiceRequestDao serviceRequestDao, IPatientDao patientDao, IEventDao eventDao,
+    public ServiceRequestService(
+        IServiceRequestDao serviceRequestDao,
+        IEventDao eventDao,
+        IDataGatherer dataGatherer,
         ILogger<ServiceRequestService> logger)
     {
         this.serviceRequestDao = serviceRequestDao;
-        this.patientDao = patientDao;
         this.eventDao = eventDao;
+        this.dataGatherer = dataGatherer;
         this.logger = logger;
     }
 
     /// <inheritdoc/>>
     public async Task<ServiceRequest> CreateServiceRequest(ServiceRequest request)
     {
-        var patientId = request.Subject.GetIdFromReference();
-        var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
-        var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
-            await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
-        var internalPatient = patient.ToInternalPatient();
-
+        var internalPatient = await this.dataGatherer.GetReferenceInternalPatientOrThrow(request.Subject);
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
         request = await this.serviceRequestDao.CreateServiceRequest(request);
 
@@ -56,16 +54,15 @@ public class ServiceRequestService : IServiceRequestService
     /// <inheritdoc/>>
     public async Task<bool> UpdateServiceRequest(string id, ServiceRequest request)
     {
-        var serviceNotFoundException = new NotFoundException();
         await ResourceUtils.GetResourceOrThrowAsync(async () =>
-            await this.serviceRequestDao.GetServiceRequest(id), serviceNotFoundException);
+            await this.serviceRequestDao.GetServiceRequest(id), new NotFoundException());
 
-        var patientId = request.Subject.GetIdFromReference();
-        var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
-        var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
-            await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
-        var internalPatient = patient.ToInternalPatient();
+        if (await this.dataGatherer.ResourceHasActiveCarePlan(request))
+        {
+            throw new ValidationException($"Service request {id} is part of an active care plan");
+        }
 
+        var internalPatient = await this.dataGatherer.GetReferenceInternalPatientOrThrow(request.Subject);
         request.Id = id;
         var result = await this.serviceRequestDao.UpdateServiceRequest(id, request);
         if (!result)

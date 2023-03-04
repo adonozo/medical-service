@@ -110,6 +110,7 @@ public class CarePlanService : ICarePlanService
         }
 
         request.Subject.SetPatientReference(carePlan.Subject.GetIdFromReference());
+        request.SetCarePlanReference(carePlanId);
         var newRequest = await this.serviceRequestService.CreateServiceRequest(request);
 
         var activity = new CarePlan.ActivityComponent
@@ -134,6 +135,7 @@ public class CarePlanService : ICarePlanService
         }
 
         request.Subject.SetPatientReference(carePlan.Subject.GetIdFromReference());
+        request.SetCarePlanReference(carePlanId);
         var newRequest = await this.medicationRequestService.CreateMedicationRequest(request);
 
         var activity = new CarePlan.ActivityComponent

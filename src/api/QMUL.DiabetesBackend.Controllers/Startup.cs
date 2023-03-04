@@ -14,8 +14,10 @@ using MongoDb;
 using MongoDB.Driver;
 using MongoDb.Mapper;
 using Service;
+using Service.Utils;
 using Service.Validators;
 using ServiceInterfaces;
+using ServiceInterfaces.Utils;
 using ServiceInterfaces.Validators;
 using Utils;
 using MongoDatabaseSettings = Model.MongoDatabaseSettings;
@@ -59,6 +61,7 @@ public class Startup
         services.AddSingleton<IObservationDao, ObservationDao>();
         services.AddSingleton<ICarePlanDao, CarePlanDao>();
 
+        services.AddSingleton<IDataGatherer, DataGatherer>();
         services.AddSingleton<IMedicationService, MedicationService>();
         services.AddSingleton<IPatientService, PatientService>();
         services.AddSingleton<IMedicationRequestService, MedicationRequestService>();

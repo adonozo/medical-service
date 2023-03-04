@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Model;
 using NSubstitute;
 using Service;
+using ServiceInterfaces.Utils;
 using Xunit;
 using ResourceReference = Hl7.Fhir.Model.ResourceReference;
 using Task = System.Threading.Tasks.Task;
@@ -20,14 +21,14 @@ public class ServiceRequestServiceTest
     {
         // Arrange
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var patientDao = Substitute.For<IPatientDao>();
+        var dataGatherer = Substitute.For<IDataGatherer>();
         var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
-        var serviceRequestService = new ServiceRequestService(serviceRequestDao, patientDao, eventDao, logger);
+        var serviceRequestService = new ServiceRequestService(serviceRequestDao, eventDao, dataGatherer, logger);
 
-        var patient = TestUtils.GetStubPatient();
+        var patient = TestUtils.GetStubInternalPatient();
         var serviceRequest = this.GetTestServiceRequest(patient.Id);
-        patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
+        dataGatherer.GetReferenceInternalPatientOrThrow(Arg.Any<ResourceReference>()).Returns(patient);
         serviceRequestDao.CreateServiceRequest(Arg.Any<ServiceRequest>()).Returns(serviceRequest);
         eventDao.CreateEvents(Arg.Any<List<HealthEvent>>()).Returns(true);
 
@@ -44,10 +45,10 @@ public class ServiceRequestServiceTest
     {
         // Arrange
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var patientDao = Substitute.For<IPatientDao>();
+        var dataGatherer = Substitute.For<IDataGatherer>();
         var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
-        var serviceRequestService = new ServiceRequestService(serviceRequestDao, patientDao, eventDao, logger);
+        var serviceRequestService = new ServiceRequestService(serviceRequestDao, eventDao, dataGatherer, logger);
 
         serviceRequestDao.GetServiceRequest(Arg.Any<string>()).Returns(new ServiceRequest());
 
@@ -64,15 +65,15 @@ public class ServiceRequestServiceTest
     {
         // Arrange
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var patientDao = Substitute.For<IPatientDao>();
+        var dataGatherer = Substitute.For<IDataGatherer>();
         var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
 
-        var patient = TestUtils.GetStubPatient();
+        var patient = TestUtils.GetStubInternalPatient();
         var serviceRequest = this.GetTestServiceRequest(patient.Id);
 
-        var serviceRequestService = new ServiceRequestService(serviceRequestDao, patientDao, eventDao, logger);
-        patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
+        var serviceRequestService = new ServiceRequestService(serviceRequestDao, eventDao, dataGatherer, logger);
+        dataGatherer.GetReferenceInternalPatientOrThrow(Arg.Any<ResourceReference>()).Returns(patient);
         serviceRequestDao.GetServiceRequest(Arg.Any<string>()).Returns(new ServiceRequest());
         serviceRequestDao.UpdateServiceRequest(Arg.Any<string>(), Arg.Any<ServiceRequest>())
             .Returns(Task.FromResult(true));
@@ -91,11 +92,12 @@ public class ServiceRequestServiceTest
     {
         // Arrange
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var patientDao = Substitute.For<IPatientDao>();
+        var dataGatherer = Substitute.For<IDataGatherer>();
         var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
 
-        var serviceRequestService = new ServiceRequestService(serviceRequestDao, patientDao, eventDao, logger);
+        var serviceRequestService = new ServiceRequestService(serviceRequestDao, eventDao, dataGatherer, logger);
+
         serviceRequestDao.GetServiceRequest(Arg.Any<string>()).Returns(new ServiceRequest());
         serviceRequestDao.DeleteServiceRequest(Arg.Any<string>()).Returns(true);
 
