@@ -32,7 +32,9 @@ public interface ICarePlanService
 
     Task<bool> AddMedicationRequest(string carePlanId, MedicationRequest request);
 
-    Task<bool> ActivateCarePlan(string carePlanId);
+    Task<bool> ActivateCarePlan(string id);
+
+    Task<bool> RevokeCarePlan(string id);
 
     Task<bool> DeleteCarePlan(string id);
 
