@@ -19,6 +19,11 @@ public interface IEventDao
     /// <returns>A boolean value to indicate if the list was inserted.</returns>
     Task<bool> CreateEvents(List<HealthEvent> events);
 
+    /// <summary>
+    /// Deletes all events that match the array of Resource IDs
+    /// </summary>
+    /// <param name="resourceIds">The array of resource IDs</param>
+    /// <returns>A boolean value to indicate if the delete was successful</returns>
     Task<bool> DeleteAllRelatedResources(string[] resourceIds);
 
     /// <summary>

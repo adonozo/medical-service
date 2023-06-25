@@ -110,6 +110,7 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
         return result.IsAcknowledged;
     }
     
+    /// <inheritdoc />
     public async Task<bool> DeleteServiceRequests(string[] ids)
     {
         var result = await this.serviceRequestCollection.DeleteManyAsync(Helpers.GetInIdsFilter(ids));

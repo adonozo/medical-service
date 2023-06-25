@@ -55,6 +55,11 @@ public interface IMedicationRequestDao
     /// <returns>True if the medication request was deleted. False if it was not deleted or it does not exist.</returns>
     Task<bool> DeleteMedicationRequest(string id);
 
+    /// <summary>
+    /// Deletes multiple medication requests given an array of IDs
+    /// </summary>
+    /// <param name="ids">The array of medication request IDs to delete</param>
+    /// <returns>A boolean value to indicate the delete result</returns>
     Task<bool> DeleteMedicationRequests(string[] ids);
 
     /// <summary>

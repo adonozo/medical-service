@@ -54,6 +54,11 @@ public interface IServiceRequestDao
     /// <returns>A boolean with the result.</returns>
     Task<bool> DeleteServiceRequest(string id);
 
+    /// <summary>
+    /// Deletes multiple service requests given an array of IDs
+    /// </summary>
+    /// <param name="ids">The array of service requests IDs to delete</param>
+    /// <returns>A boolean value to indicate if all of the deletes were successful</returns>
     Task<bool> DeleteServiceRequests(string[] ids);
 
     /// <summary>

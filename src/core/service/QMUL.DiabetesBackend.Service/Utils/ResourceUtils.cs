@@ -149,6 +149,14 @@ public static class ResourceUtils
         };
     }
 
+    /// <summary>
+    /// Tries to get a <see cref="Resource"/>, throws a given exception if the resource is null
+    /// </summary>
+    /// <param name="action">The async action to get the resource from</param>
+    /// <param name="exception">The exception to throw if the resource does not exist</param>
+    /// <typeparam name="T">A <see cref="Resource"/> type</typeparam>
+    /// <returns>A <see cref="Resource"/></returns>
+    /// <exception cref="Exception">If the action does not return a resource</exception>
     public static async Task<T> GetResourceOrThrowAsync<T>(Func<Task<T?>> action, Exception exception) where T : Resource
     {
         var resource = await action.Invoke();

@@ -99,6 +99,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
         return result.IsAcknowledged;
     }
 
+    /// <inheritdoc />
     public async Task<bool> DeleteMedicationRequests(string[] ids)
     {
         var result = await this.medicationRequestCollection.DeleteManyAsync(Helpers.GetInIdsFilter(ids));

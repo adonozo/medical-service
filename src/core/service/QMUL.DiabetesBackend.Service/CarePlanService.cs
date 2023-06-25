@@ -64,21 +64,8 @@ public class CarePlanService : ICarePlanService
     }
 
     /// <inheritdoc/>
-    public async Task<Bundle?> GetCarePlanFor(string patientIdOrEmail)
-    {
-        this.logger.LogTrace("Getting care plans for {IdOrEmail}", patientIdOrEmail);
-        var patient = await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail);
-        if (patient is null)
-        {
-            return null;
-        }
-
-        var medicationRequests = await this.medicationRequestDao.GetMedicationRequestFor(patient.Id);
-        var serviceRequests = await this.serviceRequestDao.GetServiceRequestsFor(patient.Id);
-        return this.GetSearchBundle(medicationRequests, serviceRequests);
-    }
-
-    public async Task<PaginatedResult<Bundle>> GetCarePlansFor(string patientIdOrEmail, PaginationRequest paginationRequest)
+    public async Task<PaginatedResult<Bundle>> GetCarePlansFor(string patientIdOrEmail,
+        PaginationRequest paginationRequest)
     {
         await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), new NotFoundException());
@@ -87,6 +74,7 @@ public class CarePlanService : ICarePlanService
         return carePlans.ToBundleResult();
     }
 
+    /// <inheritdoc/>
     public async Task<CarePlan> CreateCarePlan(CarePlan carePlan)
     {
         var patientId = carePlan.Subject.GetIdFromReference();
@@ -99,6 +87,7 @@ public class CarePlanService : ICarePlanService
         return await this.carePlanDao.CreateCarePlan(carePlan);
     }
 
+    /// <inheritdoc/>
     public async Task<bool> AddServiceRequest(string carePlanId, ServiceRequest request)
     {
         var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(carePlanId),
@@ -115,7 +104,7 @@ public class CarePlanService : ICarePlanService
 
         var activity = new CarePlan.ActivityComponent
         {
-            Reference = newRequest.GetReference()
+            Reference = newRequest.CreateReference()
         };
 
         carePlan.Activity ??= new List<CarePlan.ActivityComponent>();
@@ -124,14 +113,16 @@ public class CarePlanService : ICarePlanService
         return await this.carePlanDao.UpdateCarePlan(carePlanId, carePlan);
     }
 
+    /// <inheritdoc/>
     public async Task<bool> AddMedicationRequest(string carePlanId, MedicationRequest request)
     {
         var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(carePlanId),
             new NotFoundException());
-        
+
         if (carePlan.Status != RequestStatus.Draft)
         {
-            throw new ValidationException($"Cannot add a medication request to a care plan with status {carePlan.Status}");
+            throw new ValidationException(
+                $"Cannot add a medication request to a care plan with status {carePlan.Status}");
         }
 
         request.Subject.SetPatientReference(carePlan.Subject.GetIdFromReference());
@@ -140,7 +131,7 @@ public class CarePlanService : ICarePlanService
 
         var activity = new CarePlan.ActivityComponent
         {
-            Reference = newRequest.GetReference()
+            Reference = newRequest.CreateReference()
         };
 
         carePlan.Activity ??= new List<CarePlan.ActivityComponent>();
@@ -149,24 +140,37 @@ public class CarePlanService : ICarePlanService
         return await this.carePlanDao.UpdateCarePlan(carePlanId, carePlan);
     }
 
+    /// <inheritdoc/>
     public async Task<bool> ActivateCarePlan(string id)
     {
         var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(id),
             new NotFoundException());
 
+        if (carePlan.Status != RequestStatus.Draft)
+        {
+            throw new ValidationException($"Care plan with ID {id} is not in {RequestStatus.Draft} status");
+        }
+
         carePlan.Status = RequestStatus.Active;
         return await this.carePlanDao.UpdateCarePlan(id, carePlan);
     }
 
+    /// <inheritdoc/>
     public async Task<bool> RevokeCarePlan(string id)
     {
         var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(id),
             new NotFoundException());
 
+        if (carePlan.Status == RequestStatus.Completed)
+        {
+            throw new ValidationException($"Care plan with ID {id} is not in {RequestStatus.Completed} status");
+        }
+
         carePlan.Status = RequestStatus.Revoked;
         return await this.carePlanDao.UpdateCarePlan(id, carePlan);
     }
 
+    /// <inheritdoc/>
     public async Task<bool> DeleteCarePlan(string id)
     {
         var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(id),
@@ -184,10 +188,11 @@ public class CarePlanService : ICarePlanService
         await this.eventDao.DeleteAllRelatedResources(resourceIds.ToArray());
         await this.medicationRequestDao.DeleteMedicationRequests(medicationRequestsIds);
         await this.serviceRequestDao.DeleteServiceRequests(serviceRequestIds);
-        
+
         return await this.carePlanDao.DeleteCarePlan(id);
     }
 
+    /// <inheritdoc/>
     public async Task<bool> DeleteServiceRequest(string carePlanId, string serviceRequestId)
     {
         var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(carePlanId),
@@ -200,6 +205,7 @@ public class CarePlanService : ICarePlanService
         return await this.carePlanDao.UpdateCarePlan(carePlanId, carePlan);
     }
 
+    /// <inheritdoc/>
     public async Task<bool> DeleteMedicationRequest(string carePlanId, string medicationRequestId)
     {
         var carePlan = await ResourceUtils.GetResourceOrThrowAsync(() => this.carePlanDao.GetCarePlan(carePlanId),
@@ -212,11 +218,13 @@ public class CarePlanService : ICarePlanService
         return await this.carePlanDao.UpdateCarePlan(carePlanId, carePlan);
     }
 
+    /// <inheritdoc/>
     public Task<CarePlan?> GetCarePlan(string id)
     {
         return this.carePlanDao.GetCarePlan(id);
     }
 
+    /// <inheritdoc/>
     public async Task<Bundle?> GetDetailedCarePan(string id)
     {
         var carePlan = await this.carePlanDao.GetCarePlan(id);
@@ -236,21 +244,26 @@ public class CarePlanService : ICarePlanService
             .Select(reference => reference.GetIdFromReference())
             .ToArray();
         var serviceRequests = await this.serviceRequestDao.GetServiceRequestsByIds(serviceRequestIds);
-        return this.GetSearchBundle(medicationRequests, serviceRequests);
+        return this.GetSearchBundle(medicationRequests, serviceRequests, carePlan);
     }
 
     private Bundle GetSearchBundle(ICollection<MedicationRequest> medicationRequests,
-        ICollection<ServiceRequest> serviceRequests)
+        ICollection<ServiceRequest> serviceRequests, CarePlan? carePlan = null)
     {
         var entries = new List<Resource>(medicationRequests);
         entries.AddRange(serviceRequests);
+        if (carePlan is not null)
+        {
+            entries.Add(carePlan);
+        }
 
         this.logger.LogTrace("Found {Count} medication requests", medicationRequests.Count);
         this.logger.LogTrace("Found {Count} service requests", serviceRequests.Count);
         return ResourceUtils.GenerateSearchBundle(entries);
     }
 
-    private (List<ResourceReference> MedicationReferences, List<ResourceReference> ServiceReferences) GetReferences(CarePlan carePlan)
+    private (List<ResourceReference> MedicationReferences, List<ResourceReference> ServiceReferences) GetReferences(
+        CarePlan carePlan)
     {
         var medicationRequestsReferences = new List<ResourceReference>();
         var serviceRequestsReferences = new List<ResourceReference>();

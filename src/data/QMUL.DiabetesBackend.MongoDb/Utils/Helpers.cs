@@ -37,7 +37,12 @@ public static class Helpers
         var objectId = ObjectId.TryParse(id, out var parsedId) ? parsedId : ObjectId.Empty;
         return Builders<BsonDocument>.Filter.Eq("_id", objectId);
     }
-    
+
+    /// <summary>
+    /// Gets a <see cref="FieldDefinition{TDocument}"/> to filter documents from list of IDs, using the '_id' field
+    /// </summary>
+    /// <param name="ids">The list of IDs to folter</param>
+    /// <returns>A <see cref="FilterDefinition{TDocument}"/> to use in a query</returns>
     public static FilterDefinition<BsonDocument> GetInIdsFilter(string[] ids)
     {
         var objectIds = ids.Select(id => new ObjectId(id));

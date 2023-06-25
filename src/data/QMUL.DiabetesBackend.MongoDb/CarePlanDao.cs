@@ -17,11 +17,13 @@ public class CarePlanDao : MongoDaoBase, ICarePlanDao
 
     private readonly IMongoCollection<BsonDocument> carePlanCollection;
 
+    /// <inheritdoc/>
     public CarePlanDao(IMongoDatabase database) : base(database)
     {
         this.carePlanCollection = this.Database.GetCollection<BsonDocument>(CollectionName);
     }
 
+    /// <inheritdoc/>
     public async Task<CarePlan> CreateCarePlan(CarePlan carePlan)
     {
         var document = await Helpers.ToBsonDocumentAsync(carePlan);
@@ -33,6 +35,7 @@ public class CarePlanDao : MongoDaoBase, ICarePlanDao
         return await Helpers.ToResourceAsync<CarePlan>(document);
     }
 
+    /// <inheritdoc/>
     public async Task<PaginatedResult<IEnumerable<Resource>>> GetCarePlans(string patientId,
         PaginationRequest paginationRequest)
     {
@@ -53,6 +56,7 @@ public class CarePlanDao : MongoDaoBase, ICarePlanDao
         return await Helpers.GetPaginatedResult(this.carePlanCollection, searchFilter, carePlans);
     }
 
+    /// <inheritdoc/>
     public async Task<CarePlan?> GetCarePlan(string id)
     {
         var document = await this.carePlanCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
@@ -64,6 +68,7 @@ public class CarePlanDao : MongoDaoBase, ICarePlanDao
         return await Helpers.ToResourceAsync<CarePlan>(document);
     }
 
+    /// <inheritdoc/>
     public async Task<bool> UpdateCarePlan(string id, CarePlan carePlan)
     {
         var document = await Helpers.ToBsonDocumentAsync(carePlan);
@@ -72,6 +77,7 @@ public class CarePlanDao : MongoDaoBase, ICarePlanDao
         return result.IsAcknowledged;
     }
 
+    /// <inheritdoc/>
     public async Task<bool> DeleteCarePlan(string id)
     {
         var result = await this.carePlanCollection.DeleteOneAsync(Helpers.GetByIdFilter(id));

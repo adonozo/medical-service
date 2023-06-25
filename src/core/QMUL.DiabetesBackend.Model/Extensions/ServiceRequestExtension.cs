@@ -31,7 +31,13 @@ public static class ServiceRequestExtension
         serviceRequest.SetExtension(Extensions.ServiceRequestStartDate, fhirDate);
     }
 
-    public static ResourceReference GetReference(this ServiceRequest serviceRequest)
+    /// <summary>
+    /// Creates a <see cref="ResourceReference"/> for a <see cref="ServiceRequest"/>. The reference contains the
+    /// service request path and the service request ID
+    /// </summary>
+    /// <param name="serviceRequest">The <see cref="ServiceRequest"/> to create the reference for</param>
+    /// <returns>A <see cref="ResourceReference"/></returns>
+    public static ResourceReference CreateReference(this ServiceRequest serviceRequest)
     {
         return new ResourceReference
         {
