@@ -76,18 +76,20 @@ public class ResourceUtilsTest
                 PeriodUnit = Timing.UnitsOfTime.D,
                 Period = 1,
                 Frequency = 1,
-                Bounds = new Duration
-                {
-                    Unit = "d",
-                    Value = 10
-                },
+                Bounds = new Period(new FhirDateTime(2023, 01, 01), new FhirDateTime(2023, 01, 10)),
                 TimeOfDay = new[] { "10:00" }
             }
         };
-        var serviceRequest = new ServiceRequest
+        var contained = new ServiceRequest
         {
             Id = Guid.NewGuid().ToString(),
             Occurrence = timing
+        };
+
+        var serviceRequest = new ServiceRequest
+        {
+            Id = Guid.NewGuid().ToString(),
+            Contained = new List<Resource> { contained }
         };
 
         // Act
@@ -103,14 +105,20 @@ public class ResourceUtilsTest
     {
         // Arrange
         var patient = TestUtils.GetStubInternalPatient();
-        var serviceRequest = new ServiceRequest
+        var contained = new ServiceRequest
         {
             Id = Guid.NewGuid().ToString(),
             Occurrence = new Period
             {
                 Start = new DateTime(2020, 1, 1).ToString("O"),
                 End = new DateTime(2020, 1, 14).ToString("O")
-            }
+            },
+        };
+        
+        var serviceRequest = new ServiceRequest
+        {
+            Id = Guid.NewGuid().ToString(),
+            Contained = new List<Resource> { contained }
         };
 
         // Act
@@ -133,11 +141,7 @@ public class ResourceUtilsTest
                 PeriodUnit = Timing.UnitsOfTime.D,
                 Period = 1,
                 Frequency = 1,
-                Bounds = new Duration
-                {
-                    Unit = "d",
-                    Value = 10
-                },
+                Bounds = new Period(new FhirDateTime(2023, 01, 01), new FhirDateTime(2023, 01, 10)),
                 TimeOfDay = new[] { "10:00" }
             }
         };

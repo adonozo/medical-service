@@ -175,8 +175,10 @@ public class EventsGeneratorTest
         events[1].EventDateTime.Hour.Should().Be(22);
     }
 
-    [Fact]
-    public void GetEvents_WhenTimingHasCustomTimings_ReturnsHealthEvents()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void GetEvents_WhenTimingHasCustomTimings_ReturnsHealthEvents(bool setStartDate)
     {
         // Arrange
         var timing = new Timing
@@ -199,15 +201,27 @@ public class EventsGeneratorTest
         patient.ExactEventTimes[CustomEventTiming.ACM] = new DateTime(2020, 1, 1, 8, 0, 0);
         patient.ExactEventTimes[CustomEventTiming.ACV] = new DateTime(2020, 1, 1, 19, 0, 0);
         var reference = this.GetDummyResource();
+        if (setStartDate)
+        {
+            reference.StartDate = new DateTimeOffset();
+        }
+
         var eventsGenerator = new EventsGenerator(patient, timing, reference);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
 
         // Assert
-        events.Count.Should().Be(20, "This is a daily event happening twice a day (ACM and ACV) for 10 days");
-        events[0].EventDateTime.Hour.Should().Be(8);
-        events[1].EventDateTime.Hour.Should().Be(19);
+        if (setStartDate)
+        {
+            events.Count.Should().Be(20, "This is a daily event happening twice a day (ACM and ACV) for 10 days");
+            events[0].EventDateTime.Hour.Should().Be(8);
+            events[1].EventDateTime.Hour.Should().Be(19);
+        }
+        else
+        {
+            events.Count.Should().Be(0, "Don't create events if there is no start date");
+        }
     }
 
     [Fact]
@@ -255,12 +269,7 @@ public class EventsGeneratorTest
             {
                 PeriodUnit = Timing.UnitsOfTime.D,
                 Period = 1,
-                Frequency = 1,
-                Bounds = new Period
-                {
-                    Start = new DateTime(2020, 1, 1).ToString("O"),
-                    End = new DateTime(2020, 1, 10).ToString("O")
-                }
+                Frequency = 1
             }
         };
         var patient = TestUtils.GetStubInternalPatient();
