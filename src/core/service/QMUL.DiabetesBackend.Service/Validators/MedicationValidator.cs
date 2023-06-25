@@ -13,6 +13,6 @@ public class MedicationValidator : ResourceValidatorBase<Medication>
         RuleFor(medication => medication.Code.Coding)
             .NotEmpty()
             .ForEach(codingRule => codingRule.NotNull())
-            .When(medication => medication.Code != null);
+            .When(medication => medication.Code is not null);
     }
 }

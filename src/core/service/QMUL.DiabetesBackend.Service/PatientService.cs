@@ -47,7 +47,7 @@ public class PatientService : IPatientService
     public async Task<bool> UpdatePatient(string idOrEmail, Patient updatedInternalPatient)
     {
         var patientNotFoundException = new NotFoundException();
-        await ResourceUtils.GetResourceOrThrow(async () =>
+        await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(idOrEmail), patientNotFoundException);
 
         updatedInternalPatient.Id = idOrEmail;
@@ -58,7 +58,7 @@ public class PatientService : IPatientService
     public async Task<bool> PatchPatient(string idOrEmail, InternalPatient updatedInternalPatient)
     {
         var patientNotFoundException = new NotFoundException();
-        var oldPatient = await ResourceUtils.GetResourceOrThrow(async () =>
+        var oldPatient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(idOrEmail), patientNotFoundException);
 
         updatedInternalPatient.Id = idOrEmail;

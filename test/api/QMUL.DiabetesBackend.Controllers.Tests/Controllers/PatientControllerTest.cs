@@ -137,23 +137,6 @@ public class PatientControllerTest
     }
 
     [Fact]
-    public async Task GetPatientCarePlans_WhenRequestIsCorrect_ReturnsStatusOk()
-    {
-        // Arrange
-        var carePlanService = Substitute.For<ICarePlanService>();
-        carePlanService.GetCarePlanFor(Arg.Any<string>()).Returns(new Bundle());
-
-        var controller = this.GetTestPatientController(carePlanService: carePlanService);
-
-        // Act
-        var carePlans = await controller.GetPatientCarePlans("john@mail.com");
-        var result = (ObjectResult)carePlans;
-
-        // Assert
-        result.StatusCode.Should().Be(StatusCodes.Status200OK);
-    }
-
-    [Fact]
     public async Task GetActiveMedicationRequests_WhenRequestIsCorrect_ReturnsStatusOk()
     {
         // Arrange

@@ -27,7 +27,7 @@ public class MongoEvent
         [BsonRepresentation(BsonType.String)] public EventType EventType { get; set; }
 
         [BsonRepresentation(BsonType.ObjectId)]
-        public string ResourceId { get; set; }
+        public string DomainResourceId { get; set; }
 
         [BsonRepresentation(BsonType.ObjectId)]
         public string EventReferenceId { get; set; }

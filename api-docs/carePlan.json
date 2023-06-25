@@ -3,8 +3,7 @@
   "intent":"plan",
   "subject":{
     "reference":"patient/fb85c38d-5ea5-4263-ba00-3b9528d4c4b3",
-    "display":"John Doe",
-    "id": "fb85c38d-5ea5-4263-ba00-3b9528d4c4b3"
+    "display":"John Doe"
   },
   "period":{
     "start":"2021-07-01",
@@ -12,32 +11,18 @@
   },
   "resourceType":"CarePlan",
   "created":"2021-07-01",
-  "contained":[
-    {
-      "resourceType":"Medication",
-      "status":"active",
-      "code":{
-        "coding":[
-          {
-            "system":"http://snomed.info/sct",
-            "code":"12086701000001103",
-            "display":"Invokana (product)"
-          }
-        ]
-      }
-    }
-  ],
   "status":"active",
   "activity":[
     {
       "reference":{
-        "id":"3ca91535-8f78-4bc8-b8ca-f95b21d23c8c",
         "type":"MedicationRequest",
         "reference":"MedicationRequest/3ca91535-8f78-4bc8-b8ca-f95b21d23c8c"
-      },
-      "detail":{
-        "kind":"MedicationRequest",
-        "status":"scheduled"
+      }
+    },
+    {
+      "reference":{
+        "type":"ServiceRequest",
+        "reference":"ServiceRequest/f95b21d23c8c-8f78-4bc8-b8ca-3ca91535"
       }
     }
   ]

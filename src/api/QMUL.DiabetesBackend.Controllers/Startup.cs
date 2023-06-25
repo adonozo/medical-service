@@ -14,8 +14,10 @@ using MongoDb;
 using MongoDB.Driver;
 using MongoDb.Mapper;
 using Service;
+using Service.Utils;
 using Service.Validators;
 using ServiceInterfaces;
+using ServiceInterfaces.Utils;
 using ServiceInterfaces.Validators;
 using Utils;
 using MongoDatabaseSettings = Model.MongoDatabaseSettings;
@@ -53,11 +55,13 @@ public class Startup
         });
         services.AddSingleton<IMedicationRequestDao, MedicationRequestDao>();
         services.AddSingleton<IMedicationDao, MedicationDao>();
-        services.AddSingleton<IEventDao, MongoEventDao>();
+        services.AddSingleton<IEventDao, EventDao>();
         services.AddSingleton<IPatientDao, PatientDao>();
         services.AddSingleton<IServiceRequestDao, ServiceRequestDao>();
         services.AddSingleton<IObservationDao, ObservationDao>();
+        services.AddSingleton<ICarePlanDao, CarePlanDao>();
 
+        services.AddSingleton<IDataGatherer, DataGatherer>();
         services.AddSingleton<IMedicationService, MedicationService>();
         services.AddSingleton<IPatientService, PatientService>();
         services.AddSingleton<IMedicationRequestService, MedicationRequestService>();
@@ -67,6 +71,7 @@ public class Startup
         services.AddSingleton<IObservationService, ObservationService>();
 
         services.AddSingleton<IResourceValidator<Medication>, MedicationValidator>();
+        services.AddSingleton<IResourceValidator<CarePlan>, CarePlanValidator>();
         services.AddSingleton<IResourceValidator<MedicationRequest>, MedicationRequestValidator>();
         services.AddSingleton<IResourceValidator<ServiceRequest>, ServiceRequestValidator>();
         services.AddSingleton<IResourceValidator<Observation>, ObservationValidator>();

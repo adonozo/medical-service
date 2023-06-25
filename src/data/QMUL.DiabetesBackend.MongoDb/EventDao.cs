@@ -16,16 +16,16 @@ using MongoDB.Driver;
 /// <summary>
 /// The Mongo Event Dao
 /// </summary>
-public class MongoEventDao : MongoDaoBase, IEventDao
+public class EventDao : MongoDaoBase, IEventDao
 {
     private readonly IMongoCollection<MongoEvent> eventCollection;
-    private readonly ILogger<MongoEventDao> logger;
+    private readonly ILogger<EventDao> logger;
     private readonly IMapper mapper;
 
     private const string CollectionName = "healthEvent";
     private const int DefaultLimit = 3;
 
-    public MongoEventDao(IMongoDatabase database, IMapper mapper, ILogger<MongoEventDao> logger) : base(database)
+    public EventDao(IMongoDatabase database, IMapper mapper, ILogger<EventDao> logger) : base(database)
     {
         this.logger = logger;
         this.mapper = mapper;
@@ -33,18 +33,34 @@ public class MongoEventDao : MongoDaoBase, IEventDao
     }
 
     /// <inheritdoc />
-    public async Task<bool> CreateEvents(IEnumerable<HealthEvent> events)
+    public async Task<bool> CreateEvents(List<HealthEvent> events)
     {
+        if (events.Count == 0)
+        {
+            this.logger.LogDebug("No health events added");
+            return true;
+        }
+
         this.logger.LogDebug("Creating health events");
         var mongoEvents = events.Select(this.mapper.Map<MongoEvent>).ToArray();
 
-        using var session = await this.Database.Client.StartSessionAsync();
-        session.StartTransaction();
-        await this.eventCollection.InsertManyAsync(session, mongoEvents);
+        await this.eventCollection.InsertManyAsync(mongoEvents);
         this.logger.LogDebug("Created {Count} events", mongoEvents.Length);
-        await session.CommitTransactionAsync();
 
         return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> DeleteAllRelatedResources(string[] resourceIds)
+    {
+        if (resourceIds.Length == 0)
+        {
+            return true;
+        }
+
+        var filter = Builders<MongoEvent>.Filter.In(@event => @event.ResourceReference.DomainResourceId, resourceIds);
+        var result = await this.eventCollection.DeleteManyAsync(filter);
+        return result.IsAcknowledged;
     }
 
     /// <inheritdoc />
@@ -52,7 +68,7 @@ public class MongoEventDao : MongoDaoBase, IEventDao
     {
         this.logger.LogDebug("Deleting events with a resource ID: {Id}", resourceId);
         var result = await this.eventCollection.DeleteManyAsync(request =>
-            request.ResourceReference.ResourceId == resourceId);
+            request.ResourceReference.DomainResourceId == resourceId);
         return result.IsAcknowledged;
     }
 

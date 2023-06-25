@@ -56,6 +56,13 @@ public interface IMedicationRequestDao
     Task<bool> DeleteMedicationRequest(string id);
 
     /// <summary>
+    /// Deletes multiple medication requests given an array of IDs
+    /// </summary>
+    /// <param name="ids">The array of medication request IDs to delete</param>
+    /// <returns>A boolean value to indicate the delete result</returns>
+    Task<bool> DeleteMedicationRequests(string[] ids);
+
+    /// <summary>
     /// Gets the medication request that holds a given Dosage ID for a patient.
     /// </summary>
     /// <param name="patientId">The patient ID.</param>

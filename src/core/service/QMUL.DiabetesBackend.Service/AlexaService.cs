@@ -195,7 +195,7 @@ public class AlexaService : IAlexaService
     public async Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming,
         DateTime dateTime)
     {
-        var patient = await ResourceUtils.GetResourceOrThrow(
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(
             () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
             new ValidationException("PatientNotFound"));
 
@@ -212,7 +212,7 @@ public class AlexaService : IAlexaService
     /// <inheritdoc/>
     public async Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, DateTime startDate)
     {
-        var patient = await ResourceUtils.GetResourceOrThrow(
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(
             () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
             new ValidationException("PatientNotFound"));
 
@@ -227,7 +227,7 @@ public class AlexaService : IAlexaService
     public async Task<bool> UpsertServiceRequestStartDate(string patientIdOrEmail, string serviceRequestId,
         DateTime startDate)
     {
-        var patient = await ResourceUtils.GetResourceOrThrow(
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(
             () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
             new ValidationException("PatientNotFound"));
         var internalPatient = patient.ToInternalPatient();
@@ -364,7 +364,7 @@ public class AlexaService : IAlexaService
         var uniqueDosageIds = new HashSet<string>();
         foreach (var item in events)
         {
-            uniqueRequestIds.Add(item.ResourceReference.ResourceId);
+            uniqueRequestIds.Add(item.ResourceReference.DomainResourceId);
             uniqueDosageIds.Add(item.ResourceReference.EventReferenceId);
         }
 
@@ -382,7 +382,7 @@ public class AlexaService : IAlexaService
     private async Task<IList<ServiceRequest>> GetServiceBundle(IEnumerable<HealthEvent> events)
     {
         var uniqueIds = new HashSet<string>();
-        uniqueIds.UnionWith(events.Select(item => item.ResourceReference.ResourceId).ToArray());
+        uniqueIds.UnionWith(events.Select(item => item.ResourceReference.DomainResourceId).ToArray());
         return await this.serviceRequestDao.GetServiceRequestsByIds(uniqueIds.ToArray());
     }
 
@@ -433,8 +433,8 @@ public class AlexaService : IAlexaService
 
     /// <summary>
     /// Sets the start date for a medication's request dosage.
-    /// Updates a list of health events that belongs to a medication request that has a specific dosage ID. To update
-    /// events, they are deleted and created again. 
+    /// Updates a list of health events that belongs to a medication request that has a specific dosage ID. Events are
+    /// deleted and created again. 
     /// </summary>
     /// <param name="patient">The <see cref="InternalPatient"/> related to the medication request</param>
     /// <param name="dosageId">The dosage ID to update. A medication request will be fetched using this value.</param>

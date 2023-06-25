@@ -2,7 +2,6 @@ namespace QMUL.DiabetesBackend.Service.Validators;
 
 using FluentValidation;
 using Hl7.Fhir.Model;
-using Model.Constants;
 
 public class ObservationValidator : ResourceValidatorBase<Observation>
 {
@@ -11,13 +10,10 @@ public class ObservationValidator : ResourceValidatorBase<Observation>
         RuleFor(observation => observation.Status)
             .NotNull();
 
-        RuleFor(observation => observation.Subject)
-            .NotNull();
-        
-        RuleFor(request => request.Subject)
-            .Must(subject => subject.Reference.StartsWith(Constants.PatientPath))
-            .WithMessage("Subject must reference a Patient resource")
-            .When(subject => subject is not null);
+        RuleFor(plan => plan.Subject)
+            .Cascade(CascadeMode.Stop)
+            .NotNull()
+            .SetValidator(new PatientSubjectValidator());
 
         RuleFor(observation => observation.Code)
             .NotNull();

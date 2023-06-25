@@ -6,8 +6,8 @@ using DataInterfaces;
 using Hl7.Fhir.Model;
 using Microsoft.Extensions.Logging;
 using Model.Exceptions;
-using Model.Extensions;
 using ServiceInterfaces;
+using ServiceInterfaces.Utils;
 using Utils;
 
 /// <summary>
@@ -16,35 +16,33 @@ using Utils;
 public class ServiceRequestService : IServiceRequestService
 {
     private readonly IServiceRequestDao serviceRequestDao;
-    private readonly IPatientDao patientDao;
     private readonly IEventDao eventDao;
+    private readonly IDataGatherer dataGatherer;
     private readonly ILogger<ServiceRequestService> logger;
 
-    public ServiceRequestService(IServiceRequestDao serviceRequestDao, IPatientDao patientDao, IEventDao eventDao,
+    public ServiceRequestService(
+        IServiceRequestDao serviceRequestDao,
+        IEventDao eventDao,
+        IDataGatherer dataGatherer,
         ILogger<ServiceRequestService> logger)
     {
         this.serviceRequestDao = serviceRequestDao;
-        this.patientDao = patientDao;
         this.eventDao = eventDao;
+        this.dataGatherer = dataGatherer;
         this.logger = logger;
     }
 
     /// <inheritdoc/>>
     public async Task<ServiceRequest> CreateServiceRequest(ServiceRequest request)
     {
-        var patientId = request.Subject.GetPatientIdFromReference();
-        var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
-        var patient = await ResourceUtils.GetResourceOrThrow(async () =>
-            await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
-        var internalPatient = patient.ToInternalPatient();
-
+        var internalPatient = await this.dataGatherer.GetReferenceInternalPatientOrThrow(request.Subject);
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
-        var serviceRequest = await this.serviceRequestDao.CreateServiceRequest(request);
+        request = await this.serviceRequestDao.CreateServiceRequest(request);
 
-        var events = ResourceUtils.GenerateEventsFrom(serviceRequest, internalPatient);
+        var events = ResourceUtils.GenerateEventsFrom(request, internalPatient);
         await this.eventDao.CreateEvents(events);
-        this.logger.LogDebug("Service Request created with ID: {Id}", serviceRequest.Id);
-        return serviceRequest;
+        this.logger.LogDebug("Service Request created with ID: {Id}", request.Id);
+        return request;
     }
 
     /// <inheritdoc/>>
@@ -56,20 +54,18 @@ public class ServiceRequestService : IServiceRequestService
     /// <inheritdoc/>>
     public async Task<bool> UpdateServiceRequest(string id, ServiceRequest request)
     {
-        var serviceNotFoundException = new NotFoundException();
-        await ResourceUtils.GetResourceOrThrow(async () =>
-            await this.serviceRequestDao.GetServiceRequest(id), serviceNotFoundException);
+        await ResourceUtils.GetResourceOrThrowAsync(async () =>
+            await this.serviceRequestDao.GetServiceRequest(id), new NotFoundException());
 
-        var patientId = request.Subject.GetPatientIdFromReference();
-        var patientNotFoundException = new ValidationException($"Patient not found: {patientId}");
-        var patient = await ResourceUtils.GetResourceOrThrow(async () =>
-            await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
-        var internalPatient = patient.ToInternalPatient();
+        if (await this.dataGatherer.ResourceHasActiveCarePlan(request))
+        {
+            throw new ValidationException($"Service request {id} is part of an active care plan");
+        }
 
+        var internalPatient = await this.dataGatherer.GetReferenceInternalPatientOrThrow(request.Subject);
         request.Id = id;
-        var result = await this.serviceRequestDao.UpdateServiceRequest(id, request);
-
-        if (!result)
+        var updateResult = await this.serviceRequestDao.UpdateServiceRequest(id, request);
+        if (!updateResult)
         {
             return false;
         }
@@ -84,9 +80,13 @@ public class ServiceRequestService : IServiceRequestService
     /// <inheritdoc/>>
     public async Task<bool> DeleteServiceRequest(string id)
     {
-        var serviceNotFoundException = new NotFoundException();
-        await ResourceUtils.GetResourceOrThrow(async () =>
-            await this.serviceRequestDao.GetServiceRequest(id), serviceNotFoundException);
+        var serviceRequest = await ResourceUtils.GetResourceOrThrowAsync(async () =>
+            await this.serviceRequestDao.GetServiceRequest(id), new NotFoundException());
+        
+        if (await this.dataGatherer.ResourceHasActiveCarePlan(serviceRequest))
+        {
+            throw new ValidationException($"Service request {id} is part of an active care plan");
+        }
 
         await this.eventDao.DeleteRelatedEvents(id);
         return await this.serviceRequestDao.DeleteServiceRequest(id);

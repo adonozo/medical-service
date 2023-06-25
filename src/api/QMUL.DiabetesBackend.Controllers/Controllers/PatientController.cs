@@ -97,12 +97,17 @@ public class PatientController : ControllerBase
     }
 
     [HttpGet("patients/{idOrEmail}/carePlans")]
-    [Obsolete("This merges services and medication requests. Won't work with pagination. " +
-              "Use individual requests instead/Replace when care plan is in place")]
-    public async Task<IActionResult> GetPatientCarePlans([FromRoute] string idOrEmail)
+    public Task<IActionResult> GetCarePlans([FromRoute] string idOrEmail,
+        [FromQuery] int? limit = null, [FromQuery] string? after = null)
     {
-        var result = await this.carePlanService.GetCarePlanFor(idOrEmail);
-        return this.OkOrNotFound(result);
+        return ExceptionHandler.ExecuteAndHandleAsync(async () =>
+        {
+            var paginationRequest = new PaginationRequest(limit, after);
+            var paginatedResult = await this.carePlanService.GetCarePlansFor(idOrEmail, paginationRequest);
+
+            this.HttpContext.SetPaginatedResult(paginatedResult);
+            return this.Ok(paginatedResult.Results.ToJObject());
+        }, this.logger, this);
     }
 
     [HttpGet("patients/{idOrEmail}/medicationRequests/active")]
