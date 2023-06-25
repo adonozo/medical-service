@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.MongoDb.Utils;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
@@ -33,8 +34,19 @@ public static class Helpers
     /// <returns>The ID's "eq" filter definition.</returns>
     public static FilterDefinition<BsonDocument> GetByIdFilter(string id)
     {
-        var objectId = ObjectId.TryParse(id, out var parsedId) ? parsedId : ObjectId.GenerateNewId();
+        var objectId = ObjectId.TryParse(id, out var parsedId) ? parsedId : ObjectId.Empty;
         return Builders<BsonDocument>.Filter.Eq("_id", objectId);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="FieldDefinition{TDocument}"/> to filter documents from list of IDs, using the '_id' field
+    /// </summary>
+    /// <param name="ids">The list of IDs to folter</param>
+    /// <returns>A <see cref="FilterDefinition{TDocument}"/> to use in a query</returns>
+    public static FilterDefinition<BsonDocument> GetInIdsFilter(string[] ids)
+    {
+        var objectIds = ids.Select(id => new ObjectId(id));
+        return Builders<BsonDocument>.Filter.In("_id", objectIds);
     }
 
     /// <summary>
@@ -95,13 +107,13 @@ public static class Helpers
     public static FilterDefinition<BsonDocument> GetPaginationFilter(FilterDefinition<BsonDocument> searchFilters,
         string lastDataCursor)
     {
-        if (!ObjectId.TryParse(lastDataCursor, out var lastId))
+        if (string.IsNullOrEmpty(lastDataCursor) || !ObjectId.TryParse(lastDataCursor, out var lastId))
         {
             return searchFilters;
         }
 
         return Builders<BsonDocument>.Filter.And(searchFilters,
-            Builders<BsonDocument>.Filter.Gt("_id", lastId));
+            Builders<BsonDocument>.Filter.Lt("_id", lastId));
     }
 
     /// <summary>

@@ -18,4 +18,6 @@ public static class Extensions
 
     public const string ServiceRequestStartDate =
         "http://diabetes-assistant.com/fhir/StructureDefinition/ServiceRequestStartDate";
+
+    public const string CarePlanReference = "http://diabetes-assistant.com/fhir/StructureDefinition/CarePlanReference";
 }

@@ -86,9 +86,7 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     /// <inheritdoc />
     public async Task<IList<ServiceRequest>> GetServiceRequestsByIds(string[] ids)
     {
-        var idFilter = Builders<BsonDocument>.Filter
-            .In("_id", ids);
-        var results = await this.serviceRequestCollection.Find(idFilter)
+        var results = await this.serviceRequestCollection.Find(Helpers.GetInIdsFilter(ids))
             .Project(document => Helpers.ToResourceAsync<ServiceRequest>(document))
             .ToListAsync();
         return await Task.WhenAll(results);
@@ -109,6 +107,13 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     {
         this.logger.LogDebug("Deleting service requests with ID: {Id}", id);
         var result = await this.serviceRequestCollection.DeleteOneAsync(Helpers.GetByIdFilter(id));
+        return result.IsAcknowledged;
+    }
+    
+    /// <inheritdoc />
+    public async Task<bool> DeleteServiceRequests(string[] ids)
+    {
+        var result = await this.serviceRequestCollection.DeleteManyAsync(Helpers.GetInIdsFilter(ids));
         return result.IsAcknowledged;
     }
 

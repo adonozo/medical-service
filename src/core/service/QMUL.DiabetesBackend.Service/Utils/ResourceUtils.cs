@@ -2,10 +2,12 @@ namespace QMUL.DiabetesBackend.Service.Utils;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
 using Model.Enums;
+using Model.Exceptions;
 using Model.Extensions;
 using ResourceReference = Model.ResourceReference;
 
@@ -58,7 +60,7 @@ public static class ResourceUtils
         };
     }
 
-    public static IEnumerable<HealthEvent> GenerateEventsFrom(DomainResource request, InternalPatient patient) =>
+    public static List<HealthEvent> GenerateEventsFrom(DomainResource request, InternalPatient patient) =>
         request switch
         {
             ServiceRequest serviceRequest => GenerateEventsFrom(serviceRequest, patient),
@@ -72,7 +74,7 @@ public static class ResourceUtils
     /// <param name="request">The medication request</param>
     /// <param name="patient">The medication request's subject</param>
     /// <returns>A List of events for the medication request</returns>
-    public static IEnumerable<HealthEvent> GenerateEventsFrom(MedicationRequest request, InternalPatient patient)
+    public static List<HealthEvent> GenerateEventsFrom(MedicationRequest request, InternalPatient patient)
     {
         var events = new List<HealthEvent>();
         var isInsulin = request.HasInsulinFlag();
@@ -82,7 +84,7 @@ public static class ResourceUtils
             var requestReference = new ResourceReference
             {
                 EventType = isInsulin ? EventType.InsulinDosage : EventType.MedicationDosage,
-                ResourceId = request.Id,
+                DomainResourceId = request.Id,
                 Text = dosage.Text,
                 EventReferenceId = dosage.ElementId,
                 StartDate = dosage.GetStartDate()?.UtcDateTime
@@ -102,26 +104,28 @@ public static class ResourceUtils
     /// <param name="request">The medication request</param>
     /// <param name="patient">The medication request's subject</param>
     /// <returns>A List of events for the medication request</returns>
-    public static IEnumerable<HealthEvent> GenerateEventsFrom(ServiceRequest request, InternalPatient patient)
+    public static List<HealthEvent> GenerateEventsFrom(ServiceRequest request, InternalPatient patient)
     {
-        // Occurrence must be expressed as a timing instance
-        if (request.Occurrence is not Timing timing)
-        {
-            throw new InvalidOperationException("Service Request Occurrence must be a Timing instance");
-        }
-
         var events = new List<HealthEvent>();
         var requestReference = new ResourceReference
         {
             EventType = EventType.Measurement,
-            ResourceId = request.Id,
+            DomainResourceId = request.Id,
             EventReferenceId = request.Id,
             Text = request.PatientInstruction,
             StartDate = request.GetStartDate()?.UtcDateTime
         };
+        
+        request.Contained.ForEach(resource =>
+        {
+            if (resource is not ServiceRequest serviceRequest)
+            {
+                throw new ValidationException("Contained resources are not of type Service Request");
+            }
 
-        var eventsGenerator = new EventsGenerator(patient, timing, requestReference);
-        events.AddRange(eventsGenerator.GetEvents());
+            events.AddRange(GenerateEventsFrom(patient, serviceRequest.Occurrence, requestReference));
+        });
+
         return events;
     }
 
@@ -145,7 +149,15 @@ public static class ResourceUtils
         };
     }
 
-    public static async Task<T> GetResourceOrThrow<T>(Func<Task<T?>> action, Exception exception) where T : Resource
+    /// <summary>
+    /// Tries to get a <see cref="Resource"/>, throws a given exception if the resource is null
+    /// </summary>
+    /// <param name="action">The async action to get the resource from</param>
+    /// <param name="exception">The exception to throw if the resource does not exist</param>
+    /// <typeparam name="T">A <see cref="Resource"/> type</typeparam>
+    /// <returns>A <see cref="Resource"/></returns>
+    /// <exception cref="Exception">If the action does not return a resource</exception>
+    public static async Task<T> GetResourceOrThrowAsync<T>(Func<Task<T?>> action, Exception exception) where T : Resource
     {
         var resource = await action.Invoke();
         if (resource is null)
@@ -154,5 +166,17 @@ public static class ResourceUtils
         }
 
         return resource;
+    }
+
+    private static List<HealthEvent> GenerateEventsFrom(InternalPatient patient, DataType occurrence,
+        ResourceReference requestReference)
+    {
+        if (occurrence is not Timing timing)
+        {
+            throw new InvalidOperationException("ServiceRequest.Occurrence must be a Timing instance");
+        }
+
+        var eventsGenerator = new EventsGenerator(patient, timing, requestReference);
+        return eventsGenerator.GetEvents().ToList();
     }
 }

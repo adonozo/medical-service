@@ -30,6 +30,7 @@ public class InternalPatient
     /// Holds the exact time the patient has set a specific event in the day: i.e., breakfast, diner, sleep. The date
     /// in the datetime is ignored. 
     /// </summary>
+    /// TODO change to a time object (use Noda time?)
     public Dictionary<CustomEventTiming, DateTimeOffset> ExactEventTimes { get; set; } = new();
 
     /// <summary>

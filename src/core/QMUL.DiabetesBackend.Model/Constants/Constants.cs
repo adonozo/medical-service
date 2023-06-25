@@ -8,4 +8,6 @@ public static class Constants
 {
     public const string PatientPath = "Patient/";
     public const string MedicationPath = "Medication/";
+    public const string MedicationRequestPath = "MedicationRequest/";
+    public const string ServiceRequestPath = "ServiceRequest/";
 }

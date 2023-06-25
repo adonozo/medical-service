@@ -10,6 +10,7 @@ using Model;
 using Model.Exceptions;
 using Model.Extensions;
 using ServiceInterfaces;
+using ServiceInterfaces.Utils;
 using Utils;
 using ResourceReference = Hl7.Fhir.Model.ResourceReference;
 using Task = System.Threading.Tasks.Task;
@@ -23,29 +24,32 @@ public class MedicationRequestService : IMedicationRequestService
     private readonly IMedicationDao medicationDao;
     private readonly IEventDao eventDao;
     private readonly IPatientDao patientDao;
+    private readonly IDataGatherer dataGatherer;
     private readonly ILogger<MedicationRequestService> logger;
 
-    public MedicationRequestService(IMedicationRequestDao medicationRequestDao, IEventDao eventDao,
-        IPatientDao patientDao, IMedicationDao medicationDao, ILogger<MedicationRequestService> logger)
+    public MedicationRequestService(
+        IMedicationRequestDao medicationRequestDao,
+        IEventDao eventDao,
+        IPatientDao patientDao,
+        IMedicationDao medicationDao,
+        IDataGatherer dataGatherer,
+        ILogger<MedicationRequestService> logger)
     {
         this.medicationRequestDao = medicationRequestDao;
         this.eventDao = eventDao;
         this.patientDao = patientDao;
         this.medicationDao = medicationDao;
+        this.dataGatherer = dataGatherer;
         this.logger = logger;
     }
 
     /// <inheritdoc/>>
     public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
     {
-        var patientId = request.Subject.GetPatientIdFromReference();
-        var patientException = new ValidationException($"Patient not found: {patientId}");
-        var patient = await ResourceUtils.GetResourceOrThrow(() =>
-            this.patientDao.GetPatientByIdOrEmail(patientId), patientException);
-        var internalPatient = patient.ToInternalPatient();
-
+        var internalPatient = await this.dataGatherer.GetReferenceInternalPatientOrThrow(request.Subject);
         await this.SetInsulinRequest(request);
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
+
         var newRequest = await this.medicationRequestDao.CreateMedicationRequest(request);
         var events = ResourceUtils.GenerateEventsFrom(newRequest, internalPatient);
         await this.eventDao.CreateEvents(events);
@@ -62,19 +66,40 @@ public class MedicationRequestService : IMedicationRequestService
     /// <inheritdoc/>>
     public async Task<bool> UpdateMedicationRequest(string id, MedicationRequest request)
     {
-        await ResourceUtils.GetResourceOrThrow(() => this.medicationRequestDao.GetMedicationRequest(id),
+        await ResourceUtils.GetResourceOrThrowAsync(() => this.medicationRequestDao.GetMedicationRequest(id),
             new NotFoundException());
         await this.SetInsulinRequest(request);
 
+        if (await this.dataGatherer.ResourceHasActiveCarePlan(request))
+        {
+            throw new ValidationException($"Medication request {id} is part of an active care plan");
+        }
+
+        var internalPatient = await this.dataGatherer.GetReferenceInternalPatientOrThrow(request.Subject);
         request.Id = id;
-        return await this.medicationRequestDao.UpdateMedicationRequest(id, request);
+        var updateResult = await this.medicationRequestDao.UpdateMedicationRequest(id, request);
+        if (!updateResult)
+        {
+            return false;
+        }
+
+        await this.eventDao.DeleteRelatedEvents(id);
+        var events = ResourceUtils.GenerateEventsFrom(request, internalPatient);
+        await this.eventDao.CreateEvents(events);
+
+        return true;
     }
 
     /// <inheritdoc/>>
     public async Task<bool> DeleteMedicationRequest(string id)
     {
-        await ResourceUtils.GetResourceOrThrow(() => this.medicationRequestDao.GetMedicationRequest(id),
+        var medicationRequest = await ResourceUtils.GetResourceOrThrowAsync(() => this.medicationRequestDao.GetMedicationRequest(id),
             new NotFoundException());
+        
+        if (await this.dataGatherer.ResourceHasActiveCarePlan(medicationRequest))
+        {
+            throw new ValidationException($"Medication request {id} is part of an active care plan");
+        }
 
         await this.eventDao.DeleteRelatedEvents(id);
         return await this.medicationRequestDao.DeleteMedicationRequest(id);
@@ -84,9 +109,8 @@ public class MedicationRequestService : IMedicationRequestService
     public async Task<PaginatedResult<Bundle>> GetActiveMedicationRequests(string patientIdOrEmail,
         PaginationRequest paginationRequest)
     {
-        var patientException = new NotFoundException();
-        var patient = await ResourceUtils.GetResourceOrThrow(() =>
-            this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), patientException);
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(() =>
+            this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), new NotFoundException());
 
         var medicationRequests =
             await this.medicationRequestDao.GetActiveMedicationRequests(patient.Id, paginationRequest);
@@ -114,7 +138,7 @@ public class MedicationRequestService : IMedicationRequestService
         Medication? medication;
         if (resource is not Medication)
         {
-            var medicationId = reference.GetPatientIdFromReference();
+            var medicationId = reference.GetIdFromReference();
             medication = await this.medicationDao.GetSingleMedication(medicationId);
         }
         else
