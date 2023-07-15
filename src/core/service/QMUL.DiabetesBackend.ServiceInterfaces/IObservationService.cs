@@ -6,7 +6,6 @@ using Hl7.Fhir.Model;
 using Model;
 using Model.Enums;
 using Model.Exceptions;
-using Task = System.Threading.Tasks.Task;
 
 /// <summary>
 /// The Observation Service Interface. Observations are glucose self-measurements for a patient. 
@@ -50,9 +49,11 @@ public interface IObservationService
     /// <param name="patientTimezone">The patient's timezone.</param>
     /// <returns>A <see cref="PaginatedResult{T}"/> <see cref="Bundle"/> object with the list of observations.</returns>
     /// <exception cref="NotFoundException">If the patient was not found.</exception>
-    Task<PaginatedResult<Bundle>> GetObservationsFor(string patientId, CustomEventTiming timing,
+    Task<PaginatedResult<Bundle>> GetObservationsFor(string patientId,
+        CustomEventTiming timing,
         DateTime dateTime,
-        PaginationRequest paginationRequest, string patientTimezone = "UTC");
+        PaginationRequest paginationRequest,
+        string patientTimezone = "UTC");
 
     /// <summary>
     /// Updates an existing <see cref="Observation"/> with the object.

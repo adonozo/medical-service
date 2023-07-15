@@ -21,7 +21,7 @@ public class ObservationService : IObservationService
     private readonly IPatientDao patientDao;
     private readonly IObservationDao observationDao;
     private readonly ILogger<ObservationService> logger;
-    private const int DefaultOffset = 20; // The default offset in minutes for search between dates
+    private const int DefaultOffsetMinutes = 20; // The default offset in minutes for search between dates
 
     public ObservationService(IPatientDao patientDao, IObservationDao observationDao,
         ILogger<ObservationService> logger)
@@ -78,24 +78,24 @@ public class ObservationService : IObservationService
         DateTimeOffset start, end;
         if (timing == CustomEventTiming.EXACT)
         {
-            start = dateTime.AddMinutes(DefaultOffset * -1);
-            end = dateTime.AddMinutes(DefaultOffset);
+            start = dateTime.AddMinutes(DefaultOffsetMinutes * -1);
+            end = dateTime.AddMinutes(DefaultOffsetMinutes);
         }
         else
         {
-            (start, end) = EventTimingMapper.GetIntervalForPatient(
+            (start, end) = EventTimingMapper.GetTimingInterval(
                 preferences: timingPreferences,
-                startTime: dateTime,
+                dateTime: dateTime,
                 timing: timing,
                 timezone: patientTimezone,
-                defaultOffset: DefaultOffset);
+                defaultOffset: DefaultOffsetMinutes);
         }
 
         var observations = await this.observationDao.GetObservationsFor(
             patient.Id,
+            paginationRequest,
             start.UtcDateTime,
-            end.UtcDateTime,
-            paginationRequest);
+            end.UtcDateTime);
         var paginatedResult = observations.ToBundleResult();
         this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId,
             observations.Results.Count());

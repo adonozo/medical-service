@@ -80,13 +80,22 @@ public class ObservationDao : MongoDaoBase, IObservationDao
     }
 
     /// <inheritdoc />
-    public async Task<PaginatedResult<IEnumerable<Resource>>> GetObservationsFor(string patientId, DateTime start,
-        DateTime end, PaginationRequest paginationRequest)
+    public async Task<PaginatedResult<IEnumerable<Resource>>> GetObservationsFor(string patientId,
+        PaginationRequest paginationRequest,
+        DateTime? start = null,
+        DateTime? end = null)
     {
-        var searchFilter = Builders<BsonDocument>.Filter.And(
-            Helpers.GetPatientReferenceFilter(patientId),
-            Builders<BsonDocument>.Filter.Gt("issued", start),
-            Builders<BsonDocument>.Filter.Lt("issued", end));
+        var searchFilter = Builders<BsonDocument>.Filter.And(Helpers.GetPatientReferenceFilter(patientId));
+
+        if (start.HasValue)
+        {
+            searchFilter &= Builders<BsonDocument>.Filter.Gt("issued", start);
+        }
+
+        if (end.HasValue)
+        {
+            searchFilter &= Builders<BsonDocument>.Filter.Lt("issued", end);
+        }
 
         var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
         var result = await this.observationCollection.Find(resultsFilter)
