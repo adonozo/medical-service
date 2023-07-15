@@ -85,9 +85,9 @@ public class AlexaService : IAlexaService
         IEnumerable<HealthEvent> events;
         if (timings.Length == 0)
         {
-            var (start, end) = EventTimingMapper.GetIntervalForPatient(
+            var (start, end) = EventTimingMapper.GetTimingInterval(
                 preferences: timingPreferences,
-                startTime: dateTime,
+                dateTime: dateTime,
                 timing: timing,
                 timezone: timezone,
                 defaultOffset: DefaultOffset);
@@ -129,9 +129,9 @@ public class AlexaService : IAlexaService
         IEnumerable<HealthEvent> events;
         if (timings.Length == 0)
         {
-            var (start, end) = EventTimingMapper.GetIntervalForPatient(
+            var (start, end) = EventTimingMapper.GetTimingInterval(
                 preferences: timingPreferences,
-                startTime: dateTime,
+                dateTime: dateTime,
                 timing: timing,
                 timezone: timezone,
                 defaultOffset: DefaultOffset);
@@ -313,9 +313,9 @@ public class AlexaService : IAlexaService
         IEnumerable<HealthEvent> events;
         if (timings.Length == 0)
         {
-            var (start, end) = EventTimingMapper.GetIntervalForPatient(
+            var (start, end) = EventTimingMapper.GetTimingInterval(
                 preferences: timingPreferences,
-                startTime: dateTime,
+                dateTime: dateTime,
                 timing: timing,
                 timezone: timezone,
                 defaultOffset: DefaultOffset);

@@ -110,7 +110,7 @@ public class EventTimingMapperTest
 
         // Act
         var (startDate, endDate) =
-            EventTimingMapper.GetIntervalForPatient(timingPreferences, referenceDate, timingEvent, timezone, 30);
+            EventTimingMapper.GetTimingInterval(timingPreferences, referenceDate, timingEvent, timezone, 30);
 
         // Assert
         startDate.Hour.Should().Be(11);
@@ -131,7 +131,7 @@ public class EventTimingMapperTest
 
         // Act
         var (startDate, endDate) =
-            EventTimingMapper.GetIntervalForPatient(timingPreferences, referenceDate, timingEvent, timezone, 30);
+            EventTimingMapper.GetTimingInterval(timingPreferences, referenceDate, timingEvent, timezone, 30);
 
         // Assert
         startDate.Hour.Should().Be(6, "Default morning time is 06:00");
