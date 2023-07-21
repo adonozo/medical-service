@@ -36,6 +36,7 @@ public class ServiceRequestService : IServiceRequestService
     /// <inheritdoc/>>
     public async Task<ServiceRequest> CreateServiceRequest(ServiceRequest request)
     {
+        await this.dataGatherer.GetReferencePatientOrThrow(request.Subject);
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
         if (request.Occurrence is Timing timing && timing.Repeat.NeedsStartDate())
         {

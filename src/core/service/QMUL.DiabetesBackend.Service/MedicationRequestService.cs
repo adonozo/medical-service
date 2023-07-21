@@ -46,6 +46,7 @@ public class MedicationRequestService : IMedicationRequestService
     /// <inheritdoc/>>
     public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
     {
+        await this.dataGatherer.GetReferencePatientOrThrow(request.Subject);
         await this.SetInsulinRequest(request);
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
 
