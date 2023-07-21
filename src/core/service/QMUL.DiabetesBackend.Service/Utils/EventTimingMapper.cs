@@ -76,7 +76,7 @@ public static class EventTimingMapper
     /// <param name="timezone">The patient's timezone.</param>
     /// <param name="defaultOffset">An offset for the time interval, in minutes.</param>
     /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
-    public static Tuple<DateTimeOffset, DateTimeOffset> GetTimingInterval(
+    public static (DateTimeOffset Start, DateTimeOffset End) GetTimingInterval(
         Dictionary<CustomEventTiming, DateTimeOffset> preferences,
         DateTimeOffset dateTime,
         CustomEventTiming timing,
@@ -85,6 +85,14 @@ public static class EventTimingMapper
     {
         DateTimeOffset start;
         DateTimeOffset end;
+
+        if (timing == CustomEventTiming.EXACT)
+        {
+            start = dateTime.AddMinutes(defaultOffset * -1);
+            end = dateTime.AddMinutes(defaultOffset);
+            return (start, end);
+        }
+
         if (preferences.ContainsKey(timing))
         {
             start = preferences[timing].AddMinutes(defaultOffset * -1);
@@ -97,7 +105,7 @@ public static class EventTimingMapper
             return GetIntervalFromCustomEventTiming(dateTime, timing, timezone);
         }
 
-        return new Tuple<DateTimeOffset, DateTimeOffset>(start, end);
+        return (start, end);
     }
 
     /// <summary>
@@ -108,7 +116,7 @@ public static class EventTimingMapper
     /// <param name="timezone">The patient's timezone.</param>
     /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
     /// <exception cref="ArgumentOutOfRangeException">If there is not a default value for the timing event.</exception>
-    public static Tuple<DateTimeOffset, DateTimeOffset> GetIntervalFromCustomEventTiming(DateTimeOffset startTime,
+    public static (DateTimeOffset Start, DateTimeOffset End) GetIntervalFromCustomEventTiming(DateTimeOffset startTime,
         CustomEventTiming timing, string timezone)
     {
         DateTimeOffset endTime;
@@ -186,7 +194,7 @@ public static class EventTimingMapper
                 throw new ArgumentOutOfRangeException(nameof(timing), timing, null);
         }
 
-        return new Tuple<DateTimeOffset, DateTimeOffset>(startTime, endTime);
+        return (startTime, endTime);
     }
 
     /// <summary>
