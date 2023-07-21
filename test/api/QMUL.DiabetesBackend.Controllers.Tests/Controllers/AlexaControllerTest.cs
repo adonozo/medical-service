@@ -22,7 +22,7 @@ public class AlexaControllerTest
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
         var observationsService = Substitute.For<ObservationService>();
-        alexaService.ProcessMedicationRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
+        alexaService.SearchMedicationRequests(Arg.Any<string>(), Arg.Any<DateTime>(),
                 Arg.Any<CustomEventTiming>(), Arg.Any<string>())
             .Returns(new Bundle());
         var controller = new AlexaController(alexaService, observationsService);

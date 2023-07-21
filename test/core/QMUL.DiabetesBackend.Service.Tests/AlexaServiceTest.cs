@@ -38,7 +38,7 @@ public class AlexaServiceTest
             .Returns(new List<HealthEvent>());
 
         // Act
-        var result = await alexaService.ProcessMedicationRequest(Guid.NewGuid().ToString(), DateTime.Now,
+        var result = await alexaService.SearchMedicationRequests(Guid.NewGuid().ToString(), DateTime.Now,
             CustomEventTiming.ALL_DAY);
 
         // Assert
@@ -276,7 +276,8 @@ public class AlexaServiceTest
 
         // Assert
         result.Should().Be(true);
-        dosage.GetStartDate().Should().NotBeNull().And.Be(expectedDate);
+        dosage.Should().NotBeNull();
+        dosage?.Timing.GetStartDate().Should().NotBeNull().And.Be(expectedDate);
     }
 
     [Fact]

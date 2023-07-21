@@ -20,8 +20,10 @@ public interface IAlexaService
     /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
     /// <param name="timezone">The user's timezone. Defaults to UTC</param>
     /// <returns>A <see cref="Bundle"/> with the results, or null if the patient was not found.</returns>
-    Task<Bundle?> ProcessMedicationRequest(string patientEmailOrId, DateTime dateTime,
-        CustomEventTiming timing, string timezone = "UTC");
+    Task<Bundle> SearchMedicationRequests(string patientEmailOrId,
+        DateTime dateTime,
+        CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
+        string? timezone = "UTC");
 
     /// <summary>
     /// Gets the insulin medication requests for a given patient based on a date, timing, and the user's timezone.

@@ -26,8 +26,9 @@ public class AlexaService : IAlexaService
     private readonly IServiceRequestDao serviceRequestDao;
     private readonly IEventDao eventDao;
     private readonly ILogger<AlexaService> logger;
-    private const int DefaultOffset = 20; // The default offset (in minutes) when looking for exact times
-    private const int DefaultTimingOffset = 20; // The offset for related timings. E.g., before lunch and lunch
+
+    private const int DefaultExactTimeOffsetMinutes = 20;
+    private const int OffsetBetweenTimingsMinutes = 20; // For related timings. E.g., before lunch and lunch
 
     public AlexaService(IPatientDao patientDao, IMedicationRequestDao medicationRequestDao,
         IServiceRequestDao serviceRequestDao, IEventDao eventDao, ILogger<AlexaService> logger)
@@ -40,18 +41,39 @@ public class AlexaService : IAlexaService
     }
 
     /// <inheritdoc/>
-    public async Task<Bundle?> ProcessMedicationRequest(string patientEmailOrId,
+    public async Task<Bundle> SearchMedicationRequests(string patientEmailOrId,
         DateTime dateTime,
-        CustomEventTiming timing,
-        string timezone = "UTC")
+        CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
+        string? timezone = "UTC")
     {
         logger.LogTrace("Processing Alexa Medication request type");
-        return await this.GetMedicationRequests(
-            patientEmailOrId: patientEmailOrId,
+
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
+            await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new NotFoundException());
+
+        var medicationRequests = await this.medicationRequestDao.GetActiveMedicationRequests(
+            patientEmailOrId,
+            PaginationRequest.FirstPaginatedResults);
+
+        var eventsWithStartDate = this.GetHealthEventsWithStartDate(medicationRequests.Results, patient.ToInternalPatient());
+        if (!eventsWithStartDate.IsSuccess)
+        {
+            var errorBundle = ResourceUtils.GenerateSearchBundle(new [] { eventsWithStartDate.Error });
+            return errorBundle;
+        }
+
+        var timingPreferences = patient.GetTimingPreference();
+
+        var (startDate, endDate) = EventTimingMapper.GetTimingInterval(
+            preferences: timingPreferences,
             dateTime: dateTime,
-            timing: timing,
-            type: EventType.MedicationDosage,
-            timezone: timezone);
+            timing: timing ?? CustomEventTiming.ALL_DAY,
+            timezone: timezone ?? "UTC",
+            defaultOffset: DefaultExactTimeOffsetMinutes);
+
+        var events = eventsWithStartDate.Results
+            .Where(@event => @event.EventDateTime >= startDate && @event.EventDateTime <= endDate);
+        return await this.GenerateSearchBundle(@events.ToList());
     }
 
     /// <inheritdoc/>
@@ -90,7 +112,7 @@ public class AlexaService : IAlexaService
                 dateTime: dateTime,
                 timing: timing,
                 timezone: timezone,
-                defaultOffset: DefaultOffset);
+                defaultOffset: DefaultExactTimeOffsetMinutes);
             events = await this.eventDao.GetEvents(
                 patientId: patient.Id,
                 type: EventType.Measurement,
@@ -108,7 +130,7 @@ public class AlexaService : IAlexaService
                 timings: timings);
         }
 
-        var bundle = await this.GenerateBundle(events.ToList());
+        var bundle = await this.GenerateSearchBundle(events.ToList());
         return bundle;
     }
 
@@ -134,7 +156,7 @@ public class AlexaService : IAlexaService
                 dateTime: dateTime,
                 timing: timing,
                 timezone: timezone,
-                defaultOffset: DefaultOffset);
+                defaultOffset: DefaultExactTimeOffsetMinutes);
             events = await this.eventDao.GetEvents(
                 patientId: patient.Id,
                 types: types,
@@ -152,7 +174,7 @@ public class AlexaService : IAlexaService
                 timings: timings);
         }
 
-        var bundle = await this.GenerateBundle(events.ToList());
+        var bundle = await this.GenerateSearchBundle(events.ToList());
         return bundle;
     }
 
@@ -172,7 +194,7 @@ public class AlexaService : IAlexaService
 
         var evenType = ResourceUtils.MapRequestToEventType(type);
         var events = await this.eventDao.GetNextEvents(patient.Id, evenType);
-        var bundle = await this.GenerateBundle(events.ToList());
+        var bundle = await this.GenerateSearchBundle(events.ToList());
         return bundle;
     }
 
@@ -187,7 +209,7 @@ public class AlexaService : IAlexaService
 
         var types = new[] { EventType.Measurement, EventType.InsulinDosage, EventType.MedicationDosage };
         var events = await this.eventDao.GetNextEvents(patient.Id, types);
-        var bundle = await this.GenerateBundle(events.ToList());
+        var bundle = await this.GenerateSearchBundle(events.ToList());
         return bundle;
     }
 
@@ -249,8 +271,8 @@ public class AlexaService : IAlexaService
         CustomEventTiming timing, DateTime dateTime)
     {
         dateTime = AdjustOffsetTiming(timing, dateTime);
-        var before = dateTime.AddMinutes(DefaultTimingOffset * -1);
-        var after = dateTime.AddMinutes(DefaultTimingOffset);
+        var before = dateTime.AddMinutes(OffsetBetweenTimingsMinutes * -1);
+        var after = dateTime.AddMinutes(OffsetBetweenTimingsMinutes);
         switch (timing)
         {
             case CustomEventTiming.CM:
@@ -286,12 +308,12 @@ public class AlexaService : IAlexaService
     {
         return timing switch
         {
-            CustomEventTiming.ACM => dateTime.AddMinutes(DefaultTimingOffset),
-            CustomEventTiming.ACD => dateTime.AddMinutes(DefaultTimingOffset),
-            CustomEventTiming.ACV => dateTime.AddMinutes(DefaultTimingOffset),
-            CustomEventTiming.PCM => dateTime.AddMinutes(DefaultTimingOffset * -1),
-            CustomEventTiming.PCD => dateTime.AddMinutes(DefaultTimingOffset * -1),
-            CustomEventTiming.PCV => dateTime.AddMinutes(DefaultTimingOffset * -1),
+            CustomEventTiming.ACM => dateTime.AddMinutes(OffsetBetweenTimingsMinutes),
+            CustomEventTiming.ACD => dateTime.AddMinutes(OffsetBetweenTimingsMinutes),
+            CustomEventTiming.ACV => dateTime.AddMinutes(OffsetBetweenTimingsMinutes),
+            CustomEventTiming.PCM => dateTime.AddMinutes(OffsetBetweenTimingsMinutes * -1),
+            CustomEventTiming.PCD => dateTime.AddMinutes(OffsetBetweenTimingsMinutes * -1),
+            CustomEventTiming.PCV => dateTime.AddMinutes(OffsetBetweenTimingsMinutes * -1),
             _ => dateTime
         };
     }
@@ -318,7 +340,7 @@ public class AlexaService : IAlexaService
                 dateTime: dateTime,
                 timing: timing,
                 timezone: timezone,
-                defaultOffset: DefaultOffset);
+                defaultOffset: DefaultExactTimeOffsetMinutes);
             events = await this.eventDao.GetEvents(
                 patientId: patient.Id,
                 type: type,
@@ -336,10 +358,10 @@ public class AlexaService : IAlexaService
                 timings: timings);
         }
 
-        return await this.GenerateBundle(events.ToList());
+        return await this.GenerateSearchBundle(events.ToList());
     }
 
-    private async Task<Bundle> GenerateBundle(IReadOnlyCollection<HealthEvent> healthEvents)
+    private async Task<Bundle> GenerateSearchBundle(IReadOnlyCollection<HealthEvent> healthEvents)
     {
         var serviceEvents = healthEvents
             .Where(healthEvent => healthEvent.ResourceReference.EventType == EventType.Measurement).ToArray();
@@ -455,7 +477,8 @@ public class AlexaService : IAlexaService
             throw new ValidationException($"Could not get the dosage from the medication request {dosageId}");
         }
 
-        medicationRequest.DosageInstruction[index].SetStartDate(startDate);
+        medicationRequest.DosageInstruction[index].Timing.SetStartDate(startDate);
+        medicationRequest.DosageInstruction[index].Timing.RemoveNeedsStartDateFlag();
         await this.medicationRequestDao.UpdateMedicationRequest(medicationRequest.Id, medicationRequest);
 
         medicationRequest = GetMedicationRequestWithSingleDosage(medicationRequest, dosageId);
@@ -484,7 +507,15 @@ public class AlexaService : IAlexaService
             throw new NotFoundException();
         }
 
-        serviceRequest.SetStartDate(startDate);
+        if (serviceRequest.Occurrence is not Timing timing)
+        {
+            throw new InvalidOperationException($"Service Request {serviceRequestId} does not have a valid occurrence");
+        }
+
+        timing.SetStartDate(startDate);
+        timing.RemoveNeedsStartDateFlag();
+        serviceRequest.Occurrence = timing;
+
         await this.serviceRequestDao.UpdateServiceRequest(serviceRequestId, serviceRequest);
         await this.UpdateHealthEvents(serviceRequest, patient);
     }
@@ -500,5 +531,23 @@ public class AlexaService : IAlexaService
 
         var events = ResourceUtils.GenerateEventsFrom(request, patient);
         await this.eventDao.CreateEvents(events);
+    }
+
+    private Result<IEnumerable<HealthEvent>, MedicationRequest> GetHealthEventsWithStartDate(
+        IEnumerable<MedicationRequest> medicationRequests,
+        InternalPatient patient)
+    {
+        var healthEvents = new List<HealthEvent>();
+        foreach (var request in medicationRequests)
+        {
+            if (request.DosageInstruction.Any(dosage => dosage.Timing.Repeat.NeedsStartDate()))
+            {
+                return Result<IEnumerable<HealthEvent>, MedicationRequest>.Fail(request);
+            }
+
+            healthEvents.AddRange(ResourceUtils.GenerateEventsFrom(request, patient));
+        }
+
+        return Result<IEnumerable<HealthEvent>, MedicationRequest>.Success(healthEvents);
     }
 }
