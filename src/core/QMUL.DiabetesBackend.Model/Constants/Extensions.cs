@@ -9,7 +9,7 @@ public static class Extensions
 
     public const string PatientAlexaId = "http://diabetes-assistant.com/fhir/StructureDefinition/AlexaId";
 
-    public const string DosageStartDate = "http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate";
+    public const string TimingStartDate = "http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate";
 
     public const string PatientTimingPreference =
         "http://diabetes-assistant.com/fhir/StructureDefinition/TimingPreference";
@@ -20,4 +20,6 @@ public static class Extensions
         "http://diabetes-assistant.com/fhir/StructureDefinition/ServiceRequestStartDate";
 
     public const string CarePlanReference = "http://diabetes-assistant.com/fhir/StructureDefinition/CarePlanReference";
+
+    public const string NeedsStartDateFlag = "http://diabetes-assistant.com/fhir/StructureDefinition/NeedsStartDateFlag";
 }
