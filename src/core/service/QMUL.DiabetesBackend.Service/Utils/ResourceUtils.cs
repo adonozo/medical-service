@@ -87,7 +87,7 @@ public static class ResourceUtils
                 DomainResourceId = request.Id,
                 Text = dosage.Text,
                 EventReferenceId = dosage.ElementId,
-                StartDate = dosage.GetStartDate()?.UtcDateTime
+                StartDate = dosage.Timing.GetStartDate()?.UtcDateTime
             };
             var eventsGenerator = new EventsGenerator(patient, dosage.Timing, requestReference);
             events.AddRange(eventsGenerator.GetEvents());
@@ -107,15 +107,19 @@ public static class ResourceUtils
     public static List<HealthEvent> GenerateEventsFrom(ServiceRequest request, InternalPatient patient)
     {
         var events = new List<HealthEvent>();
+        if (request.Occurrence is not Timing timing)
+        {
+            throw new InvalidOperationException("Service request occurrence is not a timing instance");
+        }
         var requestReference = new ResourceReference
         {
             EventType = EventType.Measurement,
             DomainResourceId = request.Id,
             EventReferenceId = request.Id,
             Text = request.PatientInstruction,
-            StartDate = request.GetStartDate()?.UtcDateTime
+            StartDate = timing.GetStartDate()?.UtcDateTime
         };
-        
+
         request.Contained.ForEach(resource =>
         {
             if (resource is not ServiceRequest serviceRequest)
@@ -134,8 +138,8 @@ public static class ResourceUtils
     /// </summary>
     /// <param name="paginatedResult">The paginated result with a <see cref="Resource"/> list.</param>
     /// <returns>The paginated search <see cref="Bundle"/>.</returns>
-    public static PaginatedResult<Bundle> ToBundleResult(
-        this PaginatedResult<IEnumerable<Resource>> paginatedResult)
+    public static PaginatedResult<Bundle> ToBundleResult<T>(this PaginatedResult<IEnumerable<T>> paginatedResult)
+        where T : Resource
     {
         var bundle = GenerateSearchBundle(paginatedResult.Results);
         bundle.Total = (int)paginatedResult.TotalResults;
@@ -167,6 +171,13 @@ public static class ResourceUtils
 
         return resource;
     }
+
+    public static bool NeedsStartDate(this Timing.RepeatComponent repeat) => repeat.Bounds switch
+    {
+        Period bounds => repeat.Frequency is > 1 && string.IsNullOrEmpty(bounds.Start),
+        Duration => true,
+        _ => throw new ArgumentException("Repeat component has not a valid bound", nameof(repeat))
+    };
 
     private static List<HealthEvent> GenerateEventsFrom(InternalPatient patient, DataType occurrence,
         ResourceReference requestReference)

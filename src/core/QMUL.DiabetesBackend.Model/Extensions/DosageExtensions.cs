@@ -7,10 +7,10 @@ using Hl7.Fhir.Model;
 public static class DosageExtensions
 {
     /// <summary>
-    /// Gets the patient's <see cref="MedicationRequest"/> start date from the contained <see cref="Dosage"/>. This
-    /// date is stored as an extension value within the dosage.
+    /// Gets the patient's start for a resource that has a <see cref="Timing"/> instance. This date is stored as an
+    /// extension value.
     /// </summary>
-    /// <param name="timing">The <see cref="Timing"/> contained in the <see cref="MedicationRequest"/></param>
+    /// <param name="timing">The <see cref="Timing"/> from the resource</param>
     /// <returns>The <see cref="DateTimeOffset"/> start date, or null if the value was not found.</returns>
     public static DateTimeOffset? GetStartDate(this Timing timing)
     {
