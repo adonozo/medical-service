@@ -172,13 +172,6 @@ public static class ResourceUtils
         return resource;
     }
 
-    public static bool NeedsStartDate(this Timing.RepeatComponent repeat) => repeat.Bounds switch
-    {
-        Period bounds => repeat.Frequency is > 1 && string.IsNullOrEmpty(bounds.Start),
-        Duration => true,
-        _ => throw new ArgumentException("Repeat component has not a valid bound", nameof(repeat))
-    };
-
     private static List<HealthEvent> GenerateEventsFrom(InternalPatient patient, DataType occurrence,
         ResourceReference requestReference)
     {
