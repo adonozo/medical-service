@@ -54,7 +54,8 @@ public class AlexaController : ControllerBase
     public async Task<IActionResult> GetMedicationRequest([FromRoute] string idOrEmail,
         [FromQuery] DateTime? date,
         [FromQuery] string? timezone = "UTC",
-        [FromQuery] CustomEventTiming? timing = CustomEventTiming.ALL_DAY)
+        [FromQuery] CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
+        [FromQuery] bool? onlyInsulin = false)
     {
         if (date is null)
         {
@@ -62,18 +63,12 @@ public class AlexaController : ControllerBase
             return this.UnprocessableEntity(ModelState);
         }
 
-        var result = await this.alexaService.SearchMedicationRequests(idOrEmail, date.Value, timing, timezone);
+        var result = await this.alexaService.SearchMedicationRequests(idOrEmail,
+            date.Value,
+            onlyInsulin ?? false,
+            timing,
+            timezone);
         return this.Ok(result.ToJObject());
-    }
-
-    [HttpGet("patients/{idOrEmail}/alexa/insulinRequest")]
-    public async Task<IActionResult> GetInsulinMedicationRequest([FromRoute] string idOrEmail,
-        [FromQuery] DateTime date,
-        [FromQuery] string timezone = "UTC",
-        [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
-    {
-        var result = await this.alexaService.ProcessInsulinMedicationRequest(idOrEmail, date, timing, timezone);
-        return this.OkOrNotFound(result);
     }
 
     [HttpGet("patients/{idOrEmail}/alexa/glucoseRequest")]

@@ -123,12 +123,17 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
 
     /// <inheritdoc />
     public async Task<PaginatedResult<IEnumerable<MedicationRequest>>> GetActiveMedicationRequests(string patientId,
-        PaginationRequest paginationRequest)
+        PaginationRequest paginationRequest,
+        bool onlyInsulin)
     {
         var searchFilter = Builders<BsonDocument>.Filter.And(
             Helpers.GetPatientReferenceFilter(patientId),
-            Builders<BsonDocument>.Filter.Eq("status",
-                MedicationRequest.medicationrequestStatus.Active.GetLiteral()));
+            Builders<BsonDocument>.Filter.Eq("status", MedicationRequest.medicationrequestStatus.Active.GetLiteral()));
+        if (onlyInsulin)
+        {
+            searchFilter &= Builders<BsonDocument>.Filter.Eq("isInsulin", true);
+        }
+
         var resultFilters = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
 
         var results = await this.medicationRequestCollection.Find(resultFilters)

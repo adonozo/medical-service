@@ -43,6 +43,7 @@ public class AlexaService : IAlexaService
     /// <inheritdoc/>
     public async Task<Bundle> SearchMedicationRequests(string patientEmailOrId,
         DateTime dateTime,
+        bool onlyInsulin,
         CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
         string? timezone = "UTC")
     {
@@ -53,7 +54,8 @@ public class AlexaService : IAlexaService
 
         var medicationRequests = await this.medicationRequestDao.GetActiveMedicationRequests(
             patientEmailOrId,
-            PaginationRequest.FirstPaginatedResults);
+            PaginationRequest.FirstPaginatedResults,
+            onlyInsulin);
 
         var eventsWithStartDate = this.GetHealthEventsWithStartDate(medicationRequests.Results, patient.ToInternalPatient());
         if (!eventsWithStartDate.IsSuccess)

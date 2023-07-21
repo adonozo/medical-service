@@ -75,9 +75,11 @@ public interface IMedicationRequestDao
     /// </summary>
     /// <param name="patientId">The patient's user ID, not email</param>
     /// <param name="paginationRequest">The pagination request parameter.</param>
+    /// <param name="onlyInsulin">To tell if it should filter out non-insulin medication requests</param>
     /// <returns>The list of active medication requests within a <see cref="PaginatedResult{T}"/> object.</returns>
     Task<PaginatedResult<IEnumerable<MedicationRequest>>> GetActiveMedicationRequests(string patientId,
-        PaginationRequest paginationRequest);
+        PaginationRequest paginationRequest,
+        bool onlyInsulin);
 
     /// <summary>
     /// Gets the all the active medication requests, insulin and non-insulin.

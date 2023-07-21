@@ -22,35 +22,13 @@ public class AlexaControllerTest
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
         var observationsService = Substitute.For<ObservationService>();
-        alexaService.SearchMedicationRequests(Arg.Any<string>(), Arg.Any<DateTime>(),
+        alexaService.SearchMedicationRequests(Arg.Any<string>(), Arg.Any<DateTime>(), false,
                 Arg.Any<CustomEventTiming>(), Arg.Any<string>())
             .Returns(new Bundle());
         var controller = new AlexaController(alexaService, observationsService);
 
         // Act
         var result = await controller.GetMedicationRequest(
-            idOrEmail: "test@mail.com",
-            date: DateTime.Now,
-            timing: CustomEventTiming.ALL_DAY);
-        var status = (ObjectResult)result;
-
-        // Assert
-        status.StatusCode.Should().Be(StatusCodes.Status200OK);
-    }
-
-    [Fact]
-    public async Task GetInsulinMedicationRequest_WhenRequestIsCorrect_ReturnsStatusOk()
-    {
-        // Arrange
-        var alexaService = Substitute.For<IAlexaService>();
-        var observationsService = Substitute.For<ObservationService>();
-        alexaService.ProcessInsulinMedicationRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
-                Arg.Any<CustomEventTiming>(), Arg.Any<string>())
-            .Returns(new Bundle());
-        var controller = new AlexaController(alexaService, observationsService);
-
-        // Act
-        var result = await controller.GetInsulinMedicationRequest(
             idOrEmail: "test@mail.com",
             date: DateTime.Now,
             timing: CustomEventTiming.ALL_DAY);

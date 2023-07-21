@@ -116,7 +116,7 @@ public class MedicationRequestService : IMedicationRequestService
             this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), new NotFoundException());
 
         var medicationRequests =
-            await this.medicationRequestDao.GetActiveMedicationRequests(patient.Id, paginationRequest);
+            await this.medicationRequestDao.GetActiveMedicationRequests(patient.Id, paginationRequest, false);
 
         var paginatedBundle = medicationRequests.ToBundleResult();
         this.logger.LogDebug("Found {Count} active medication requests", medicationRequests.Results.Count());

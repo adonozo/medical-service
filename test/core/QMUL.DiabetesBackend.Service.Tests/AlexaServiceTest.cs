@@ -38,7 +38,7 @@ public class AlexaServiceTest
             .Returns(new List<HealthEvent>());
 
         // Act
-        var result = await alexaService.SearchMedicationRequests(Guid.NewGuid().ToString(), DateTime.Now,
+        var result = await alexaService.SearchMedicationRequests(Guid.NewGuid().ToString(), DateTime.Now, false,
             CustomEventTiming.ALL_DAY);
 
         // Assert
