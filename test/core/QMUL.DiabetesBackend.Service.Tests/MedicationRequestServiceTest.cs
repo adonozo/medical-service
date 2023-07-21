@@ -155,7 +155,7 @@ public class MedicationRequestServiceTest
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
         var medicationRequestService =
             new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, dataGatherer, logger);
-        var paginatedResult = new PaginatedResult<IEnumerable<Resource>>
+        var paginatedResult = new PaginatedResult<IEnumerable<MedicationRequest>>
         {
             Results = new Collection<MedicationRequest>()
         };

@@ -46,13 +46,15 @@ public class MedicationRequestService : IMedicationRequestService
     /// <inheritdoc/>>
     public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
     {
-        var internalPatient = await this.dataGatherer.GetReferenceInternalPatientOrThrow(request.Subject);
         await this.SetInsulinRequest(request);
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
 
+        foreach (var dosage in request.DosageInstruction.Where(dosage => dosage.Timing.Repeat.NeedsStartDate()))
+        {
+            dosage.Timing.SetNeedsStartDateFlag();
+        }
+
         var newRequest = await this.medicationRequestDao.CreateMedicationRequest(request);
-        var events = ResourceUtils.GenerateEventsFrom(newRequest, internalPatient);
-        await this.eventDao.CreateEvents(events);
         this.logger.LogDebug("Medication request created with ID {Id}", newRequest.Id);
         return newRequest;
     }
