@@ -71,13 +71,12 @@ public interface IMedicationRequestDao
     Task<MedicationRequest?> GetMedicationRequestForDosage(string patientId, string dosageId);
 
     /// <summary>
-    /// Gets the active medication requests for the patient, i.e., the ones that the patient needs to follow. Does
-    /// not include insulin request
+    /// Gets the active medication requests for the patient, i.e., the ones that the patient needs to follow
     /// </summary>
     /// <param name="patientId">The patient's user ID, not email</param>
     /// <param name="paginationRequest">The pagination request parameter.</param>
     /// <returns>The list of active medication requests within a <see cref="PaginatedResult{T}"/> object.</returns>
-    Task<PaginatedResult<IEnumerable<Resource>>> GetActiveMedicationRequests(string patientId,
+    Task<PaginatedResult<IEnumerable<MedicationRequest>>> GetActiveMedicationRequests(string patientId,
         PaginationRequest paginationRequest);
 
     /// <summary>
