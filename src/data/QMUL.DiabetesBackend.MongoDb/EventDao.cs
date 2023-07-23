@@ -31,37 +31,6 @@ public class EventDao : MongoDaoBase, IEventDao
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType[] types, DateTime start,
-        DateTime end)
-    {
-        var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.ResourceReference.EventType, types);
-        filter &= this.eventCollection.Find(healthEvent =>
-                healthEvent.PatientId == patientId
-                && healthEvent.EventDateTime > start
-                && healthEvent.EventDateTime < end)
-            .Filter;
-        var result = this.eventCollection.Find(filter)
-            .Project(mongoEvent => this.mapper.Map<HealthEvent>(mongoEvent));
-        return await result.ToListAsync();
-    }
-
-    /// <inheritdoc />
-    public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType[] types, DateTime start,
-        DateTime end, CustomEventTiming[] timings)
-    {
-        var filter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.EventTiming, timings);
-        filter &= Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.ResourceReference.EventType, types);
-        filter &= this.eventCollection.Find(healthEvent =>
-                healthEvent.PatientId == patientId
-                && healthEvent.EventDateTime > start
-                && healthEvent.EventDateTime < end)
-            .Filter;
-        var result = this.eventCollection.Find(filter)
-            .Project(mongoEvent => this.mapper.Map<HealthEvent>(mongoEvent));
-        return await result.ToListAsync();
-    }
-
-    /// <inheritdoc />
     public async Task<IEnumerable<HealthEvent>> GetNextEvents(string patientId, EventType type)
     {
         var date = DateTime.UtcNow;
