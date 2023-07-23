@@ -13,21 +13,6 @@ using Model.Exceptions;
 public interface IEventDao
 {
     /// <summary>
-    /// Deletes all events related to a resource, i.e., Medication or Service requests. Should be called to tidy up
-    /// resources. 
-    /// </summary>
-    /// <param name="resourceId">Medication or Service request ID</param>
-    /// <returns>A bool to indicate if the operation was successful</returns>
-    Task<bool> DeleteRelatedEvents(string resourceId);
-
-    /// <summary>
-    /// Deletes the event series based on a reference ID.
-    /// </summary>
-    /// <param name="referenceId">The Reference ID. i.e., the dosageInstruction ID from the medication request.</param>
-    /// <returns>A bool to indicate if the delete operation was successful.</returns>
-    Task<bool> DeleteEventSeries(string referenceId);
-
-    /// <summary>
     /// Updates all events' times that matches the timing. Only newer events. 
     /// </summary>
     /// <param name="patientId">The patient ID</param>

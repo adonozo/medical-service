@@ -94,7 +94,6 @@ public class ServiceRequestService : IServiceRequestService
             throw new ValidationException($"Service request {id} is part of an active care plan");
         }
 
-        await this.eventDao.DeleteRelatedEvents(id);
         return await this.serviceRequestDao.DeleteServiceRequest(id);
     }
 }

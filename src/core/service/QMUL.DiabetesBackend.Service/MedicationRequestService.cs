@@ -106,7 +106,6 @@ public class MedicationRequestService : IMedicationRequestService
             throw new ValidationException($"Medication request {id} is part of an active care plan");
         }
 
-        await this.eventDao.DeleteRelatedEvents(id);
         return await this.medicationRequestDao.DeleteMedicationRequest(id);
     }
 
