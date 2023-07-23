@@ -15,28 +15,6 @@ public interface IEventDao
     /// Gets health events for the given parameters.
     /// </summary>
     /// <param name="patientId">The patient ID.</param>
-    /// <param name="type">The <see cref="EventType"/></param>
-    /// <param name="start">The range start datetime</param>
-    /// <param name="end">The range end datetime to look for</param>
-    /// <returns>A list of <see cref="HealthEvent"/> matching the parameters.</returns>
-    Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime start, DateTime end);
-
-    /// <summary>
-    /// Gets health events for the given parameters.
-    /// </summary>
-    /// <param name="patientId">The patient ID.</param>
-    /// <param name="type">The <see cref="EventType"/></param>
-    /// <param name="start">The range start datetime</param>
-    /// <param name="end">The range end datetime to look for</param>
-    /// <param name="timings">An array of <see cref="CustomEventTiming"/> to look for</param>
-    /// <returns>A list of <see cref="HealthEvent"/> matching the parameters.</returns>
-    Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime start, DateTime end,
-        CustomEventTiming[] timings);
-
-    /// <summary>
-    /// Gets health events for the given parameters.
-    /// </summary>
-    /// <param name="patientId">The patient ID.</param>
     /// <param name="types">An array of <see cref="EventType"/> to look for.</param>
     /// <param name="start">The range start datetime</param>
     /// <param name="end">The range end datetime to look for</param>

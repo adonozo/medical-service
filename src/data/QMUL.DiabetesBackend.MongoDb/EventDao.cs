@@ -31,35 +31,6 @@ public class EventDao : MongoDaoBase, IEventDao
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime start,
-        DateTime end)
-    {
-        var result = this.eventCollection.Find(healthEvent =>
-                healthEvent.PatientId == patientId
-                && healthEvent.ResourceReference.EventType == type
-                && healthEvent.EventDateTime > start
-                && healthEvent.EventDateTime < end)
-            .Project(mongoEvent => this.mapper.Map<HealthEvent>(mongoEvent));
-        return await result.ToListAsync();
-    }
-
-    /// <inheritdoc />
-    public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType type, DateTime start,
-        DateTime end, CustomEventTiming[] timings)
-    {
-        var timingFilter = Builders<MongoEvent>.Filter.In(healthEvent => healthEvent.EventTiming, timings);
-        timingFilter &= this.eventCollection.Find(healthEvent =>
-                healthEvent.PatientId == patientId
-                && healthEvent.ResourceReference.EventType == type
-                && healthEvent.EventDateTime > start
-                && healthEvent.EventDateTime < end)
-            .Filter;
-        var result = this.eventCollection.Find(timingFilter)
-            .Project(mongoEvent => this.mapper.Map<HealthEvent>(mongoEvent));
-        return await result.ToListAsync();
-    }
-
-    /// <inheritdoc />
     public async Task<IEnumerable<HealthEvent>> GetEvents(string patientId, EventType[] types, DateTime start,
         DateTime end)
     {

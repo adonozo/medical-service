@@ -47,8 +47,6 @@ public class AlexaService : IAlexaService
         CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
         string? timezone = "UTC")
     {
-        logger.LogTrace("Processing Alexa Medication request type");
-
         var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new NotFoundException());
 
@@ -79,61 +77,35 @@ public class AlexaService : IAlexaService
     }
 
     /// <inheritdoc/>
-    public async Task<Bundle?> ProcessInsulinMedicationRequest(string patientEmailOrId,
+    public async Task<Bundle?> ProcessGlucoseServiceRequest(string patientEmailOrId,
         DateTime dateTime,
         CustomEventTiming timing,
         string timezone = "UTC")
     {
-        logger.LogTrace("Processing Alexa Insulin request type");
-        return await this.GetMedicationRequests(
-            patientEmailOrId: patientEmailOrId,
-            dateTime: dateTime,
-            timing: timing,
-            type: EventType.InsulinDosage,
-            timezone: timezone);
-    }
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
+            await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new NotFoundException());
 
-    /// <inheritdoc/>
-    public async Task<Bundle?> ProcessGlucoseServiceRequest(string patientEmailOrId, DateTime dateTime,
-        CustomEventTiming timing, string timezone = "UTC")
-    {
-        logger.LogTrace("Processing Alexa Glucose service request type");
-        var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
-        if (patient is null)
+        var serviceRequests = await this.serviceRequestDao.GetActiveServiceRequests(patientEmailOrId);
+
+        var eventsWithStartDate = this.GetHealthEventsWithStartDate(serviceRequests, patient.ToInternalPatient());
+        if (!eventsWithStartDate.IsSuccess)
         {
-            return null;
+            var errorBundle = ResourceUtils.GenerateSearchBundle(new [] { eventsWithStartDate.Error });
+            return errorBundle;
         }
 
         var timingPreferences = patient.GetTimingPreference();
-        var timings = EventTimingMapper.GetRelatedTimings(timing);
-        IEnumerable<HealthEvent> events;
-        if (timings.Length == 0)
-        {
-            var (start, end) = EventTimingMapper.GetTimingInterval(
-                preferences: timingPreferences,
-                dateTime: dateTime,
-                timing: timing,
-                timezone: timezone,
-                defaultOffset: DefaultExactTimeOffsetMinutes);
-            events = await this.eventDao.GetEvents(
-                patientId: patient.Id,
-                type: EventType.Measurement,
-                start: start.UtcDateTime,
-                end: end.UtcDateTime);
-        }
-        else
-        {
-            var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, timezone);
-            events = await this.eventDao.GetEvents(
-                patientId: patient.Id,
-                type: EventType.Measurement,
-                start: start.UtcDateTime,
-                end: end.UtcDateTime,
-                timings: timings);
-        }
 
-        var bundle = await this.GenerateSearchBundle(events.ToList());
-        return bundle;
+        var (startDate, endDate) = EventTimingMapper.GetTimingInterval(
+            preferences: timingPreferences,
+            dateTime: dateTime,
+            timing: timing,
+            timezone: timezone,
+            defaultOffset: DefaultExactTimeOffsetMinutes);
+
+        var events = eventsWithStartDate.Results
+            .Where(@event => @event.EventDateTime >= startDate && @event.EventDateTime <= endDate);
+        return await this.GenerateSearchBundle(@events.ToList());
     }
 
     /// <inheritdoc/>
@@ -326,49 +298,6 @@ public class AlexaService : IAlexaService
         };
     }
 
-    private async Task<Bundle?> GetMedicationRequests(string patientEmailOrId,
-        DateTime dateTime,
-        CustomEventTiming timing,
-        EventType type,
-        string timezone = "UTC")
-    {
-        var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
-        if (patient is null)
-        {
-            return null;
-        }
-
-        var timingPreferences = patient.GetTimingPreference();
-        var timings = EventTimingMapper.GetRelatedTimings(timing);
-        IEnumerable<HealthEvent> events;
-        if (timings.Length == 0)
-        {
-            var (start, end) = EventTimingMapper.GetTimingInterval(
-                preferences: timingPreferences,
-                dateTime: dateTime,
-                timing: timing,
-                timezone: timezone,
-                defaultOffset: DefaultExactTimeOffsetMinutes);
-            events = await this.eventDao.GetEvents(
-                patientId: patient.Id,
-                type: type,
-                start: start.UtcDateTime,
-                end: end.UtcDateTime);
-        }
-        else
-        {
-            var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, timezone);
-            events = await this.eventDao.GetEvents(
-                patientId: patient.Id,
-                type: type,
-                start: start.UtcDateTime,
-                end: end.UtcDateTime,
-                timings: timings);
-        }
-
-        return await this.GenerateSearchBundle(events.ToList());
-    }
-
     private async Task<Bundle> GenerateSearchBundle(IReadOnlyCollection<HealthEvent> healthEvents)
     {
         var serviceEvents = healthEvents
@@ -461,5 +390,28 @@ public class AlexaService : IAlexaService
         }
 
         return Result<IEnumerable<HealthEvent>, MedicationRequest>.Success(healthEvents);
+    }
+
+    private Result<IEnumerable<HealthEvent>, ServiceRequest> GetHealthEventsWithStartDate(
+        IEnumerable<ServiceRequest> serviceRequests,
+        InternalPatient patient)
+    {
+        var healthEvents = new List<HealthEvent>();
+        foreach (var request in serviceRequests)
+        {
+            if (request.Occurrence is not Timing timing)
+            {
+                throw new InvalidOperationException($"Request {request.Id} does not have a valid Occurrence");
+            }
+
+            if (timing.Repeat.NeedsStartDate())
+            {
+                return Result<IEnumerable<HealthEvent>, ServiceRequest>.Fail(request);
+            }
+
+            healthEvents.AddRange(ResourceUtils.GenerateEventsFrom(request, patient));
+        }
+
+        return Result<IEnumerable<HealthEvent>, ServiceRequest>.Success(healthEvents);
     }
 }

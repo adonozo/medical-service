@@ -28,18 +28,6 @@ public interface IAlexaService
         string? timezone = "UTC");
 
     /// <summary>
-    /// Gets the insulin medication requests for a given patient based on a date, timing, and the user's timezone.
-    /// The results are limited to a single day timespan due to CustomEventTiming.
-    /// </summary>
-    /// <param name="patientEmailOrId">The patient's unique email or ID</param>
-    /// <param name="dateTime">The date and time to get the results from</param>
-    /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
-    /// <param name="timezone">The user's timezone. Defaults to UTC</param>
-    /// <returns>A <see cref="Bundle"/> with the results, or null if the patient was not found.</returns>
-    Task<Bundle?> ProcessInsulinMedicationRequest(string patientEmailOrId, DateTime dateTime,
-        CustomEventTiming timing, string timezone = "UTC");
-
-    /// <summary>
     /// Gets the glucose service requests for a given patient based on a date, timing, and the user's timezone.
     /// The results are limited to a single day timespan due to CustomEventTiming.
     /// </summary>

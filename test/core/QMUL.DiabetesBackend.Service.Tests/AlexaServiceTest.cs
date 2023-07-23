@@ -23,7 +23,7 @@ using Task = System.Threading.Tasks.Task;
 public class AlexaServiceTest
 {
     [Fact]
-    public async Task ProcessMedicationRequest_WhenRequestIsSuccessful_ReturnsBundleAndCallsMethod()
+    public async Task ProcessMedicationRequest_WhenRequestIsSuccessful_ReturnsBundle()
     {
         // Arrange
         var patientDao = Substitute.For<IPatientDao>();
@@ -34,21 +34,17 @@ public class AlexaServiceTest
         var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
-        eventDao.GetEvents(Arg.Any<string>(), Arg.Any<EventType>(), Arg.Any<DateTime>(), Arg.Any<DateTime>())
-            .Returns(new List<HealthEvent>());
 
         // Act
         var result = await alexaService.SearchMedicationRequests(Guid.NewGuid().ToString(), DateTime.Now, false,
             CustomEventTiming.ALL_DAY);
 
         // Assert
-        await eventDao.Received(1).GetEvents(Arg.Any<string>(), EventType.MedicationDosage, Arg.Any<DateTime>(),
-            Arg.Any<DateTime>());
         result.Should().BeOfType<Bundle>();
     }
 
     [Fact]
-    public async Task ProcessInsulinMedicationRequest_WhenRequestIsSuccessful_ReturnsBundleAndCallsMethod()
+    public async Task ProcessGlucoseServiceRequest_WhenRequestIsSuccessful_ReturnsBundle()
     {
         // Arrange
         var patientDao = Substitute.For<IPatientDao>();
@@ -59,41 +55,12 @@ public class AlexaServiceTest
         var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
 
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
-        eventDao.GetEvents(Arg.Any<string>(), Arg.Any<EventType>(), Arg.Any<DateTime>(), Arg.Any<DateTime>())
-            .Returns(new List<HealthEvent>());
-
-        // Act
-        var result = await alexaService.ProcessInsulinMedicationRequest(Guid.NewGuid().ToString(), DateTime.Now,
-            CustomEventTiming.ALL_DAY);
-
-        // Assert
-        await eventDao.Received(1).GetEvents(Arg.Any<string>(), EventType.InsulinDosage, Arg.Any<DateTime>(),
-            Arg.Any<DateTime>());
-        result.Should().BeOfType<Bundle>();
-    }
-
-    [Fact]
-    public async Task ProcessGlucoseServiceRequest_WhenRequestIsSuccessful_ReturnsBundleAndCallsMethod()
-    {
-        // Arrange
-        var patientDao = Substitute.For<IPatientDao>();
-        var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
-        var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
-        var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
-
-        patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
-        eventDao.GetEvents(Arg.Any<string>(), Arg.Any<EventType>(), Arg.Any<DateTime>(), Arg.Any<DateTime>())
-            .Returns(new List<HealthEvent>());
 
         // Act
         var result = await alexaService.ProcessGlucoseServiceRequest(Guid.NewGuid().ToString(), DateTime.Now,
             CustomEventTiming.ALL_DAY);
 
         // Assert
-        await eventDao.Received(1).GetEvents(Arg.Any<string>(), EventType.Measurement, Arg.Any<DateTime>(),
-            Arg.Any<DateTime>());
         result.Should().BeOfType<Bundle>();
     }
 
