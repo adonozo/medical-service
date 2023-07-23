@@ -191,7 +191,6 @@ public class CarePlanService : ICarePlanService
             .ToArray();
         var resourceIds = medicationRequestsIds.Union(serviceRequestIds);
 
-        await this.eventDao.DeleteAllRelatedResources(resourceIds.ToArray());
         await this.medicationRequestDao.DeleteMedicationRequests(medicationRequestsIds);
         await this.serviceRequestDao.DeleteServiceRequests(serviceRequestIds);
 

@@ -2,7 +2,6 @@ namespace QMUL.DiabetesBackend.MongoDb;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using DataInterfaces;
@@ -30,24 +29,6 @@ public class EventDao : MongoDaoBase, IEventDao
         this.logger = logger;
         this.mapper = mapper;
         this.eventCollection = this.Database.GetCollection<MongoEvent>(CollectionName);
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> CreateEvents(List<HealthEvent> events)
-    {
-        if (events.Count == 0)
-        {
-            this.logger.LogDebug("No health events added");
-            return true;
-        }
-
-        this.logger.LogDebug("Creating health events");
-        var mongoEvents = events.Select(this.mapper.Map<MongoEvent>).ToArray();
-
-        await this.eventCollection.InsertManyAsync(mongoEvents);
-        this.logger.LogDebug("Created {Count} events", mongoEvents.Length);
-
-        return true;
     }
 
     /// <inheritdoc />
