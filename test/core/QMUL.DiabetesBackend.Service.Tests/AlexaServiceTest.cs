@@ -266,8 +266,6 @@ public class AlexaServiceTest
         medicationRequestDao.UpdateMedicationRequest(Arg.Any<string>(),
                 Arg.Do<MedicationRequest>(med => medicationRequest = med))
             .Returns(Task.FromResult(true));
-        eventDao.DeleteEventSeries(Arg.Any<string>()).Returns(true);
-        eventDao.CreateEvents(Arg.Any<List<HealthEvent>>()).Returns(true);
         var expectedDate = DateTime.Now;
 
         // Act
@@ -278,92 +276,6 @@ public class AlexaServiceTest
         result.Should().Be(true);
         dosage.Should().NotBeNull();
         dosage?.Timing.GetStartDate().Should().NotBeNull().And.Be(expectedDate);
-    }
-
-    [Fact]
-    public async Task UpsertDosageStartDate_WhenRequestIsSuccessful_EventsAreUpdated()
-    {
-        // Arrange
-        var patientDao = Substitute.For<IPatientDao>();
-        var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
-        var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
-        var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
-
-        var patient = TestUtils.GetStubPatient();
-        patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
-        var dosageId = Guid.NewGuid().ToString();
-        var medicationRequestId = Guid.NewGuid().ToString();
-        var medicationRequest = GetTestMedicationRequest(dosageId, medicationRequestId);
-        medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
-            .Returns(medicationRequest);
-        eventDao.DeleteEventSeries(Arg.Any<string>()).Returns(true);
-        eventDao.CreateEvents(Arg.Any<List<HealthEvent>>()).Returns(true);
-        var expectedDate = DateTime.Now;
-
-        // Act
-        await alexaService.UpsertDosageStartDate(Guid.NewGuid().ToString(), dosageId, expectedDate);
-
-        // Assert
-        await eventDao.Received(1).DeleteEventSeries(medicationRequestId);
-        await eventDao.Received(1).CreateEvents(Arg.Any<List<HealthEvent>>());
-    }
-
-    [Fact]
-    public async Task UpsertDosageStartDate_WhenEventsAreNotDeleted_ThrowsException()
-    {
-        // Arrange
-        var patientDao = Substitute.For<IPatientDao>();
-        var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
-        var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
-        var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
-
-        var patient = TestUtils.GetStubPatient();
-        patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
-        var dosageId = Guid.NewGuid().ToString();
-        medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
-            .Returns(GetTestMedicationRequest(dosageId));
-        eventDao.DeleteEventSeries(Arg.Any<string>()).Returns(false);
-
-        // Act
-        var action = new Func<Task<bool>>(() =>
-            alexaService.UpsertDosageStartDate(Guid.NewGuid().ToString(), dosageId, DateTime.Now));
-
-        // Assert
-        await action.Should().ThrowAsync<WriteResourceException>();
-    }
-
-    [Fact]
-    public async Task UpsertDosageStartDate_WhenEventsAreNotCreated_ThrowsException()
-    {
-        // Arrange
-        var patientDao = Substitute.For<IPatientDao>();
-        var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
-        var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
-        var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
-
-        var patient = TestUtils.GetStubPatient();
-        patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
-        var dosageId = Guid.NewGuid().ToString();
-        medicationRequestDao.GetMedicationRequestForDosage(Arg.Any<string>(), Arg.Any<string>())
-            .Returns(GetTestMedicationRequest(dosageId));
-        eventDao.DeleteEventSeries(Arg.Any<string>()).Returns(true);
-        eventDao.CreateEvents(Arg.Any<List<HealthEvent>>()).Throws(new Exception());
-
-        // Act
-        var action = new Func<Task<bool>>(() =>
-            alexaService.UpsertDosageStartDate(Guid.NewGuid().ToString(), dosageId, DateTime.Now));
-
-        // Assert
-        await action.Should().ThrowAsync<Exception>();
     }
 
     [Fact]

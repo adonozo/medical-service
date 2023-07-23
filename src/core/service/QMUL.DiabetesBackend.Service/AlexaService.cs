@@ -482,22 +482,6 @@ public class AlexaService : IAlexaService
         medicationRequest.DosageInstruction[index].Timing.SetStartDate(startDate);
         medicationRequest.DosageInstruction[index].Timing.RemoveNeedsStartDateFlag();
         await this.medicationRequestDao.UpdateMedicationRequest(medicationRequest.Id, medicationRequest);
-
-        medicationRequest = GetMedicationRequestWithSingleDosage(medicationRequest, dosageId);
-        await this.UpdateHealthEvents(medicationRequest, patient);
-    }
-
-    private static MedicationRequest GetMedicationRequestWithSingleDosage(MedicationRequest request,
-        string dosageId)
-    {
-        var dosage = request.DosageInstruction.FirstOrDefault(dose => dose.ElementId == dosageId);
-        if (dosage == null)
-        {
-            throw new ValidationException($"Could not get the dosage from the medication request {dosageId}");
-        }
-
-        request.DosageInstruction = new List<Dosage> { dosage };
-        return request;
     }
 
     private async Task SetServiceRequestStartDate(InternalPatient patient, string serviceRequestId,
@@ -519,20 +503,6 @@ public class AlexaService : IAlexaService
         serviceRequest.Occurrence = timing;
 
         await this.serviceRequestDao.UpdateServiceRequest(serviceRequestId, serviceRequest);
-        await this.UpdateHealthEvents(serviceRequest, patient);
-    }
-
-    private async Task UpdateHealthEvents(DomainResource request, InternalPatient patient)
-    {
-        var deleteEvents = await this.eventDao.DeleteEventSeries(request.Id);
-        if (!deleteEvents)
-        {
-            this.logger.LogWarning("Could not delete events series for dosage {Id}", request.Id);
-            throw new WriteResourceException("Unable to delete events for requested dosage");
-        }
-
-        var events = ResourceUtils.GenerateEventsFrom(request, patient);
-        await this.eventDao.CreateEvents(events);
     }
 
     private Result<IEnumerable<HealthEvent>, MedicationRequest> GetHealthEventsWithStartDate(

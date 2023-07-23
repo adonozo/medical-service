@@ -79,19 +79,8 @@ public class MedicationRequestService : IMedicationRequestService
             throw new ValidationException($"Medication request {id} is part of an active care plan");
         }
 
-        var internalPatient = await this.dataGatherer.GetReferenceInternalPatientOrThrow(request.Subject);
         request.Id = id;
-        var updateResult = await this.medicationRequestDao.UpdateMedicationRequest(id, request);
-        if (!updateResult)
-        {
-            return false;
-        }
-
-        await this.eventDao.DeleteRelatedEvents(id);
-        var events = ResourceUtils.GenerateEventsFrom(request, internalPatient);
-        await this.eventDao.CreateEvents(events);
-
-        return true;
+        return await this.medicationRequestDao.UpdateMedicationRequest(id, request);
     }
 
     /// <inheritdoc/>>

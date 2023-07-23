@@ -30,7 +30,6 @@ public class ServiceRequestServiceTest
         var serviceRequest = this.GetTestServiceRequest(patient.Id);
         dataGatherer.GetReferenceInternalPatientOrThrow(Arg.Any<ResourceReference>()).Returns(patient);
         serviceRequestDao.CreateServiceRequest(Arg.Any<ServiceRequest>()).Returns(serviceRequest);
-        eventDao.CreateEvents(Arg.Any<List<HealthEvent>>()).Returns(true);
 
         // Act
         var result = await serviceRequestService.CreateServiceRequest(serviceRequest);
