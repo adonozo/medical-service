@@ -36,6 +36,21 @@ public interface IServiceRequestService
     Task<bool> UpdateServiceRequest(string id, ServiceRequest request);
 
     /// <summary>
+    /// Activates a list of service requests
+    /// </summary>
+    /// <param name="ids">The list of service request IDs</param>
+    /// <returns>A boolean, true if the operation was successful.</returns>
+    Task<bool> ActivateServiceRequests(string[] ids);
+
+    /// <summary>
+    /// Revokes a list of service requests
+    /// </summary>
+    /// <param name="ids">The list of service request IDs</param>
+    /// <returns>A boolean, true if the operation was successful.</returns>
+    Task<bool> RevokeServiceRequests(string[] ids);
+
+
+    /// <summary>
     /// Deletes a <see cref="ServiceRequest"/> given an ID.
     /// </summary>
     /// <param name="id">The service request's ID to look for.</param>

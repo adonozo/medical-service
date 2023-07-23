@@ -106,7 +106,7 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     public async Task<bool> UpdateServiceRequestsStatus(string[] ids, RequestStatus status)
     {
         var filter = Helpers.GetInIdsFilter(ids);
-        var update = Builders<BsonDocument>.Update.Set("status", status);
+        var update = Builders<BsonDocument>.Update.Set("status", status.ToString().ToLowerInvariant());
         var result = await this.serviceRequestCollection.UpdateManyAsync(filter, update);
         return result.IsAcknowledged;
     }

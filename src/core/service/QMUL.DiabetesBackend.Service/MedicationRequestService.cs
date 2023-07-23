@@ -49,6 +49,7 @@ public class MedicationRequestService : IMedicationRequestService
         await this.dataGatherer.GetReferencePatientOrThrow(request.Subject);
         await this.SetInsulinRequest(request);
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
+        request.Status = MedicationRequest.medicationrequestStatus.Draft;
 
         foreach (var dosage in request.DosageInstruction.Where(dosage => dosage.Timing.Repeat.NeedsStartDate()))
         {
@@ -91,6 +92,18 @@ public class MedicationRequestService : IMedicationRequestService
         await this.eventDao.CreateEvents(events);
 
         return true;
+    }
+
+    /// <inheritdoc/>>
+    public Task<bool> ActivateMedicationRequestsStatus(string[] ids)
+    {
+        return this.medicationRequestDao.UpdateMedicationRequestsStatus(ids, RequestStatus.Active);
+    }
+
+    /// <inheritdoc/>>
+    public Task<bool> RevokeMedicationRequestsStatus(string[] ids)
+    {
+        return this.medicationRequestDao.UpdateMedicationRequestsStatus(ids, RequestStatus.Revoked);
     }
 
     /// <inheritdoc/>>

@@ -38,6 +38,7 @@ public class ServiceRequestService : IServiceRequestService
     {
         await this.dataGatherer.GetReferencePatientOrThrow(request.Subject);
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
+        request.Status = RequestStatus.Draft;
         if (request.Occurrence is Timing timing && timing.Repeat.NeedsStartDate())
         {
             timing.SetNeedsStartDateFlag();
@@ -79,6 +80,18 @@ public class ServiceRequestService : IServiceRequestService
         await this.eventDao.CreateEvents(events);
 
         return true;
+    }
+
+    /// <inheritdoc/>>
+    public Task<bool> ActivateServiceRequests(string[] ids)
+    {
+        return this.serviceRequestDao.UpdateServiceRequestsStatus(ids, RequestStatus.Active);
+    }
+
+    /// <inheritdoc/>>
+    public Task<bool> RevokeServiceRequests(string[] ids)
+    {
+        return this.serviceRequestDao.UpdateServiceRequestsStatus(ids, RequestStatus.Revoked);
     }
 
     /// <inheritdoc/>>

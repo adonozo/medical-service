@@ -152,6 +152,9 @@ public class CarePlanService : ICarePlanService
         }
 
         carePlan.Status = RequestStatus.Active;
+        await this.serviceRequestService.ActivateServiceRequests(carePlan.GetServiceRequestsIds());
+        await this.medicationRequestService.ActivateMedicationRequestsStatus(carePlan.GetMedicationRequestsIds());
+
         return await this.carePlanDao.UpdateCarePlan(id, carePlan);
     }
 
@@ -167,6 +170,9 @@ public class CarePlanService : ICarePlanService
         }
 
         carePlan.Status = RequestStatus.Revoked;
+        await this.serviceRequestService.RevokeServiceRequests(carePlan.GetServiceRequestsIds());
+        await this.medicationRequestService.RevokeMedicationRequestsStatus(carePlan.GetMedicationRequestsIds());
+
         return await this.carePlanDao.UpdateCarePlan(id, carePlan);
     }
 
