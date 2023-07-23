@@ -61,6 +61,15 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     }
 
     /// <inheritdoc />
+    public async Task<bool> UpdateMedicationRequestsStatus(string[] ids, RequestStatus status)
+    {
+        var filter = Helpers.GetInIdsFilter(ids);
+        var update = Builders<BsonDocument>.Update.Set("status", status);
+        var result = await this.medicationRequestCollection.UpdateManyAsync(filter, update);
+        return result.IsAcknowledged;
+    }
+
+    /// <inheritdoc />
     public async Task<MedicationRequest?> GetMedicationRequest(string id)
     {
         var document = await this.medicationRequestCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();

@@ -28,6 +28,14 @@ public interface IMedicationRequestDao
     Task<bool> UpdateMedicationRequest(string id, MedicationRequest actualRequest);
 
     /// <summary>
+    /// Updates the status of multiple medication requests
+    /// </summary>
+    /// <param name="ids">The IDs of the medication requests to update</param>
+    /// <param name="status">The new <see cref="RequestStatus"/></param>
+    /// <returns>A bool indicating the result.</returns>
+    Task<bool> UpdateMedicationRequestsStatus(string[] ids, RequestStatus status);
+
+    /// <summary>
     /// Gets a <see cref="MedicationRequest"/> based on the ID.
     /// </summary>
     /// <param name="id">The medication request's ID.</param>
