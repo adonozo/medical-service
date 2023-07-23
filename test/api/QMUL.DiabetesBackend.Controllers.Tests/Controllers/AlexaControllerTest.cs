@@ -61,41 +61,6 @@ public class AlexaControllerTest
     }
 
     [Fact]
-    public async Task GetAlexaNextRequest_WhenRequestIsCorrect_ReturnsStatusOk()
-    {
-        // Arrange
-        var alexaService = Substitute.For<IAlexaService>();
-        var observationsService = Substitute.For<ObservationService>();
-        alexaService.GetNextRequests(Arg.Any<string>(), Arg.Any<AlexaRequestType>()).Returns(new Bundle());
-        var controller = new AlexaController(alexaService, observationsService);
-
-        // Act
-        var result = await controller.GetAlexaNextRequest("test@gmail.com", AlexaRequestType.Medication);
-        var status = (ObjectResult)result;
-
-        // Assert
-        status.StatusCode.Should().Be(StatusCodes.Status200OK);
-    }
-
-    [Fact]
-    public async Task GetAlexaNextRequest_WhenNotFound_ReturnsNotFound()
-    {
-        // Arrange
-        var alexaService = Substitute.For<IAlexaService>();
-        var observationsService = Substitute.For<ObservationService>();
-        alexaService.GetNextRequests(Arg.Any<string>(), Arg.Any<AlexaRequestType>())
-            .Returns(Task.FromResult<Bundle>(null));
-        var controller = new AlexaController(alexaService, observationsService);
-
-        // Act
-        var result = await controller.GetAlexaNextRequest("test@gmail.com", AlexaRequestType.Medication);
-        var status = (StatusCodeResult)result;
-
-        // Assert
-        status.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-    }
-
-    [Fact]
     public async Task GetPatientObservations_WhenRequestIsCorrect_ReturnsStatusOk()
     {
         // Arrange

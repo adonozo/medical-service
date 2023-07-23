@@ -11,10 +11,8 @@ using Hl7.Fhir.Model;
 using Microsoft.Extensions.Logging;
 using Model;
 using Model.Enums;
-using Model.Exceptions;
 using Model.Extensions;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using Service;
 using Xunit;
 using ResourceReference = Model.ResourceReference;
@@ -62,72 +60,6 @@ public class AlexaServiceTest
 
         // Assert
         result.Should().BeOfType<Bundle>();
-    }
-
-    [Fact]
-    public async Task GetNextRequests_WhenArgumentHasRequestType_CallsDaoMethodAndReturnsBundle()
-    {
-        // Arrange
-        var patientDao = Substitute.For<IPatientDao>();
-        var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
-        var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
-        var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
-
-        patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
-        eventDao.GetNextEvents(Arg.Any<string>(), Arg.Any<EventType>()).Returns(Array.Empty<HealthEvent>());
-
-        // Act
-        var result = await alexaService.GetNextRequests(Guid.NewGuid().ToString(), AlexaRequestType.Glucose);
-
-        // Assert
-        await eventDao.Received(1).GetNextEvents(Arg.Any<string>(), Arg.Any<EventType>());
-        result.Should().BeOfType<Bundle>();
-    }
-
-    [Fact]
-    public async Task GetNextRequests_WhenRequestTypeIsAppointment_ReturnsEmptyBundle()
-    {
-        // Arrange
-        var patientDao = Substitute.For<IPatientDao>();
-        var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
-        var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
-        var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
-
-        patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
-
-        // Act
-        var result = await alexaService.GetNextRequests(Guid.NewGuid().ToString(), AlexaRequestType.Appointment);
-
-        // Assert
-        await eventDao.Received(0).GetNextEvents(Arg.Any<string>(), Arg.Any<EventType>());
-        result.Should().BeOfType<Bundle>();
-        result?.Entry.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task GetNextRequests_WhenArgumentDoesNotHaveRequestType_ReturnsBundleAndCallsMethod()
-    {
-        // Arrange
-        var patientDao = Substitute.For<IPatientDao>();
-        var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
-        var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
-        var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
-
-        patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
-        eventDao.GetNextEvents(Arg.Any<string>(), Arg.Any<EventType[]>()).Returns(Array.Empty<HealthEvent>());
-
-        // Act
-        var result = await alexaService.GetNextRequests(Guid.NewGuid().ToString());
-
-        // Assert
-        result.Should().BeOfType<Bundle>();
-        await eventDao.Received(1).GetNextEvents(Arg.Any<string>(), Arg.Any<EventType[]>());
     }
 
     [Fact]

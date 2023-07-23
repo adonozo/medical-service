@@ -109,41 +109,6 @@ public class AlexaService : IAlexaService
     }
 
     /// <inheritdoc/>
-    public async Task<Bundle?> GetNextRequests(string patientEmailOrId, AlexaRequestType type)
-    {
-        var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
-        if (patient is null)
-        {
-            return null;
-        }
-
-        if (type is not (AlexaRequestType.Glucose or AlexaRequestType.Insulin or AlexaRequestType.Medication))
-        {
-            return ResourceUtils.GenerateSearchBundle(Array.Empty<Resource>());
-        }
-
-        var evenType = ResourceUtils.MapRequestToEventType(type);
-        var events = await this.eventDao.GetNextEvents(patient.Id, evenType);
-        var bundle = await this.GenerateSearchBundle(events.ToList());
-        return bundle;
-    }
-
-    /// <inheritdoc/>
-    public async Task<Bundle?> GetNextRequests(string patientEmailOrId)
-    {
-        var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
-        if (patient is null)
-        {
-            return null;
-        }
-
-        var types = new[] { EventType.Measurement, EventType.InsulinDosage, EventType.MedicationDosage };
-        var events = await this.eventDao.GetNextEvents(patient.Id, types);
-        var bundle = await this.GenerateSearchBundle(events.ToList());
-        return bundle;
-    }
-
-    /// <inheritdoc/>
     public async Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming,
         DateTime dateTime)
     {

@@ -40,21 +40,6 @@ public interface IAlexaService
         CustomEventTiming timing, string timezone = "UTC");
 
     /// <summary>
-    /// Gets the next requests for a patient to follow given a request type. 
-    /// </summary>
-    /// <param name="patientEmailOrId">The patient's ID or email who owns the requests.</param>
-    /// <param name="type">The <see cref="AlexaRequestType"/></param>
-    /// <returns>A <see cref="Bundle"/> object with the list of requests, or null if the patient was not found.</returns>
-    Task<Bundle?> GetNextRequests(string patientEmailOrId, AlexaRequestType type);
-
-    /// <summary>
-    /// Gets the next requests for a patient to follow without filtering the request type.
-    /// </summary>
-    /// <param name="patientEmailOrId">The patient's ID or email who owns the requests.</param>
-    /// <returns>A <see cref="Bundle"/> object with the list of requests, or null if the patient was not found.</returns>
-    Task<Bundle?> GetNextRequests(string patientEmailOrId);
-
-    /// <summary>
     /// Updates / Adds a specific time for a event timing to the patient's list. e.g., a specific time for breakfast.  
     /// </summary>
     /// <param name="patientIdOrEmail">The patient's ID or email.</param>
