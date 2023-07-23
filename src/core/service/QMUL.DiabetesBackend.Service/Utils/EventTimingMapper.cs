@@ -71,30 +71,41 @@ public static class EventTimingMapper
     /// patient have not declared the time for breakfast before, it will use a default time. 
     /// </summary>
     /// <param name="preferences">The patient's timing preferences in a <see cref="Dictionary{TKey,TValue}"/>.</param>
-    /// <param name="startTime">The reference start date for the interval.</param>
+    /// <param name="dateTime">The reference start date for the interval.</param>
     /// <param name="timing">The timing event.</param>
     /// <param name="timezone">The patient's timezone.</param>
     /// <param name="defaultOffset">An offset for the time interval, in minutes.</param>
     /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
-    public static Tuple<DateTimeOffset, DateTimeOffset> GetIntervalForPatient(
+    public static (DateTimeOffset Start, DateTimeOffset End) GetTimingInterval(
         Dictionary<CustomEventTiming, DateTimeOffset> preferences,
-        DateTimeOffset startTime, CustomEventTiming timing, string timezone, int defaultOffset)
+        DateTimeOffset dateTime,
+        CustomEventTiming timing,
+        string timezone,
+        int defaultOffset)
     {
         DateTimeOffset start;
         DateTimeOffset end;
+
+        if (timing == CustomEventTiming.EXACT)
+        {
+            start = dateTime.AddMinutes(defaultOffset * -1);
+            end = dateTime.AddMinutes(defaultOffset);
+            return (start, end);
+        }
+
         if (preferences.ContainsKey(timing))
         {
             start = preferences[timing].AddMinutes(defaultOffset * -1);
-            start = startTime.Date.AddHours(start.Hour).AddMinutes(start.Minute);
+            start = dateTime.Date.AddHours(start.Hour).AddMinutes(start.Minute);
             end = preferences[timing].AddMinutes(defaultOffset);
-            end = startTime.Date.AddHours(end.Hour).AddMinutes(end.Minute);
+            end = dateTime.Date.AddHours(end.Hour).AddMinutes(end.Minute);
         }
         else
         {
-            return GetIntervalFromCustomEventTiming(startTime, timing, timezone);
+            return GetIntervalFromCustomEventTiming(dateTime, timing, timezone);
         }
 
-        return new Tuple<DateTimeOffset, DateTimeOffset>(start, end);
+        return (start, end);
     }
 
     /// <summary>
@@ -105,7 +116,7 @@ public static class EventTimingMapper
     /// <param name="timezone">The patient's timezone.</param>
     /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
     /// <exception cref="ArgumentOutOfRangeException">If there is not a default value for the timing event.</exception>
-    public static Tuple<DateTimeOffset, DateTimeOffset> GetIntervalFromCustomEventTiming(DateTimeOffset startTime,
+    public static (DateTimeOffset Start, DateTimeOffset End) GetIntervalFromCustomEventTiming(DateTimeOffset startTime,
         CustomEventTiming timing, string timezone)
     {
         DateTimeOffset endTime;
@@ -183,7 +194,7 @@ public static class EventTimingMapper
                 throw new ArgumentOutOfRangeException(nameof(timing), timing, null);
         }
 
-        return new Tuple<DateTimeOffset, DateTimeOffset>(startTime, endTime);
+        return (startTime, endTime);
     }
 
     /// <summary>

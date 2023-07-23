@@ -21,7 +21,7 @@ public class ObservationService : IObservationService
     private readonly IPatientDao patientDao;
     private readonly IObservationDao observationDao;
     private readonly ILogger<ObservationService> logger;
-    private const int DefaultOffset = 20; // The default offset in minutes for search between dates
+    private const int DefaultOffsetMinutes = 20; // The default offset in minutes for search between dates
 
     public ObservationService(IPatientDao patientDao, IObservationDao observationDao,
         ILogger<ObservationService> logger)
@@ -75,27 +75,18 @@ public class ObservationService : IObservationService
             await this.patientDao.GetPatientByIdOrEmail(patientId), new NotFoundException());
         var timingPreferences = patient.GetTimingPreference();
 
-        DateTimeOffset start, end;
-        if (timing == CustomEventTiming.EXACT)
-        {
-            start = dateTime.AddMinutes(DefaultOffset * -1);
-            end = dateTime.AddMinutes(DefaultOffset);
-        }
-        else
-        {
-            (start, end) = EventTimingMapper.GetIntervalForPatient(
-                preferences: timingPreferences,
-                startTime: dateTime,
-                timing: timing,
-                timezone: patientTimezone,
-                defaultOffset: DefaultOffset);
-        }
+        var (startDate, endDate) = EventTimingMapper.GetTimingInterval(
+            preferences: timingPreferences,
+            dateTime: dateTime,
+            timing: timing,
+            timezone: patientTimezone,
+            defaultOffset: DefaultOffsetMinutes);
 
         var observations = await this.observationDao.GetObservationsFor(
             patient.Id,
-            start.UtcDateTime,
-            end.UtcDateTime,
-            paginationRequest);
+            paginationRequest,
+            startDate.UtcDateTime,
+            endDate.UtcDateTime);
         var paginatedResult = observations.ToBundleResult();
         this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId,
             observations.Results.Count());

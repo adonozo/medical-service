@@ -1,6 +1,5 @@
 namespace QMUL.DiabetesBackend.Controllers.Controllers;
 
-using System;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
@@ -8,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Model;
-using Model.Enums;
 using Models;
 using Newtonsoft.Json.Linq;
 using ServiceInterfaces;
@@ -128,27 +126,6 @@ public class PatientController : ControllerBase
     {
         var result = await this.carePlanService.GetActiveCarePlans(idOrEmail);
         return this.OkOrNotFound(result);
-    }
-
-    [HttpGet("patients/{idOrEmail}/observations/")]
-    public async Task<IActionResult> GetPatientObservations([FromRoute] string idOrEmail,
-        [FromQuery] DateTime date,
-        [FromQuery] string timezone = "UTC",
-        [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT,
-        [FromQuery] int? limit = null,
-        [FromQuery] string? after = null)
-    {
-        var pagination = new PaginationRequest(limit, after);
-        var paginatedResult =
-            await this.observationService.GetObservationsFor(
-                patientId: idOrEmail,
-                timing: timing,
-                dateTime: date,
-                paginationRequest: pagination,
-                patientTimezone: timezone);
-
-        this.HttpContext.SetPaginatedResult(paginatedResult);
-        return this.Ok(paginatedResult.Results.ToJObject());
     }
 
     [HttpGet("patients/{idOrEmail}/all/observations/")]

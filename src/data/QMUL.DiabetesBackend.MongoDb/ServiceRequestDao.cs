@@ -103,6 +103,15 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     }
 
     /// <inheritdoc />
+    public async Task<bool> UpdateServiceRequestsStatus(string[] ids, RequestStatus status)
+    {
+        var filter = Helpers.GetInIdsFilter(ids);
+        var update = Builders<BsonDocument>.Update.Set("status", status.ToString().ToLowerInvariant());
+        var result = await this.serviceRequestCollection.UpdateManyAsync(filter, update);
+        return result.IsAcknowledged;
+    }
+
+    /// <inheritdoc />
     public async Task<bool> DeleteServiceRequest(string id)
     {
         this.logger.LogDebug("Deleting service requests with ID: {Id}", id);

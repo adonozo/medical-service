@@ -52,7 +52,7 @@ public interface ICarePlanService
     Task<bool> AddMedicationRequest(string carePlanId, MedicationRequest request);
 
     /// <summary>
-    /// Changes the status of a care plan to 'Active'
+    /// Changes the status of a care plan to 'Active'. It also updates the status of the contained resources.
     /// </summary>
     /// <param name="id">The care plan ID to activate</param>
     /// <returns>A boolean value to indicate if the operation was successful</returns>
@@ -61,7 +61,7 @@ public interface ICarePlanService
     Task<bool> ActivateCarePlan(string id);
 
     /// <summary>
-    /// Changes the status of a care plan to 'Revoked'
+    /// Changes the status of a care plan to 'Revoked'. It also updates the status of the contained resources.
     /// </summary>
     /// <param name="id">The care plan ID to revoke</param>
     /// <returns>A boolean value to indicate if the operation was successful</returns>

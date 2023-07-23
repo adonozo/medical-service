@@ -46,8 +46,10 @@ public interface IObservationDao
     /// <param name="paginationRequest">The paginated request parameters.</param>
     /// <returns>An <see cref="Observation"/> list within the start and end dates; contained within a paginated
     /// <see cref="PaginatedResult{T}"/> object.</returns>
-    Task<PaginatedResult<IEnumerable<Resource>>> GetObservationsFor(string patientId, DateTime start,
-        DateTime end, PaginationRequest paginationRequest);
+    Task<PaginatedResult<IEnumerable<Resource>>> GetObservationsFor(string patientId,
+        PaginationRequest paginationRequest,
+        DateTime? start = null,
+        DateTime? end = null);
 
     /// <summary>
     /// Updates a given <see cref="Observation"/>.

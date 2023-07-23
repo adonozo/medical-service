@@ -6,6 +6,7 @@ using DataInterfaces;
 using Hl7.Fhir.Model;
 using Microsoft.Extensions.Logging;
 using Model.Exceptions;
+using Model.Extensions;
 using ServiceInterfaces;
 using ServiceInterfaces.Utils;
 using Utils;
@@ -35,12 +36,16 @@ public class ServiceRequestService : IServiceRequestService
     /// <inheritdoc/>>
     public async Task<ServiceRequest> CreateServiceRequest(ServiceRequest request)
     {
-        var internalPatient = await this.dataGatherer.GetReferenceInternalPatientOrThrow(request.Subject);
+        await this.dataGatherer.GetReferencePatientOrThrow(request.Subject);
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
-        request = await this.serviceRequestDao.CreateServiceRequest(request);
+        request.Status = RequestStatus.Draft;
+        if (request.Occurrence is Timing timing && timing.Repeat.NeedsStartDate())
+        {
+            timing.SetNeedsStartDateFlag();
+            request.Occurrence = timing;
+        }
 
-        var events = ResourceUtils.GenerateEventsFrom(request, internalPatient);
-        await this.eventDao.CreateEvents(events);
+        request = await this.serviceRequestDao.CreateServiceRequest(request);
         this.logger.LogDebug("Service Request created with ID: {Id}", request.Id);
         return request;
     }
@@ -75,6 +80,18 @@ public class ServiceRequestService : IServiceRequestService
         await this.eventDao.CreateEvents(events);
 
         return true;
+    }
+
+    /// <inheritdoc/>>
+    public Task<bool> ActivateServiceRequests(string[] ids)
+    {
+        return this.serviceRequestDao.UpdateServiceRequestsStatus(ids, RequestStatus.Active);
+    }
+
+    /// <inheritdoc/>>
+    public Task<bool> RevokeServiceRequests(string[] ids)
+    {
+        return this.serviceRequestDao.UpdateServiceRequestsStatus(ids, RequestStatus.Revoked);
     }
 
     /// <inheritdoc/>>

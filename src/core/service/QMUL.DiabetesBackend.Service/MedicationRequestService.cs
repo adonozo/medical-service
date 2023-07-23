@@ -46,13 +46,17 @@ public class MedicationRequestService : IMedicationRequestService
     /// <inheritdoc/>>
     public async Task<MedicationRequest> CreateMedicationRequest(MedicationRequest request)
     {
-        var internalPatient = await this.dataGatherer.GetReferenceInternalPatientOrThrow(request.Subject);
+        await this.dataGatherer.GetReferencePatientOrThrow(request.Subject);
         await this.SetInsulinRequest(request);
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
+        request.Status = MedicationRequest.medicationrequestStatus.Draft;
+
+        foreach (var dosage in request.DosageInstruction.Where(dosage => dosage.Timing.Repeat.NeedsStartDate()))
+        {
+            dosage.Timing.SetNeedsStartDateFlag();
+        }
 
         var newRequest = await this.medicationRequestDao.CreateMedicationRequest(request);
-        var events = ResourceUtils.GenerateEventsFrom(newRequest, internalPatient);
-        await this.eventDao.CreateEvents(events);
         this.logger.LogDebug("Medication request created with ID {Id}", newRequest.Id);
         return newRequest;
     }
@@ -91,6 +95,18 @@ public class MedicationRequestService : IMedicationRequestService
     }
 
     /// <inheritdoc/>>
+    public Task<bool> ActivateMedicationRequestsStatus(string[] ids)
+    {
+        return this.medicationRequestDao.UpdateMedicationRequestsStatus(ids, RequestStatus.Active);
+    }
+
+    /// <inheritdoc/>>
+    public Task<bool> RevokeMedicationRequestsStatus(string[] ids)
+    {
+        return this.medicationRequestDao.UpdateMedicationRequestsStatus(ids, RequestStatus.Revoked);
+    }
+
+    /// <inheritdoc/>>
     public async Task<bool> DeleteMedicationRequest(string id)
     {
         var medicationRequest = await ResourceUtils.GetResourceOrThrowAsync(() => this.medicationRequestDao.GetMedicationRequest(id),
@@ -113,7 +129,7 @@ public class MedicationRequestService : IMedicationRequestService
             this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail), new NotFoundException());
 
         var medicationRequests =
-            await this.medicationRequestDao.GetActiveMedicationRequests(patient.Id, paginationRequest);
+            await this.medicationRequestDao.GetActiveMedicationRequests(patient.Id, paginationRequest, false);
 
         var paginatedBundle = medicationRequests.ToBundleResult();
         this.logger.LogDebug("Found {Count} active medication requests", medicationRequests.Results.Count());

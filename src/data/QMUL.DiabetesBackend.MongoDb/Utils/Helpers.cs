@@ -8,6 +8,7 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Model;
 using Model.Constants;
+using Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -104,7 +105,7 @@ public static class Helpers
     /// <param name="searchFilters">The filters search filters.</param>
     /// <param name="lastDataCursor">The last ID obtained from previous pagination results.</param>
     /// <returns>The pagination filter.</returns>
-    public static FilterDefinition<BsonDocument> GetPaginationFilter(FilterDefinition<BsonDocument> searchFilters,
+    public static FilterDefinition<T> GetPaginationFilter<T>(FilterDefinition<T> searchFilters,
         string lastDataCursor)
     {
         if (string.IsNullOrEmpty(lastDataCursor) || !ObjectId.TryParse(lastDataCursor, out var lastId))
@@ -112,8 +113,8 @@ public static class Helpers
             return searchFilters;
         }
 
-        return Builders<BsonDocument>.Filter.And(searchFilters,
-            Builders<BsonDocument>.Filter.Lt("_id", lastId));
+        return Builders<T>.Filter.And(searchFilters,
+            Builders<T>.Filter.Lt("_id", lastId));
     }
 
     /// <summary>
@@ -123,12 +124,12 @@ public static class Helpers
     /// <param name="searchFilter">The search filters used to get the results.</param>
     /// <param name="results">The <see cref="Resource"/> result array.</param>
     /// <returns>A <see cref="PaginatedResult{T}"/>.</returns>
-    public static async Task<PaginatedResult<IEnumerable<Resource>>> GetPaginatedResult(
-        IMongoCollection<BsonDocument> collection,
-        FilterDefinition<BsonDocument> searchFilter,
-        Resource[] results)
+    public static async Task<PaginatedResult<IEnumerable<TResource>>> GetPaginatedResult<TResource, TDocument>(
+        IMongoCollection<TDocument> collection,
+        FilterDefinition<TDocument> searchFilter,
+        TResource[] results)
     {
-        var updatedLastCursorId = results[^1].Id;
+        var updatedLastCursorId = GetLastCursorId(results);
         var count = await collection.Find(searchFilter)
             .CountDocumentsAsync();
 
@@ -136,7 +137,7 @@ public static class Helpers
             .Find(GetPaginationFilter(searchFilter, updatedLastCursorId))
             .CountDocumentsAsync();
 
-        return new PaginatedResult<IEnumerable<Resource>>
+        return new PaginatedResult<IEnumerable<TResource>>
         {
             Results = results,
             TotalResults = count,
@@ -144,4 +145,11 @@ public static class Helpers
             RemainingCount = remainingResults
         };
     }
+
+    private static string GetLastCursorId<TResource>(TResource[] resources) => resources switch
+    {
+        Resource[] fhirResources => fhirResources[^1].Id,
+        MongoEvent[] mongoEvents => mongoEvents[^1].Id,
+        _ => string.Empty
+    };
 }
