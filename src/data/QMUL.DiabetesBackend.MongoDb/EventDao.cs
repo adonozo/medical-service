@@ -8,7 +8,6 @@ using DataInterfaces;
 using Microsoft.Extensions.Logging;
 using Model;
 using Model.Enums;
-using Model.Exceptions;
 using Models;
 using MongoDB.Driver;
 
@@ -29,66 +28,6 @@ public class EventDao : MongoDaoBase, IEventDao
         this.logger = logger;
         this.mapper = mapper;
         this.eventCollection = this.Database.GetCollection<MongoEvent>(CollectionName);
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> DeleteAllRelatedResources(string[] resourceIds)
-    {
-        if (resourceIds.Length == 0)
-        {
-            return true;
-        }
-
-        var filter = Builders<MongoEvent>.Filter.In(@event => @event.ResourceReference.DomainResourceId, resourceIds);
-        var result = await this.eventCollection.DeleteManyAsync(filter);
-        return result.IsAcknowledged;
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> DeleteRelatedEvents(string resourceId)
-    {
-        this.logger.LogDebug("Deleting events with a resource ID: {Id}", resourceId);
-        var result = await this.eventCollection.DeleteManyAsync(request =>
-            request.ResourceReference.DomainResourceId == resourceId);
-        return result.IsAcknowledged;
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> DeleteEventSeries(string referenceId)
-    {
-        this.logger.LogDebug("Deleting events with a reference ID: {Id}", referenceId);
-        var result = await this.eventCollection.DeleteManyAsync(request =>
-            request.ResourceReference.EventReferenceId == referenceId);
-        return result.IsAcknowledged;
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> UpdateEventsTiming(string patientId, CustomEventTiming timing, DateTimeOffset time)
-    {
-        this.logger.LogDebug("Updating event timing for patient: {PatientId}", patientId);
-        var currentTime = DateTime.UtcNow;
-        var setTime = new Func<DateTime, DateTime>(oldTime =>
-            oldTime.Date.AddHours(time.Hour).AddMinutes(time.Minute));
-        var eventsToUpdate = await this.eventCollection.FindAsync(healthEvent =>
-            healthEvent.PatientId == patientId
-            && healthEvent.EventTiming == timing
-            && healthEvent.EventDateTime > currentTime);
-
-        using var session = await this.Database.Client.StartSessionAsync();
-        session.StartTransaction();
-        await eventsToUpdate.ForEachAsync(async healthEvent =>
-        {
-            healthEvent.EventDateTime = setTime(healthEvent.EventDateTime);
-            var updateResult = await this.eventCollection.UpdateOneAsync(session,
-                item => item.Id == healthEvent.Id,
-                Builders<MongoEvent>.Update.Set(item => item.EventDateTime, healthEvent.EventDateTime));
-            var errorMessage = $"Could not update the healthEvent with ID {healthEvent.Id}";
-            this.CheckAcknowledgedOrThrow(updateResult.IsAcknowledged, new WriteResourceException(errorMessage),
-                () => this.logger.LogWarning("{ErrorMessage}", errorMessage));
-        });
-        await session.CommitTransactionAsync();
-
-        return true;
     }
 
     /// <inheritdoc />

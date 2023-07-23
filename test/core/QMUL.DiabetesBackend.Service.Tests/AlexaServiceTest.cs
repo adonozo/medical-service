@@ -203,8 +203,6 @@ public class AlexaServiceTest
         var expectedTimingKeys = new[] { CustomEventTiming.CM, CustomEventTiming.ACM, CustomEventTiming.PCM };
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
         patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
-        eventDao.UpdateEventsTiming(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTimeOffset>())
-            .Returns(true);
 
         // Act
         var result =
@@ -231,8 +229,6 @@ public class AlexaServiceTest
         var expectedDate = DateTime.Now;
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
         patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
-        eventDao.UpdateEventsTiming(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTimeOffset>())
-            .Returns(true);
 
         // Act
         var result =

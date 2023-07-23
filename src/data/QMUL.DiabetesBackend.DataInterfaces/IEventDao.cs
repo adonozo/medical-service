@@ -5,23 +5,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Model;
 using Model.Enums;
-using Model.Exceptions;
 
 /// <summary>
 /// The Event Dao Interface
 /// </summary>
 public interface IEventDao
 {
-    /// <summary>
-    /// Updates all events' times that matches the timing. Only newer events. 
-    /// </summary>
-    /// <param name="patientId">The patient ID</param>
-    /// <param name="timing">The timing to match</param>
-    /// <param name="time">The time to change. Date is ignored</param>
-    /// <returns>A boolean value to indicate if the update was successful.</returns>
-    /// <exception cref="WriteResourceException">If any of the events were not updated.</exception>
-    Task<bool> UpdateEventsTiming(string patientId, CustomEventTiming timing, DateTimeOffset time);
-
     /// <summary>
     /// Gets health events for the given parameters.
     /// </summary>

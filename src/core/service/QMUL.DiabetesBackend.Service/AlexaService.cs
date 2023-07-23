@@ -227,10 +227,9 @@ public class AlexaService : IAlexaService
         timingPreferences = SetRelatedTimings(timingPreferences, eventTiming, dateTime);
         patient.SetTimingPreferences(timingPreferences);
 
-        await this.patientDao.UpdatePatient(patient);
         this.logger.LogDebug("Timing event updated for {IdOrEmail}: {Timing}, {DateTime}", patientIdOrEmail,
             eventTiming, dateTime);
-        return await this.UpdateRelatedTimingEvents(patient.Id, timingPreferences, eventTiming, dateTime);
+        return await this.patientDao.UpdatePatient(patient);
     }
 
     /// <inheritdoc/>
@@ -251,13 +250,20 @@ public class AlexaService : IAlexaService
     public async Task<bool> UpsertServiceRequestStartDate(string patientIdOrEmail, string serviceRequestId,
         DateTime startDate)
     {
-        var patient = await ResourceUtils.GetResourceOrThrowAsync(
-            () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
-            new ValidationException("PatientNotFound"));
-        var internalPatient = patient.ToInternalPatient();
+        var serviceRequest = await ResourceUtils.GetResourceOrThrowAsync(
+            () => this.serviceRequestDao.GetServiceRequest(serviceRequestId),
+            new NotFoundException());
 
-        await this.SetServiceRequestStartDate(internalPatient, serviceRequestId, startDate);
-        return true;
+        if (serviceRequest.Occurrence is not Timing timing)
+        {
+            throw new InvalidOperationException($"Service Request {serviceRequestId} does not have a valid occurrence");
+        }
+
+        timing.SetStartDate(startDate);
+        timing.RemoveNeedsStartDateFlag();
+        serviceRequest.Occurrence = timing;
+
+        return await this.serviceRequestDao.UpdateServiceRequest(serviceRequestId, serviceRequest);
     }
 
     /// <summary>
@@ -411,51 +417,6 @@ public class AlexaService : IAlexaService
     }
 
     /// <summary>
-    /// Updates all events related to a timing event, i.e., breakfast, lunch, and dinner.
-    /// </summary>
-    private async Task<bool> UpdateRelatedTimingEvents(string patientId,
-        IReadOnlyDictionary<CustomEventTiming, DateTimeOffset> preferences, CustomEventTiming timing,
-        DateTimeOffset dateTime)
-    {
-        bool result;
-        switch (timing)
-        {
-            case CustomEventTiming.CM:
-            case CustomEventTiming.ACM:
-            case CustomEventTiming.PCM:
-                result = await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.CM,
-                    preferences[CustomEventTiming.CM]);
-                result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.ACM,
-                    preferences[CustomEventTiming.ACM]);
-                result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.PCM,
-                    preferences[CustomEventTiming.PCM]);
-                return result;
-            case CustomEventTiming.CD:
-            case CustomEventTiming.ACD:
-            case CustomEventTiming.PCD:
-                result = await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.CD,
-                    preferences[CustomEventTiming.CD]);
-                result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.ACD,
-                    preferences[CustomEventTiming.ACD]);
-                result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.PCD,
-                    preferences[CustomEventTiming.PCD]);
-                return result;
-            case CustomEventTiming.CV:
-            case CustomEventTiming.ACV:
-            case CustomEventTiming.PCV:
-                result = await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.CV,
-                    preferences[CustomEventTiming.CV]);
-                result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.ACV,
-                    preferences[CustomEventTiming.ACV]);
-                result = result && await this.eventDao.UpdateEventsTiming(patientId, CustomEventTiming.PCV,
-                    preferences[CustomEventTiming.PCV]);
-                return result;
-            default:
-                return await this.eventDao.UpdateEventsTiming(patientId, timing, dateTime);
-        }
-    }
-
-    /// <summary>
     /// Sets the start date for a medication's request dosage.
     /// Updates a list of health events that belongs to a medication request that has a specific dosage ID. Events are
     /// deleted and created again. 
@@ -482,27 +443,6 @@ public class AlexaService : IAlexaService
         medicationRequest.DosageInstruction[index].Timing.SetStartDate(startDate);
         medicationRequest.DosageInstruction[index].Timing.RemoveNeedsStartDateFlag();
         await this.medicationRequestDao.UpdateMedicationRequest(medicationRequest.Id, medicationRequest);
-    }
-
-    private async Task SetServiceRequestStartDate(InternalPatient patient, string serviceRequestId,
-        DateTime startDate)
-    {
-        var serviceRequest = await this.serviceRequestDao.GetServiceRequest(serviceRequestId);
-        if (serviceRequest is null)
-        {
-            throw new NotFoundException();
-        }
-
-        if (serviceRequest.Occurrence is not Timing timing)
-        {
-            throw new InvalidOperationException($"Service Request {serviceRequestId} does not have a valid occurrence");
-        }
-
-        timing.SetStartDate(startDate);
-        timing.RemoveNeedsStartDateFlag();
-        serviceRequest.Occurrence = timing;
-
-        await this.serviceRequestDao.UpdateServiceRequest(serviceRequestId, serviceRequest);
     }
 
     private Result<IEnumerable<HealthEvent>, MedicationRequest> GetHealthEventsWithStartDate(
