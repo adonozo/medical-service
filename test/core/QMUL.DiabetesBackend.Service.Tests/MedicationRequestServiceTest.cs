@@ -25,7 +25,6 @@ public class MedicationRequestServiceTest
         // Arrange
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var medicationDao = Substitute.For<IMedicationDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var patientDao = Substitute.For<IPatientDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
@@ -50,7 +49,6 @@ public class MedicationRequestServiceTest
         // Arrange
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var medicationDao = Substitute.For<IMedicationDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var patientDao = Substitute.For<IPatientDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
@@ -73,7 +71,6 @@ public class MedicationRequestServiceTest
         // Arrange
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var medicationDao = Substitute.For<IMedicationDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var patientDao = Substitute.For<IPatientDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
@@ -99,7 +96,6 @@ public class MedicationRequestServiceTest
         // Arrange
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var medicationDao = Substitute.For<IMedicationDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var patientDao = Substitute.For<IPatientDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
@@ -123,7 +119,6 @@ public class MedicationRequestServiceTest
         // Arrange
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var medicationDao = Substitute.For<IMedicationDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var patientDao = Substitute.For<IPatientDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
@@ -157,7 +152,6 @@ public class MedicationRequestServiceTest
         // Arrange
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var medicationDao = Substitute.For<IMedicationDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var patientDao = Substitute.For<IPatientDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
@@ -184,7 +178,6 @@ public class MedicationRequestServiceTest
         // Arrange
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var medicationDao = Substitute.For<IMedicationDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var patientDao = Substitute.For<IPatientDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();

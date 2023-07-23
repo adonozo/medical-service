@@ -1,12 +1,10 @@
 namespace QMUL.DiabetesBackend.Service.Tests;
 
 using System;
-using System.Collections.Generic;
 using DataInterfaces;
 using FluentAssertions;
 using Hl7.Fhir.Model;
 using Microsoft.Extensions.Logging;
-using Model;
 using NSubstitute;
 using Service;
 using ServiceInterfaces.Utils;
@@ -22,7 +20,6 @@ public class ServiceRequestServiceTest
         // Arrange
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
-        var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
         var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, logger);
 
@@ -45,7 +42,6 @@ public class ServiceRequestServiceTest
         // Arrange
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
-        var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
         var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, logger);
 
@@ -65,7 +61,6 @@ public class ServiceRequestServiceTest
         // Arrange
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
-        var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
 
         var patient = TestUtils.GetStubInternalPatient();
@@ -92,7 +87,6 @@ public class ServiceRequestServiceTest
         // Arrange
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
-        var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
 
         var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, logger);

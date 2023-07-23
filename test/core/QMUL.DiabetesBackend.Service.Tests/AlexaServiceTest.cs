@@ -27,7 +27,6 @@ public class AlexaServiceTest
         var patientDao = Substitute.For<IPatientDao>();
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<AlexaService>>();
         var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
 
@@ -48,7 +47,6 @@ public class AlexaServiceTest
         var patientDao = Substitute.For<IPatientDao>();
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<AlexaService>>();
         var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
 
@@ -69,7 +67,6 @@ public class AlexaServiceTest
         var patientDao = Substitute.For<IPatientDao>();
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<AlexaService>>();
         var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
 
@@ -95,7 +92,6 @@ public class AlexaServiceTest
         var patientDao = Substitute.For<IPatientDao>();
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<AlexaService>>();
         var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
 
@@ -121,7 +117,6 @@ public class AlexaServiceTest
         var patientDao = Substitute.For<IPatientDao>();
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<AlexaService>>();
         var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
         var dosageId = Guid.NewGuid().ToString();
@@ -155,11 +150,10 @@ public class AlexaServiceTest
         var patientDao = Substitute.For<IPatientDao>();
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<AlexaService>>();
         var alexaServiceType = typeof(AlexaService);
         var alexaService = Activator.CreateInstance(alexaServiceType, patientDao, medicationRequestDao,
-            serviceRequestDao, eventDao, logger);
+            serviceRequestDao, logger);
         var privateMethod = alexaServiceType
             .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
             .First(method => method.Name == "GetMedicationBundle");
@@ -199,11 +193,10 @@ public class AlexaServiceTest
         var patientDao = Substitute.For<IPatientDao>();
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<AlexaService>>();
         var alexaServiceType = typeof(AlexaService);
         var alexaService = Activator.CreateInstance(alexaServiceType, patientDao, medicationRequestDao,
-            serviceRequestDao, eventDao, logger);
+            serviceRequestDao, logger);
         var privateMethod = alexaServiceType
             .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
             .First(method => method.Name == "GetServiceBundle");
