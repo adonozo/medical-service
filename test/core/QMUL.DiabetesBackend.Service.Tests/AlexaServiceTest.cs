@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.Service.Tests;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -30,6 +31,12 @@ public class AlexaServiceTest
         var logger = Substitute.For<ILogger<AlexaService>>();
         var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
 
+        var paginatedResult = new PaginatedResult<IEnumerable<MedicationRequest>>
+        {
+            Results = new Collection<MedicationRequest>()
+        };
+        medicationRequestDao.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>(), false)
+            .Returns(paginatedResult);
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 
         // Act

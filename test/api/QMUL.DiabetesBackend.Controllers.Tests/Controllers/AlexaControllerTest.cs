@@ -21,7 +21,7 @@ public class AlexaControllerTest
     {
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
-        var observationsService = Substitute.For<ObservationService>();
+        var observationsService = Substitute.For<IObservationService>();
         alexaService.SearchMedicationRequests(Arg.Any<string>(), Arg.Any<DateTime>(), false,
                 Arg.Any<CustomEventTiming>(), Arg.Any<string>())
             .Returns(new Bundle());
@@ -43,7 +43,7 @@ public class AlexaControllerTest
     {
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
-        var observationsService = Substitute.For<ObservationService>();
+        var observationsService = Substitute.For<IObservationService>();
         alexaService.ProcessGlucoseServiceRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
                 Arg.Any<CustomEventTiming>(), Arg.Any<string>())
             .Returns(new Bundle());
@@ -75,7 +75,13 @@ public class AlexaControllerTest
                 Arg.Any<PaginationRequest>(), Arg.Any<string>())
             .Returns(paginatedResult);
 
-        var controller = new AlexaController(alexaService, observationsService);
+        var controller = new AlexaController(alexaService, observationsService)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext(),
+            }
+        };
 
         // Act
         var observations =

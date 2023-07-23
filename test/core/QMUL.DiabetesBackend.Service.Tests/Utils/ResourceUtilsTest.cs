@@ -89,7 +89,8 @@ public class ResourceUtilsTest
         var serviceRequest = new ServiceRequest
         {
             Id = Guid.NewGuid().ToString(),
-            Contained = new List<Resource> { contained }
+            Contained = new List<Resource> { contained },
+            Occurrence = timing
         };
 
         // Act
