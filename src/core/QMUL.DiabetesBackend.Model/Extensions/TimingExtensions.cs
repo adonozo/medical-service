@@ -4,7 +4,7 @@ using System;
 using Constants;
 using Hl7.Fhir.Model;
 
-public static class DosageExtensions
+public static class TimingExtensions
 {
     /// <summary>
     /// Gets the patient's start for a resource that has a <see cref="Timing"/> instance. This date is stored as an
