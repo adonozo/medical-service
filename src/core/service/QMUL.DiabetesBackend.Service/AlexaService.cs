@@ -109,50 +109,6 @@ public class AlexaService : IAlexaService
     }
 
     /// <inheritdoc/>
-    public async Task<Bundle?> ProcessCarePlanRequest(string patientEmailOrId, DateTime dateTime,
-        CustomEventTiming timing, string timezone = "UTC")
-    {
-        this.logger.LogTrace("Processing Alexa Care Plan request type");
-        var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);
-        if (patient is null)
-        {
-            return null;
-        }
-
-        var timingPreferences = patient.GetTimingPreference();
-        var timings = EventTimingMapper.GetRelatedTimings(timing);
-        var types = new[] { EventType.Measurement, EventType.InsulinDosage, EventType.MedicationDosage };
-        IEnumerable<HealthEvent> events;
-        if (timings.Length == 0)
-        {
-            var (start, end) = EventTimingMapper.GetTimingInterval(
-                preferences: timingPreferences,
-                dateTime: dateTime,
-                timing: timing,
-                timezone: timezone,
-                defaultOffset: DefaultExactTimeOffsetMinutes);
-            events = await this.eventDao.GetEvents(
-                patientId: patient.Id,
-                types: types,
-                start: start.UtcDateTime,
-                end: end.UtcDateTime);
-        }
-        else
-        {
-            var (start, end) = EventTimingMapper.GetRelativeDayInterval(dateTime, timezone);
-            events = await this.eventDao.GetEvents(
-                patientId: patient.Id,
-                types: types,
-                start: start.UtcDateTime,
-                end: end.UtcDateTime,
-                timings: timings);
-        }
-
-        var bundle = await this.GenerateSearchBundle(events.ToList());
-        return bundle;
-    }
-
-    /// <inheritdoc/>
     public async Task<Bundle?> GetNextRequests(string patientEmailOrId, AlexaRequestType type)
     {
         var patient = await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId);

@@ -40,20 +40,6 @@ public interface IAlexaService
         CustomEventTiming timing, string timezone = "UTC");
 
     /// <summary>
-    /// Gets the complete care plan for a given patient based on a date, timing, and the user's timezone. This means
-    /// medication (insulin or not) and service requests. The results are limited to a single day timespan due to
-    /// CustomEventTiming.
-    /// </summary>
-    /// <param name="patientEmailOrId">The patient's unique email or ID</param>
-    /// <param name="dateTime">The date and time to get the results from</param>
-    /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
-    /// <param name="timezone">The user's timezone. Defaults to UTC</param>
-    /// <returns>A <see cref="Bundle"/> with the results, or null if the patient was not found.</returns>
-    Task<Bundle?> ProcessCarePlanRequest(string patientEmailOrId, DateTime dateTime,
-        CustomEventTiming timing,
-        string timezone = "UTC");
-
-    /// <summary>
     /// Gets the next requests for a patient to follow given a request type. 
     /// </summary>
     /// <param name="patientEmailOrId">The patient's ID or email who owns the requests.</param>

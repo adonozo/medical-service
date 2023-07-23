@@ -61,28 +61,6 @@ public class AlexaControllerTest
     }
 
     [Fact]
-    public async Task GetCarePlan_WhenRequestIsCorrect_ReturnsStatusOk()
-    {
-        // Arrange
-        var alexaService = Substitute.For<IAlexaService>();
-        var observationsService = Substitute.For<ObservationService>();
-        alexaService.ProcessCarePlanRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
-                Arg.Any<CustomEventTiming>(), Arg.Any<string>())
-            .Returns(new Bundle());
-        var controller = new AlexaController(alexaService, observationsService);
-
-        // Act
-        var result = await controller.GetCarePlan(
-            idOrEmail: "test@mail.com",
-            date: DateTime.Now,
-            timing: CustomEventTiming.ALL_DAY);
-        var status = (ObjectResult)result;
-
-        // Assert
-        status.StatusCode.Should().Be(StatusCodes.Status200OK);
-    }
-
-    [Fact]
     public async Task GetAlexaNextRequest_WhenRequestIsCorrect_ReturnsStatusOk()
     {
         // Arrange
