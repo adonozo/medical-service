@@ -155,13 +155,13 @@ public class MedicationRequestServiceTest
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
         var medicationRequestService =
             new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, dataGatherer, logger);
-        var paginatedResult = new PaginatedResult<IEnumerable<Resource>>
+        var paginatedResult = new PaginatedResult<IEnumerable<MedicationRequest>>
         {
             Results = new Collection<MedicationRequest>()
         };
 
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
-        medicationRequestDao.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>())
+        medicationRequestDao.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>(), false)
             .Returns(paginatedResult);
 
         // Act
@@ -172,7 +172,7 @@ public class MedicationRequestServiceTest
         result.Results.Should().BeOfType<Bundle>();
         result.Results.Type.Should().NotBeNull().And.Be(Bundle.BundleType.Searchset);
         await medicationRequestDao.Received(1)
-            .GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>());
+            .GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>(), false);
     }
 
     [Theory]

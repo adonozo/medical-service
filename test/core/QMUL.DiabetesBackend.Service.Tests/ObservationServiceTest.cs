@@ -103,8 +103,10 @@ public class ObservationServiceTest
         };
 
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
-        observationDao.GetObservationsFor(Arg.Any<string>(), Arg.Any<DateTime>(), Arg.Any<DateTime>(),
-                Arg.Any<PaginationRequest>())
+        observationDao.GetObservationsFor(Arg.Any<string>(),
+            Arg.Any<PaginationRequest>(),
+                Arg.Any<DateTime>(),
+                Arg.Any<DateTime>())
             .Returns(paginatedResult);
 
         // Act
@@ -112,8 +114,10 @@ public class ObservationServiceTest
             DateTime.Now, new PaginationRequest(20, null));
 
         // Assert
-        await observationDao.Received(1).GetObservationsFor(Arg.Any<string>(), Arg.Any<DateTime>(),
-            Arg.Any<DateTime>(), Arg.Any<PaginationRequest>());
+        await observationDao.Received(1).GetObservationsFor(Arg.Any<string>(),
+            Arg.Any<PaginationRequest>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<DateTime>());
         result.Results.Should().BeOfType<Bundle>();
         result.Results.Type.Should().NotBeNull();
     }
@@ -142,8 +146,10 @@ public class ObservationServiceTest
         };
 
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
-        observationDao.GetObservationsFor(Arg.Any<string>(), Arg.Do<DateTime>(startTime => start = startTime),
-                Arg.Do<DateTime>(endTime => end = endTime), Arg.Any<PaginationRequest>())
+        observationDao.GetObservationsFor(Arg.Any<string>(),
+                Arg.Any<PaginationRequest>(),
+                Arg.Do<DateTime>(startTime => start = startTime),
+                Arg.Do<DateTime>(endTime => end = endTime))
             .Returns(paginatedResult);
 
         // Act

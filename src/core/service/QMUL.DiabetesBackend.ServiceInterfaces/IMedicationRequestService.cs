@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
 using Model.Exceptions;
-using Task = System.Threading.Tasks.Task;
 
 /// <summary>
 /// The Medication Request Service Interface.
@@ -38,6 +37,20 @@ public interface IMedicationRequestService
     /// <exception cref="ValidationException">If the medication request was not found.</exception>
     /// <exception cref="WriteResourceException">If the medication request could not be updated.</exception>
     Task<bool> UpdateMedicationRequest(string id, MedicationRequest request);
+
+    /// <summary>
+    /// Activates a list of medication requests
+    /// </summary>
+    /// <param name="ids">The medication requests IDs</param>
+    /// <returns>A boolean, true if the operation was successful.</returns>
+    Task<bool> ActivateMedicationRequestsStatus(string[] ids);
+
+    /// <summary>
+    /// Revokes a list of medication requests
+    /// </summary>
+    /// <param name="ids">The medication requests IDs</param>
+    /// <returns>A boolean, true if the operation was successful.</returns>
+    Task<bool> RevokeMedicationRequestsStatus(string[] ids);
 
     /// <summary>
     /// Deletes a medication Request given an ID.

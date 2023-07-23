@@ -10,6 +10,8 @@ public class PaginationRequest
         this.LastCursorId = lastCursorId;
     }
 
+    public static PaginationRequest FirstPaginatedResults => new(DefaultLimit, null);
+
     public int Limit { get; }
 
     public string LastCursorId { get; }

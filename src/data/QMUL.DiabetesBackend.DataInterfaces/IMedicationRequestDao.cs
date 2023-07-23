@@ -28,6 +28,14 @@ public interface IMedicationRequestDao
     Task<bool> UpdateMedicationRequest(string id, MedicationRequest actualRequest);
 
     /// <summary>
+    /// Updates the status of multiple medication requests
+    /// </summary>
+    /// <param name="ids">The IDs of the medication requests to update</param>
+    /// <param name="status">The new <see cref="RequestStatus"/></param>
+    /// <returns>A bool indicating the result.</returns>
+    Task<bool> UpdateMedicationRequestsStatus(string[] ids, RequestStatus status);
+
+    /// <summary>
     /// Gets a <see cref="MedicationRequest"/> based on the ID.
     /// </summary>
     /// <param name="id">The medication request's ID.</param>
@@ -71,14 +79,15 @@ public interface IMedicationRequestDao
     Task<MedicationRequest?> GetMedicationRequestForDosage(string patientId, string dosageId);
 
     /// <summary>
-    /// Gets the active medication requests for the patient, i.e., the ones that the patient needs to follow. Does
-    /// not include insulin request
+    /// Gets the active medication requests for the patient, i.e., the ones that the patient needs to follow
     /// </summary>
     /// <param name="patientId">The patient's user ID, not email</param>
     /// <param name="paginationRequest">The pagination request parameter.</param>
+    /// <param name="onlyInsulin">To tell if it should filter out non-insulin medication requests</param>
     /// <returns>The list of active medication requests within a <see cref="PaginatedResult{T}"/> object.</returns>
-    Task<PaginatedResult<IEnumerable<Resource>>> GetActiveMedicationRequests(string patientId,
-        PaginationRequest paginationRequest);
+    Task<PaginatedResult<IEnumerable<MedicationRequest>>> GetActiveMedicationRequests(string patientId,
+        PaginationRequest paginationRequest,
+        bool onlyInsulin);
 
     /// <summary>
     /// Gets the all the active medication requests, insulin and non-insulin.

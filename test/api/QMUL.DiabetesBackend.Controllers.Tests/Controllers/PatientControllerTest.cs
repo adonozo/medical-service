@@ -176,30 +176,6 @@ public class PatientControllerTest
     }
 
     [Fact]
-    public async Task GetPatientObservations_WhenRequestIsCorrect_ReturnsStatusOk()
-    {
-        // Arrange
-        var observationService = Substitute.For<IObservationService>();
-        var paginatedResult = new PaginatedResult<Bundle>
-        {
-            Results = new Bundle()
-        };
-
-        observationService.GetObservationsFor(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>(),
-                Arg.Any<PaginationRequest>(), Arg.Any<string>())
-            .Returns(paginatedResult);
-
-        var controller = this.GetTestPatientController(observationService: observationService);
-
-        // Act
-        var observations = await controller.GetPatientObservations("john@mail.com", DateTime.Now);
-        var result = (ObjectResult)observations;
-
-        // Assert
-        result.StatusCode.Should().Be(StatusCodes.Status200OK);
-    }
-
-    [Fact]
     public async Task GetAllPatientObservations_WhenRequestIsCorrect_ReturnsStatusOk()
     {
         // Arrange

@@ -48,6 +48,14 @@ public interface IServiceRequestDao
     Task<bool> UpdateServiceRequest(string id, ServiceRequest actualRequest);
 
     /// <summary>
+    /// Updates the status of multiple service requests
+    /// </summary>
+    /// <param name="ids">The IDs of the service requests to update</param>
+    /// <param name="status">The new <see cref="RequestStatus"/></param>
+    /// <returns>A bool indicating the result.</returns>
+    Task<bool> UpdateServiceRequestsStatus(string[] ids, RequestStatus status);
+
+    /// <summary>
     /// Deletes a service request from the database.
     /// </summary>
     /// <param name="id">The service request ID to delete.</param>

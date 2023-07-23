@@ -61,6 +61,15 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     }
 
     /// <inheritdoc />
+    public async Task<bool> UpdateMedicationRequestsStatus(string[] ids, RequestStatus status)
+    {
+        var filter = Helpers.GetInIdsFilter(ids);
+        var update = Builders<BsonDocument>.Update.Set("status", status.ToString().ToLowerInvariant());
+        var result = await this.medicationRequestCollection.UpdateManyAsync(filter, update);
+        return result.IsAcknowledged;
+    }
+
+    /// <inheritdoc />
     public async Task<MedicationRequest?> GetMedicationRequest(string id)
     {
         var document = await this.medicationRequestCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
@@ -122,24 +131,28 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     }
 
     /// <inheritdoc />
-    public async Task<PaginatedResult<IEnumerable<Resource>>> GetActiveMedicationRequests(string patientId,
-        PaginationRequest paginationRequest)
+    public async Task<PaginatedResult<IEnumerable<MedicationRequest>>> GetActiveMedicationRequests(string patientId,
+        PaginationRequest paginationRequest,
+        bool onlyInsulin)
     {
         var searchFilter = Builders<BsonDocument>.Filter.And(
             Helpers.GetPatientReferenceFilter(patientId),
-            Builders<BsonDocument>.Filter.Eq("isInsulin", false),
-            Builders<BsonDocument>.Filter.Eq("status",
-                MedicationRequest.medicationrequestStatus.Active.GetLiteral()));
+            Builders<BsonDocument>.Filter.Eq("status", MedicationRequest.medicationrequestStatus.Active.GetLiteral()));
+        if (onlyInsulin)
+        {
+            searchFilter &= Builders<BsonDocument>.Filter.Eq("isInsulin", true);
+        }
+
         var resultFilters = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
 
         var results = await this.medicationRequestCollection.Find(resultFilters)
             .Project(document => Helpers.ToResourceAsync<MedicationRequest>(document))
             .ToListAsync();
-        Resource[] medicationRequests = await Task.WhenAll(results);
+        var medicationRequests = await Task.WhenAll(results);
         this.logger.LogTrace("Found {Count} medications", medicationRequests.Length);
         if (medicationRequests.Length == 0)
         {
-            return new PaginatedResult<IEnumerable<Resource>> { Results = medicationRequests };
+            return new PaginatedResult<IEnumerable<MedicationRequest>> { Results = medicationRequests };
         }
 
         return await Helpers.GetPaginatedResult(this.medicationRequestCollection, searchFilter, medicationRequests);
