@@ -28,18 +28,6 @@ public interface IAlexaService
         string? timezone = "UTC");
 
     /// <summary>
-    /// Gets the insulin medication requests for a given patient based on a date, timing, and the user's timezone.
-    /// The results are limited to a single day timespan due to CustomEventTiming.
-    /// </summary>
-    /// <param name="patientEmailOrId">The patient's unique email or ID</param>
-    /// <param name="dateTime">The date and time to get the results from</param>
-    /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
-    /// <param name="timezone">The user's timezone. Defaults to UTC</param>
-    /// <returns>A <see cref="Bundle"/> with the results, or null if the patient was not found.</returns>
-    Task<Bundle?> ProcessInsulinMedicationRequest(string patientEmailOrId, DateTime dateTime,
-        CustomEventTiming timing, string timezone = "UTC");
-
-    /// <summary>
     /// Gets the glucose service requests for a given patient based on a date, timing, and the user's timezone.
     /// The results are limited to a single day timespan due to CustomEventTiming.
     /// </summary>
@@ -50,35 +38,6 @@ public interface IAlexaService
     /// <returns>A <see cref="Bundle"/> with the results, or null if the patient was not found.</returns>
     Task<Bundle?> ProcessGlucoseServiceRequest(string patientEmailOrId, DateTime dateTime,
         CustomEventTiming timing, string timezone = "UTC");
-
-    /// <summary>
-    /// Gets the complete care plan for a given patient based on a date, timing, and the user's timezone. This means
-    /// medication (insulin or not) and service requests. The results are limited to a single day timespan due to
-    /// CustomEventTiming.
-    /// </summary>
-    /// <param name="patientEmailOrId">The patient's unique email or ID</param>
-    /// <param name="dateTime">The date and time to get the results from</param>
-    /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
-    /// <param name="timezone">The user's timezone. Defaults to UTC</param>
-    /// <returns>A <see cref="Bundle"/> with the results, or null if the patient was not found.</returns>
-    Task<Bundle?> ProcessCarePlanRequest(string patientEmailOrId, DateTime dateTime,
-        CustomEventTiming timing,
-        string timezone = "UTC");
-
-    /// <summary>
-    /// Gets the next requests for a patient to follow given a request type. 
-    /// </summary>
-    /// <param name="patientEmailOrId">The patient's ID or email who owns the requests.</param>
-    /// <param name="type">The <see cref="AlexaRequestType"/></param>
-    /// <returns>A <see cref="Bundle"/> object with the list of requests, or null if the patient was not found.</returns>
-    Task<Bundle?> GetNextRequests(string patientEmailOrId, AlexaRequestType type);
-
-    /// <summary>
-    /// Gets the next requests for a patient to follow without filtering the request type.
-    /// </summary>
-    /// <param name="patientEmailOrId">The patient's ID or email who owns the requests.</param>
-    /// <returns>A <see cref="Bundle"/> object with the list of requests, or null if the patient was not found.</returns>
-    Task<Bundle?> GetNextRequests(string patientEmailOrId);
 
     /// <summary>
     /// Updates / Adds a specific time for a event timing to the patient's list. e.g., a specific time for breakfast.  

@@ -21,7 +21,7 @@ public class AlexaControllerTest
     {
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
-        var observationsService = Substitute.For<ObservationService>();
+        var observationsService = Substitute.For<IObservationService>();
         alexaService.SearchMedicationRequests(Arg.Any<string>(), Arg.Any<DateTime>(), false,
                 Arg.Any<CustomEventTiming>(), Arg.Any<string>())
             .Returns(new Bundle());
@@ -43,7 +43,7 @@ public class AlexaControllerTest
     {
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
-        var observationsService = Substitute.For<ObservationService>();
+        var observationsService = Substitute.For<IObservationService>();
         alexaService.ProcessGlucoseServiceRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
                 Arg.Any<CustomEventTiming>(), Arg.Any<string>())
             .Returns(new Bundle());
@@ -61,63 +61,6 @@ public class AlexaControllerTest
     }
 
     [Fact]
-    public async Task GetCarePlan_WhenRequestIsCorrect_ReturnsStatusOk()
-    {
-        // Arrange
-        var alexaService = Substitute.For<IAlexaService>();
-        var observationsService = Substitute.For<ObservationService>();
-        alexaService.ProcessCarePlanRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
-                Arg.Any<CustomEventTiming>(), Arg.Any<string>())
-            .Returns(new Bundle());
-        var controller = new AlexaController(alexaService, observationsService);
-
-        // Act
-        var result = await controller.GetCarePlan(
-            idOrEmail: "test@mail.com",
-            date: DateTime.Now,
-            timing: CustomEventTiming.ALL_DAY);
-        var status = (ObjectResult)result;
-
-        // Assert
-        status.StatusCode.Should().Be(StatusCodes.Status200OK);
-    }
-
-    [Fact]
-    public async Task GetAlexaNextRequest_WhenRequestIsCorrect_ReturnsStatusOk()
-    {
-        // Arrange
-        var alexaService = Substitute.For<IAlexaService>();
-        var observationsService = Substitute.For<ObservationService>();
-        alexaService.GetNextRequests(Arg.Any<string>(), Arg.Any<AlexaRequestType>()).Returns(new Bundle());
-        var controller = new AlexaController(alexaService, observationsService);
-
-        // Act
-        var result = await controller.GetAlexaNextRequest("test@gmail.com", AlexaRequestType.Medication);
-        var status = (ObjectResult)result;
-
-        // Assert
-        status.StatusCode.Should().Be(StatusCodes.Status200OK);
-    }
-
-    [Fact]
-    public async Task GetAlexaNextRequest_WhenNotFound_ReturnsNotFound()
-    {
-        // Arrange
-        var alexaService = Substitute.For<IAlexaService>();
-        var observationsService = Substitute.For<ObservationService>();
-        alexaService.GetNextRequests(Arg.Any<string>(), Arg.Any<AlexaRequestType>())
-            .Returns(Task.FromResult<Bundle>(null));
-        var controller = new AlexaController(alexaService, observationsService);
-
-        // Act
-        var result = await controller.GetAlexaNextRequest("test@gmail.com", AlexaRequestType.Medication);
-        var status = (StatusCodeResult)result;
-
-        // Assert
-        status.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-    }
-
-    [Fact]
     public async Task GetPatientObservations_WhenRequestIsCorrect_ReturnsStatusOk()
     {
         // Arrange
@@ -132,7 +75,13 @@ public class AlexaControllerTest
                 Arg.Any<PaginationRequest>(), Arg.Any<string>())
             .Returns(paginatedResult);
 
-        var controller = new AlexaController(alexaService, observationsService);
+        var controller = new AlexaController(alexaService, observationsService)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext(),
+            }
+        };
 
         // Act
         var observations =

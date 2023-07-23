@@ -8,7 +8,6 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Model;
 using Model.Constants;
-using Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -149,7 +148,6 @@ public static class Helpers
     private static string GetLastCursorId<TResource>(TResource[] resources) => resources switch
     {
         Resource[] fhirResources => fhirResources[^1].Id,
-        MongoEvent[] mongoEvents => mongoEvents[^1].Id,
         _ => string.Empty
     };
 }

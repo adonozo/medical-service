@@ -80,31 +80,4 @@ public class AlexaController : ControllerBase
         var result = await this.alexaService.ProcessGlucoseServiceRequest(idOrEmail, date, timing, timezone);
         return this.OkOrNotFound(result);
     }
-
-    [HttpGet("patients/{idOrEmail}/alexa/carePlan")]
-    public async Task<IActionResult> GetCarePlan([FromRoute] string idOrEmail,
-        [FromQuery] DateTime date,
-        [FromQuery] string timezone = "UTC",
-        [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
-    {
-        var result = await this.alexaService.ProcessCarePlanRequest(idOrEmail, date, timing, timezone);
-        return this.OkOrNotFound(result);
-    }
-
-    [HttpGet("patients/{idOrEmail}/alexa/next")]
-    public async Task<IActionResult> GetAlexaNextRequest([FromRoute] string idOrEmail,
-        [FromQuery] AlexaRequestType type)
-    {
-        Bundle? result;
-        if (type == AlexaRequestType.CarePlan)
-        {
-            result = await this.alexaService.GetNextRequests(idOrEmail);
-        }
-        else
-        {
-            result = await this.alexaService.GetNextRequests(idOrEmail, type);
-        }
-
-        return this.OkOrNotFound(result);
-    }
 }

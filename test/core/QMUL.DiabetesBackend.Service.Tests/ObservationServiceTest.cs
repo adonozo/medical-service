@@ -133,7 +133,7 @@ public class ObservationServiceTest
 
         // ReSharper disable once PossibleNullReferenceException
         var defaultTime = (int)typeof(ObservationService)
-            .GetField("DefaultOffset",
+            .GetField("DefaultOffsetMinutes",
                 BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.NonPublic)
             .GetValue(null);
         DateTime start = default, end = default;
