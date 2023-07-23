@@ -16,9 +16,6 @@ public static class Extensions
 
     public const string InsulinFlag = "http://diabetes-assistant.com/fhir/StructureDefinition/InsulinFlag";
 
-    public const string ServiceRequestStartDate =
-        "http://diabetes-assistant.com/fhir/StructureDefinition/ServiceRequestStartDate";
-
     public const string CarePlanReference = "http://diabetes-assistant.com/fhir/StructureDefinition/CarePlanReference";
 
     public const string NeedsStartDateFlag = "http://diabetes-assistant.com/fhir/StructureDefinition/NeedsStartDateFlag";
