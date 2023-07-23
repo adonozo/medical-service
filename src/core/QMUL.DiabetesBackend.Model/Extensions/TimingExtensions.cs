@@ -36,16 +36,31 @@ public static class TimingExtensions
         timing.SetExtension(Extensions.TimingStartDate, fhirDate);
     }
 
+    /// <summary>
+    /// Adds an extension to a <see cref="Timing"/> to indicate that the resource needs a start date
+    /// </summary>
+    /// <param name="timing">The <see cref="Timing"/> to add the extension to</param>
     public static void SetNeedsStartDateFlag(this Timing timing)
     {
         timing.SetExtension(Extensions.NeedsStartDateFlag, new FhirBoolean(true));
     }
 
+    /// <summary>
+    /// Removes the flag extension from the <see cref="Timing"/>. To use when the resource has start date
+    /// </summary>
+    /// <param name="timing">The <see cref="Timing"/> to remove the extension from</param>
     public static void RemoveNeedsStartDateFlag(this Timing timing)
     {
         timing.RemoveExtension(Extensions.NeedsStartDateFlag);
     }
 
+    /// <summary>
+    /// Checks if the <see cref="Timing.RepeatComponent"/> needs a start date. This is always true for <see cref="Duration"/>
+    /// repeat components as it does not have an start date by design (e.g., a duration of 3 weeks - no start date).
+    /// </summary>
+    /// <param name="repeat">The resource <see cref="Timing.RepeatComponent"/></param>
+    /// <returns>A boolean value to indicate if the resource needs a start date</returns>
+    /// <exception cref="ArgumentException">If the repeat component is not <see cref="Period"/> or <see cref="Duration"/></exception>
     public static bool NeedsStartDate(this Timing.RepeatComponent repeat) => repeat.Bounds switch
     {
         Period bounds => repeat.Frequency is > 1 && string.IsNullOrEmpty(bounds.Start),
