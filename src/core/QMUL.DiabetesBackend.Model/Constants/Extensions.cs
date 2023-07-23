@@ -9,7 +9,7 @@ public static class Extensions
 
     public const string PatientAlexaId = "http://diabetes-assistant.com/fhir/StructureDefinition/AlexaId";
 
-    public const string TimingStartDate = "http://diabetes-assistant.com/fhir/StructureDefinition/DosageStartDate";
+    public const string TimingStartDate = "http://diabetes-assistant.com/fhir/StructureDefinition/TimingStartDate";
 
     public const string PatientTimingPreference =
         "http://diabetes-assistant.com/fhir/StructureDefinition/TimingPreference";
