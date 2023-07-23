@@ -17,18 +17,15 @@ using Utils;
 public class ServiceRequestService : IServiceRequestService
 {
     private readonly IServiceRequestDao serviceRequestDao;
-    private readonly IEventDao eventDao;
     private readonly IDataGatherer dataGatherer;
     private readonly ILogger<ServiceRequestService> logger;
 
     public ServiceRequestService(
         IServiceRequestDao serviceRequestDao,
-        IEventDao eventDao,
         IDataGatherer dataGatherer,
         ILogger<ServiceRequestService> logger)
     {
         this.serviceRequestDao = serviceRequestDao;
-        this.eventDao = eventDao;
         this.dataGatherer = dataGatherer;
         this.logger = logger;
     }

@@ -24,7 +24,7 @@ public class ServiceRequestServiceTest
         var dataGatherer = Substitute.For<IDataGatherer>();
         var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
-        var serviceRequestService = new ServiceRequestService(serviceRequestDao, eventDao, dataGatherer, logger);
+        var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, logger);
 
         var patient = TestUtils.GetStubInternalPatient();
         var serviceRequest = this.GetTestServiceRequest(patient.Id);
@@ -47,7 +47,7 @@ public class ServiceRequestServiceTest
         var dataGatherer = Substitute.For<IDataGatherer>();
         var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
-        var serviceRequestService = new ServiceRequestService(serviceRequestDao, eventDao, dataGatherer, logger);
+        var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, logger);
 
         serviceRequestDao.GetServiceRequest(Arg.Any<string>()).Returns(new ServiceRequest());
 
@@ -71,7 +71,7 @@ public class ServiceRequestServiceTest
         var patient = TestUtils.GetStubInternalPatient();
         var serviceRequest = this.GetTestServiceRequest(patient.Id);
 
-        var serviceRequestService = new ServiceRequestService(serviceRequestDao, eventDao, dataGatherer, logger);
+        var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, logger);
         dataGatherer.GetReferenceInternalPatientOrThrow(Arg.Any<ResourceReference>()).Returns(patient);
         serviceRequestDao.GetServiceRequest(Arg.Any<string>()).Returns(new ServiceRequest());
         serviceRequestDao.UpdateServiceRequest(Arg.Any<string>(), Arg.Any<ServiceRequest>())
@@ -95,7 +95,7 @@ public class ServiceRequestServiceTest
         var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
 
-        var serviceRequestService = new ServiceRequestService(serviceRequestDao, eventDao, dataGatherer, logger);
+        var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, logger);
 
         serviceRequestDao.GetServiceRequest(Arg.Any<string>()).Returns(new ServiceRequest());
         serviceRequestDao.DeleteServiceRequest(Arg.Any<string>()).Returns(true);

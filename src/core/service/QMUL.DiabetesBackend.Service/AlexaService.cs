@@ -24,19 +24,19 @@ public class AlexaService : IAlexaService
     private readonly IPatientDao patientDao;
     private readonly IMedicationRequestDao medicationRequestDao;
     private readonly IServiceRequestDao serviceRequestDao;
-    private readonly IEventDao eventDao;
     private readonly ILogger<AlexaService> logger;
 
     private const int DefaultExactTimeOffsetMinutes = 20;
     private const int OffsetBetweenTimingsMinutes = 20; // For related timings. E.g., before lunch and lunch
 
-    public AlexaService(IPatientDao patientDao, IMedicationRequestDao medicationRequestDao,
-        IServiceRequestDao serviceRequestDao, IEventDao eventDao, ILogger<AlexaService> logger)
+    public AlexaService(IPatientDao patientDao,
+        IMedicationRequestDao medicationRequestDao,
+        IServiceRequestDao serviceRequestDao,
+        ILogger<AlexaService> logger)
     {
         this.patientDao = patientDao;
         this.medicationRequestDao = medicationRequestDao;
         this.serviceRequestDao = serviceRequestDao;
-        this.eventDao = eventDao;
         this.logger = logger;
     }
 

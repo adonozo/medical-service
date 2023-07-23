@@ -22,21 +22,18 @@ public class MedicationRequestService : IMedicationRequestService
 {
     private readonly IMedicationRequestDao medicationRequestDao;
     private readonly IMedicationDao medicationDao;
-    private readonly IEventDao eventDao;
     private readonly IPatientDao patientDao;
     private readonly IDataGatherer dataGatherer;
     private readonly ILogger<MedicationRequestService> logger;
 
     public MedicationRequestService(
         IMedicationRequestDao medicationRequestDao,
-        IEventDao eventDao,
         IPatientDao patientDao,
         IMedicationDao medicationDao,
         IDataGatherer dataGatherer,
         ILogger<MedicationRequestService> logger)
     {
         this.medicationRequestDao = medicationRequestDao;
-        this.eventDao = eventDao;
         this.patientDao = patientDao;
         this.medicationDao = medicationDao;
         this.dataGatherer = dataGatherer;

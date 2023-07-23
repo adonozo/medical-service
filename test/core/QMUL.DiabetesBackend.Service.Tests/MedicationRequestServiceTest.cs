@@ -30,7 +30,7 @@ public class MedicationRequestServiceTest
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
         var medicationRequestService =
-            new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, dataGatherer, logger);
+            new MedicationRequestService(medicationRequestDao, patientDao, medicationDao, dataGatherer, logger);
 
         var medicationRequest = this.GetTestMedicationRequest(Guid.NewGuid().ToString());
         dataGatherer.GetReferenceInternalPatientOrThrow(Arg.Any<ResourceReference>()).Returns(TestUtils.GetStubInternalPatient());
@@ -55,7 +55,7 @@ public class MedicationRequestServiceTest
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
         var medicationRequestService =
-            new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, dataGatherer, logger);
+            new MedicationRequestService(medicationRequestDao, patientDao, medicationDao, dataGatherer, logger);
 
         medicationRequestDao.GetMedicationRequest(Arg.Any<string>()).Returns(new MedicationRequest());
 
@@ -78,7 +78,7 @@ public class MedicationRequestServiceTest
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
         var medicationRequestService =
-            new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, dataGatherer, logger);
+            new MedicationRequestService(medicationRequestDao, patientDao, medicationDao, dataGatherer, logger);
 
         medicationRequestDao.GetMedicationRequest(Arg.Any<string>()).Returns(new MedicationRequest());
         medicationRequestDao.UpdateMedicationRequest(Arg.Any<string>(), Arg.Any<MedicationRequest>())
@@ -104,7 +104,7 @@ public class MedicationRequestServiceTest
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
         var medicationRequestService =
-            new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, dataGatherer, logger);
+            new MedicationRequestService(medicationRequestDao, patientDao, medicationDao, dataGatherer, logger);
 
         medicationRequestDao.GetMedicationRequest(Arg.Any<string>()).Returns(new MedicationRequest());
         medicationRequestDao.DeleteMedicationRequest(Arg.Any<string>()).Returns(true);
@@ -128,7 +128,7 @@ public class MedicationRequestServiceTest
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
         var medicationRequestService =
-            new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, dataGatherer, logger);
+            new MedicationRequestService(medicationRequestDao, patientDao, medicationDao, dataGatherer, logger);
         var paginatedResult = new PaginatedResult<IEnumerable<MedicationRequest>>
         {
             Results = new Collection<MedicationRequest>()
@@ -162,7 +162,7 @@ public class MedicationRequestServiceTest
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
         var medicationRequestService =
-            new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, dataGatherer, logger);
+            new MedicationRequestService(medicationRequestDao, patientDao, medicationDao, dataGatherer, logger);
 
         var request = this.GetTestMedicationRequest(Guid.NewGuid().ToString());
         var medication = this.GetMedicationTest();
@@ -189,7 +189,7 @@ public class MedicationRequestServiceTest
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<MedicationRequestService>>();
         var medicationRequestService =
-            new MedicationRequestService(medicationRequestDao, eventDao, patientDao, medicationDao, dataGatherer, logger);
+            new MedicationRequestService(medicationRequestDao, patientDao, medicationDao, dataGatherer, logger);
 
         var medicationId = Guid.NewGuid().ToString();
         var medication = this.GetMedicationTest(medicationId);

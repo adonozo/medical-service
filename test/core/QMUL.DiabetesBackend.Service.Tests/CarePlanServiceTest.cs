@@ -31,7 +31,6 @@ public class CarePlanServiceTest
             medicationRequestDao,
             patientDao,
             carePlanDao,
-            eventDao,
             serviceRequestService,
             medicationRequestService,
             logger);
@@ -68,7 +67,6 @@ public class CarePlanServiceTest
             medicationRequestDao,
             patientDao,
             carePlanDao,
-            eventDao,
             serviceRequestService,
             medicationRequestService,
             logger);

@@ -29,7 +29,7 @@ public class AlexaServiceTest
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
+        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
 
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 
@@ -50,7 +50,7 @@ public class AlexaServiceTest
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
+        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
 
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 
@@ -71,7 +71,7 @@ public class AlexaServiceTest
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
+        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
 
         var patient = TestUtils.GetStubPatient();
         var expectedTimingKeys = new[] { CustomEventTiming.CM, CustomEventTiming.ACM, CustomEventTiming.PCM };
@@ -97,7 +97,7 @@ public class AlexaServiceTest
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
+        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
 
         var patient = TestUtils.GetStubPatient();
         var expectedDate = DateTime.Now;
@@ -123,7 +123,7 @@ public class AlexaServiceTest
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var eventDao = Substitute.For<IEventDao>();
         var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, eventDao, logger);
+        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
         var dosageId = Guid.NewGuid().ToString();
         var medicationRequest = GetTestMedicationRequest(dosageId);
 

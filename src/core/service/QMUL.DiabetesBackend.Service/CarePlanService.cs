@@ -24,7 +24,6 @@ public class CarePlanService : ICarePlanService
     private readonly IServiceRequestDao serviceRequestDao;
     private readonly IPatientDao patientDao;
     private readonly ICarePlanDao carePlanDao;
-    private readonly IEventDao eventDao;
     private readonly IServiceRequestService serviceRequestService;
     private readonly IMedicationRequestService medicationRequestService;
     private readonly ILogger<CarePlanService> logger;
@@ -33,7 +32,6 @@ public class CarePlanService : ICarePlanService
         IMedicationRequestDao medicationRequestDao,
         IPatientDao patientDao,
         ICarePlanDao carePlanDao,
-        IEventDao eventDao,
         IServiceRequestService serviceRequestService,
         IMedicationRequestService medicationRequestService,
         ILogger<CarePlanService> logger)
@@ -43,7 +41,6 @@ public class CarePlanService : ICarePlanService
         this.patientDao = patientDao;
         this.carePlanDao = carePlanDao;
         this.logger = logger;
-        this.eventDao = eventDao;
         this.serviceRequestService = serviceRequestService;
         this.medicationRequestService = medicationRequestService;
     }
@@ -189,7 +186,6 @@ public class CarePlanService : ICarePlanService
         var serviceRequestIds = serviceRequestReferences
             .Select(reference => reference.GetIdFromReference())
             .ToArray();
-        var resourceIds = medicationRequestsIds.Union(serviceRequestIds);
 
         await this.medicationRequestDao.DeleteMedicationRequests(medicationRequestsIds);
         await this.serviceRequestDao.DeleteServiceRequests(serviceRequestIds);
