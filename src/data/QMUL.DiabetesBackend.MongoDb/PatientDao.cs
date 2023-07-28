@@ -38,6 +38,7 @@ public class PatientDao : MongoDaoBase, IPatientDao
         var searchFilter = FilterDefinition<BsonDocument>.Empty;
         var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
         var results = await this.patientCollection.Find(resultsFilter)
+            .Sort(Helpers.GetDefaultOrder())
             .Limit(paginationRequest.Limit)
             .Project(document => Helpers.ToResourceAsync<Patient>(document))
             .ToListAsync();
