@@ -60,6 +60,8 @@ public static class Helpers
         return Builders<BsonDocument>.Filter.Eq("subject.reference", patientReference);
     }
 
+    public static SortDefinition<BsonDocument> GetDefaultOrder() => Builders<BsonDocument>.Sort.Descending("_id");
+
     /// <summary>
     /// Sets a <see cref="BsonDocument"/> field as a <see cref="BsonDateTime"/> date from a <see cref="DateTimeOffset"/>.
     /// If the dateTimeOffset is null, the document field will be removed.

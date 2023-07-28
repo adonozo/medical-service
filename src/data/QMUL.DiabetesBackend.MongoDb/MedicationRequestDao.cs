@@ -146,6 +146,8 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
         var resultFilters = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
 
         var results = await this.medicationRequestCollection.Find(resultFilters)
+            .Limit(paginationRequest.Limit)
+            .Sort(Helpers.GetDefaultOrder())
             .Project(document => Helpers.ToResourceAsync<MedicationRequest>(document))
             .ToListAsync();
         var medicationRequests = await Task.WhenAll(results);

@@ -67,6 +67,7 @@ public class ObservationDao : MongoDaoBase, IObservationDao
 
         var results = await this.observationCollection.Find(resultsFilter)
             .Limit(paginationRequest.Limit)
+            .Sort(Helpers.GetDefaultOrder())
             .Project(document => this.ProjectToObservation(document))
             .ToListAsync();
         Resource[] observations = await Task.WhenAll(results);
