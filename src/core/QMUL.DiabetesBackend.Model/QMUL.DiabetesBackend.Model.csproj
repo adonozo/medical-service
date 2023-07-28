@@ -6,6 +6,7 @@
 
     <ItemGroup>
       <PackageReference Include="Hl7.Fhir.R4" Version="3.4.0" />
+      <PackageReference Include="NodaTime" Version="3.1.9" />
     </ItemGroup>
 
 </Project>
