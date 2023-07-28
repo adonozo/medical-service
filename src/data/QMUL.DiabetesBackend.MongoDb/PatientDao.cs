@@ -1,6 +1,7 @@
 namespace QMUL.DiabetesBackend.MongoDb;
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using DataInterfaces;
@@ -143,7 +144,7 @@ public class PatientDao : MongoDaoBase, IPatientDao
         }
 
         oldPatient.Gender = patient.Gender ?? oldPatient.Gender;
-        oldPatient.BirthDate = patient.BirthDate?.ToString("yyyy-MM-dd") ?? oldPatient.BirthDate;
+        oldPatient.BirthDate = patient.BirthDate?.ToString("R", CultureInfo.InvariantCulture) ?? oldPatient.BirthDate;
 
         return oldPatient;
     }

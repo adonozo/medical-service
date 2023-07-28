@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Enums;
 using Hl7.Fhir.Model;
+using NodaTime;
 
 /// <summary>
 /// A lightweight Patient object. It is used to avoid the more complex FHIR Patient object
@@ -22,7 +23,7 @@ public class InternalPatient
 
     public AdministrativeGender? Gender { get; set; }
 
-    public DateTime? BirthDate { get; set; }
+    public LocalDate? BirthDate { get; set; }
 
     public IEnumerable<PatientPhone> Phones { get; set; }
 
