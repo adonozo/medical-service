@@ -1,12 +1,11 @@
 namespace QMUL.DiabetesBackend.Controllers.Controllers;
 
-using System;
 using System.Threading.Tasks;
-using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Model;
 using Model.Enums;
+using NodaTime;
 using ServiceInterfaces;
 using Utils;
 
@@ -25,7 +24,7 @@ public class AlexaController : ControllerBase
 
     [HttpGet("alexa/{idOrEmail}/observations/")]
     public async Task<IActionResult> GetPatientObservations([FromRoute] string idOrEmail,
-        [FromQuery] DateTime? date,
+        [FromQuery] LocalDate? date,
         [FromQuery] CustomEventTiming? timing,
         [FromQuery] string? timezone = "UTC",
         [FromQuery] int? limit = null,
@@ -41,8 +40,8 @@ public class AlexaController : ControllerBase
         var paginatedResult =
             await this.observationService.GetObservationsFor(
                 patientId: idOrEmail,
-                timing ?? CustomEventTiming.ALL_DAY,
-                date.Value,
+                timing: timing ?? CustomEventTiming.ALL_DAY,
+                dateTime: date.Value,
                 paginationRequest: pagination,
                 patientTimezone: timezone!);
 
@@ -52,7 +51,7 @@ public class AlexaController : ControllerBase
 
     [HttpGet("alexa/{idOrEmail}/medicationRequests")]
     public async Task<IActionResult> GetMedicationRequest([FromRoute] string idOrEmail,
-        [FromQuery] DateTime? date,
+        [FromQuery] LocalDate? date,
         [FromQuery] string? timezone = "UTC",
         [FromQuery] CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
         [FromQuery] bool? onlyInsulin = false)
@@ -73,7 +72,7 @@ public class AlexaController : ControllerBase
 
     [HttpGet("patients/{idOrEmail}/alexa/glucoseRequest")]
     public async Task<IActionResult> GetGlucoseServiceRequest([FromRoute] string idOrEmail,
-        [FromQuery] DateTime date,
+        [FromQuery] LocalDate date,
         [FromQuery] string timezone = "UTC",
         [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
     {

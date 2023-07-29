@@ -1,6 +1,5 @@
 namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers;
 
-using System;
 using DiabetesBackend.Controllers.Controllers;
 using FluentAssertions;
 using Hl7.Fhir.Model;
@@ -8,8 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Model;
 using Model.Enums;
+using NodaTime;
 using NSubstitute;
-using Service;
 using ServiceInterfaces;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
@@ -22,15 +21,18 @@ public class AlexaControllerTest
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
         var observationsService = Substitute.For<IObservationService>();
-        alexaService.SearchMedicationRequests(Arg.Any<string>(), Arg.Any<DateTime>(), false,
-                Arg.Any<CustomEventTiming>(), Arg.Any<string>())
+        alexaService.SearchMedicationRequests(Arg.Any<string>(),
+                Arg.Any<LocalDate>(),
+                false,
+                Arg.Any<CustomEventTiming>(),
+                Arg.Any<string>())
             .Returns(new Bundle());
         var controller = new AlexaController(alexaService, observationsService);
 
         // Act
         var result = await controller.GetMedicationRequest(
             idOrEmail: "test@mail.com",
-            date: DateTime.Now,
+            date: new LocalDate(),
             timing: CustomEventTiming.ALL_DAY);
         var status = (ObjectResult)result;
 
@@ -44,15 +46,17 @@ public class AlexaControllerTest
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
         var observationsService = Substitute.For<IObservationService>();
-        alexaService.ProcessGlucoseServiceRequest(Arg.Any<string>(), Arg.Any<DateTime>(),
-                Arg.Any<CustomEventTiming>(), Arg.Any<string>())
+        alexaService.ProcessGlucoseServiceRequest(Arg.Any<string>(),
+                Arg.Any<LocalDate>(),
+                Arg.Any<CustomEventTiming>(),
+                Arg.Any<string>())
             .Returns(new Bundle());
         var controller = new AlexaController(alexaService, observationsService);
 
         // Act
         var result = await controller.GetGlucoseServiceRequest(
             idOrEmail: "test@mail.com",
-            date: DateTime.Now,
+            date: new LocalDate(),
             timing: CustomEventTiming.ALL_DAY);
         var status = (ObjectResult)result;
 
@@ -71,8 +75,11 @@ public class AlexaControllerTest
             Results = new Bundle()
         };
 
-        observationsService.GetObservationsFor(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>(),
-                Arg.Any<PaginationRequest>(), Arg.Any<string>())
+        observationsService.GetObservationsFor(Arg.Any<string>(),
+                Arg.Any<CustomEventTiming>(),
+                Arg.Any<LocalDate>(),
+                Arg.Any<PaginationRequest>(),
+                Arg.Any<string>())
             .Returns(paginatedResult);
 
         var controller = new AlexaController(alexaService, observationsService)
@@ -84,8 +91,9 @@ public class AlexaControllerTest
         };
 
         // Act
-        var observations =
-            await controller.GetPatientObservations("john@mail.com", DateTime.Now, CustomEventTiming.ALL_DAY);
+        var observations = await controller.GetPatientObservations("john@mail.com",
+            new LocalDate(),
+            CustomEventTiming.ALL_DAY);
         var result = (ObjectResult)observations;
 
         // Assert

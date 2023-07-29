@@ -16,7 +16,7 @@ public class EventTimingMapperTest
     public void GetIntervalFromCustomEventTiming_ValidParamsMorning_ReturnsDateConsideringTimeZone()
     {
         // Arrange
-        var dateTime = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
+        var dateTime = new LocalDate(2021, 8, 1);
         var timezone = "Europe/London";
 
         // Act
@@ -24,15 +24,15 @@ public class EventTimingMapperTest
             EventTimingMapper.GetIntervalFromCustomEventTiming(dateTime, CustomEventTiming.MORN, timezone);
 
         // Assert
-        start.Hour.Should().Be(5, "Default morning time is 06:00, but should be 05:00 because of the timezone");
-        end.Hour.Should().Be(11, "End hour should be 6 hours from the start time");
+        start.InUtc().Hour.Should().Be(5, "Default morning time is 06:00, but should be 05:00 because of the timezone");
+        end.InUtc().Hour.Should().Be(11, "End hour should be 6 hours from the start time");
     }
 
     [Fact]
     public void GetIntervalFromCustomEventTiming_ValidParamsNight_ReturnsDateConsideringTimeZone()
     {
         // Arrange
-        var dateTime = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
+        var dateTime = new LocalDate(2021, 8, 1);
         var timezone = "America/La_Paz";
 
         // Act
@@ -40,15 +40,15 @@ public class EventTimingMapperTest
             EventTimingMapper.GetIntervalFromCustomEventTiming(dateTime, CustomEventTiming.NIGHT, timezone);
 
         // Assert
-        start.Hour.Should().Be(22, "Default night time is 18:00, but should be 22:00 because of the timezone");
-        end.Hour.Should().Be(10, "End hour should be 12 hours from the start time; 10:00 AM of the next day");
+        start.InUtc().Hour.Should().Be(22, "Default night time is 18:00, but should be 22:00 because of the timezone");
+        end.InUtc().Hour.Should().Be(7, "End hour should be at 03:00 AM of the next day; 07:00 AM because of the timezone");
     }
 
     [Fact]
     public void GetIntervalFromCustomEventTiming_ValidParamsDefaultTimezone_ReturnsDate()
     {
         // Arrange
-        var dateTime = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
+        var dateTime = new LocalDate(2021, 8, 1);
         var timezone = "UTC";
 
         // Act
@@ -56,8 +56,8 @@ public class EventTimingMapperTest
             EventTimingMapper.GetIntervalFromCustomEventTiming(dateTime, CustomEventTiming.MORN, timezone);
 
         // Assert
-        start.Hour.Should().Be(6, "Default morning time is 06:00");
-        end.Hour.Should().Be(12, "End hour should be 6 hours from the start time");
+        start.InUtc().Hour.Should().Be(6, "Default morning time is 06:00");
+        end.InUtc().Hour.Should().Be(12, "End hour should be 6 hours from the start time");
     }
 
     [Fact]
@@ -106,7 +106,7 @@ public class EventTimingMapperTest
         var patientTimingRecord = new LocalTime(12, 00, 00);
         var timingPreferences = new Dictionary<CustomEventTiming, LocalTime>
             { { timingEvent, patientTimingRecord } };
-        var referenceDate = new DateTime(2020, 1, 1);
+        var referenceDate = new LocalDate(2020, 1, 1);
 
 
         // Act
@@ -114,10 +114,10 @@ public class EventTimingMapperTest
             EventTimingMapper.GetTimingInterval(timingPreferences, referenceDate, timingEvent, timezone, 30);
 
         // Assert
-        startDate.Hour.Should().Be(11);
-        startDate.Minute.Should().Be(30, "Start date is 30 min (default offset) before patient's timing record");
-        endDate.Hour.Should().Be(12);
-        endDate.Minute.Should().Be(30, "End date is 30 min (default offset) after patient's timing record");
+        startDate.InUtc().Hour.Should().Be(11);
+        startDate.InUtc().Minute.Should().Be(30, "Start date is 30 min (default offset) before patient's timing record");
+        endDate.InUtc().Hour.Should().Be(12);
+        endDate.InUtc().Minute.Should().Be(30, "End date is 30 min (default offset) after patient's timing record");
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public class EventTimingMapperTest
         var timingEvent = CustomEventTiming.MORN;
         var timezone = "UTC";
 
-        var referenceDate = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
+        var referenceDate = new LocalDate(2021, 8, 1);
         var timingPreferences = new Dictionary<CustomEventTiming, LocalTime>();
 
         // Act
@@ -135,8 +135,8 @@ public class EventTimingMapperTest
             EventTimingMapper.GetTimingInterval(timingPreferences, referenceDate, timingEvent, timezone, 30);
 
         // Assert
-        startDate.Hour.Should().Be(6, "Default morning time is 06:00");
-        endDate.Hour.Should().Be(12, "Default End hour is 6 hours from the start time");
+        startDate.InUtc().Hour.Should().Be(6, "Default morning time is 06:00");
+        endDate.InUtc().Hour.Should().Be(12, "Default End hour is 6 hours from the start time");
     }
 
     [Fact]

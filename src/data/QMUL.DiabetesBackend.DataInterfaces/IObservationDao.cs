@@ -1,11 +1,11 @@
 namespace QMUL.DiabetesBackend.DataInterfaces;
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
 using Model.Exceptions;
+using Instant = NodaTime.Instant;
 
 /// <summary>
 /// The Observation Dao interface.
@@ -41,15 +41,15 @@ public interface IObservationDao
     /// Gets the list of <see cref="Observation"/> for a given patient in a defined time range.
     /// </summary>
     /// <param name="patientId">The patient ID.</param>
+    /// <param name="paginationRequest">The paginated request parameters.</param>
     /// <param name="start">The range start datetime.</param>
     /// <param name="end">The range end datetime.</param>
-    /// <param name="paginationRequest">The paginated request parameters.</param>
     /// <returns>An <see cref="Observation"/> list within the start and end dates; contained within a paginated
     /// <see cref="PaginatedResult{T}"/> object.</returns>
     Task<PaginatedResult<IEnumerable<Resource>>> GetObservationsFor(string patientId,
         PaginationRequest paginationRequest,
-        DateTime? start = null,
-        DateTime? end = null);
+        Instant? start = null,
+        Instant? end = null);
 
     /// <summary>
     /// Updates a given <see cref="Observation"/>.

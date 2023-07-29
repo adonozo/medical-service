@@ -43,7 +43,7 @@ public class AlexaService : IAlexaService
 
     /// <inheritdoc/>
     public async Task<Bundle> SearchMedicationRequests(string patientEmailOrId,
-        DateTime dateTime,
+        LocalDate dateTime,
         bool onlyInsulin,
         CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
         string? timezone = "UTC")
@@ -74,13 +74,13 @@ public class AlexaService : IAlexaService
             defaultOffset: DefaultExactTimeOffsetMinutes);
 
         var events = eventsWithStartDate.Results
-            .Where(@event => @event.EventDateTime >= startDate && @event.EventDateTime <= endDate);
+            .Where(@event => @event.EventDateTime >= startDate.ToDateTimeUtc() && @event.EventDateTime <= endDate.ToDateTimeUtc());
         return await this.GenerateSearchBundle(@events.ToList());
     }
 
     /// <inheritdoc/>
     public async Task<Bundle?> ProcessGlucoseServiceRequest(string patientEmailOrId,
-        DateTime dateTime,
+        LocalDate dateTime,
         CustomEventTiming timing,
         string timezone = "UTC")
     {
@@ -106,7 +106,7 @@ public class AlexaService : IAlexaService
             defaultOffset: DefaultExactTimeOffsetMinutes);
 
         var events = eventsWithStartDate.Results
-            .Where(@event => @event.EventDateTime >= startDate && @event.EventDateTime <= endDate);
+            .Where(@event => @event.EventDateTime >= startDate.ToDateTimeUtc() && @event.EventDateTime <= endDate.ToDateTimeUtc());
         return await this.GenerateSearchBundle(@events.ToList());
     }
 

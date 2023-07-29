@@ -1,6 +1,5 @@
 namespace QMUL.DiabetesBackend.Service;
 
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -10,6 +9,7 @@ using Model;
 using Model.Enums;
 using Model.Exceptions;
 using Model.Extensions;
+using NodaTime;
 using ServiceInterfaces;
 using Utils;
 
@@ -67,7 +67,7 @@ public class ObservationService : IObservationService
     /// <inheritdoc/>
     public async Task<PaginatedResult<Bundle>> GetObservationsFor(string patientId,
         CustomEventTiming timing,
-        DateTime dateTime,
+        LocalDate dateTime,
         PaginationRequest paginationRequest,
         string patientTimezone = "UTC")
     {
@@ -85,8 +85,8 @@ public class ObservationService : IObservationService
         var observations = await this.observationDao.GetObservationsFor(
             patient.Id,
             paginationRequest,
-            startDate.UtcDateTime,
-            endDate.UtcDateTime);
+            startDate,
+            endDate);
         var paginatedResult = observations.ToBundleResult();
         this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId,
             observations.Results.Count());

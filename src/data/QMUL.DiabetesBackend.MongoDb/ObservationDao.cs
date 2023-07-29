@@ -1,6 +1,5 @@
 namespace QMUL.DiabetesBackend.MongoDb;
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DataInterfaces;
@@ -11,6 +10,7 @@ using Model.Exceptions;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Utils;
+using Instant = NodaTime.Instant;
 using Task = System.Threading.Tasks.Task;
 
 /// <summary>
@@ -83,8 +83,8 @@ public class ObservationDao : MongoDaoBase, IObservationDao
     /// <inheritdoc />
     public async Task<PaginatedResult<IEnumerable<Resource>>> GetObservationsFor(string patientId,
         PaginationRequest paginationRequest,
-        DateTime? start = null,
-        DateTime? end = null)
+        Instant? start = null,
+        Instant? end = null)
     {
         var searchFilter = Builders<BsonDocument>.Filter.And(Helpers.GetPatientReferenceFilter(patientId));
 

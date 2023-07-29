@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model.Enums;
 using Model.Exceptions;
+using NodaTime;
 
 /// <summary>
 /// The Alexa Service Interface. Manages Alexa related requests.
@@ -22,7 +23,7 @@ public interface IAlexaService
     /// <param name="timezone">The user's timezone. Defaults to UTC</param>
     /// <returns>A <see cref="Bundle"/> with the results, or null if the patient was not found.</returns>
     Task<Bundle> SearchMedicationRequests(string patientEmailOrId,
-        DateTime dateTime,
+        LocalDate dateTime,
         bool onlyInsulin,
         CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
         string? timezone = "UTC");
@@ -36,8 +37,10 @@ public interface IAlexaService
     /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
     /// <param name="timezone">The user's timezone. Defaults to UTC</param>
     /// <returns>A <see cref="Bundle"/> with the results, or null if the patient was not found.</returns>
-    Task<Bundle?> ProcessGlucoseServiceRequest(string patientEmailOrId, DateTime dateTime,
-        CustomEventTiming timing, string timezone = "UTC");
+    Task<Bundle?> ProcessGlucoseServiceRequest(string patientEmailOrId,
+        LocalDate dateTime,
+        CustomEventTiming timing,
+        string timezone = "UTC");
 
     /// <summary>
     /// Updates / Adds a specific time for a event timing to the patient's list. e.g., a specific time for breakfast.  

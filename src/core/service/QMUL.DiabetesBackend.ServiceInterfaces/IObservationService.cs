@@ -6,6 +6,7 @@ using Hl7.Fhir.Model;
 using Model;
 using Model.Enums;
 using Model.Exceptions;
+using NodaTime;
 
 /// <summary>
 /// The Observation Service Interface. Observations are glucose self-measurements for a patient. 
@@ -51,7 +52,7 @@ public interface IObservationService
     /// <exception cref="NotFoundException">If the patient was not found.</exception>
     Task<PaginatedResult<Bundle>> GetObservationsFor(string patientId,
         CustomEventTiming timing,
-        DateTime dateTime,
+        LocalDate dateTime,
         PaginationRequest paginationRequest,
         string patientTimezone = "UTC");
 

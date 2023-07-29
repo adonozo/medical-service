@@ -42,7 +42,9 @@ public class AlexaServiceTest
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 
         // Act
-        var result = await alexaService.SearchMedicationRequests(Guid.NewGuid().ToString(), DateTime.Now, false,
+        var result = await alexaService.SearchMedicationRequests(Guid.NewGuid().ToString(),
+            new LocalDate(2023, 01, 01),
+            false,
             CustomEventTiming.ALL_DAY);
 
         // Assert
@@ -62,7 +64,8 @@ public class AlexaServiceTest
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 
         // Act
-        var result = await alexaService.ProcessGlucoseServiceRequest(Guid.NewGuid().ToString(), DateTime.Now,
+        var result = await alexaService.ProcessGlucoseServiceRequest(Guid.NewGuid().ToString(),
+            new LocalDate(2023, 01, 01),
             CustomEventTiming.ALL_DAY);
 
         // Assert
