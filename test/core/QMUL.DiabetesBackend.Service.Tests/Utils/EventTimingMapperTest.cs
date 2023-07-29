@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using FluentAssertions;
 using Hl7.Fhir.Model;
 using Model.Enums;
+using NodaTime;
 using Service.Utils;
 using Xunit;
 using static System.Enum;
@@ -102,8 +103,8 @@ public class EventTimingMapperTest
         var timingEvent = CustomEventTiming.AC;
         var timezone = "UTC";
 
-        var patientTimingRecord = new DateTime(2020, 1, 1, 12, 0, 0);
-        var timingPreferences = new Dictionary<CustomEventTiming, DateTimeOffset>
+        var patientTimingRecord = new LocalTime(12, 00, 00);
+        var timingPreferences = new Dictionary<CustomEventTiming, LocalTime>
             { { timingEvent, patientTimingRecord } };
         var referenceDate = new DateTime(2020, 1, 1);
 
@@ -127,7 +128,7 @@ public class EventTimingMapperTest
         var timezone = "UTC";
 
         var referenceDate = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
-        var timingPreferences = new Dictionary<CustomEventTiming, DateTimeOffset>();
+        var timingPreferences = new Dictionary<CustomEventTiming, LocalTime>();
 
         // Act
         var (startDate, endDate) =

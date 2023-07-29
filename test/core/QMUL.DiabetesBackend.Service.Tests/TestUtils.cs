@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Hl7.Fhir.Model;
 using Model;
 using Model.Enums;
+using NodaTime;
 
 public static class TestUtils
 {
@@ -22,7 +23,7 @@ public static class TestUtils
         return new InternalPatient
         {
             Id = Guid.NewGuid().ToString(),
-            ExactEventTimes = new Dictionary<CustomEventTiming, DateTimeOffset>()
+            ExactEventTimes = new Dictionary<CustomEventTiming, LocalTime>()
         };
     }
 }

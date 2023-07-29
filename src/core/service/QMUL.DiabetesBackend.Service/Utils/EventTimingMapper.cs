@@ -8,6 +8,7 @@ using Model.Enums;
 using NodaTime;
 using NodaTime.Extensions;
 using Duration = NodaTime.Duration;
+using Period = NodaTime.Period;
 
 /// <summary>
 /// Helper methods to map Timing objects
@@ -77,7 +78,7 @@ public static class EventTimingMapper
     /// <param name="defaultOffset">An offset for the time interval, in minutes.</param>
     /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
     public static (DateTimeOffset Start, DateTimeOffset End) GetTimingInterval(
-        Dictionary<CustomEventTiming, DateTimeOffset> preferences,
+        Dictionary<CustomEventTiming, LocalTime> preferences,
         DateTimeOffset dateTime,
         CustomEventTiming timing,
         string timezone,
@@ -95,10 +96,10 @@ public static class EventTimingMapper
 
         if (preferences.ContainsKey(timing))
         {
-            start = preferences[timing].AddMinutes(defaultOffset * -1);
-            start = dateTime.Date.AddHours(start.Hour).AddMinutes(start.Minute);
-            end = preferences[timing].AddMinutes(defaultOffset);
-            end = dateTime.Date.AddHours(end.Hour).AddMinutes(end.Minute);
+            var periodStart = preferences[timing].Plus(Period.FromMinutes(defaultOffset * -1));
+            var periodEnd = preferences[timing].Plus(Period.FromMinutes(defaultOffset));
+            start = dateTime.Date.AddHours(periodStart.Hour).AddMinutes(periodStart.Minute);
+            end = dateTime.Date.AddHours(periodEnd.Hour).AddMinutes(periodEnd.Minute);
         }
         else
         {

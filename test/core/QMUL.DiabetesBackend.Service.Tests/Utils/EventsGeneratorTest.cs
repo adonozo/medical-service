@@ -7,8 +7,11 @@ using FluentAssertions;
 using Hl7.Fhir.Model;
 using Model;
 using Model.Enums;
+using NodaTime;
 using Service.Utils;
 using Xunit;
+using Duration = Hl7.Fhir.Model.Duration;
+using Period = Hl7.Fhir.Model.Period;
 using ResourceReference = Model.ResourceReference;
 
 public class EventsGeneratorTest
@@ -198,8 +201,8 @@ public class EventsGeneratorTest
         };
 
         var patient = TestUtils.GetStubInternalPatient();
-        patient.ExactEventTimes[CustomEventTiming.ACM] = new DateTime(2020, 1, 1, 8, 0, 0);
-        patient.ExactEventTimes[CustomEventTiming.ACV] = new DateTime(2020, 1, 1, 19, 0, 0);
+        patient.ExactEventTimes[CustomEventTiming.ACM] = new LocalTime(08, 00);
+        patient.ExactEventTimes[CustomEventTiming.ACV] = new LocalTime(19, 00);
         var reference = this.GetDummyResource();
         if (setStartDate)
         {

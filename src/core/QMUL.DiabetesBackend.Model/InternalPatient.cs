@@ -1,6 +1,5 @@
 ﻿namespace QMUL.DiabetesBackend.Model;
 
-using System;
 using System.Collections.Generic;
 using Enums;
 using Hl7.Fhir.Model;
@@ -28,11 +27,9 @@ public class InternalPatient
     public IEnumerable<PatientPhone> Phones { get; set; }
 
     /// <summary>
-    /// Holds the exact time the patient has set a specific event in the day: i.e., breakfast, diner, sleep. The date
-    /// in the datetime is ignored. 
+    /// Holds the exact time the patient has set a specific event in the day: i.e., breakfast, diner, etc.
     /// </summary>
-    /// TODO change to a time object (use Noda time?)
-    public Dictionary<CustomEventTiming, DateTimeOffset> ExactEventTimes { get; set; } = new();
+    public Dictionary<CustomEventTiming, LocalTime> ExactEventTimes { get; set; } = new();
 
     /// <summary>
     /// This class models a FHIR <see cref="ContactPoint"/>.

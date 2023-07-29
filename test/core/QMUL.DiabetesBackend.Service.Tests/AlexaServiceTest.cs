@@ -13,9 +13,11 @@ using Microsoft.Extensions.Logging;
 using Model;
 using Model.Enums;
 using Model.Extensions;
+using NodaTime;
 using NSubstitute;
 using Service;
 using Xunit;
+using Duration = Hl7.Fhir.Model.Duration;
 using ResourceReference = Model.ResourceReference;
 using Task = System.Threading.Tasks.Task;
 
@@ -103,18 +105,19 @@ public class AlexaServiceTest
         var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
 
         var patient = TestUtils.GetStubPatient();
-        var expectedDate = DateTime.Now;
+        var patientDateTime = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
+        var expectedLocalTime = new LocalTime(10, 00);
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
         patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
 
         // Act
         var result =
-            await alexaService.UpsertTimingEvent(Guid.NewGuid().ToString(), CustomEventTiming.SNACK, expectedDate);
+            await alexaService.UpsertTimingEvent(Guid.NewGuid().ToString(), CustomEventTiming.SNACK, patientDateTime);
         var patientTimings = patient.GetTimingPreference();
 
         // Assert
         result.Should().Be(true);
-        patientTimings.Should().ContainKey(CustomEventTiming.SNACK).And.ContainValue(expectedDate);
+        patientTimings.Should().ContainKey(CustomEventTiming.SNACK).And.ContainValue(expectedLocalTime);
     }
 
     [Fact]
