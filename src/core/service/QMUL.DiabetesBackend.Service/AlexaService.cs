@@ -74,7 +74,8 @@ public class AlexaService : IAlexaService
             defaultOffset: DefaultExactTimeOffsetMinutes);
 
         var events = eventsWithStartDate.Results
-            .Where(@event => @event.EventDateTime >= startDate.ToDateTimeUtc() && @event.EventDateTime <= endDate.ToDateTimeUtc());
+            .Where(@event => @event.EventDateTime >= startDate.ToDateTimeUtc() &&
+                             @event.EventDateTime <= endDate.ToDateTimeUtc());
         return await this.GenerateSearchBundle(@events.ToList());
     }
 
@@ -106,24 +107,25 @@ public class AlexaService : IAlexaService
             defaultOffset: DefaultExactTimeOffsetMinutes);
 
         var events = eventsWithStartDate.Results
-            .Where(@event => @event.EventDateTime >= startDate.ToDateTimeUtc() && @event.EventDateTime <= endDate.ToDateTimeUtc());
+            .Where(@event => @event.EventDateTime >= startDate.ToDateTimeUtc() &&
+                             @event.EventDateTime <= endDate.ToDateTimeUtc());
         return await this.GenerateSearchBundle(@events.ToList());
     }
 
     /// <inheritdoc/>
     public async Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming,
-        DateTime dateTime)
+        LocalTime localTime)
     {
         var patient = await ResourceUtils.GetResourceOrThrowAsync(
             () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
             new ValidationException("PatientNotFound"));
 
         var timingPreferences = patient.GetTimingPreference();
-        timingPreferences = SetRelatedTimings(timingPreferences, eventTiming, dateTime);
+        timingPreferences = SetRelatedTimings(timingPreferences, eventTiming, localTime);
         patient.SetTimingPreferences(timingPreferences);
 
         this.logger.LogDebug("Timing event updated for {IdOrEmail}: {Timing}, {DateTime}", patientIdOrEmail,
-            eventTiming, dateTime);
+            eventTiming, localTime);
         return await this.patientDao.UpdatePatient(patient);
     }
 
@@ -167,14 +169,14 @@ public class AlexaService : IAlexaService
     /// </summary>
     /// <param name="preferences">A dictionary with the the timing as keys and the datetime as value</param>
     /// <param name="timing">The timing to compare</param>
-    /// <param name="dateTime">The exact time of the event</param>
+    /// <param name="localTime">The exact time of the event</param>
     /// <returns>The updated event times for the patient.</returns>
     private static Dictionary<CustomEventTiming, LocalTime> SetRelatedTimings(
         Dictionary<CustomEventTiming, LocalTime> preferences,
         CustomEventTiming timing,
-        DateTime dateTime)
+        LocalTime localTime)
     {
-        dateTime = AdjustOffsetTiming(timing, dateTime);
+        localTime = AdjustOffsetTiming(timing, localTime);
 
         switch (timing)
         {
@@ -183,41 +185,41 @@ public class AlexaService : IAlexaService
             case CustomEventTiming.PCM:
                 (preferences[CustomEventTiming.CM],
                     preferences[CustomEventTiming.ACM],
-                    preferences[CustomEventTiming.PCM]) = GetTimeIntervals(dateTime);
+                    preferences[CustomEventTiming.PCM]) = GetTimeIntervals(localTime);
                 break;
             case CustomEventTiming.CD:
             case CustomEventTiming.ACD:
             case CustomEventTiming.PCD:
                 (preferences[CustomEventTiming.CD],
                     preferences[CustomEventTiming.ACD],
-                    preferences[CustomEventTiming.PCD]) = GetTimeIntervals(dateTime);
+                    preferences[CustomEventTiming.PCD]) = GetTimeIntervals(localTime);
                 break;
             case CustomEventTiming.CV:
             case CustomEventTiming.ACV:
             case CustomEventTiming.PCV:
                 (preferences[CustomEventTiming.CV],
                     preferences[CustomEventTiming.ACV],
-                    preferences[CustomEventTiming.PCV]) = GetTimeIntervals(dateTime);
+                    preferences[CustomEventTiming.PCV]) = GetTimeIntervals(localTime);
                 break;
             default:
-                preferences[timing] = LocalTimeFromDate(dateTime);
+                preferences[timing] = localTime;
                 break;
         }
 
         return preferences;
     }
 
-    private static DateTime AdjustOffsetTiming(CustomEventTiming timing, DateTime dateTime)
+    private static LocalTime AdjustOffsetTiming(CustomEventTiming timing, LocalTime localTime)
     {
         return timing switch
         {
-            CustomEventTiming.ACM => dateTime.AddMinutes(OffsetBetweenTimingsMinutes),
-            CustomEventTiming.ACD => dateTime.AddMinutes(OffsetBetweenTimingsMinutes),
-            CustomEventTiming.ACV => dateTime.AddMinutes(OffsetBetweenTimingsMinutes),
-            CustomEventTiming.PCM => dateTime.AddMinutes(OffsetBetweenTimingsMinutes * -1),
-            CustomEventTiming.PCD => dateTime.AddMinutes(OffsetBetweenTimingsMinutes * -1),
-            CustomEventTiming.PCV => dateTime.AddMinutes(OffsetBetweenTimingsMinutes * -1),
-            _ => dateTime
+            CustomEventTiming.ACM => localTime.PlusMinutes(OffsetBetweenTimingsMinutes),
+            CustomEventTiming.ACD => localTime.PlusMinutes(OffsetBetweenTimingsMinutes),
+            CustomEventTiming.ACV => localTime.PlusMinutes(OffsetBetweenTimingsMinutes),
+            CustomEventTiming.PCM => localTime.PlusMinutes(OffsetBetweenTimingsMinutes * -1),
+            CustomEventTiming.PCD => localTime.PlusMinutes(OffsetBetweenTimingsMinutes * -1),
+            CustomEventTiming.PCV => localTime.PlusMinutes(OffsetBetweenTimingsMinutes * -1),
+            _ => localTime
         };
     }
 
@@ -338,15 +340,11 @@ public class AlexaService : IAlexaService
         return Result<IEnumerable<HealthEvent>, ServiceRequest>.Success(healthEvents);
     }
 
-    private static (LocalTime middle, LocalTime before, LocalTime after) GetTimeIntervals(DateTime dateTime)
+    private static (LocalTime middle, LocalTime before, LocalTime after) GetTimeIntervals(LocalTime localTime)
     {
-        var before = dateTime.AddMinutes(OffsetBetweenTimingsMinutes * -1);
-        var after = dateTime.AddMinutes(OffsetBetweenTimingsMinutes);
+        var before = localTime.PlusMinutes(OffsetBetweenTimingsMinutes * -1);
+        var after = localTime.PlusMinutes(OffsetBetweenTimingsMinutes);
 
-        return (LocalTimeFromDate(dateTime),
-            LocalTimeFromDate(before),
-            LocalTimeFromDate(after));
+        return (localTime, before, after);
     }
-
-    private static LocalTime LocalTimeFromDate(DateTime dateTime) => new(dateTime.Hour, dateTime.Minute);
 }

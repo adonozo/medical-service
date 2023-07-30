@@ -162,7 +162,7 @@ public class PatientController : ControllerBase
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
         {
-            var result = await this.alexaService.UpsertTimingEvent(idOrEmail, request.Timing, request.DateTime);
+            var result = await this.alexaService.UpsertTimingEvent(idOrEmail, request.Timing, request.LocalTime);
             return result ? this.NoContent() : this.BadRequest();
         }, this.logger, this);
     }

@@ -89,7 +89,7 @@ public class AlexaServiceTest
 
         // Act
         var result =
-            await alexaService.UpsertTimingEvent(Guid.NewGuid().ToString(), CustomEventTiming.CM, DateTime.Now);
+            await alexaService.UpsertTimingEvent(Guid.NewGuid().ToString(), CustomEventTiming.CM, new LocalTime(10, 00));
         var patientTimings = patient.GetTimingPreference();
 
         // Assert
@@ -108,14 +108,14 @@ public class AlexaServiceTest
         var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
 
         var patient = TestUtils.GetStubPatient();
-        var patientDateTime = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
+        var patientLocalTime = new LocalTime(10, 00);
         var expectedLocalTime = new LocalTime(10, 00);
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
         patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
 
         // Act
         var result =
-            await alexaService.UpsertTimingEvent(Guid.NewGuid().ToString(), CustomEventTiming.SNACK, patientDateTime);
+            await alexaService.UpsertTimingEvent(Guid.NewGuid().ToString(), CustomEventTiming.SNACK, patientLocalTime);
         var patientTimings = patient.GetTimingPreference();
 
         // Assert
