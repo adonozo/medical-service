@@ -74,8 +74,8 @@ public class AlexaService : IAlexaService
             defaultOffset: DefaultExactTimeOffsetMinutes);
 
         var events = eventsWithStartDate.Results
-            .Where(@event => @event.EventDateTime >= startDate.ToDateTimeUtc() &&
-                             @event.EventDateTime <= endDate.ToDateTimeUtc());
+            .Where(@event => @event.ScheduledDateTime >= startDate.InUtc().LocalDateTime &&
+                             @event.ScheduledDateTime <= endDate.InUtc().LocalDateTime);
         return await this.GenerateSearchBundle(@events.ToList());
     }
 
@@ -107,8 +107,8 @@ public class AlexaService : IAlexaService
             defaultOffset: DefaultExactTimeOffsetMinutes);
 
         var events = eventsWithStartDate.Results
-            .Where(@event => @event.EventDateTime >= startDate.ToDateTimeUtc() &&
-                             @event.EventDateTime <= endDate.ToDateTimeUtc());
+            .Where(@event => @event.ScheduledDateTime >= startDate.InUtc().LocalDateTime &&
+                             @event.ScheduledDateTime <= endDate.InUtc().LocalDateTime);
         return await this.GenerateSearchBundle(@events.ToList());
     }
 

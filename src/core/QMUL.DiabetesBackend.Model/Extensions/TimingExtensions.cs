@@ -1,6 +1,7 @@
 namespace QMUL.DiabetesBackend.Model.Extensions;
 
 using System;
+using System.Collections.Generic;
 using Constants;
 using Hl7.Fhir.Model;
 using NodaTime;
@@ -83,5 +84,19 @@ public static class TimingExtensions
         var startDate = pattern.Parse(period.Start[..10]);
         var endDate = pattern.Parse(period.End[..10]);
         return (startDate.GetValueOrThrow(), endDate.GetValueOrThrow());
+    }
+
+    /// <summary>
+    /// Iterates the TimeOfDay values of a <see cref="Timing.RepeatComponent"/> as ISO time strings by adding the seconds
+    /// </summary>
+    /// <param name="repeat">The <see cref="Timing.RepeatComponent"/> contained in a resource's Timing</param>
+    /// <returns>An iterable list of ISO string times</returns>
+    public static IEnumerable<string> TimeOfDayIso(this Timing.RepeatComponent repeat)
+    {
+        repeat.TimeOfDay ??= Array.Empty<string>();
+        foreach (var timeOfDay in repeat.TimeOfDay)
+        {
+            yield return timeOfDay + ":00";
+        }
     }
 }

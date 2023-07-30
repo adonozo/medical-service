@@ -31,5 +31,5 @@ public class ResourceReference
     /// <summary>
     /// When this resource has started. Null if it has not started yet.
     /// </summary>
-    public LocalDate? StartDate { get; set; } // TODO set from the resource start date
+    public LocalDate? StartDate { get; set; } // TODO might not be necessary anymore
 }

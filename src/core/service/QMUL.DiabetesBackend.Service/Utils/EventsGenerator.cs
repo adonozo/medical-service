@@ -13,6 +13,7 @@ using Model.Enums;
 using Model.Extensions;
 using NodaTime;
 using NodaTime.Extensions;
+using NodaTime.Text;
 using Duration = Hl7.Fhir.Model.Duration;
 using Period = Hl7.Fhir.Model.Period;
 using ResourceReference = Model.ResourceReference;
@@ -139,13 +140,13 @@ internal class EventsGenerator
         var events = new List<HealthEvent>();
         if (this.timing.Repeat.TimeOfDay.Any())
         {
-            foreach (var time in this.timing.Repeat.TimeOfDay) // TODO set time in date
+            foreach (var time in this.timing.Repeat.TimeOfDayIso())
             {
-                var eventDateTime = date.ToDateTimeUnspecified();
+                var localTime = LocalTimePattern.GeneralIso.Parse(time);
                 var healthEvent = new HealthEvent
                 {
                     PatientId = this.patient.Id,
-                    EventDateTime = eventDateTime,
+                    ScheduledDateTime = date.At(localTime.GetValueOrThrow()),
                     ExactTimeIsSetup = true,
                     EventTiming = CustomEventTiming.EXACT,
                     ResourceReference = this.resourceReference
@@ -161,14 +162,12 @@ internal class EventsGenerator
                 var exactTimeIsSetup = patient.ExactEventTimes.ContainsKey(customTiming);
 
                 var eventDate = exactTimeIsSetup
-                    ? date.ToDateTimeUnspecified()
-                        .AddHours(patient.ExactEventTimes[customTiming].Hour)
-                        .AddMinutes(patient.ExactEventTimes[customTiming].Minute)
+                    ? date.At(patient.ExactEventTimes[customTiming])
                     : throw new InvalidOperationException($"Timing event {eventTiming} for patient {this.patient.Id} does not have a time");
                 var healthEvent = new HealthEvent
                 {
                     PatientId = this.patient.Id,
-                    EventDateTime = eventDate,
+                    ScheduledDateTime = eventDate,
                     ExactTimeIsSetup = exactTimeIsSetup,
                     EventTiming = customTiming,
                     ResourceReference = this.resourceReference
@@ -187,11 +186,11 @@ internal class EventsGenerator
         var hourOfDistance = 24 / this.timing.Repeat.Frequency ?? 24;
         for (var i = 0; i < totalOccurrences; i++)
         {
-            var date = startDate.ToDateTimeUnspecified().AddHours(hourOfDistance * i);
+            var date = startDate.At(new LocalTime(hourOfDistance * i, 00)); // todo this won't work, startDate should be LocalDateTime
             var healthEvent = new HealthEvent
             {
                 PatientId = this.patient.Id,
-                EventDateTime = date,
+                ScheduledDateTime = date,
                 ExactTimeIsSetup = true,
                 EventTiming = CustomEventTiming.EXACT,
                 ResourceReference = this.resourceReference

@@ -17,7 +17,7 @@ using ResourceReference = Model.ResourceReference;
 
 public class EventsGeneratorTest
 {
-    [Fact(Skip = "Time is not set yet")]
+    [Fact]
     public void GetEvents_WhenTimingBoundsIsPeriod_ReturnsHealthEvents()
     {
         // Arrange
@@ -45,7 +45,7 @@ public class EventsGeneratorTest
 
         // Assert
         events.Count.Should().Be(14, "Timing period is once every day for 14 days");
-        events[0].EventDateTime.Should().Be(new DateTime(2020, 1, 1, 10, 0, 0));
+        events[0].ScheduledDateTime.Should().Be(new LocalDateTime(2020, 1, 1, 10, 0, 0));
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class EventsGeneratorTest
                     Unit = "d",
                     Value = 10
                 },
-                TimeOfDay = new[] { "11:00" }
+                TimeOfDay = new[] { "21:45" }
             }
         };
         timing.SetStartDate(medicationStartDate);
@@ -80,7 +80,7 @@ public class EventsGeneratorTest
 
         // Assert
         events.Count.Should().Be(10, "Timing period is once every day for 10 days");
-        events.Should().ContainSingle(@event => @event.EventDateTime == new DateTime(2023, 01, 10, 0, 0, 0));
+        events.Should().ContainSingle(@event => @event.ScheduledDateTime == new LocalDateTime(2023, 01, 10, 21, 45, 0));
     }
 
     [Fact]
@@ -137,14 +137,15 @@ public class EventsGeneratorTest
 
         // Assert
         events.Count.Should().Be(9, "There are 4 Mondays and 5 Fridays in Jan 2020");
-        events[0].EventDateTime.DayOfWeek.Should().Be(DayOfWeek.Friday);
-        events[1].EventDateTime.DayOfWeek.Should().Be(DayOfWeek.Monday);
+        events[0].ScheduledDateTime.DayOfWeek.Should().Be(DayOfWeek.Friday);
+        events[1].ScheduledDateTime.DayOfWeek.Should().Be(DayOfWeek.Monday);
     }
 
-    [Fact(Skip = "Multiple frequency is not yet updated")]
+    [Fact(Skip = "Events generator should use a LocalDateTime to support frequencies > 1")]
     public void GetEvents_WhenTimingHasFrequencyGreaterThanOne_ReturnsHealthEvents()
     {
         // Arrange
+        var startDate = new LocalDate(2023, 01, 01);
         var dosageId = Guid.NewGuid().ToString();
         var timing = new Timing
         {
@@ -160,10 +161,12 @@ public class EventsGeneratorTest
                 }
             }
         };
+
+        timing.SetStartDate(startDate);
         var patient = TestUtils.GetStubInternalPatient();
         var reference = this.GetDummyResource();
         reference.EventReferenceId = dosageId;
-        reference.StartDate = new LocalDate(2023, 01, 01);
+        reference.StartDate = startDate;
         var eventsGenerator = new EventsGenerator(patient, timing, reference);
 
         // Act
@@ -171,8 +174,8 @@ public class EventsGeneratorTest
 
         // Assert
         events.Count.Should().Be(20, "Timing is twice a day (frequency = 2, period = 1) for 10 days");
-        events[0].EventDateTime.Hour.Should().Be(10);
-        events[1].EventDateTime.Hour.Should().Be(22);
+        events[0].ScheduledDateTime.Hour.Should().Be(10);
+        events[1].ScheduledDateTime.Hour.Should().Be(22);
     }
 
     [Theory(Skip = "If start date is not set, the method will throw an exception")]
@@ -215,8 +218,8 @@ public class EventsGeneratorTest
         if (setStartDate)
         {
             events.Count.Should().Be(20, "This is a daily event happening twice a day (ACM and ACV) for 10 days");
-            events[0].EventDateTime.Hour.Should().Be(8);
-            events[1].EventDateTime.Hour.Should().Be(19);
+            events[0].ScheduledDateTime.Hour.Should().Be(8);
+            events[1].ScheduledDateTime.Hour.Should().Be(19);
         }
         else
         {
@@ -254,8 +257,8 @@ public class EventsGeneratorTest
 
         // Assert
         events.Count.Should().Be(20, "This is a daily event happening twice a day (ACM and ACV) for 10 days");
-        events[0].EventDateTime.Hour.Should().Be(0);
-        events[1].EventDateTime.Hour.Should().Be(0,
+        events[0].ScheduledDateTime.Hour.Should().Be(0);
+        events[1].ScheduledDateTime.Hour.Should().Be(0,
             "All instances have hour 0 when the patient doesn't have a time for the timing event");
     }
 
