@@ -1,6 +1,6 @@
 namespace QMUL.DiabetesBackend.Controllers.Models;
 
-using System;
+using NodaTime;
 
 /// <summary>
 /// The model to get the start date from a request body
@@ -10,5 +10,5 @@ public class PatientStartDateRequest
     /// <summary>
     /// The request start date
     /// </summary>
-    public DateTime StartDate { get; set; }
+    public LocalDate StartDate { get; set; }
 }

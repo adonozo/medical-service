@@ -3,6 +3,9 @@ namespace QMUL.DiabetesBackend.Model.Extensions;
 using System;
 using Constants;
 using Hl7.Fhir.Model;
+using NodaTime;
+using Duration = Hl7.Fhir.Model.Duration;
+using Period = Hl7.Fhir.Model.Period;
 
 public static class TimingExtensions
 {
@@ -11,14 +14,14 @@ public static class TimingExtensions
     /// extension value.
     /// </summary>
     /// <param name="timing">The <see cref="Timing"/> from the resource</param>
-    /// <returns>The <see cref="DateTimeOffset"/> start date, or null if the value was not found.</returns>
-    public static DateTimeOffset? GetStartDate(this Timing timing)
+    /// <returns>The <see cref="LocalDate"/> start date, or null if the value was not found.</returns>
+    public static LocalDate? GetStartDate(this Timing timing)
     {
         var extension = timing.GetExtension(Extensions.TimingStartDate);
         var startDate = extension?.Value as FhirDateTime;
         if (startDate != null && startDate.TryToDateTimeOffset(out var result))
         {
-            return result;
+            return LocalDate.FromDateTime(result.UtcDateTime);
         }
 
         return null;
@@ -30,9 +33,9 @@ public static class TimingExtensions
     /// </summary>
     /// <param name="timing">The medication service's occurrence timing.</param>
     /// <param name="date">The date when this dosage has/will start</param>
-    public static void SetStartDate(this Timing timing, DateTimeOffset date)
+    public static void SetStartDate(this Timing timing, LocalDate date)
     {
-        var fhirDate = new FhirDateTime(date);
+        var fhirDate = new FhirDateTime(date.AtStartOfDayInZone(DateTimeZone.Utc).ToDateTimeOffset());
         timing.SetExtension(Extensions.TimingStartDate, fhirDate);
     }
 
@@ -55,12 +58,12 @@ public static class TimingExtensions
     }
 
     /// <summary>
-    /// Checks if the <see cref="Timing.RepeatComponent"/> needs a start date. This is always true for <see cref="Duration"/>
+    /// Checks if the <see cref="Timing.RepeatComponent"/> needs a start date. This is always true for <see cref="Hl7.Fhir.Model.Duration"/>
     /// repeat components as it does not have an start date by design (e.g., a duration of 3 weeks - no start date).
     /// </summary>
     /// <param name="repeat">The resource <see cref="Timing.RepeatComponent"/></param>
     /// <returns>A boolean value to indicate if the resource needs a start date</returns>
-    /// <exception cref="ArgumentException">If the repeat component is not <see cref="Period"/> or <see cref="Duration"/></exception>
+    /// <exception cref="ArgumentException">If the repeat component is not <see cref="Hl7.Fhir.Model.Period"/> or <see cref="Hl7.Fhir.Model.Duration"/></exception>
     public static bool NeedsStartDate(this Timing.RepeatComponent repeat) => repeat.Bounds switch
     {
         Period bounds => repeat.Frequency is > 1 && string.IsNullOrEmpty(bounds.Start),

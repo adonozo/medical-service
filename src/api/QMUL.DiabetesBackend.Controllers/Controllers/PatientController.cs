@@ -169,7 +169,8 @@ public class PatientController : ControllerBase
 
     [HttpPut("patients/{idOrEmail}/dosage/{dosageId}/startDate")]
     public async Task<IActionResult> UpdateDosageStartDate([FromRoute] string idOrEmail,
-        [FromRoute] string dosageId, [FromBody] PatientStartDateRequest startDate)
+        [FromRoute] string dosageId,
+        [FromBody] PatientStartDateRequest startDate)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
         {
@@ -180,7 +181,8 @@ public class PatientController : ControllerBase
 
     [HttpPut("patients/{idOrEmail}/serviceRequest/{serviceRequestId}/startDate")]
     public async Task<IActionResult> UpdateServiceRequestStartDate([FromRoute] string idOrEmail,
-        [FromRoute] string serviceRequestId, [FromBody] PatientStartDateRequest startDate)
+        [FromRoute] string serviceRequestId,
+        [FromBody] PatientStartDateRequest startDate)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
         {

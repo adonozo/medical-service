@@ -87,7 +87,7 @@ public static class ResourceUtils
                 DomainResourceId = request.Id,
                 Text = dosage.Text,
                 EventReferenceId = dosage.ElementId,
-                StartDate = dosage.Timing.GetStartDate()?.UtcDateTime
+                StartDate = dosage.Timing.GetStartDate()?.ToDateTimeUnspecified().ToUniversalTime()
             };
             var eventsGenerator = new EventsGenerator(patient, dosage.Timing, requestReference);
             events.AddRange(eventsGenerator.GetEvents());
@@ -117,7 +117,7 @@ public static class ResourceUtils
             DomainResourceId = request.Id,
             EventReferenceId = request.Id,
             Text = request.PatientInstruction,
-            StartDate = timing.GetStartDate()?.UtcDateTime
+            StartDate = timing.GetStartDate()?.ToDateTimeUnspecified().ToUniversalTime()
         };
 
         request.Contained.ForEach(resource =>

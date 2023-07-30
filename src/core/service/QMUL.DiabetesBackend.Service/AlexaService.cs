@@ -130,7 +130,7 @@ public class AlexaService : IAlexaService
     }
 
     /// <inheritdoc/>
-    public async Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, DateTime startDate)
+    public async Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, LocalDate startDate)
     {
         var patient = await ResourceUtils.GetResourceOrThrowAsync(
             () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
@@ -145,7 +145,7 @@ public class AlexaService : IAlexaService
 
     /// <inheritdoc/>
     public async Task<bool> UpsertServiceRequestStartDate(string patientIdOrEmail, string serviceRequestId,
-        DateTime startDate)
+        LocalDate startDate)
     {
         var serviceRequest = await ResourceUtils.GetResourceOrThrowAsync(
             () => this.serviceRequestDao.GetServiceRequest(serviceRequestId),
@@ -280,7 +280,7 @@ public class AlexaService : IAlexaService
     /// <param name="startDate">When this dosage has been started.</param>
     /// <returns>True if the update was successful. False otherwise.</returns>
     /// <exception cref="ArgumentException">If the events were not deleted.</exception>
-    private async Task SetDosageStartDate(InternalPatient patient, string dosageId, DateTime startDate)
+    private async Task SetDosageStartDate(InternalPatient patient, string dosageId, LocalDate startDate)
     {
         var medicationRequest = await this.medicationRequestDao.GetMedicationRequestForDosage(patient.Id, dosageId);
         if (medicationRequest is null)

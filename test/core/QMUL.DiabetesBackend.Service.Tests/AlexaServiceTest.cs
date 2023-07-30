@@ -144,7 +144,7 @@ public class AlexaServiceTest
         medicationRequestDao.UpdateMedicationRequest(Arg.Any<string>(),
                 Arg.Do<MedicationRequest>(med => medicationRequest = med))
             .Returns(Task.FromResult(true));
-        var expectedDate = DateTime.Now;
+        var expectedDate = new LocalDate(2023, 01, 01);
 
         // Act
         var result = await alexaService.UpsertDosageStartDate(Guid.NewGuid().ToString(), dosageId, expectedDate);
