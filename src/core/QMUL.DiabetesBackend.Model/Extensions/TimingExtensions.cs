@@ -4,6 +4,7 @@ using System;
 using Constants;
 using Hl7.Fhir.Model;
 using NodaTime;
+using NodaTime.Text;
 using Duration = Hl7.Fhir.Model.Duration;
 using Period = Hl7.Fhir.Model.Period;
 
@@ -70,4 +71,17 @@ public static class TimingExtensions
         Duration => true,
         _ => throw new ArgumentException("Repeat component has not a valid bound", nameof(repeat))
     };
+
+    /// <summary>
+    /// Gets the start date and end dates from a <see cref="Period"/>
+    /// </summary>
+    /// <param name="period">The timing <see cref="Period"/></param>
+    /// <returns>A tuple of <see cref="LocalDate"/> with the start and end dates</returns>
+    public static (LocalDate StartDate, LocalDate EndDate) GetDatesFromPeriod(this Period period)
+    {
+        var pattern = LocalDatePattern.Iso;
+        var startDate = pattern.Parse(period.Start[..10]);
+        var endDate = pattern.Parse(period.End[..10]);
+        return (startDate.GetValueOrThrow(), endDate.GetValueOrThrow());
+    }
 }

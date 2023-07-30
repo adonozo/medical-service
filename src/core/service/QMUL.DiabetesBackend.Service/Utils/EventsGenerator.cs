@@ -10,6 +10,11 @@ using System.Linq;
 using Hl7.Fhir.Model;
 using Model;
 using Model.Enums;
+using Model.Extensions;
+using NodaTime;
+using NodaTime.Extensions;
+using Duration = Hl7.Fhir.Model.Duration;
+using Period = Hl7.Fhir.Model.Period;
 using ResourceReference = Model.ResourceReference;
 
 /// <summary>
@@ -25,8 +30,8 @@ internal class EventsGenerator
     /// The class constructor
     /// </summary>
     /// <param name="patient">The patient associated with the resource.</param>
-    /// <param name="timing">The resource's timing setting. It must have the Bounds field as an instance of <see cref="Period"/>
-    /// or <see cref="Duration"/>. The only supported period is 1. Also, it must have the TimeOfDay or When field.</param>
+    /// <param name="timing">The resource's timing setting. It must have the Bounds field as an instance of <see cref="Hl7.Fhir.Model.Period"/>
+    /// or <see cref="Hl7.Fhir.Model.Duration"/>. The only supported period is 1. Also, it must have the TimeOfDay or When field.</param>
     /// <param name="resourceReference">A reference to the source resource, i.e., Medication or Service request.</param>
     public EventsGenerator(InternalPatient patient, Timing timing, ResourceReference resourceReference)
     {
@@ -45,22 +50,16 @@ internal class EventsGenerator
     public IEnumerable<HealthEvent> GetEvents()
     {
         int durationInDays;
-        DateTime startDate;
+        LocalDate startDate;
+
         switch (timing.Repeat.Bounds)
         {
             case Period bounds:
-                startDate = DateTime.Parse(bounds.Start);
-                var endDate = DateTime.Parse(bounds.End);
-                durationInDays = (endDate - startDate).Days + 1; // Period is end-date inclusive, thus, +1 day.
+                (startDate, var endDate) = bounds.GetDatesFromPeriod();
+                durationInDays = NodaTime.Period.DaysBetween(startDate, endDate) + 1; // Period is end-date inclusive, hence, +1 day.
                 break;
-            case Duration { Unit: "d" } duration:
-                (durationInDays, startDate) = GetDurationDays(duration.Value, 1);
-                break;
-            case Duration { Unit: "wk" } duration:
-                (durationInDays, startDate) = GetDurationDays(duration.Value, 7);
-                break;
-            case Duration { Unit: "mo" } duration:
-                (durationInDays, startDate) = GetDurationDays(duration.Value, 30);
+            case Duration duration:
+                (durationInDays, startDate) = this.GetDurationDaysAndStartDate(duration);
                 break;
             default:
                 throw new InvalidOperationException("Dosage or occurrence does not have a valid timing");
@@ -81,55 +80,68 @@ internal class EventsGenerator
         };
     }
 
-    private (int, DateTime) GetDurationDays(decimal? durationValue, int daysMultiplier)
+    private (int, LocalDate) GetDurationDaysAndStartDate(Duration duration)
     {
-        if (!this.resourceReference.StartDate.HasValue)
+        if (duration.Value is null or < 0)
         {
-            return (0, DateTime.UtcNow);
+            throw new InvalidOperationException(
+                $"Duration for {this.resourceReference.EventReferenceId} has an invalid value");
         }
 
-        var days = durationValue == null
-            ? throw new InvalidOperationException("Duration is not defined")
-            : (int)durationValue * daysMultiplier;
-        return (days, this.resourceReference.StartDate.Value.UtcDateTime);
+        var startDate = this.timing.GetStartDate();
+        if (startDate is null)
+        {
+            throw new InvalidOperationException($"Timing in request {this.resourceReference.DomainResourceId} does not have a start date");
+        }
+
+        var durationValue = (int)duration.Value;
+        var durationDays = duration switch
+        {
+           { Unit: "d" } => durationValue,
+           { Unit: "wk" } => (startDate.Value.PlusWeeks(durationValue) - startDate.Value).Days,
+           { Unit: "mo" } => (startDate.Value.PlusMonths(durationValue) - startDate.Value).Days,
+           _ => throw new InvalidOperationException("Dosage or occurrence does not have a valid timing")
+        };
+
+        return (durationDays, startDate.Value);
     }
 
-    private IEnumerable<HealthEvent> GenerateDailyEvents(int days, DateTime startDate)
+    private IEnumerable<HealthEvent> GenerateDailyEvents(int days, LocalDate startDate)
     {
         var events = new List<HealthEvent>();
         for (var i = 0; i < days; i++)
         {
-            var day = startDate.AddDays(i);
+            var day = startDate.PlusDays(i);
             events.AddRange(this.GenerateEventsOnSingleFrequency(day));
         }
 
         return events;
     }
 
-    private IEnumerable<HealthEvent> GenerateWeaklyEvents(int durationInDays, DateTime startDate,
+    private IEnumerable<HealthEvent> GenerateWeaklyEvents(int durationInDays, LocalDate startDate,
         DaysOfWeek?[] daysOfWeek)
     {
         var events = new List<HealthEvent>();
         for (var i = 0; i < durationInDays; i++)
         {
-            var day = startDate.AddDays(i).DayOfWeek;
-            if (daysOfWeek.Any(dayOfWeek => dayOfWeek.ToDayOfWeek() == day))
+            var day = startDate.PlusDays(i).DayOfWeek;
+            if (daysOfWeek.Any(dayOfWeek => dayOfWeek.ToDayOfWeek().ToIsoDayOfWeek() == day))
             {
-                events.AddRange(this.GenerateEventsOnSingleFrequency(startDate.AddDays(i)));
+                events.AddRange(this.GenerateEventsOnSingleFrequency(startDate.PlusDays(i)));
             }
         }
 
         return events;
     }
 
-    private IEnumerable<HealthEvent> GenerateEventsOnSingleFrequency(DateTime date)
+    private IEnumerable<HealthEvent> GenerateEventsOnSingleFrequency(LocalDate date)
     {
         var events = new List<HealthEvent>();
         if (this.timing.Repeat.TimeOfDay.Any())
         {
-            foreach (var time in this.timing.Repeat.TimeOfDay)
+            foreach (var time in this.timing.Repeat.TimeOfDay) // TODO set time in date
             {
-                var eventDateTime = DateTime.Parse($"{date.Date:yyyy-MM-dd}T{time}");
+                var eventDateTime = date.ToDateTimeUnspecified();
                 var healthEvent = new HealthEvent
                 {
                     PatientId = this.patient.Id,
@@ -148,13 +160,11 @@ internal class EventsGenerator
                 var customTiming = eventTiming.ToCustomEventTiming();
                 var exactTimeIsSetup = patient.ExactEventTimes.ContainsKey(customTiming);
 
-                // Default hour will be 0. Thus, patient will be asked to set a custom timing value to get these
-                // events (and, consequently, events will be updated).
                 var eventDate = exactTimeIsSetup
-                    ? date.Date
+                    ? date.ToDateTimeUnspecified()
                         .AddHours(patient.ExactEventTimes[customTiming].Hour)
                         .AddMinutes(patient.ExactEventTimes[customTiming].Minute)
-                    : date.Date;
+                    : throw new InvalidOperationException($"Timing event {eventTiming} for patient {this.patient.Id} does not have a time");
                 var healthEvent = new HealthEvent
                 {
                     PatientId = this.patient.Id,
@@ -170,14 +180,14 @@ internal class EventsGenerator
         return events;
     }
 
-    private IEnumerable<HealthEvent> GenerateEventsOnMultipleFrequency(int days, DateTime startDate)
+    private IEnumerable<HealthEvent> GenerateEventsOnMultipleFrequency(int days, LocalDate startDate)
     {
         var events = new List<HealthEvent>();
         var totalOccurrences = days * this.timing.Repeat.Frequency ?? 0;
         var hourOfDistance = 24 / this.timing.Repeat.Frequency ?? 24;
         for (var i = 0; i < totalOccurrences; i++)
         {
-            var date = startDate.AddHours(hourOfDistance * i);
+            var date = startDate.ToDateTimeUnspecified().AddHours(hourOfDistance * i);
             var healthEvent = new HealthEvent
             {
                 PatientId = this.patient.Id,

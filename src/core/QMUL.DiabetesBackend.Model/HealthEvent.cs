@@ -8,8 +8,6 @@ using Enums;
 /// </summary>
 public class HealthEvent
 {
-    public string Id { get; set; }
-
     public string PatientId { get; set; }
 
     /// <summary>

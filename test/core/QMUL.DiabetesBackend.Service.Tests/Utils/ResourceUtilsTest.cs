@@ -76,7 +76,11 @@ public class ResourceUtilsTest
                 PeriodUnit = Timing.UnitsOfTime.D,
                 Period = 1,
                 Frequency = 1,
-                Bounds = new Period(new FhirDateTime(2023, 01, 01), new FhirDateTime(2023, 01, 10)),
+                Bounds = new Period
+                {
+                    Start = "2023-01-01",
+                    End = "2023-01-10"
+                },
                 TimeOfDay = new[] { "10:00" }
             }
         };
@@ -142,7 +146,11 @@ public class ResourceUtilsTest
                 PeriodUnit = Timing.UnitsOfTime.D,
                 Period = 1,
                 Frequency = 1,
-                Bounds = new Period(new FhirDateTime(2023, 01, 01), new FhirDateTime(2023, 01, 10)),
+                Bounds = new Period
+                {
+                    Start = "2023-01-01",
+                    End = "2023-01-10"
+                },
                 TimeOfDay = new[] { "10:00" }
             }
         };
