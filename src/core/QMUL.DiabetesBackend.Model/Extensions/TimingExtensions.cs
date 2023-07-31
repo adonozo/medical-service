@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.Model.Extensions;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Constants;
 using Hl7.Fhir.Model;
 using NodaTime;
@@ -20,13 +21,13 @@ public static class TimingExtensions
     public static LocalDate? GetStartDate(this Timing timing)
     {
         var extension = timing.GetExtension(Extensions.TimingStartDate);
-        var startDate = extension?.Value as FhirDateTime;
-        if (startDate != null && startDate.TryToDateTimeOffset(out var result))
+        if (extension?.Value is not FhirString startDateString)
         {
-            return LocalDate.FromDateTime(result.UtcDateTime);
+            return null;
         }
 
-        return null;
+        var parseResult = LocalDatePattern.Iso.Parse(startDateString.Value);
+        return parseResult.TryGetValue(default, out var localDate) ? localDate : null;
     }
 
     /// <summary>
@@ -37,8 +38,8 @@ public static class TimingExtensions
     /// <param name="date">The date when this dosage has/will start</param>
     public static void SetStartDate(this Timing timing, LocalDate date)
     {
-        var fhirDate = new FhirDateTime(date.AtStartOfDayInZone(DateTimeZone.Utc).ToDateTimeOffset());
-        timing.SetExtension(Extensions.TimingStartDate, fhirDate);
+        var fhirString = new FhirString(date.ToString("R", CultureInfo.InvariantCulture));
+        timing.SetExtension(Extensions.TimingStartDate, fhirString);
     }
 
     /// <summary>

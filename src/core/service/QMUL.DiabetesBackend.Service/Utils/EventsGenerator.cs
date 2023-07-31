@@ -53,7 +53,7 @@ internal class EventsGenerator
         int durationInDays;
         LocalDate startDate;
 
-        switch (timing.Repeat.Bounds)
+        switch (this.timing.Repeat.Bounds)
         {
             case Period bounds:
                 (startDate, var endDate) = bounds.GetDatesFromPeriod();
@@ -66,17 +66,17 @@ internal class EventsGenerator
                 throw new InvalidOperationException("Dosage or occurrence does not have a valid timing");
         }
 
-        if (timing.Repeat.DayOfWeek.Any())
+        if (this.timing.Repeat.DayOfWeek.Any())
         {
-            return this.GenerateWeaklyEvents(durationInDays, startDate, timing.Repeat.DayOfWeek.ToArray());
+            return this.GenerateWeaklyEvents(durationInDays, startDate, this.timing.Repeat.DayOfWeek.ToArray());
         }
 
         // For now, only a period of 1 is supported; e.g., 3 times a day: frequency = 3, period = 1
-        return timing.Repeat.Period switch
+        return this.timing.Repeat.Period switch
         {
-            1 when timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D && timing.Repeat.Frequency > 1 => this
-                .GenerateEventsOnMultipleFrequency(durationInDays, startDate),
-            1 when timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D => this.GenerateDailyEvents(durationInDays, startDate),
+            1 when this.timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D && this.timing.Repeat.Frequency > 1 =>
+                this.GenerateEventsOnMultipleFrequency(durationInDays, startDate),
+            1 when this.timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D => this.GenerateDailyEvents(durationInDays, startDate),
             _ => throw new InvalidOperationException("Dosage timing not supported yet. Please review the period.")
         };
     }
