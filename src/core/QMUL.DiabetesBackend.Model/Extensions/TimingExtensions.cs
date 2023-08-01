@@ -69,9 +69,71 @@ public static class TimingExtensions
     /// <exception cref="ArgumentException">If the repeat component is not <see cref="Hl7.Fhir.Model.Period"/> or <see cref="Hl7.Fhir.Model.Duration"/></exception>
     public static bool NeedsStartDate(this Timing.RepeatComponent repeat) => repeat.Bounds switch
     {
-        Period bounds => repeat.Frequency is > 1 && string.IsNullOrEmpty(bounds.Start),
+        Period bounds => string.IsNullOrEmpty(bounds.Start),
         Duration => true,
         _ => throw new ArgumentException("Repeat component has not a valid bound", nameof(repeat))
+    };
+
+    /// <summary>
+    /// Gets the start time as <see cref="LocalTime"/> from a resource's timing
+    /// </summary>
+    /// <param name="timing">The resource timing</param>
+    /// <returns>The resource start time as <see cref="LocalTime"/></returns>
+    public static LocalTime? GetStartTime(this Timing timing)
+    {
+        var extension = timing.GetExtension(Extensions.TimingStartTime);
+        if (extension?.Value is not FhirString startDateString)
+        {
+            return null;
+        }
+
+        var parseResult = LocalTimePattern.GeneralIso.Parse(startDateString.Value);
+        return parseResult.Success ? parseResult.Value : null;
+    }
+
+    /// <summary>
+    /// Sets the start time in a resource's timing
+    /// </summary>
+    /// <param name="timing">The resource <see cref="Timing"/></param>
+    /// <param name="time">The defined <see cref="LocalTime"/></param>
+    public static void SetStartTime(this Timing timing, LocalTime time)
+    {
+        var fhirString = new FhirString(time.ToString("T", CultureInfo.InvariantCulture));
+        timing.SetExtension(Extensions.TimingStartTime, fhirString);
+    }
+
+    /// <summary>
+    /// Adds a flag to tell if the timing needs a start time
+    /// </summary>
+    /// <param name="timing">The resource's timing</param>
+    public static void SetNeedsStartTimeFlag(this Timing timing)
+    {
+        timing.SetExtension(Extensions.NeedsStartTimeFlag, new FhirBoolean(true));
+    }
+
+    /// <summary>
+    /// Removes the flag that tells if the timing needs a start time
+    /// </summary>
+    /// <param name="timing">The resource's timing</param>
+    public static void RemoveNeedsStartTimeFlag(this Timing timing)
+    {
+        timing.RemoveExtension(Extensions.NeedsStartTimeFlag);
+    }
+
+    /// <summary>
+    /// Checks if a timing needs a start time. This is true if the bounds in the repeat component is of type <see cref="Period"/>
+    /// and the frequency is greater than 1, which means that the event is repeated multiple times in the day
+    /// </summary>
+    /// <param name="repeat">The timing's repeat component</param>
+    /// <returns>True if the timing would need a start time</returns>
+    /// <exception cref="InvalidOperationException">When the bounds are of type <see cref="Period"/> and the period unit
+    /// is not 'day', as there is no support for other units of time yet</exception>
+    public static bool NeedsStartTime(this Timing.RepeatComponent repeat) => repeat switch
+    {
+        { Bounds: Period, PeriodUnit: Timing.UnitsOfTime.D } => repeat.Frequency is > 1,
+        { Bounds: Period, PeriodUnit: not Timing.UnitsOfTime.D } =>
+            throw new InvalidOperationException($"Unsupported PeriodUnit: {repeat.PeriodUnit}"),
+        _ => false
     };
 
     /// <summary>
