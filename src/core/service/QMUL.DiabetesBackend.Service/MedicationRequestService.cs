@@ -53,6 +53,11 @@ public class MedicationRequestService : IMedicationRequestService
             dosage.Timing.SetNeedsStartDateFlag();
         }
 
+        foreach (var dosage in request.DosageInstruction.Where(dosage => dosage.Timing.Repeat.NeedsStartTime()))
+        {
+            dosage.Timing.SetNeedsStartTimeFlag();
+        }
+
         var newRequest = await this.medicationRequestDao.CreateMedicationRequest(request);
         this.logger.LogDebug("Medication request created with ID {Id}", newRequest.Id);
         return newRequest;
