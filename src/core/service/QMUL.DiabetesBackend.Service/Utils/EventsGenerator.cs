@@ -147,7 +147,6 @@ internal class EventsGenerator
                 {
                     PatientId = this.patient.Id,
                     ScheduledDateTime = date.At(localTime.GetValueOrThrow()),
-                    ExactTimeIsSetup = true,
                     EventTiming = CustomEventTiming.EXACT,
                     ResourceReference = this.resourceReference
                 };
@@ -168,7 +167,6 @@ internal class EventsGenerator
                 {
                     PatientId = this.patient.Id,
                     ScheduledDateTime = eventDate,
-                    ExactTimeIsSetup = exactTimeIsSetup,
                     EventTiming = customTiming,
                     ResourceReference = this.resourceReference
                 };
@@ -198,7 +196,6 @@ internal class EventsGenerator
             {
                 PatientId = this.patient.Id,
                 ScheduledDateTime = startDateTime,
-                ExactTimeIsSetup = true,
                 EventTiming = CustomEventTiming.EXACT,
                 ResourceReference = this.resourceReference
             };
