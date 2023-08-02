@@ -1,6 +1,5 @@
 namespace QMUL.DiabetesBackend.ServiceInterfaces;
 
-using System;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model.Enums;
@@ -61,10 +60,14 @@ public interface IAlexaService
     /// <param name="patientIdOrEmail">The patient's ID or email.</param>
     /// <param name="dosageId">The dosage ID to update.</param>
     /// <param name="startDate">The start date.</param>
+    /// <param name="localTime">The optional start time</param>
     /// <returns>A boolean value to indicate is the update was successful.</returns>
     /// <exception cref="ValidationException">If the patient is not found.</exception>
     /// <exception cref="WriteResourceException">If there is an error updating the patient's timing</exception>
-    Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, LocalDate startDate);
+    Task<bool> UpsertDosageStartDateTime(string patientIdOrEmail,
+        string dosageId,
+        LocalDate startDate,
+        LocalTime? localTime = null);
 
     /// <summary>
     /// Updates / Adds a start date for a service request. Useful when the service request doesn't have an exact

@@ -257,7 +257,7 @@ public class PatientControllerTest
     {
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
-        alexaService.UpsertDosageStartDate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<LocalDate>())
+        alexaService.UpsertDosageStartDateTime(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<LocalDate>())
             .Returns(true);
 
         var controller = this.GetTestPatientController(alexaService: alexaService);
@@ -276,7 +276,7 @@ public class PatientControllerTest
     {
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
-        alexaService.UpsertDosageStartDate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<LocalDate>())
+        alexaService.UpsertDosageStartDateTime(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<LocalDate>())
             .Throws(new Exception());
 
         var controller = this.GetTestPatientController(alexaService: alexaService);

@@ -147,7 +147,7 @@ public class AlexaServiceTest
         var expectedDate = new LocalDate(2023, 01, 01);
 
         // Act
-        var result = await alexaService.UpsertDosageStartDate(Guid.NewGuid().ToString(), dosageId, expectedDate);
+        var result = await alexaService.UpsertDosageStartDateTime(Guid.NewGuid().ToString(), dosageId, expectedDate);
         var dosage = medicationRequest.DosageInstruction.FirstOrDefault(dosage => dosage.ElementId == dosageId);
 
         // Assert

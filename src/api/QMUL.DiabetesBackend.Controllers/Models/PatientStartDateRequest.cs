@@ -11,4 +11,9 @@ public class PatientStartDateRequest
     /// The request start date
     /// </summary>
     public LocalDate StartDate { get; set; }
+
+    /// <summary>
+    /// The request start time, needed when the resource occurs multiple times a day and does not have defined times
+    /// </summary>
+    public LocalTime? StartTime { get; set; }
 }

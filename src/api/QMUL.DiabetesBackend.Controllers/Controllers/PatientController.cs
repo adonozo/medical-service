@@ -174,7 +174,10 @@ public class PatientController : ControllerBase
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
         {
-            await this.alexaService.UpsertDosageStartDate(idOrEmail, dosageId, startDate.StartDate);
+            await this.alexaService.UpsertDosageStartDateTime(idOrEmail,
+                dosageId,
+                startDate.StartDate,
+                startDate.StartTime);
             return this.NoContent();
         }, this.logger, this);
     }

@@ -130,7 +130,10 @@ public class AlexaService : IAlexaService
     }
 
     /// <inheritdoc/>
-    public async Task<bool> UpsertDosageStartDate(string patientIdOrEmail, string dosageId, LocalDate startDate)
+    public async Task<bool> UpsertDosageStartDateTime(string patientIdOrEmail,
+        string dosageId,
+        LocalDate startDate,
+        LocalTime? localTime = null)
     {
         var patient = await ResourceUtils.GetResourceOrThrowAsync(
             () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
@@ -278,9 +281,13 @@ public class AlexaService : IAlexaService
     /// <param name="patient">The <see cref="InternalPatient"/> related to the medication request</param>
     /// <param name="dosageId">The dosage ID to update. A medication request will be fetched using this value.</param>
     /// <param name="startDate">When this dosage has been started.</param>
+    /// <param name="startTime">The optional start time</param>
     /// <returns>True if the update was successful. False otherwise.</returns>
     /// <exception cref="ArgumentException">If the events were not deleted.</exception>
-    private async Task SetDosageStartDate(InternalPatient patient, string dosageId, LocalDate startDate)
+    private async Task SetDosageStartDate(InternalPatient patient,
+        string dosageId,
+        LocalDate startDate,
+        LocalTime? startTime = null)
     {
         var medicationRequest = await this.medicationRequestDao.GetMedicationRequestForDosage(patient.Id, dosageId);
         if (medicationRequest is null)
@@ -296,6 +303,13 @@ public class AlexaService : IAlexaService
 
         medicationRequest.DosageInstruction[index].Timing.SetStartDate(startDate);
         medicationRequest.DosageInstruction[index].Timing.RemoveNeedsStartDateFlag();
+
+        if (startTime.HasValue)
+        {
+            medicationRequest.DosageInstruction[index].Timing.SetStartTime(startTime.Value);
+            medicationRequest.DosageInstruction[index].Timing.RemoveNeedsStartTimeFlag();
+        }
+
         await this.medicationRequestDao.UpdateMedicationRequest(medicationRequest.Id, medicationRequest);
     }
 
