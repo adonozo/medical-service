@@ -84,7 +84,7 @@ public static class EventTimingMapper
         string timezone,
         int defaultOffset)
     {
-        if (timing == CustomEventTiming.EXACT) // TODO remove this option
+        if (timing == CustomEventTiming.EXACT)
         {
             var start = dateTime.AtStartOfDayInZone(DateTimeZone.Utc).ToInstant();
             var end = dateTime.Plus(Period.FromDays(1)).AtStartOfDayInZone(DateTimeZone.Utc).ToInstant();
