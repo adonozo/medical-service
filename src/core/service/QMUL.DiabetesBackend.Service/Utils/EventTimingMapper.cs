@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using Hl7.Fhir.Model;
 using Model.Enums;
 using NodaTime;
-using NodaTime.Extensions;
 using Instant = NodaTime.Instant;
 using Period = NodaTime.Period;
 
@@ -184,36 +183,5 @@ public static class EventTimingMapper
             CustomEventTiming.PCV => new[] { CustomEventTiming.ACV, CustomEventTiming.CV, CustomEventTiming.PCV },
             _ => Array.Empty<CustomEventTiming>()
         };
-    }
-
-    /// <summary>
-    /// Gets a day interval for a date given a timezone. The result dates are calculated in UTC. For example, the
-    /// for a datetime 2020-01-01 10:00 America/La_Paz, the intervals would be 2020-01-01 04:00 & 2020-01-02 04:00
-    /// considering the timezone (UTC -4). 
-    /// </summary>
-    /// <param name="date">The reference datetime.</param>
-    /// <param name="timezone">The user's timezone.</param>
-    /// <returns>A <see cref="DateTime"/> tuple: the start and end day of the reference date in UTC.</returns>
-    public static Tuple<DateTimeOffset, DateTimeOffset> GetRelativeDayInterval(DateTimeOffset date, string timezone)
-    {
-        var startLocalDate = GetRelativeStartOfDay(date, timezone);
-        date = startLocalDate.ToDateTimeUtc();
-        var endTime = date.AddDays(1);
-        return new Tuple<DateTimeOffset, DateTimeOffset>(date, endTime);
-    }
-
-    /// <summary>
-    /// Gets the the relative start of day (datetime) given a date and timezone.
-    /// </summary>
-    /// <param name="date">The reference date for get the start date from.</param>
-    /// <param name="timezone">The user's timezone</param>
-    /// <returns>A <see cref="ZonedDateTime"/> at the same date of the reference date, but the time set to 00:00.</returns>
-    public static ZonedDateTime GetRelativeStartOfDay(DateTimeOffset date, string timezone)
-    {
-        var instant = date.ToInstant();
-        var timezoneInfo = DateTimeZoneProviders.Tzdb[timezone];
-        var startZonedDateTime = instant.InZone(timezoneInfo);
-        var startLocalDate = startZonedDateTime.Date.AtStartOfDayInZone(timezoneInfo);
-        return startLocalDate;
     }
 }

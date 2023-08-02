@@ -71,13 +71,13 @@ public static class Helpers
     /// <param name="dateTimeOffset">The <see cref="DateTimeOffset"/> to use.</param>
     public static void SetBsonDateTimeValue(BsonDocument document, string field, DateTimeOffset? dateTimeOffset)
     {
-        if (dateTimeOffset == null)
+        if (dateTimeOffset is null)
         {
             document.Remove(field);
             return;
         }
 
-        var dateTime = ((DateTimeOffset)dateTimeOffset).UtcDateTime;
+        var dateTime = dateTimeOffset.Value.UtcDateTime;
         document[field] = new BsonDateTime(dateTime);
     }
 
