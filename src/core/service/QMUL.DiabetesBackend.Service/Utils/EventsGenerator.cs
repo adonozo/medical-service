@@ -181,21 +181,30 @@ internal class EventsGenerator
 
     private IEnumerable<HealthEvent> GenerateEventsOnMultipleFrequency(int days, LocalDate startDate)
     {
+        var startTime = this.timing.GetStartTime();
+        if (startTime is null)
+        {
+            throw new InvalidOperationException(
+                $"Timing in request {this.resourceReference.DomainResourceId} does not have a start time");
+        }
+
+        var startDateTime = startDate.At(startTime.Value);
         var events = new List<HealthEvent>();
         var totalOccurrences = days * this.timing.Repeat.Frequency ?? 0;
         var hourOfDistance = 24 / this.timing.Repeat.Frequency ?? 24;
         for (var i = 0; i < totalOccurrences; i++)
         {
-            var date = startDate.At(new LocalTime(hourOfDistance * i, 00)); // todo this won't work, startDate should be LocalDateTime
             var healthEvent = new HealthEvent
             {
                 PatientId = this.patient.Id,
-                ScheduledDateTime = date,
+                ScheduledDateTime = startDateTime,
                 ExactTimeIsSetup = true,
                 EventTiming = CustomEventTiming.EXACT,
                 ResourceReference = this.resourceReference
             };
+
             events.Add(healthEvent);
+            startDateTime = startDateTime.PlusHours(hourOfDistance);
         }
 
         return events;

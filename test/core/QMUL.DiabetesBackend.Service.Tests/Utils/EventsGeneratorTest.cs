@@ -141,11 +141,11 @@ public class EventsGeneratorTest
         events[1].ScheduledDateTime.DayOfWeek.Should().Be(DayOfWeek.Monday);
     }
 
-    [Fact(Skip = "Events generator should use a LocalDateTime to support frequencies > 1")]
+    [Fact]
     public void GetEvents_WhenTimingHasFrequencyGreaterThanOne_ReturnsHealthEvents()
     {
         // Arrange
-        var startDate = new LocalDate(2023, 01, 01);
+        var startDate = new LocalDate(2023, 03, 20);
         var dosageId = Guid.NewGuid().ToString();
         var timing = new Timing
         {
@@ -163,10 +163,11 @@ public class EventsGeneratorTest
         };
 
         timing.SetStartDate(startDate);
+        timing.SetStartTime(new LocalTime(10, 00));
+
         var patient = TestUtils.GetStubInternalPatient();
         var reference = this.GetDummyResource();
         reference.EventReferenceId = dosageId;
-        reference.StartDate = startDate;
         var eventsGenerator = new EventsGenerator(patient, timing, reference);
 
         // Act
@@ -176,9 +177,13 @@ public class EventsGeneratorTest
         events.Count.Should().Be(20, "Timing is twice a day (frequency = 2, period = 1) for 10 days");
         events[0].ScheduledDateTime.Hour.Should().Be(10);
         events[1].ScheduledDateTime.Hour.Should().Be(22);
+        events[18].ScheduledDateTime.Hour.Should().Be(10, "Date is UTC, shouldn't change on summer time");
+        events[19].ScheduledDateTime.Hour.Should().Be(22, "Date is UTC, shouldn't change on summer time");
+        events.MaxBy(@event => @event.ScheduledDateTime).ScheduledDateTime.Date.Should().Be(new LocalDate(2023, 03, 29));
+        events.MinBy(@event => @event.ScheduledDateTime).ScheduledDateTime.Date.Should().Be(new LocalDate(2023, 03, 20));
     }
 
-    [Theory(Skip = "If start date is not set, the method will throw an exception")]
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void GetEvents_WhenTimingHasCustomTimings_ReturnsHealthEvents(bool setStartDate)
@@ -206,29 +211,30 @@ public class EventsGeneratorTest
         var reference = this.GetDummyResource();
         if (setStartDate)
         {
-            reference.StartDate = new LocalDate(2023, 01, 01);
+            timing.SetStartDate(new LocalDate(2023, 01, 01));
         }
 
         var eventsGenerator = new EventsGenerator(patient, timing, reference);
 
         // Act
-        var events = eventsGenerator.GetEvents().ToList();
+        var action = () => eventsGenerator.GetEvents().ToList();
 
         // Assert
         if (setStartDate)
         {
+            var events = action();
             events.Count.Should().Be(20, "This is a daily event happening twice a day (ACM and ACV) for 10 days");
             events[0].ScheduledDateTime.Hour.Should().Be(8);
             events[1].ScheduledDateTime.Hour.Should().Be(19);
         }
         else
         {
-            events.Count.Should().Be(0, "Don't create events if there is no start date");
+            action.Should().Throw<InvalidOperationException>();
         }
     }
 
-    [Fact(Skip = "Method will throw when patient doesn't have a time for the timing event")]
-    public void GetEvents_WhenTimingHasCustomTimingsButPatientDoesnt_ReturnsHealthEventsWithoutDefinedHours()
+    [Fact]
+    public void GetEvents_WhenTimingHasCustomTimingsButPatientDoesnt_ThrowsException()
     {
         // Arrange
         var timing = new Timing
@@ -253,13 +259,10 @@ public class EventsGeneratorTest
         var eventsGenerator = new EventsGenerator(patient, timing, reference);
 
         // Act
-        var events = eventsGenerator.GetEvents().ToList();
+        var action = () => eventsGenerator.GetEvents().ToList();
 
         // Assert
-        events.Count.Should().Be(20, "This is a daily event happening twice a day (ACM and ACV) for 10 days");
-        events[0].ScheduledDateTime.Hour.Should().Be(0);
-        events[1].ScheduledDateTime.Hour.Should().Be(0,
-            "All instances have hour 0 when the patient doesn't have a time for the timing event");
+        action.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
