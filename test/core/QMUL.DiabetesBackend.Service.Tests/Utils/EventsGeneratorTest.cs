@@ -255,7 +255,6 @@ public class EventsGeneratorTest
 
         var patient = TestUtils.GetStubInternalPatient();
         var reference = this.GetDummyResource();
-        reference.StartDate = new LocalDate(2023, 01, 01);
         var eventsGenerator = new EventsGenerator(patient, timing, reference);
 
         // Act

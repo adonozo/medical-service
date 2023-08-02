@@ -86,8 +86,7 @@ public static class ResourceUtils
                 EventType = isInsulin ? EventType.InsulinDosage : EventType.MedicationDosage,
                 DomainResourceId = request.Id,
                 Text = dosage.Text,
-                EventReferenceId = dosage.ElementId,
-                StartDate = dosage.Timing.GetStartDate()
+                EventReferenceId = dosage.ElementId
             };
             var eventsGenerator = new EventsGenerator(patient, dosage.Timing, requestReference);
             events.AddRange(eventsGenerator.GetEvents());
@@ -107,7 +106,7 @@ public static class ResourceUtils
     public static List<HealthEvent> GenerateEventsFrom(ServiceRequest request, InternalPatient patient)
     {
         var events = new List<HealthEvent>();
-        if (request.Occurrence is not Timing timing)
+        if (request.Occurrence is not Timing)
         {
             throw new InvalidOperationException("Service request occurrence is not a timing instance");
         }
@@ -116,8 +115,7 @@ public static class ResourceUtils
             EventType = EventType.Measurement,
             DomainResourceId = request.Id,
             EventReferenceId = request.Id,
-            Text = request.PatientInstruction,
-            StartDate = timing.GetStartDate()
+            Text = request.PatientInstruction
         };
 
         request.Contained.ForEach(resource =>

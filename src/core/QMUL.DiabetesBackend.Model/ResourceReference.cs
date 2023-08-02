@@ -1,7 +1,6 @@
 namespace QMUL.DiabetesBackend.Model;
 
 using Enums;
-using NodaTime;
 
 /// <summary>
 /// A custom resource that references an actual FHIR resource
@@ -27,9 +26,4 @@ public class ResourceReference
     /// The medication or measurement instruction
     /// </summary>
     public string Text { get; set; }
-
-    /// <summary>
-    /// When this resource has started. Null if it has not started yet.
-    /// </summary>
-    public LocalDate? StartDate { get; set; } // TODO might not be necessary anymore
 }
