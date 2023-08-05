@@ -27,7 +27,7 @@ public class AlexaService : IAlexaService
     private readonly IServiceRequestDao serviceRequestDao;
     private readonly ILogger<AlexaService> logger;
 
-    private const int DefaultExactTimeOffsetMinutes = 20;
+    private const int DefaultOffsetMinutes = 20;
     private const int OffsetBetweenTimingsMinutes = 20; // For related timings. E.g., before lunch and lunch
 
     public AlexaService(IPatientDao patientDao,
@@ -56,27 +56,26 @@ public class AlexaService : IAlexaService
             PaginationRequest.FirstPaginatedResults,
             onlyInsulin);
 
-        var eventsWithStartDate =
-            this.GetHealthEventsWithStartDate(medicationRequests.Results, patient.ToInternalPatient());
-        if (!eventsWithStartDate.IsSuccess)
+        if (medicationRequests.Results.Any(request => request.NeedsStartDate()))
         {
-            var errorBundle = ResourceUtils.GenerateSearchBundle(new[] { eventsWithStartDate.Error });
+            var errorBundle = ResourceUtils.GenerateSearchBundle(medicationRequests.Results);
             return errorBundle;
         }
 
         var timingPreferences = patient.GetTimingPreference();
 
-        var (startDate, endDate) = EventTimingMapper.GetTimingInterval(
-            preferences: timingPreferences,
-            dateTime: dateTime,
+        var dateFilter = EventTimingMapper.TimingIntervalForPatient(
+            patientTimingPreferences: timingPreferences,
+            localDate: dateTime,
             timing: timing ?? CustomEventTiming.ALL_DAY,
             timezone: timezone ?? "UTC",
-            defaultOffset: DefaultExactTimeOffsetMinutes);
+            defaultOffset: DefaultOffsetMinutes);
 
-        var events = eventsWithStartDate.Results
-            .Where(@event => @event.ScheduledDateTime >= startDate.InUtc().LocalDateTime &&
-                             @event.ScheduledDateTime <= endDate.InUtc().LocalDateTime);
-        return await this.GenerateSearchBundle(@events.ToList());
+        var events = this.GetHealthEvents(medicationRequests.Results,
+            patient.ToInternalPatient(),
+            dateFilter);
+
+        return await this.GenerateSearchBundle(events.ToList());
     }
 
     /// <inheritdoc/>
@@ -90,7 +89,7 @@ public class AlexaService : IAlexaService
 
         var serviceRequests = await this.serviceRequestDao.GetActiveServiceRequests(patientEmailOrId);
 
-        var eventsWithStartDate = this.GetHealthEventsWithStartDate(serviceRequests, patient.ToInternalPatient());
+        var eventsWithStartDate = this.GetHealthEvents(serviceRequests, patient.ToInternalPatient());
         if (!eventsWithStartDate.IsSuccess)
         {
             var errorBundle = ResourceUtils.GenerateSearchBundle(new[] { eventsWithStartDate.Error });
@@ -99,17 +98,15 @@ public class AlexaService : IAlexaService
 
         var timingPreferences = patient.GetTimingPreference();
 
-        var (startDate, endDate) = EventTimingMapper.GetTimingInterval(
-            preferences: timingPreferences,
-            dateTime: dateTime,
+        var (startDate, endDate) = EventTimingMapper.TimingIntervalForPatient(
+            patientTimingPreferences: timingPreferences,
+            localDate: dateTime,
             timing: timing,
             timezone: timezone,
-            defaultOffset: DefaultExactTimeOffsetMinutes);
+            defaultOffset: DefaultOffsetMinutes);
 
-        var events = eventsWithStartDate.Results
-            .Where(@event => @event.ScheduledDateTime >= startDate.InUtc().LocalDateTime &&
-                             @event.ScheduledDateTime <= endDate.InUtc().LocalDateTime);
-        return await this.GenerateSearchBundle(@events.ToList());
+        var events = eventsWithStartDate.Results;
+        return await this.GenerateSearchBundle(events.ToList());
     }
 
     /// <inheritdoc/>
@@ -313,25 +310,17 @@ public class AlexaService : IAlexaService
         await this.medicationRequestDao.UpdateMedicationRequest(medicationRequest.Id, medicationRequest);
     }
 
-    private Result<IEnumerable<HealthEvent>, MedicationRequest> GetHealthEventsWithStartDate(
+    private IEnumerable<HealthEvent> GetHealthEvents(
         IEnumerable<MedicationRequest> medicationRequests,
-        InternalPatient patient)
+        InternalPatient patient,
+        Interval dateFilter)
     {
-        var healthEvents = new List<HealthEvent>();
-        foreach (var request in medicationRequests)
-        {
-            if (request.DosageInstruction.Any(dosage => dosage.Timing.Repeat.NeedsStartDate()))
-            {
-                return Result<IEnumerable<HealthEvent>, MedicationRequest>.Fail(request);
-            }
-
-            healthEvents.AddRange(ResourceUtils.GenerateEventsFrom(request, patient));
-        }
-
-        return Result<IEnumerable<HealthEvent>, MedicationRequest>.Success(healthEvents);
+        return medicationRequests
+            .Select(request => ResourceUtils.GenerateEventsFrom(request, patient, dateFilter))
+            .SelectMany(result => result);
     }
 
-    private Result<IEnumerable<HealthEvent>, ServiceRequest> GetHealthEventsWithStartDate(
+    private Result<IEnumerable<HealthEvent>, ServiceRequest> GetHealthEvents(
         IEnumerable<ServiceRequest> serviceRequests,
         InternalPatient patient)
     {

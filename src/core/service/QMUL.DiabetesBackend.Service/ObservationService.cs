@@ -75,9 +75,9 @@ public class ObservationService : IObservationService
             await this.patientDao.GetPatientByIdOrEmail(patientId), new NotFoundException());
         var timingPreferences = patient.GetTimingPreference();
 
-        var (startDate, endDate) = EventTimingMapper.GetTimingInterval(
-            preferences: timingPreferences,
-            dateTime: dateTime,
+        var (startDate, endDate) = EventTimingMapper.TimingIntervalForPatient(
+            patientTimingPreferences: timingPreferences,
+            localDate: dateTime,
             timing: timing,
             timezone: patientTimezone,
             defaultOffset: DefaultOffsetMinutes);

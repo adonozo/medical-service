@@ -9,6 +9,7 @@ using Model;
 using Model.Enums;
 using Model.Exceptions;
 using Model.Extensions;
+using NodaTime;
 using ResourceReference = Model.ResourceReference;
 
 /// <summary>
@@ -73,8 +74,11 @@ public static class ResourceUtils
     /// </summary>
     /// <param name="request">The medication request</param>
     /// <param name="patient">The medication request's subject</param>
+    /// <param name="dateFilter">An optional end date filter</param>
     /// <returns>A List of events for the medication request</returns>
-    public static List<HealthEvent> GenerateEventsFrom(MedicationRequest request, InternalPatient patient)
+    public static List<HealthEvent> GenerateEventsFrom(MedicationRequest request,
+        InternalPatient patient,
+        Interval? dateFilter = null)
     {
         var events = new List<HealthEvent>();
         var isInsulin = request.HasInsulinFlag();
@@ -88,7 +92,7 @@ public static class ResourceUtils
                 Text = dosage.Text,
                 EventReferenceId = dosage.ElementId
             };
-            var eventsGenerator = new EventsGenerator(patient, dosage.Timing, requestReference);
+            var eventsGenerator = new EventsGenerator(patient, dosage.Timing, requestReference, dateFilter);
             events.AddRange(eventsGenerator.GetEvents());
         }
 
