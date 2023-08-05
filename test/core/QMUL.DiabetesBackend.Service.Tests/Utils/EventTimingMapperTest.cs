@@ -1,6 +1,5 @@
 namespace QMUL.DiabetesBackend.Service.Tests.Utils;
 
-using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using Hl7.Fhir.Model;
@@ -20,12 +19,11 @@ public class EventTimingMapperTest
         var timezone = "Europe/London";
 
         // Act
-        var (start, end) =
-            EventTimingMapper.GetIntervalFromCustomEventTiming(dateTime, CustomEventTiming.MORN, timezone);
+        var interval = EventTimingMapper.GetDefaultIntervalFromEventTiming(dateTime, CustomEventTiming.MORN, timezone);
 
         // Assert
-        start.InUtc().Hour.Should().Be(5, "Default morning time is 06:00, but should be 05:00 because of the timezone");
-        end.InUtc().Hour.Should().Be(11, "End hour should be 6 hours from the start time");
+        interval.Start.InUtc().Hour.Should().Be(5, "Default morning time is 06:00, but should be 05:00 because of the timezone");
+        interval.End.InUtc().Hour.Should().Be(11, "End hour should be 6 hours from the start time");
     }
 
     [Fact]
@@ -36,12 +34,11 @@ public class EventTimingMapperTest
         var timezone = "America/La_Paz";
 
         // Act
-        var (start, end) =
-            EventTimingMapper.GetIntervalFromCustomEventTiming(dateTime, CustomEventTiming.NIGHT, timezone);
+        var interval = EventTimingMapper.GetDefaultIntervalFromEventTiming(dateTime, CustomEventTiming.NIGHT, timezone);
 
         // Assert
-        start.InUtc().Hour.Should().Be(22, "Default night time is 18:00, but should be 22:00 because of the timezone");
-        end.InUtc().Hour.Should().Be(7, "End hour should be at 03:00 AM of the next day; 07:00 AM because of the timezone");
+        interval.Start.InUtc().Hour.Should().Be(22, "Default night time is 18:00, but should be 22:00 because of the timezone");
+        interval.End.InUtc().Hour.Should().Be(7, "End hour should be at 03:00 AM of the next day; 07:00 AM because of the timezone");
     }
 
     [Fact]
@@ -52,12 +49,11 @@ public class EventTimingMapperTest
         var timezone = "UTC";
 
         // Act
-        var (start, end) =
-            EventTimingMapper.GetIntervalFromCustomEventTiming(dateTime, CustomEventTiming.MORN, timezone);
+        var interval = EventTimingMapper.GetDefaultIntervalFromEventTiming(dateTime, CustomEventTiming.MORN, timezone);
 
         // Assert
-        start.InUtc().Hour.Should().Be(6, "Default morning time is 06:00");
-        end.InUtc().Hour.Should().Be(12, "End hour should be 6 hours from the start time");
+        interval.Start.InUtc().Hour.Should().Be(6, "Default morning time is 06:00");
+        interval.End.InUtc().Hour.Should().Be(12, "End hour should be 6 hours from the start time");
     }
 
     [Fact]
@@ -110,14 +106,13 @@ public class EventTimingMapperTest
 
 
         // Act
-        var (startDate, endDate) =
-            EventTimingMapper.GetTimingInterval(timingPreferences, referenceDate, timingEvent, timezone, 30);
+        var interval = EventTimingMapper.TimingIntervalForPatient(timingPreferences, referenceDate, timingEvent, timezone, 30);
 
         // Assert
-        startDate.InUtc().Hour.Should().Be(11);
-        startDate.InUtc().Minute.Should().Be(30, "Start date is 30 min (default offset) before patient's timing record");
-        endDate.InUtc().Hour.Should().Be(12);
-        endDate.InUtc().Minute.Should().Be(30, "End date is 30 min (default offset) after patient's timing record");
+        interval.Start.InUtc().Hour.Should().Be(11);
+        interval.Start.InUtc().Minute.Should().Be(30, "Start date is 30 min (default offset) before patient's timing record");
+        interval.End.InUtc().Hour.Should().Be(12);
+        interval.End.InUtc().Minute.Should().Be(30, "End date is 30 min (default offset) after patient's timing record");
     }
 
     [Fact]
@@ -131,11 +126,10 @@ public class EventTimingMapperTest
         var timingPreferences = new Dictionary<CustomEventTiming, LocalTime>();
 
         // Act
-        var (startDate, endDate) =
-            EventTimingMapper.GetTimingInterval(timingPreferences, referenceDate, timingEvent, timezone, 30);
+        var interval = EventTimingMapper.TimingIntervalForPatient(timingPreferences, referenceDate, timingEvent, timezone, 30);
 
         // Assert
-        startDate.InUtc().Hour.Should().Be(6, "Default morning time is 06:00");
-        endDate.InUtc().Hour.Should().Be(12, "Default End hour is 6 hours from the start time");
+        interval.Start.InUtc().Hour.Should().Be(6, "Default morning time is 06:00");
+        interval.End.InUtc().Hour.Should().Be(12, "Default End hour is 6 hours from the start time");
     }
 }
