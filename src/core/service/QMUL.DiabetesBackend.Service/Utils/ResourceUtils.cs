@@ -106,13 +106,16 @@ public static class ResourceUtils
     /// </summary>
     /// <param name="request">The medication request</param>
     /// <param name="patient">The medication request's subject</param>
+    /// <param name="dateFilter">An options date filter</param>
     /// <returns>A List of events for the medication request</returns>
-    public static List<HealthEvent> GenerateEventsFrom(ServiceRequest request, InternalPatient patient)
+    public static List<HealthEvent> GenerateEventsFrom(ServiceRequest request,
+        InternalPatient patient,
+        Interval? dateFilter = null)
     {
         var events = new List<HealthEvent>();
         if (request.Occurrence is not Timing)
         {
-            throw new InvalidOperationException("Service request occurrence is not a timing instance");
+            throw new InvalidOperationException($"Service request {request.Id} occurrence is not a timing instance");
         }
         var requestReference = new ResourceReference
         {
@@ -129,7 +132,7 @@ public static class ResourceUtils
                 throw new ValidationException("Contained resources are not of type Service Request");
             }
 
-            events.AddRange(GenerateEventsFrom(patient, serviceRequest.Occurrence, requestReference));
+            events.AddRange(GenerateEventsFrom(patient, serviceRequest.Occurrence, requestReference, dateFilter));
         });
 
         return events;
@@ -174,15 +177,17 @@ public static class ResourceUtils
         return resource;
     }
 
-    private static List<HealthEvent> GenerateEventsFrom(InternalPatient patient, DataType occurrence,
-        ResourceReference requestReference)
+    private static IEnumerable<HealthEvent> GenerateEventsFrom(InternalPatient patient,
+        DataType occurrence,
+        ResourceReference requestReference,
+        Interval? dateFilter = null)
     {
         if (occurrence is not Timing timing)
         {
             throw new InvalidOperationException("ServiceRequest.Occurrence must be a Timing instance");
         }
 
-        var eventsGenerator = new EventsGenerator(patient, timing, requestReference);
+        var eventsGenerator = new EventsGenerator(patient, timing, requestReference, dateFilter);
         return eventsGenerator.GetEvents().ToList();
     }
 }

@@ -36,7 +36,7 @@ public interface IAlexaService
     /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
     /// <param name="timezone">The user's timezone. Defaults to UTC</param>
     /// <returns>A <see cref="Bundle"/> with the results, or null if the patient was not found.</returns>
-    Task<Bundle?> ProcessGlucoseServiceRequest(string patientEmailOrId,
+    Task<Bundle?> SearchServiceRequests(string patientEmailOrId,
         LocalDate dateTime,
         CustomEventTiming timing,
         string timezone = "UTC");

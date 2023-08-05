@@ -76,7 +76,7 @@ public class AlexaController : ControllerBase
         [FromQuery] string timezone = "UTC",
         [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
     {
-        var result = await this.alexaService.ProcessGlucoseServiceRequest(idOrEmail, date, timing, timezone);
+        var result = await this.alexaService.SearchServiceRequests(idOrEmail, date, timing, timezone);
         return this.OkOrNotFound(result);
     }
 }

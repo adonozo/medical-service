@@ -46,7 +46,7 @@ public class AlexaControllerTest
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
         var observationsService = Substitute.For<IObservationService>();
-        alexaService.ProcessGlucoseServiceRequest(Arg.Any<string>(),
+        alexaService.SearchServiceRequests(Arg.Any<string>(),
                 Arg.Any<LocalDate>(),
                 Arg.Any<CustomEventTiming>(),
                 Arg.Any<string>())

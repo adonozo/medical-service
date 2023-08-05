@@ -62,10 +62,8 @@ public class AlexaService : IAlexaService
             return errorBundle;
         }
 
-        var timingPreferences = patient.GetTimingPreference();
-
         var dateFilter = EventTimingMapper.TimingIntervalForPatient(
-            patientTimingPreferences: timingPreferences,
+            patientTimingPreferences: patient.GetTimingPreference(),
             localDate: dateTime,
             timing: timing ?? CustomEventTiming.ALL_DAY,
             timezone: timezone ?? "UTC",
@@ -79,7 +77,7 @@ public class AlexaService : IAlexaService
     }
 
     /// <inheritdoc/>
-    public async Task<Bundle?> ProcessGlucoseServiceRequest(string patientEmailOrId,
+    public async Task<Bundle?> SearchServiceRequests(string patientEmailOrId,
         LocalDate dateTime,
         CustomEventTiming timing,
         string timezone = "UTC")
@@ -88,24 +86,20 @@ public class AlexaService : IAlexaService
             await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new NotFoundException());
 
         var serviceRequests = await this.serviceRequestDao.GetActiveServiceRequests(patientEmailOrId);
-
-        var eventsWithStartDate = this.GetHealthEvents(serviceRequests, patient.ToInternalPatient());
-        if (!eventsWithStartDate.IsSuccess)
+        var requestNeedStartDate = serviceRequests.Where(request => request.NeedsStartDate()).ToList();
+        if (requestNeedStartDate.Any())
         {
-            var errorBundle = ResourceUtils.GenerateSearchBundle(new[] { eventsWithStartDate.Error });
-            return errorBundle;
+            return ResourceUtils.GenerateSearchBundle(requestNeedStartDate);
         }
 
-        var timingPreferences = patient.GetTimingPreference();
-
-        var (startDate, endDate) = EventTimingMapper.TimingIntervalForPatient(
-            patientTimingPreferences: timingPreferences,
+        var dateFilter = EventTimingMapper.TimingIntervalForPatient(
+            patientTimingPreferences: patient.GetTimingPreference(),
             localDate: dateTime,
             timing: timing,
             timezone: timezone,
             defaultOffset: DefaultOffsetMinutes);
 
-        var events = eventsWithStartDate.Results;
+        var events = this.GetHealthEvents(serviceRequests, patient.ToInternalPatient(), dateFilter);
         return await this.GenerateSearchBundle(events.ToList());
     }
 
@@ -320,27 +314,14 @@ public class AlexaService : IAlexaService
             .SelectMany(result => result);
     }
 
-    private Result<IEnumerable<HealthEvent>, ServiceRequest> GetHealthEvents(
+    private IEnumerable<HealthEvent> GetHealthEvents(
         IEnumerable<ServiceRequest> serviceRequests,
-        InternalPatient patient)
+        InternalPatient patient,
+        Interval dateFilter)
     {
-        var healthEvents = new List<HealthEvent>();
-        foreach (var request in serviceRequests)
-        {
-            if (request.Occurrence is not Timing timing)
-            {
-                throw new InvalidOperationException($"Request {request.Id} does not have a valid Occurrence");
-            }
-
-            if (timing.Repeat.NeedsStartDate())
-            {
-                return Result<IEnumerable<HealthEvent>, ServiceRequest>.Fail(request);
-            }
-
-            healthEvents.AddRange(ResourceUtils.GenerateEventsFrom(request, patient));
-        }
-
-        return Result<IEnumerable<HealthEvent>, ServiceRequest>.Success(healthEvents);
+        return serviceRequests
+            .Select(request => ResourceUtils.GenerateEventsFrom(request, patient, dateFilter))
+            .SelectMany(result => result);
     }
 
     private static (LocalTime middle, LocalTime before, LocalTime after) GetTimeIntervals(LocalTime localTime)

@@ -64,7 +64,7 @@ public class AlexaServiceTest
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 
         // Act
-        var result = await alexaService.ProcessGlucoseServiceRequest(Guid.NewGuid().ToString(),
+        var result = await alexaService.SearchServiceRequests(Guid.NewGuid().ToString(),
             new LocalDate(2023, 01, 01),
             CustomEventTiming.ALL_DAY);
 
