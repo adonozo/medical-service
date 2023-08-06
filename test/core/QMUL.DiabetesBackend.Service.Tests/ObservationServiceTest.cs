@@ -3,7 +3,6 @@ namespace QMUL.DiabetesBackend.Service.Tests;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Reflection;
 using DataInterfaces;
 using FluentAssertions;
 using Hl7.Fhir.Model;
@@ -124,46 +123,5 @@ public class ObservationServiceTest
             Arg.Any<Instant>());
         result.Results.Should().BeOfType<Bundle>();
         result.Results.Type.Should().NotBeNull();
-    }
-
-    [Fact(Skip = "CustomEventTiming.EXACT might be removed soon")]
-    public async Task GetObservationsFor_WhenTimingIsExact_SetsTimesWithDefaultTime()
-    {
-        // Arrange
-        var patientDao = Substitute.For<IPatientDao>();
-        var observationDao = Substitute.For<IObservationDao>();
-        var logger = Substitute.For<ILogger<ObservationService>>();
-        var observationService = new ObservationService(patientDao, observationDao, logger);
-
-        var defaultTime = (int)typeof(ObservationService)
-            .GetField("DefaultOffsetMinutes",
-                BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.NonPublic)
-            .GetValue(null);
-        var start = Instant.MinValue;
-        var end = Instant.MaxValue;
-        var testDateTime = new DateTime(2020, 1, 1, 10, 0, 0);
-        var expectedStartDateTime = testDateTime.AddMinutes(defaultTime * -1);
-        var expectedEndDateTime = testDateTime.AddMinutes(defaultTime);
-        var paginatedResult = new PaginatedResult<IEnumerable<Resource>>
-        {
-            Results = new Collection<Observation>()
-        };
-
-        patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
-        observationDao.GetObservationsFor(Arg.Any<string>(),
-                Arg.Any<PaginationRequest>(),
-                Arg.Do<Instant>(startTime => start = startTime),
-                Arg.Do<Instant>(endTime => end = endTime))
-            .Returns(paginatedResult);
-
-        // Act
-        await observationService.GetObservationsFor(Guid.NewGuid().ToString(),
-            CustomEventTiming.EXACT,
-            LocalDate.FromDateTime(testDateTime),
-            new PaginationRequest(20, null));
-
-        // Assert
-        start.Should().Be(Instant.FromDateTimeUtc(expectedStartDateTime));
-        end.Should().Be(Instant.FromDateTimeUtc(expectedEndDateTime));
     }
 }

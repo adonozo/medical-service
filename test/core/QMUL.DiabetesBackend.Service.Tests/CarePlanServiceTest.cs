@@ -10,6 +10,7 @@ using Model;
 using NSubstitute;
 using Service;
 using ServiceInterfaces;
+using Stubs;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
@@ -50,7 +51,7 @@ public class CarePlanServiceTest
         result?.Entry.Should().Contain(entry => entry.Resource.TypeName == nameof(ServiceRequest));
     }
 
-    [Fact(Skip = "Update this test to mock `carePlanDao.GetCarePlans`")]
+    [Fact]
     public async Task GetCarePlanFor_WhenRequestIsSuccessful_ReturnsBundleWithMedicationAndServices()
     {
         // Arrange
@@ -69,11 +70,15 @@ public class CarePlanServiceTest
             medicationRequestService,
             logger);
 
-        medicationRequestDao.GetMedicationRequestFor(Arg.Any<string>())
-            .Returns(new List<MedicationRequest> { new() });
-        serviceRequestDao.GetServiceRequestsFor(Arg.Any<string>())
-            .Returns(new List<ServiceRequest> { new() });
+        var results = new List<Resource>
+        {
+            ServiceRequestStubs.ValidPeriodAtFixedTime(),
+            MedicationRequestStubs.ValidMedicationRequestAtFixedTime()
+        };
+
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
+        carePlanDao.GetCarePlans(Arg.Any<string>(), Arg.Any<PaginationRequest>())
+            .Returns(new PaginatedResult<IEnumerable<Resource>>{ Results = results });
 
         // Act
         var result = await carePlanService.GetCarePlansFor(Guid.NewGuid().ToString(),

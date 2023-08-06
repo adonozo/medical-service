@@ -41,28 +41,6 @@ public static class ResourceUtils
     }
 
     /// <summary>
-    /// Creates a list of events based on medication timings.
-    /// </summary>
-    /// <param name="request">The medication request</param>
-    /// <param name="patient">The medication request's subject</param>
-    /// <param name="dateFilter">An optional end date filter</param>
-    /// <returns>A List of events for the medication request</returns>
-    public static List<HealthEvent> GenerateEventsFrom(MedicationRequest request,
-        InternalPatient patient,
-        Interval? dateFilter = null)
-    {
-        var events = new List<HealthEvent>();
-
-        foreach (var dosage in request.DosageInstruction)
-        {
-            var eventsGenerator = new EventsGenerator(patient, dosage.Timing, dateFilter);
-            events.AddRange(eventsGenerator.GetEvents());
-        }
-
-        return events;
-    }
-
-    /// <summary>
     /// Gets the list of <see cref="Dosage"/> in a <see cref="MedicationRequest"/> that occurs within the provided
     /// filter. It takes into account the patient's timing preferences
     /// </summary>
@@ -107,41 +85,6 @@ public static class ResourceUtils
         });
 
         return events.Any();
-    }
-
-    /// <summary>
-    /// Creates a list of <see cref="HealthEvent"/> from a <see cref="ServiceRequest"/>. The service request's
-    /// occurrence must be an instance of <see cref="Hl7.Fhir.Model.Timing"/> to have consistency between
-    /// service and medication requests, and to narrow down timing use cases.
-    /// </summary>
-    /// <param name="request">The medication request</param>
-    /// <param name="patient">The medication request's subject</param>
-    /// <param name="dateFilter">An options date filter</param>
-    /// <returns>A List of events for the medication request</returns>
-    public static List<HealthEvent> GenerateEventsFrom(ServiceRequest request,
-        InternalPatient patient,
-        Interval? dateFilter = null)
-    {
-        var events = new List<HealthEvent>();
-        if (request.Occurrence is not Timing)
-        {
-            throw new InvalidOperationException($"Service request {request.Id} occurrence is not a timing instance");
-        }
-
-        request.Contained.ForEach(resource =>
-        {
-            if (resource is not ServiceRequest)
-            {
-                throw new ValidationException("Contained resources are not of type Service Request");
-            }
-
-            var eventsGenerator = new EventsGenerator(patient,
-                request.Occurrence as Timing ?? throw new InvalidOperationException("Invalid service request occurrence"),
-                dateFilter);
-            events.AddRange(eventsGenerator.GetEvents());
-        });
-
-        return events;
     }
 
     /// <summary>

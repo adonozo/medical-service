@@ -13,6 +13,7 @@ using Model.Extensions;
 using NodaTime;
 using NSubstitute;
 using Service;
+using Stubs;
 using Xunit;
 using Period = Hl7.Fhir.Model.Period;
 using Task = System.Threading.Tasks.Task;
@@ -48,7 +49,7 @@ public class AlexaServiceTest
     }
 
     [Fact]
-    public async Task ProcessGlucoseServiceRequest_WhenRequestIsSuccessful_ReturnsBundle()
+    public async Task SearchServiceRequests_WhenRequestIsSuccessful_ReturnsBundle()
     {
         // Arrange
         var patientDao = Substitute.For<IPatientDao>();
@@ -57,15 +58,22 @@ public class AlexaServiceTest
         var logger = Substitute.For<ILogger<AlexaService>>();
         var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
 
+        var requestPeriod = new Period{ Start = "2023-01-01", End = "2023-01-10"};
+        var expectedRequest = ServiceRequestStubs.ValidPeriodAtFixedTime(requestPeriod);
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
+        serviceRequestDao.GetActiveServiceRequests(Arg.Any<string>())
+            .Returns(new List<ServiceRequest> { expectedRequest });
 
         // Act
         var result = await alexaService.SearchServiceRequests(Guid.NewGuid().ToString(),
-            new LocalDate(2023, 01, 01),
+            new LocalDate(2023, 01, 02),
             CustomEventTiming.ALL_DAY);
 
         // Assert
         result.Should().BeOfType<Bundle>();
+        var entry = result?.Entry.Should().ContainSingle().Subject;
+        var returnedRequest = entry?.Resource.Should().BeOfType<ServiceRequest>().Subject;
+        returnedRequest.Should().BeEquivalentTo(expectedRequest);
     }
 
     [Fact]
@@ -153,7 +161,7 @@ public class AlexaServiceTest
     }
 
     [Fact]
-    public async Task GetMedicationBundle_WhenMedicationRequestHasMultipleDosages_ReturnsSingleMedicationDosage()
+    public async Task SearchMedicationRequests_WhenMedicationRequestHasMultipleDosages_ReturnsSingleMedicationDosage()
     {
         // Arrange
         var patientDao = Substitute.For<IPatientDao>();
