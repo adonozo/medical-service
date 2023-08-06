@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
-using Model.Enums;
 using Model.Exceptions;
 using NodaTime;
 
@@ -63,37 +62,55 @@ public static class ResourceUtils
         return events;
     }
 
+    /// <summary>
+    /// Gets the list of <see cref="Dosage"/> in a <see cref="MedicationRequest"/> that occurs within the provided
+    /// filter. It takes into account the patient's timing preferences
+    /// </summary>
+    /// <param name="request">The <see cref="MedicationRequest"/> that contains dosages</param>
+    /// <param name="patient">The patient for whom the request is for</param>
+    /// <param name="dateFilter">The date filter as an <see cref="Interval"/></param>
+    /// <returns></returns>
     public static List<Dosage> FilterDosagesOutsideFilter(MedicationRequest request,
         InternalPatient patient,
         Interval dateFilter)
     {
         return request.DosageInstruction
             .Where(dosage => DosageOccursInDate(dosage, patient, dateFilter))
-            .ToList();;
+            .ToList();
     }
 
-    public static bool DosageOccursInDate(Dosage dosage,
-        InternalPatient patient,
-        Interval dateFilter)
-    {
-        var generator = new EventsGenerator(patient, dosage.Timing, dateFilter);
-        var events = generator.GetEvents();
-        return events.Any();
-    }
-
+    /// <summary>
+    /// Checks if a <see cref="ServiceRequest"/> occurs in the provided filter, taking into account the patient's
+    /// timing preferences
+    /// </summary>
+    /// <param name="request">The service request</param>
+    /// <param name="patient">The patient for whom the service request if for</param>
+    /// <param name="dateFilter">The date filter as an <see cref="Interval"/></param>
+    /// <returns>True is the service request has an occurrence within the interval</returns>
+    /// <exception cref="InvalidOperationException">If the service request's occurrence is not a <see cref="Timing"/> instance</exception>
     public static bool ServiceRequestOccursInDate(ServiceRequest request,
         InternalPatient patient,
         Interval dateFilter)
     {
-        var generator = new EventsGenerator(patient,
-            request.Occurrence as Timing ?? throw new InvalidOperationException("Invalid service request occurrence"),
-            dateFilter);
-        var events = generator.GetEvents();
+        var events = new List<HealthEvent>();
+        request.Contained.ForEach(resource =>
+        {
+            if (resource is not ServiceRequest)
+            {
+                throw new ValidationException("Contained resources are not of type Service Request");
+            }
+
+            var eventsGenerator = new EventsGenerator(patient,
+                request.Occurrence as Timing ?? throw new InvalidOperationException("Invalid service request occurrence"),
+                dateFilter);
+            events.AddRange(eventsGenerator.GetEvents());
+        });
+
         return events.Any();
     }
 
     /// <summary>
-    /// Creates a list of <see cref="HealthEvent{ServiceRequest}"/> from a <see cref="ServiceRequest"/>. The service request's
+    /// Creates a list of <see cref="HealthEvent"/> from a <see cref="ServiceRequest"/>. The service request's
     /// occurrence must be an instance of <see cref="Hl7.Fhir.Model.Timing"/> to have consistency between
     /// service and medication requests, and to narrow down timing use cases.
     /// </summary>
@@ -113,7 +130,7 @@ public static class ResourceUtils
 
         request.Contained.ForEach(resource =>
         {
-            if (resource is not ServiceRequest serviceRequest)
+            if (resource is not ServiceRequest)
             {
                 throw new ValidationException("Contained resources are not of type Service Request");
             }
@@ -164,5 +181,14 @@ public static class ResourceUtils
         }
 
         return resource;
+    }
+
+    private static bool DosageOccursInDate(Dosage dosage,
+        InternalPatient patient,
+        Interval dateFilter)
+    {
+        var generator = new EventsGenerator(patient, dosage.Timing, dateFilter);
+        var events = generator.GetEvents();
+        return events.Any();
     }
 }
