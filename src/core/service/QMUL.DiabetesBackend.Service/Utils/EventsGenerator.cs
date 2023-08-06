@@ -143,32 +143,11 @@ internal class EventsGenerator
         var events = new List<HealthEvent>();
         if (this.timing.Repeat.TimeOfDay.Any())
         {
-            foreach (var time in this.timing.Repeat.TimeOfDayIso())
-            {
-                var localTime = LocalTimePattern.GeneralIso.Parse(time);
-                var localDateTime = date.At(localTime.GetValueOrThrow());
-                if (this.FilterIncludesDateTime(localDateTime))
-                {
-                    events.Add(this.EventFromResource(localDateTime, CustomEventTiming.EXACT));
-                }
-            }
+            events.AddRange(this.EventsFromTimeOfDay(date));
         }
         else if (this.timing.Repeat.When.Any())
         {
-            foreach (var eventTiming in this.timing.Repeat.When)
-            {
-                var customTiming = eventTiming.ToCustomEventTiming();
-                var timeIsSet = patient.ExactEventTimes.ContainsKey(customTiming);
-
-                var eventDate = timeIsSet
-                    ? date.At(patient.ExactEventTimes[customTiming])
-                    : throw new InvalidOperationException($"Timing event {eventTiming} for patient {this.patient.Id} does not have a time");
-
-                if (this.FilterIncludesDateTime(eventDate))
-                {
-                    events.Add(this.EventFromResource(eventDate, customTiming));
-                }
-            }
+            events.AddRange(this.EventsFromWhen(date));
         }
 
         return events;
@@ -216,6 +195,33 @@ internal class EventsGenerator
         var instant = DateUtils.InstantFromUtcDateTime(dateTime);
         return this.datesFilter.Value.Contains(instant);
     }
+
+    private IEnumerable<HealthEvent> EventsFromTimeOfDay(LocalDate date) => this.timing.Repeat.TimeOfDayIso()
+        .Select(time =>
+        {
+            var localTime = LocalTimePattern.GeneralIso.Parse(time);
+            var localDateTime = date.At(localTime.GetValueOrThrow());
+            return this.FilterIncludesDateTime(localDateTime)
+                ? this.EventFromResource(localDateTime, CustomEventTiming.EXACT)
+                : null;
+        })
+        .OfType<HealthEvent>();
+
+    private IEnumerable<HealthEvent> EventsFromWhen(LocalDate date) => this.timing.Repeat.When
+        .Select(when =>
+        {
+            var customTiming = when.ToCustomEventTiming();
+            var timeIsSet = patient.ExactEventTimes.ContainsKey(customTiming);
+
+            var eventDate = timeIsSet
+                ? date.At(patient.ExactEventTimes[customTiming])
+                : throw new InvalidOperationException($"Timing event {when} for patient {this.patient.Id} does not have a time");
+
+            return this.FilterIncludesDateTime(eventDate)
+                ? this.EventFromResource(eventDate, customTiming)
+                : null;
+        })
+        .OfType<HealthEvent>();
 
     private HealthEvent EventFromResource(LocalDateTime scheduleDateTime, CustomEventTiming customTiming) =>
         new()

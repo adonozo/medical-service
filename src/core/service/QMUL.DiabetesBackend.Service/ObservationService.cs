@@ -75,7 +75,7 @@ public class ObservationService : IObservationService
             await this.patientDao.GetPatientByIdOrEmail(patientId), new NotFoundException());
         var timingPreferences = patient.GetTimingPreference();
 
-        var (startDate, endDate) = EventTimingMapper.TimingIntervalForPatient(
+        var interval = EventTimingMapper.TimingIntervalForPatient(
             patientTimingPreferences: timingPreferences,
             localDate: dateTime,
             timing: timing,
@@ -85,8 +85,8 @@ public class ObservationService : IObservationService
         var observations = await this.observationDao.GetObservationsFor(
             patient.Id,
             paginationRequest,
-            startDate,
-            endDate);
+            interval.Start,
+            interval.End);
         var paginatedResult = observations.ToBundleResult();
         this.logger.LogDebug("Observations found for {PatientId}: {Count}", patientId,
             observations.Results.Count());
