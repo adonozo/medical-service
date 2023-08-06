@@ -1,11 +1,9 @@
 namespace QMUL.DiabetesBackend.Service.Tests.Utils;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using Hl7.Fhir.Model;
-using Model;
 using Model.Enums;
 using Model.Extensions;
 using Model.Utils;
@@ -37,7 +35,7 @@ public class EventsGeneratorTest
             },
         };
         var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
+        var eventsGenerator = new EventsGenerator(patient, timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -70,7 +68,7 @@ public class EventsGeneratorTest
         };
         timing.SetStartDate(medicationStartDate);
         var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
+        var eventsGenerator = new EventsGenerator(patient, timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -106,7 +104,7 @@ public class EventsGeneratorTest
             DateUtils.InstantFromUtcDate(filterStartDate),
             DateUtils.InstantFromUtcDate(filterStartDate.PlusDays(4)));
 
-        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing, dateFilter);
+        var eventsGenerator = new EventsGenerator(patient, timing, dateFilter);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -130,7 +128,7 @@ public class EventsGeneratorTest
         var patient = TestUtils.GetStubInternalPatient();
 
         // Act
-        var action = () => new EventsGenerator<DomainResource>(patient, timing);
+        var action = () => new EventsGenerator(patient, timing);
 
         // Assert
         action.Should().Throw<InvalidOperationException>();
@@ -160,7 +158,7 @@ public class EventsGeneratorTest
             }
         };
         var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
+        var eventsGenerator = new EventsGenerator(patient, timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -196,7 +194,7 @@ public class EventsGeneratorTest
         timing.SetStartTime(new LocalTime(10, 00));
 
         var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
+        var eventsGenerator = new EventsGenerator(patient, timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -237,7 +235,7 @@ public class EventsGeneratorTest
 
         var patient = TestUtils.GetStubInternalPatient();
         var dateFilter = this.SameDayInterval(2023, 03, 22);
-        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing, dateFilter);
+        var eventsGenerator = new EventsGenerator(patient, timing, dateFilter);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -275,7 +273,7 @@ public class EventsGeneratorTest
         patient.ExactEventTimes[CustomEventTiming.ACV] = new LocalTime(19, 00);
 
         timing.SetStartDate(new LocalDate(2023, 01, 01));
-        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
+        var eventsGenerator = new EventsGenerator(patient, timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -309,7 +307,7 @@ public class EventsGeneratorTest
         var patient = TestUtils.GetStubInternalPatient();
 
         // Act
-        var action = () => new EventsGenerator<DomainResource>(patient, timing);
+        var action = () => new EventsGenerator(patient, timing);
 
         // Assert
         action.Should().Throw<InvalidOperationException>();
@@ -331,7 +329,7 @@ public class EventsGeneratorTest
         var patient = TestUtils.GetStubInternalPatient();
 
         // Act
-        var action = () => new EventsGenerator<DomainResource>(patient, timing);
+        var action = () => new EventsGenerator(patient, timing);
 
         // Assert
         action.Should().Throw<InvalidOperationException>();
@@ -356,10 +354,10 @@ public class EventsGeneratorTest
             }
         };
         var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
+        var eventsGenerator = new EventsGenerator(patient, timing);
 
         // Act
-        var action = new Func<IEnumerable<HealthEvent<DomainResource>>>(() => eventsGenerator.GetEvents());
+        var action = () => eventsGenerator.GetEvents();
 
         // Assert
         action.Should().Throw<InvalidOperationException>();

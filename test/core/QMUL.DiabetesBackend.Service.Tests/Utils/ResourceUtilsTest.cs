@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using Hl7.Fhir.Model;
-using Model;
 using Model.Enums;
 using NodaTime;
 using Service.Utils;
@@ -130,8 +129,7 @@ public class ResourceUtilsTest
         };
 
         // Act
-        var action = new Func<IEnumerable<HealthEvent<ServiceRequest>>>(() =>
-            ResourceUtils.GenerateEventsFrom(serviceRequest, patient));
+        var action = () => ResourceUtils.GenerateEventsFrom(serviceRequest, patient);
 
         // Assert
         action.Should().Throw<InvalidOperationException>();

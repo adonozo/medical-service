@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.Service.Utils;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
@@ -47,6 +48,7 @@ public static class ResourceUtils
     /// <returns>An equivalent <see cref="EventType"/> for the Alexa request.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if there is no equivalence between the Alexa request
     /// and an Event type</exception>
+    [Obsolete]
     public static EventType MapRequestToEventType(AlexaRequestType requestType)
     {
         return requestType switch
@@ -65,19 +67,48 @@ public static class ResourceUtils
     /// <param name="patient">The medication request's subject</param>
     /// <param name="dateFilter">An optional end date filter</param>
     /// <returns>A List of events for the medication request</returns>
-    public static List<HealthEvent<MedicationRequest>> GenerateEventsFrom(MedicationRequest request,
+    public static List<HealthEvent> GenerateEventsFrom(MedicationRequest request,
         InternalPatient patient,
         Interval? dateFilter = null)
     {
-        var events = new List<HealthEvent<MedicationRequest>>();
+        var events = new List<HealthEvent>();
 
         foreach (var dosage in request.DosageInstruction)
         {
-            var eventsGenerator = EventsGenerator<MedicationRequest>.ForMedicationRequest(patient, dosage, request, dateFilter);
+            var eventsGenerator = new EventsGenerator(patient, dosage.Timing, dateFilter);
             events.AddRange(eventsGenerator.GetEvents());
         }
 
         return events;
+    }
+
+    public static List<Dosage> FilterDosagesOutsideFilter(MedicationRequest request,
+        InternalPatient patient,
+        Interval dateFilter)
+    {
+        return request.DosageInstruction
+            .Where(dosage => DosageOccursInDate(dosage, patient, dateFilter))
+            .ToList();;
+    }
+
+    public static bool DosageOccursInDate(Dosage dosage,
+        InternalPatient patient,
+        Interval dateFilter)
+    {
+        var generator = new EventsGenerator(patient, dosage.Timing, dateFilter);
+        var events = generator.GetEvents();
+        return events.Any();
+    }
+
+    public static bool ServiceRequestOccursInDate(ServiceRequest request,
+        InternalPatient patient,
+        Interval dateFilter)
+    {
+        var generator = new EventsGenerator(patient,
+            request.Occurrence as Timing ?? throw new InvalidOperationException("Invalid service request occurrence"),
+            dateFilter);
+        var events = generator.GetEvents();
+        return events.Any();
     }
 
     /// <summary>
@@ -89,11 +120,11 @@ public static class ResourceUtils
     /// <param name="patient">The medication request's subject</param>
     /// <param name="dateFilter">An options date filter</param>
     /// <returns>A List of events for the medication request</returns>
-    public static List<HealthEvent<ServiceRequest>> GenerateEventsFrom(ServiceRequest request,
+    public static List<HealthEvent> GenerateEventsFrom(ServiceRequest request,
         InternalPatient patient,
         Interval? dateFilter = null)
     {
-        var events = new List<HealthEvent<ServiceRequest>>();
+        var events = new List<HealthEvent>();
         if (request.Occurrence is not Timing)
         {
             throw new InvalidOperationException($"Service request {request.Id} occurrence is not a timing instance");
@@ -106,7 +137,9 @@ public static class ResourceUtils
                 throw new ValidationException("Contained resources are not of type Service Request");
             }
 
-            var eventsGenerator = EventsGenerator<ServiceRequest>.ForServiceRequest(patient, serviceRequest, dateFilter);
+            var eventsGenerator = new EventsGenerator(patient,
+                request.Occurrence as Timing ?? throw new InvalidOperationException("Invalid service request occurrence"),
+                dateFilter);
             events.AddRange(eventsGenerator.GetEvents());
         });
 
