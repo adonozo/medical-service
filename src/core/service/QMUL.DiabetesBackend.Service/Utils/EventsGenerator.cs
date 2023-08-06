@@ -171,7 +171,7 @@ internal class EventsGenerator
         {
             if (this.FilterIncludesDateTime(startDateTime))
             {
-                events.Add(this.EventFromResource(startDateTime, CustomEventTiming.EXACT));
+                events.Add(CreateEventAt(startDateTime, CustomEventTiming.EXACT));
             }
 
             startDateTime = startDateTime.PlusHours(hourOfDistance);
@@ -202,7 +202,7 @@ internal class EventsGenerator
             var localTime = LocalTimePattern.GeneralIso.Parse(time);
             var localDateTime = date.At(localTime.GetValueOrThrow());
             return this.FilterIncludesDateTime(localDateTime)
-                ? this.EventFromResource(localDateTime, CustomEventTiming.EXACT)
+                ? CreateEventAt(localDateTime, CustomEventTiming.EXACT)
                 : null;
         })
         .OfType<HealthEvent>();
@@ -218,12 +218,12 @@ internal class EventsGenerator
                 : throw new InvalidOperationException($"Timing event {when} for patient {this.patient.Id} does not have a time");
 
             return this.FilterIncludesDateTime(eventDate)
-                ? this.EventFromResource(eventDate, customTiming)
+                ? CreateEventAt(eventDate, customTiming)
                 : null;
         })
         .OfType<HealthEvent>();
 
-    private HealthEvent EventFromResource(LocalDateTime scheduleDateTime, CustomEventTiming customTiming) =>
+    private static HealthEvent CreateEventAt(LocalDateTime scheduleDateTime, CustomEventTiming customTiming) =>
         new()
         {
             ScheduledDateTime = scheduleDateTime,
