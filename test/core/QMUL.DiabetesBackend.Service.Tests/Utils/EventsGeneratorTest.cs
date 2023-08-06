@@ -14,7 +14,6 @@ using Service.Utils;
 using Xunit;
 using Duration = Hl7.Fhir.Model.Duration;
 using Period = Hl7.Fhir.Model.Period;
-using ResourceReference = Model.ResourceReference;
 
 public class EventsGeneratorTest
 {
@@ -38,7 +37,6 @@ public class EventsGeneratorTest
             },
         };
         var patient = TestUtils.GetStubInternalPatient();
-        var reference = this.GetDummyResource();
         var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
 
         // Act
@@ -72,8 +70,6 @@ public class EventsGeneratorTest
         };
         timing.SetStartDate(medicationStartDate);
         var patient = TestUtils.GetStubInternalPatient();
-        var reference = this.GetDummyResource();
-        reference.EventReferenceId = dosageId;
         var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
 
         // Act
@@ -104,7 +100,6 @@ public class EventsGeneratorTest
             },
         };
         var patient = TestUtils.GetStubInternalPatient();
-        var reference = this.GetDummyResource();
 
         var filterStartDate = new LocalDate(2020, 01, 04);
         var dateFilter = new Interval(
@@ -133,7 +128,6 @@ public class EventsGeneratorTest
             }
         };
         var patient = TestUtils.GetStubInternalPatient();
-        var reference = this.GetDummyResource();
 
         // Act
         var action = () => new EventsGenerator<DomainResource>(patient, timing);
@@ -166,7 +160,6 @@ public class EventsGeneratorTest
             }
         };
         var patient = TestUtils.GetStubInternalPatient();
-        var reference = this.GetDummyResource();
         var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
 
         // Act
@@ -203,8 +196,6 @@ public class EventsGeneratorTest
         timing.SetStartTime(new LocalTime(10, 00));
 
         var patient = TestUtils.GetStubInternalPatient();
-        var reference = this.GetDummyResource();
-        reference.EventReferenceId = dosageId;
         var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
 
         // Act
@@ -245,8 +236,6 @@ public class EventsGeneratorTest
         timing.SetStartTime(new LocalTime(10, 00));
 
         var patient = TestUtils.GetStubInternalPatient();
-        var reference = this.GetDummyResource();
-        reference.EventReferenceId = dosageId;
         var dateFilter = this.SameDayInterval(2023, 03, 22);
         var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing, dateFilter);
 
@@ -284,7 +273,6 @@ public class EventsGeneratorTest
         var patient = TestUtils.GetStubInternalPatient();
         patient.ExactEventTimes[CustomEventTiming.ACM] = new LocalTime(08, 00);
         patient.ExactEventTimes[CustomEventTiming.ACV] = new LocalTime(19, 00);
-        var reference = this.GetDummyResource();
 
         timing.SetStartDate(new LocalDate(2023, 01, 01));
         var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
@@ -319,7 +307,6 @@ public class EventsGeneratorTest
         };
 
         var patient = TestUtils.GetStubInternalPatient();
-        var reference = this.GetDummyResource();
 
         // Act
         var action = () => new EventsGenerator<DomainResource>(patient, timing);
@@ -342,7 +329,6 @@ public class EventsGeneratorTest
             }
         };
         var patient = TestUtils.GetStubInternalPatient();
-        var reference = this.GetDummyResource();
 
         // Act
         var action = () => new EventsGenerator<DomainResource>(patient, timing);
@@ -370,7 +356,6 @@ public class EventsGeneratorTest
             }
         };
         var patient = TestUtils.GetStubInternalPatient();
-        var reference = this.GetDummyResource();
         var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
 
         // Act
@@ -381,16 +366,6 @@ public class EventsGeneratorTest
     }
 
     #region Private Methods
-
-    private ResourceReference GetDummyResource()
-    {
-        return new ResourceReference
-        {
-            DomainResourceId = string.Empty,
-            EventReferenceId = string.Empty,
-            EventType = EventType.MedicationDosage
-        };
-    }
 
     private Interval SameDayInterval(int year, int month, int day)
     {

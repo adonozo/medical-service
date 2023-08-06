@@ -19,8 +19,6 @@ public class HealthEvent<T> where T : Resource // TODO create concrete medicatio
     /// </summary>
     public CustomEventTiming EventTiming { get; set; }
 
-    public ResourceReference ResourceReference { get; set; }
-
     public T Resource { get; init; }
 
     public Dosage Dosage { get; set; }

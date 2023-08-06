@@ -31,26 +31,6 @@ public static class TimingExtensions
     }
 
     /// <summary>
-    /// Gets the timing's start date from an extension value or throws an exception if fails
-    /// </summary>
-    /// <param name="timing">The resource's <see cref="Timing"/></param>
-    /// <returns>The timing's start date</returns>
-    /// <exception cref="InvalidOperationException">If the extension value is not set or is malformed</exception>
-    public static LocalDate GetStartDateOrThrow(this Timing timing)
-    {
-        var extension = timing.GetExtension(Extensions.TimingStartDate);
-        if (extension?.Value is not FhirString startDateString)
-        {
-            throw new InvalidOperationException("Timing does not have a start date");
-        }
-
-        var parseResult = LocalDatePattern.Iso.Parse(startDateString.Value);
-        return parseResult.TryGetValue(default, out var localDate)
-            ? localDate
-            : throw new InvalidOperationException("Timing does not have a valid start date");
-    }
-
-    /// <summary>
     /// Holds the exact date for a resource to start. Should be used when the resource has a frequency rather than a
     /// period. For example, a medication that must be taken for 14 days.
     /// </summary>
