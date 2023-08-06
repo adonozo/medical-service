@@ -1,8 +1,10 @@
 namespace QMUL.DiabetesBackend.Controllers.Tests.Controllers;
 
+using System;
 using DiabetesBackend.Controllers.Controllers;
 using FluentAssertions;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Model;
@@ -26,7 +28,7 @@ public class AlexaControllerTest
                 false,
                 Arg.Any<CustomEventTiming>(),
                 Arg.Any<string>())
-            .Returns(new Bundle());
+            .Returns(Task.FromResult(Result<Bundle, MedicationRequest>.Success(new Bundle())));
         var controller = new AlexaController(alexaService, observationsService);
 
         // Act
@@ -38,6 +40,61 @@ public class AlexaControllerTest
 
         // Assert
         status.StatusCode.Should().Be(StatusCodes.Status200OK);
+    }
+
+    [Fact]
+    public async Task GetMedicationRequest_WhenDateIsMissing_ReturnsUnprocessableEntity()
+    {
+        // Arrange
+        var alexaService = Substitute.For<IAlexaService>();
+        var observationsService = Substitute.For<IObservationService>();
+        alexaService.SearchMedicationRequests(Arg.Any<string>(),
+                Arg.Any<LocalDate>(),
+                false,
+                Arg.Any<CustomEventTiming>(),
+                Arg.Any<string>())
+            .Returns(Task.FromResult(Result<Bundle, MedicationRequest>.Success(new Bundle())));
+        var controller = new AlexaController(alexaService, observationsService);
+
+        // Act
+        var result = await controller.GetMedicationRequest(
+            idOrEmail: "test@mail.com",
+            date: null,
+            timing: CustomEventTiming.ALL_DAY);
+        var status = (ObjectResult)result;
+
+        // Assert
+        status.StatusCode.Should().Be(StatusCodes.Status422UnprocessableEntity);
+    }
+
+    [Fact]
+    public async Task GetMedicationRequest_WhenResultFails_ReturnsUnprocessableEntity()
+    {
+        // Arrange
+        var alexaService = Substitute.For<IAlexaService>();
+        var observationsService = Substitute.For<IObservationService>();
+
+        var expectedRequest = new MedicationRequest{ Id = Guid.NewGuid().ToString() };
+        alexaService.SearchMedicationRequests(Arg.Any<string>(),
+                Arg.Any<LocalDate>(),
+                false,
+                Arg.Any<CustomEventTiming>(),
+                Arg.Any<string>())
+            .Returns(Task.FromResult(Result<Bundle, MedicationRequest>.Fail(expectedRequest)));
+        var controller = new AlexaController(alexaService, observationsService);
+
+        // Act
+        var result = await controller.GetMedicationRequest(
+            idOrEmail: "test@mail.com",
+            date: new LocalDate(2023, 01, 01),
+            timing: CustomEventTiming.ALL_DAY);
+        var status = (ObjectResult)result;
+
+        // Assert
+        status.StatusCode.Should().Be(StatusCodes.Status422UnprocessableEntity);
+        var errors = status.Value.Should().BeOfType<ProblemDetails>().Subject;
+        errors.Extensions.Should().ContainKey(AlexaController.ResourceErrorKey)
+            .WhoseValue.Should().BeEquivalentTo(expectedRequest.ToJObject());
     }
 
     [Fact]

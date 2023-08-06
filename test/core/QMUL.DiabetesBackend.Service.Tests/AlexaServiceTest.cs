@@ -199,7 +199,8 @@ public class AlexaServiceTest
             false);
 
         // Assert
-        var entryResult = result.Entry.Should().ContainSingle().Subject;
+        result.IsSuccess.Should().BeTrue();
+        var entryResult = result.Results.Entry.Should().ContainSingle().Subject;
         var requestReturned = entryResult.Resource.Should().BeOfType<MedicationRequest>().Subject;
         var dosageReturned = requestReturned.DosageInstruction.Should().ContainSingle().Subject;
         dosageReturned.ElementId.Should().Be(dosageId);

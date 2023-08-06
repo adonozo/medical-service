@@ -1,9 +1,12 @@
 namespace QMUL.DiabetesBackend.Controllers.Controllers;
 
+using System.Net;
 using System.Threading.Tasks;
+using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Model;
+using Model.Constants;
 using Model.Enums;
 using NodaTime;
 using ServiceInterfaces;
@@ -12,6 +15,8 @@ using Utils;
 [ApiController]
 public class AlexaController : ControllerBase
 {
+    public const string ResourceErrorKey = "resource";
+
     private readonly IAlexaService alexaService;
     private readonly IObservationService observationService;
 
@@ -67,7 +72,13 @@ public class AlexaController : ControllerBase
             onlyInsulin ?? false,
             timing,
             timezone);
-        return this.Ok(result.ToJObject());
+        if (result.IsSuccess)
+        {
+            return this.Ok(result.Results.ToJObject());
+        }
+
+        var errorResponse = GetErrorResponse(result.Error, Constants.MedicationRequestPath);
+        return this.UnprocessableEntity(errorResponse);
     }
 
     [HttpGet("patients/{idOrEmail}/alexa/glucoseRequest")]
@@ -79,4 +90,13 @@ public class AlexaController : ControllerBase
         var result = await this.alexaService.SearchServiceRequests(idOrEmail, date, timing, timezone);
         return this.OkOrNotFound(result);
     }
+
+    private ProblemDetails GetErrorResponse<T>(T resource, string path) where T : DomainResource => new()
+    {
+        Title = "Resource needs a start date",
+        Detail = "Cannot find occurrences for the provided period because the resource needs a start date",
+        Instance = path + resource.Id,
+        Status = (int)HttpStatusCode.UnprocessableEntity,
+        Extensions = { { ResourceErrorKey, resource.ToJObject() } }
+    };
 }

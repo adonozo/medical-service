@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces;
 
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
+using Model;
 using Model.Enums;
 using Model.Exceptions;
 using NodaTime;
@@ -12,17 +13,22 @@ using NodaTime;
 public interface IAlexaService
 {
     /// <summary>
-    /// Gets the medication requests for a given patient based on a date, timing, and the user's timezone. It does not
-    /// include the insulin requests. The results are limited to a single day timespan due to CustomEventTiming.
+    /// Search the active medication requests that has occurrences in the provided date and timing event. When the
+    /// medication request has multiple dosages, <b>the result will contain only the dosages that match the provided
+    /// date</b>
+    /// <br/>
+    /// If any medication request needs a start date, it will return a failed <see cref="Result{TSuccess,TError}"/> with
+    /// the medication request that needs set up.
     /// </summary>
     /// <param name="patientEmailOrId">The patient's unique email or ID</param>
-    /// <param name="dateTime">The date and time to get the results from</param>
+    /// <param name="date">The date to get the results from</param>
     /// <param name="onlyInsulin">To tell if it should filter out non-insulin medication requests</param>
     /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
     /// <param name="timezone">The user's timezone. Defaults to UTC</param>
-    /// <returns>A <see cref="Bundle"/> with the results, or null if the patient was not found.</returns>
-    Task<Bundle> SearchMedicationRequests(string patientEmailOrId,
-        LocalDate dateTime,
+    /// <returns>A search <see cref="Bundle"/> with the matching medication results, or the medication request that
+    /// needs a start date.</returns>
+    Task<Result<Bundle, MedicationRequest>> SearchMedicationRequests(string patientEmailOrId,
+        LocalDate date,
         bool onlyInsulin,
         CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
         string? timezone = "UTC");

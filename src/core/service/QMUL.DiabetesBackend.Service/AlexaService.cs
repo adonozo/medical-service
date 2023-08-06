@@ -42,8 +42,8 @@ public class AlexaService : IAlexaService
     }
 
     /// <inheritdoc/>
-    public async Task<Bundle> SearchMedicationRequests(string patientEmailOrId,
-        LocalDate dateTime,
+    public async Task<Result<Bundle, MedicationRequest>> SearchMedicationRequests(string patientEmailOrId,
+        LocalDate date,
         bool onlyInsulin,
         CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
         string? timezone = "UTC")
@@ -57,15 +57,15 @@ public class AlexaService : IAlexaService
             onlyInsulin);
 
         var medicationRequests = activeRequestsResult.Results.ToList();
-        if (medicationRequests.Any(request => request.NeedsStartDate()))
+        var requestsNeedStartDate = medicationRequests.Where(request => request.NeedsStartDate()).ToList();
+        if (requestsNeedStartDate.Any())
         {
-            var errorBundle = ResourceUtils.GenerateSearchBundle(activeRequestsResult.Results);
-            return errorBundle;
+            return Result<Bundle, MedicationRequest>.Fail(requestsNeedStartDate.First());
         }
 
         var dateFilter = EventTimingMapper.TimingIntervalForPatient(
             patientTimingPreferences: patient.GetTimingPreference(),
-            localDate: dateTime,
+            localDate: date,
             timing: timing ?? CustomEventTiming.ALL_DAY,
             timezone: timezone ?? "UTC",
             defaultOffset: DefaultOffsetMinutes);
@@ -74,7 +74,7 @@ public class AlexaService : IAlexaService
             patient.ToInternalPatient(),
             dateFilter);
 
-        return ResourceUtils.GenerateSearchBundle(results);
+        return Result<Bundle, MedicationRequest>.Success(ResourceUtils.GenerateSearchBundle(results));
     }
 
     /// <inheritdoc/>
