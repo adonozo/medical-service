@@ -41,30 +41,6 @@ public class ResourceUtilsTest
         bundle.Timestamp.Value.Date.Date.ToString("d").Should().Be(currentDate);
     }
 
-    [Theory]
-    [InlineData(AlexaRequestType.Medication, EventType.MedicationDosage)]
-    [InlineData(AlexaRequestType.Insulin, EventType.InsulinDosage)]
-    [InlineData(AlexaRequestType.Glucose, EventType.Measurement)]
-    public void MapRequestToEventType_WhenEquivalenceExists_ReturnsEventType(AlexaRequestType alexaType,
-        EventType expectedType)
-    {
-        // Arrange and Act
-        var result = ResourceUtils.MapRequestToEventType(alexaType);
-
-        // Assert
-        result.Should().Be(expectedType);
-    }
-
-    [Fact]
-    public void MapRequestToEventType_WhenEquivalenceDoesNotExists_ThrowsException()
-    {
-        // Arrange and Act
-        var action = new Func<EventType>(() => ResourceUtils.MapRequestToEventType(AlexaRequestType.Appointment));
-
-        // Assert
-        action.Should().Throw<ArgumentOutOfRangeException>();
-    }
-
     [Fact]
     public void GenerateEventsFrom_WhenIsServiceRequest_ReturnsHealthEvents()
     {

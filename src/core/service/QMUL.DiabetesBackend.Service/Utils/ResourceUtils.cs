@@ -42,25 +42,6 @@ public static class ResourceUtils
     }
 
     /// <summary>
-    /// Maps an AlexaRequestType to an EventType when there is an equivalence. Otherwise, throws an exception.
-    /// </summary>
-    /// <param name="requestType">The <see cref="AlexaRequestType"/> request.</param>
-    /// <returns>An equivalent <see cref="EventType"/> for the Alexa request.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if there is no equivalence between the Alexa request
-    /// and an Event type</exception>
-    [Obsolete]
-    public static EventType MapRequestToEventType(AlexaRequestType requestType)
-    {
-        return requestType switch
-        {
-            AlexaRequestType.Medication => EventType.MedicationDosage,
-            AlexaRequestType.Insulin => EventType.InsulinDosage,
-            AlexaRequestType.Glucose => EventType.Measurement,
-            _ => throw new ArgumentOutOfRangeException(nameof(requestType), requestType, "Invalid request type")
-        };
-    }
-
-    /// <summary>
     /// Creates a list of events based on medication timings.
     /// </summary>
     /// <param name="request">The medication request</param>
