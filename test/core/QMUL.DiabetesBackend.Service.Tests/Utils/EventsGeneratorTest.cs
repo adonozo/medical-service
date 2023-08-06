@@ -39,7 +39,7 @@ public class EventsGeneratorTest
         };
         var patient = TestUtils.GetStubInternalPatient();
         var reference = this.GetDummyResource();
-        var eventsGenerator = new EventsGenerator(patient, timing, reference);
+        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -74,7 +74,7 @@ public class EventsGeneratorTest
         var patient = TestUtils.GetStubInternalPatient();
         var reference = this.GetDummyResource();
         reference.EventReferenceId = dosageId;
-        var eventsGenerator = new EventsGenerator(patient, timing, reference);
+        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -111,7 +111,7 @@ public class EventsGeneratorTest
             DateUtils.InstantFromUtcDate(filterStartDate),
             DateUtils.InstantFromUtcDate(filterStartDate.PlusDays(4)));
 
-        var eventsGenerator = new EventsGenerator(patient, timing, reference, dateFilter);
+        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing, dateFilter);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -136,7 +136,7 @@ public class EventsGeneratorTest
         var reference = this.GetDummyResource();
 
         // Act
-        var action = () => new EventsGenerator(patient, timing, reference);
+        var action = () => new EventsGenerator<DomainResource>(patient, timing);
 
         // Assert
         action.Should().Throw<InvalidOperationException>();
@@ -167,7 +167,7 @@ public class EventsGeneratorTest
         };
         var patient = TestUtils.GetStubInternalPatient();
         var reference = this.GetDummyResource();
-        var eventsGenerator = new EventsGenerator(patient, timing, reference);
+        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -205,7 +205,7 @@ public class EventsGeneratorTest
         var patient = TestUtils.GetStubInternalPatient();
         var reference = this.GetDummyResource();
         reference.EventReferenceId = dosageId;
-        var eventsGenerator = new EventsGenerator(patient, timing, reference);
+        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -248,7 +248,7 @@ public class EventsGeneratorTest
         var reference = this.GetDummyResource();
         reference.EventReferenceId = dosageId;
         var dateFilter = this.SameDayInterval(2023, 03, 22);
-        var eventsGenerator = new EventsGenerator(patient, timing, reference, dateFilter);
+        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing, dateFilter);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -287,7 +287,7 @@ public class EventsGeneratorTest
         var reference = this.GetDummyResource();
 
         timing.SetStartDate(new LocalDate(2023, 01, 01));
-        var eventsGenerator = new EventsGenerator(patient, timing, reference);
+        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -322,7 +322,7 @@ public class EventsGeneratorTest
         var reference = this.GetDummyResource();
 
         // Act
-        var action = () => new EventsGenerator(patient, timing, reference);
+        var action = () => new EventsGenerator<DomainResource>(patient, timing);
 
         // Assert
         action.Should().Throw<InvalidOperationException>();
@@ -345,7 +345,7 @@ public class EventsGeneratorTest
         var reference = this.GetDummyResource();
 
         // Act
-        var action = () => new EventsGenerator(patient, timing, reference);
+        var action = () => new EventsGenerator<DomainResource>(patient, timing);
 
         // Assert
         action.Should().Throw<InvalidOperationException>();
@@ -371,10 +371,10 @@ public class EventsGeneratorTest
         };
         var patient = TestUtils.GetStubInternalPatient();
         var reference = this.GetDummyResource();
-        var eventsGenerator = new EventsGenerator(patient, timing, reference);
+        var eventsGenerator = new EventsGenerator<DomainResource>(patient, timing);
 
         // Act
-        var action = new Func<IEnumerable<HealthEvent>>(() => eventsGenerator.GetEvents());
+        var action = new Func<IEnumerable<HealthEvent<DomainResource>>>(() => eventsGenerator.GetEvents());
 
         // Assert
         action.Should().Throw<InvalidOperationException>();

@@ -17,18 +17,18 @@ using NodaTime.Extensions;
 using NodaTime.Text;
 using Duration = Hl7.Fhir.Model.Duration;
 using Period = Hl7.Fhir.Model.Period;
-using ResourceReference = Model.ResourceReference;
 
 /// <summary>
 /// Generates health events based on a Resource frequency/occurrence.
 /// </summary>
-internal class EventsGenerator
+internal class EventsGenerator<T> where T : Resource
 {
     private readonly InternalPatient patient;
     private readonly Timing timing;
-    private readonly ResourceReference resourceReference;
     private readonly DateInterval resourcePeriod;
     private readonly Interval? datesFilter;
+    private readonly T resource;
+    private readonly Dosage dosage;
 
     /// <summary>
     /// Initializes the events generator
@@ -36,32 +36,65 @@ internal class EventsGenerator
     /// <param name="patient">The patient associated with the resource.</param>
     /// <param name="timing">The resource's timing setting. It must have the Bounds field as an instance of <see cref="Hl7.Fhir.Model.Period"/>
     /// or <see cref="Hl7.Fhir.Model.Duration"/>. The only supported period is 1. Also, it must have the TimeOfDay or When field.</param>
-    /// <param name="resourceReference">A reference to the source resource, i.e., Medication or Service request.</param>
     /// <param name="datesFilter">An optional filter to limit events to a start and end dates</param>
     public EventsGenerator(InternalPatient patient,
         Timing timing,
-        ResourceReference resourceReference,
-        Interval? datesFilter = null)
+        Interval? datesFilter = null,
+        T domainResource = null,
+        Dosage dosage = null)
     {
         this.patient = patient;
         this.timing = timing;
-        this.resourceReference = resourceReference;
         this.datesFilter = datesFilter;
         this.resourcePeriod = this.GetResourceDates();
+        this.resource = domainResource;
+        this.dosage = dosage;
+    }
+
+    public static EventsGenerator<ServiceRequest> ForServiceRequest(InternalPatient patient,
+        ServiceRequest serviceRequest,
+        Interval? datesFilter = null)
+    {
+        if (serviceRequest.Occurrence is not Timing timing)
+        {
+            throw new ArgumentException($"Invalid occurrence for {serviceRequest.Id}", nameof(serviceRequest));
+        }
+
+        return new EventsGenerator<ServiceRequest>(patient,
+            timing,
+            datesFilter,
+            serviceRequest);
+    }
+
+    public static EventsGenerator<MedicationRequest> ForMedicationRequest(InternalPatient patient,
+        Dosage dosage,
+        MedicationRequest medicationRequest,
+        Interval? datesFilter = null)
+    {
+        if (!medicationRequest.DosageInstruction.Exists(instruction => instruction.ElementId == dosage.ElementId))
+        {
+            throw new ArgumentException($"Dosage {dosage.ElementId} does not exists in the Medication request", nameof(dosage));
+        }
+
+        return new EventsGenerator<MedicationRequest>(patient,
+            dosage.Timing,
+            datesFilter,
+            medicationRequest,
+            dosage);
     }
 
     /// <summary>
-    /// Creates a list of <see cref="HealthEvent"/> based on a timing instance, a patient and a resource reference.
+    /// Creates a list of <see cref="HealthEvent{DomainResource}"/> based on a timing instance, a patient and a resource reference.
     /// For instance, a medication request for 14 days - daily would produce 14 health events.
     /// If the timing is 'duration' and resource doesn't have a start date, no event will be generated
     /// </summary>
-    /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="HealthEvent"/> corresponding to the timing.</returns>
+    /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="HealthEvent{DmainResource}"/> corresponding to the timing.</returns>
     /// <exception cref="InvalidOperationException">If the timing is not properly configured</exception>
-    public IEnumerable<HealthEvent> GetEvents()
+    public IEnumerable<HealthEvent<T>> GetEvents()
     {
         if (this.DatesFilterIsOutsideResourceDates())
         {
-            return Array.Empty<HealthEvent>();
+            return Array.Empty<HealthEvent<T>>();
         }
 
         if (this.timing.Repeat.DayOfWeek.Any())
@@ -94,13 +127,13 @@ internal class EventsGenerator
         if (duration.Value is null or < 0)
         {
             throw new InvalidOperationException(
-                $"Duration for {this.resourceReference.EventReferenceId} has an invalid value");
+                $"Duration for {this.resource?.Id} has an invalid value");
         }
 
         var resourceStartDate = this.timing.GetStartDate();
         if (resourceStartDate is null)
         {
-            throw new InvalidOperationException($"Timing in request {this.resourceReference.DomainResourceId} does not have a start date");
+            throw new InvalidOperationException($"Timing in request {this.resource?.Id} does not have a start date");
         }
 
         var durationValue = (int)duration.Value;
@@ -116,9 +149,9 @@ internal class EventsGenerator
         return new DateInterval(resourceStartDate.Value, resourceStartDate.Value.PlusDays(durationDays - 1));
     }
 
-    private IEnumerable<HealthEvent> GenerateDailyEvents()
+    private IEnumerable<HealthEvent<T>> GenerateDailyEvents()
     {
-        var events = new List<HealthEvent>();
+        var events = new List<HealthEvent<T>>();
         for (var i = 0; i < this.resourcePeriod.Length; i++)
         {
             var day = this.resourcePeriod.Start.PlusDays(i);
@@ -128,9 +161,9 @@ internal class EventsGenerator
         return events;
     }
 
-    private IEnumerable<HealthEvent> GenerateWeaklyEvents(DaysOfWeek?[] daysOfWeek)
+    private IEnumerable<HealthEvent<T>> GenerateWeaklyEvents(DaysOfWeek?[] daysOfWeek)
     {
-        var events = new List<HealthEvent>();
+        var events = new List<HealthEvent<T>>();
         for (var i = 0; i < this.resourcePeriod.Length; i++)
         {
             var day = this.resourcePeriod.Start.PlusDays(i).DayOfWeek;
@@ -143,9 +176,9 @@ internal class EventsGenerator
         return events;
     }
 
-    private IEnumerable<HealthEvent> GenerateEventsOnSingleFrequency(LocalDate date)
+    private IEnumerable<HealthEvent<T>> GenerateEventsOnSingleFrequency(LocalDate date)
     {
-        var events = new List<HealthEvent>();
+        var events = new List<HealthEvent<T>>();
         if (this.timing.Repeat.TimeOfDay.Any())
         {
             foreach (var time in this.timing.Repeat.TimeOfDayIso())
@@ -154,12 +187,12 @@ internal class EventsGenerator
                 var localDateTime = date.At(localTime.GetValueOrThrow());
                 if (this.FilterIncludesDateTime(localDateTime))
                 {
-                    events.Add(new HealthEvent
+                    events.Add(new HealthEvent<T>
                     {
-                        PatientId = this.patient.Id,
                         ScheduledDateTime = localDateTime,
                         EventTiming = CustomEventTiming.EXACT,
-                        ResourceReference = this.resourceReference
+                        Resource = this.resource,
+                        Dosage = this.dosage
                     });
                 }
             }
@@ -177,12 +210,12 @@ internal class EventsGenerator
 
                 if (this.FilterIncludesDateTime(eventDate))
                 {
-                    events.Add(new HealthEvent
+                    events.Add(new HealthEvent<T>
                     {
-                        PatientId = this.patient.Id,
                         ScheduledDateTime = eventDate,
                         EventTiming = customTiming,
-                        ResourceReference = this.resourceReference
+                        Resource = this.resource,
+                        Dosage = this.dosage
                     });
                 }
             }
@@ -191,30 +224,30 @@ internal class EventsGenerator
         return events;
     }
 
-    private IEnumerable<HealthEvent> GenerateEventsOnMultipleFrequency()
+    private IEnumerable<HealthEvent<T>> GenerateEventsOnMultipleFrequency()
     {
-        var startDate = this.timing.GetStartDateOrThrow();
+        var startDate = this.resourcePeriod.Start;
         var startTime = this.timing.GetStartTime();
         if (startTime is null)
         {
             throw new InvalidOperationException(
-                $"Timing in request {this.resourceReference.DomainResourceId} does not have a start time");
+                $"Timing in request {this.resource?.Id} does not have a start time");
         }
 
         var startDateTime = startDate.At(startTime.Value);
-        var events = new List<HealthEvent>();
+        var events = new List<HealthEvent<T>>();
         var totalOccurrences = this.resourcePeriod.Length * this.timing.Repeat.Frequency ?? 0;
         var hourOfDistance = 24 / this.timing.Repeat.Frequency ?? 24;
         for (var i = 0; i < totalOccurrences; i++)
         {
             if (this.FilterIncludesDateTime(startDateTime))
             {
-                events.Add(new HealthEvent
+                events.Add(new HealthEvent<T>
                 {
-                    PatientId = this.patient.Id,
                     ScheduledDateTime = startDateTime,
                     EventTiming = CustomEventTiming.EXACT,
-                    ResourceReference = this.resourceReference
+                    Resource = this.resource,
+                    Dosage = this.dosage
                 });
             }
 

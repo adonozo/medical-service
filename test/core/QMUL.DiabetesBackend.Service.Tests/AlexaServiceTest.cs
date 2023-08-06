@@ -2,10 +2,7 @@ namespace QMUL.DiabetesBackend.Service.Tests;
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using DataInterfaces;
 using FluentAssertions;
 using Hl7.Fhir.Model;
@@ -17,14 +14,13 @@ using NodaTime;
 using NSubstitute;
 using Service;
 using Xunit;
-using Duration = Hl7.Fhir.Model.Duration;
-using ResourceReference = Model.ResourceReference;
+using Period = Hl7.Fhir.Model.Period;
 using Task = System.Threading.Tasks.Task;
 
 public class AlexaServiceTest
 {
     [Fact]
-    public async Task ProcessMedicationRequest_WhenRequestIsSuccessful_ReturnsBundle()
+    public async Task SearchMedicationRequests_WhenRequestIsSuccessful_ReturnsBundle()
     {
         // Arrange
         var patientDao = Substitute.For<IPatientDao>();
@@ -35,7 +31,7 @@ public class AlexaServiceTest
 
         var paginatedResult = new PaginatedResult<IEnumerable<MedicationRequest>>
         {
-            Results = new Collection<MedicationRequest>()
+            Results = new[] { GetTestMedicationRequest(Guid.NewGuid().ToString()) }
         };
         medicationRequestDao.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>(), false)
             .Returns(paginatedResult);
@@ -164,84 +160,52 @@ public class AlexaServiceTest
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaServiceType = typeof(AlexaService);
-        var alexaService = Activator.CreateInstance(alexaServiceType, patientDao, medicationRequestDao,
-            serviceRequestDao, logger);
-        var privateMethod = alexaServiceType
-            .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
-            .First(method => method.Name == "GetMedicationBundle");
+        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
+
+        patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 
         var dosageId = Guid.NewGuid().ToString();
-        var medicationId = Guid.NewGuid().ToString();
-        var events = new List<HealthEvent>
+        
+        var medicationRequest = this.GetTestMedicationRequest(dosageId, period: new Period
         {
-            new()
+            Start = "2023-01-01",
+            End = "2023-01-10"
+        });
+
+        var ignoredDosage = new Dosage
+        {
+            ElementId = Guid.NewGuid().ToString(),
+            Timing = TestUtils.ValidPeriodDurationTiming(new Period { Start = "2023-01-10", End = "2023-01-20"})
+        };
+        medicationRequest.DosageInstruction.Add(ignoredDosage);
+
+        medicationRequestDao.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>(), false)
+            .Returns(new PaginatedResult<IEnumerable<MedicationRequest>>
             {
-                ResourceReference = new ResourceReference
-                {
-                    DomainResourceId = medicationId,
-                    EventReferenceId = dosageId
-                }
-            }
-        };
-        var medicationRequest = this.GetTestMedicationRequest(dosageId);
-        medicationRequest.DosageInstruction.Add(new Dosage { ElementId = Guid.NewGuid().ToString() });
-        medicationRequestDao.GetMedicationRequestsByIds(Arg.Any<string[]>())
-            .Returns(new List<MedicationRequest> { medicationRequest });
+                Results = new []{ medicationRequest }
+            });
 
         // Act
-        var result =
-            await (Task<IList<MedicationRequest>>)privateMethod.Invoke(alexaService, new object?[] { events });
+        var result = await alexaService.SearchMedicationRequests(Guid.NewGuid().ToString(),
+            new LocalDate(2023, 01, 02),
+            false);
 
         // Assert
-        result.Count.Should().Be(1);
-        result[0].DosageInstruction.Count.Should().Be(1);
-        result[0].DosageInstruction[0].ElementId.Should().Be(dosageId);
-    }
-
-    [Fact]
-    public async Task GetServiceBundle_WhenEventListHasMultipleServices_MethodCallsUniqueIds()
-    {
-        // Arrange
-        var patientDao = Substitute.For<IPatientDao>();
-        var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
-        var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaServiceType = typeof(AlexaService);
-        var alexaService = Activator.CreateInstance(alexaServiceType, patientDao, medicationRequestDao,
-            serviceRequestDao, logger);
-        var privateMethod = alexaServiceType
-            .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
-            .First(method => method.Name == "GetServiceBundle");
-
-        var serviceId1 = Guid.NewGuid().ToString();
-        var serviceId2 = Guid.NewGuid().ToString();
-        var events = new List<HealthEvent>
-        {
-            new() { ResourceReference = new ResourceReference { DomainResourceId = serviceId1 } },
-            new() { ResourceReference = new ResourceReference { DomainResourceId = serviceId2 } },
-            new() { ResourceReference = new ResourceReference { DomainResourceId = serviceId1 } },
-        };
-        var expectedIds = Array.Empty<string>();
-        serviceRequestDao.GetServiceRequestsByIds(Arg.Do<string[]>(ids => expectedIds = ids))
-            .Returns(new List<ServiceRequest>());
-
-        // Act
-        await (Task<IList<ServiceRequest>>)privateMethod.Invoke(alexaService, new object?[] { events });
-
-        // Assert
-        await serviceRequestDao.Received(1).GetServiceRequestsByIds(Arg.Any<string[]>());
-        expectedIds.Length.Should().Be(2);
-        expectedIds.Should().Contain(serviceId1).And.Contain(serviceId2);
+        var entryResult = result.Entry.Should().ContainSingle().Subject;
+        var requestReturned = entryResult.Resource.Should().BeOfType<MedicationRequest>().Subject;
+        var dosageReturned = requestReturned.DosageInstruction.Should().ContainSingle().Subject;
+        dosageReturned.ElementId.Should().Be(dosageId);
     }
 
     #region Private methods
 
-    private MedicationRequest GetTestMedicationRequest(string dosageId, string medicationRequestId = null)
+    private MedicationRequest GetTestMedicationRequest(string dosageId,
+        string medicationRequestId = null,
+        Period period = null)
     {
-        return new()
+        return new MedicationRequest
         {
-            Id = medicationRequestId,
+            Id = medicationRequestId ?? Guid.NewGuid().ToString(),
             DosageInstruction = new List<Dosage>
             {
                 new()
@@ -253,12 +217,13 @@ public class AlexaServiceTest
                         {
                             PeriodUnit = Timing.UnitsOfTime.D,
                             Period = 1,
-                            Frequency = 2,
-                            Bounds = new Duration
+                            Frequency = 1,
+                            Bounds = period ?? new Period
                             {
-                                Unit = "d",
-                                Value = 10
-                            }
+                                Start = "2023-01-01",
+                                End = "2023-01-10"
+                            },
+                            TimeOfDay = new[] { "10:00" }
                         }
                     }
                 }

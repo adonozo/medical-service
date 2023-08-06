@@ -73,7 +73,7 @@ public class AlexaService : IAlexaService
             patient.ToInternalPatient(),
             dateFilter);
 
-        return await this.GenerateSearchBundle(events.ToList());
+        return this.EventsToBundle(events.ToList());
     }
 
     /// <inheritdoc/>
@@ -100,7 +100,7 @@ public class AlexaService : IAlexaService
             defaultOffset: DefaultOffsetMinutes);
 
         var events = this.GetHealthEvents(serviceRequests, patient.ToInternalPatient(), dateFilter);
-        return await this.GenerateSearchBundle(events.ToList());
+        return this.EventsToBundle(events.ToList());
     }
 
     /// <inheritdoc/>
@@ -217,64 +217,38 @@ public class AlexaService : IAlexaService
         };
     }
 
-    private async Task<Bundle> GenerateSearchBundle(IReadOnlyCollection<HealthEvent> healthEvents)
+    private Bundle EventsToBundle(IEnumerable<HealthEvent<MedicationRequest>> healthEvents)
     {
-        var serviceEvents = healthEvents
-            .Where(healthEvent => healthEvent.ResourceReference.EventType == EventType.Measurement).ToArray();
-        var serviceRequests = serviceEvents.Any()
-            ? await this.GetServiceBundle(serviceEvents)
-            : new List<ServiceRequest>();
-        var medicationEvents = healthEvents.Where(healthEvent =>
-                healthEvent.ResourceReference.EventType is EventType.MedicationDosage or EventType.InsulinDosage)
-            .ToArray();
-        var medicationRequests = medicationEvents.Any()
-            ? await this.GetMedicationBundle(medicationEvents)
-            : new List<MedicationRequest>();
-
-        var entries = new List<Resource>(serviceRequests);
-        entries.AddRange(medicationRequests);
-        return ResourceUtils.GenerateSearchBundle(entries);
-    }
-
-    private async Task<IList<MedicationRequest>> GetMedicationBundle(IEnumerable<HealthEvent> events)
-    {
-        var uniqueRequestIds = new HashSet<string>();
-        var uniqueDosageIds = new HashSet<string>();
-        foreach (var item in events)
+        var medications = new Dictionary<string, MedicationRequest>();
+        var dosagesPerRequest = new Dictionary<string, List<Dosage>>(); // Group dosages for the same medication request
+        foreach (var @event in healthEvents)
         {
-            uniqueRequestIds.Add(item.ResourceReference.DomainResourceId);
-            uniqueDosageIds.Add(item.ResourceReference.EventReferenceId);
+            if (!medications.ContainsKey(@event.Resource.Id))
+            {
+                medications.Add(@event.Resource.Id, @event.Resource);
+                dosagesPerRequest.Add(@event.Resource.Id, new List<Dosage>{ @event.Dosage });
+                continue;
+            }
+
+            dosagesPerRequest[@event.Resource.Id].Add(@event.Dosage);
         }
 
-        var requests = await this.medicationRequestDao.GetMedicationRequestsByIds(uniqueRequestIds.ToArray());
-        foreach (var request in requests)
+        var result = medications.Select(keyValue =>
         {
-            // Remove all dosages that are not in the event. This is necessary when the medication request has
-            // dosages that may not be related with these events; e.g., dosages in different days.
-            request.DosageInstruction.RemoveAll(dose => !uniqueDosageIds.Contains(dose.ElementId));
-        }
+            var request = keyValue.Value;
+            request.DosageInstruction = dosagesPerRequest[keyValue.Key];
+            return request;
+        });
 
-        return requests;
+        return ResourceUtils.GenerateSearchBundle(result);
     }
 
-    private async Task<IList<ServiceRequest>> GetServiceBundle(IEnumerable<HealthEvent> events)
+    private Bundle EventsToBundle(IEnumerable<HealthEvent<ServiceRequest>> healthEvents)
     {
-        var uniqueIds = new HashSet<string>();
-        uniqueIds.UnionWith(events.Select(item => item.ResourceReference.DomainResourceId).ToArray());
-        return await this.serviceRequestDao.GetServiceRequestsByIds(uniqueIds.ToArray());
+        var requests = healthEvents.Select(@event => @event.Resource);
+        return ResourceUtils.GenerateSearchBundle(requests);
     }
 
-    /// <summary>
-    /// Sets the start date for a medication's request dosage.
-    /// Updates a list of health events that belongs to a medication request that has a specific dosage ID. Events are
-    /// deleted and created again. 
-    /// </summary>
-    /// <param name="patient">The <see cref="InternalPatient"/> related to the medication request</param>
-    /// <param name="dosageId">The dosage ID to update. A medication request will be fetched using this value.</param>
-    /// <param name="startDate">When this dosage has been started.</param>
-    /// <param name="startTime">The optional start time</param>
-    /// <returns>True if the update was successful. False otherwise.</returns>
-    /// <exception cref="ArgumentException">If the events were not deleted.</exception>
     private async Task SetDosageStartDate(InternalPatient patient,
         string dosageId,
         LocalDate startDate,
@@ -304,7 +278,7 @@ public class AlexaService : IAlexaService
         await this.medicationRequestDao.UpdateMedicationRequest(medicationRequest.Id, medicationRequest);
     }
 
-    private IEnumerable<HealthEvent> GetHealthEvents(
+    private IEnumerable<HealthEvent<MedicationRequest>> GetHealthEvents(
         IEnumerable<MedicationRequest> medicationRequests,
         InternalPatient patient,
         Interval dateFilter)
@@ -314,7 +288,7 @@ public class AlexaService : IAlexaService
             .SelectMany(result => result);
     }
 
-    private IEnumerable<HealthEvent> GetHealthEvents(
+    private IEnumerable<HealthEvent<ServiceRequest>> GetHealthEvents(
         IEnumerable<ServiceRequest> serviceRequests,
         InternalPatient patient,
         Interval dateFilter)

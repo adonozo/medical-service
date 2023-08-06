@@ -2,15 +2,12 @@ namespace QMUL.DiabetesBackend.Service.Utils;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
 using Model.Enums;
 using Model.Exceptions;
-using Model.Extensions;
 using NodaTime;
-using ResourceReference = Model.ResourceReference;
 
 /// <summary>
 /// Resource util methods
@@ -61,14 +58,6 @@ public static class ResourceUtils
         };
     }
 
-    public static List<HealthEvent> GenerateEventsFrom(DomainResource request, InternalPatient patient) =>
-        request switch
-        {
-            ServiceRequest serviceRequest => GenerateEventsFrom(serviceRequest, patient),
-            MedicationRequest medicationRequest => GenerateEventsFrom(medicationRequest, patient),
-            _ => throw new ArgumentException("Request is not a service or medication request", nameof(request))
-        };
-
     /// <summary>
     /// Creates a list of events based on medication timings.
     /// </summary>
@@ -76,23 +65,15 @@ public static class ResourceUtils
     /// <param name="patient">The medication request's subject</param>
     /// <param name="dateFilter">An optional end date filter</param>
     /// <returns>A List of events for the medication request</returns>
-    public static List<HealthEvent> GenerateEventsFrom(MedicationRequest request,
+    public static List<HealthEvent<MedicationRequest>> GenerateEventsFrom(MedicationRequest request,
         InternalPatient patient,
         Interval? dateFilter = null)
     {
-        var events = new List<HealthEvent>();
-        var isInsulin = request.HasInsulinFlag();
+        var events = new List<HealthEvent<MedicationRequest>>();
 
         foreach (var dosage in request.DosageInstruction)
         {
-            var requestReference = new ResourceReference
-            {
-                EventType = isInsulin ? EventType.InsulinDosage : EventType.MedicationDosage,
-                DomainResourceId = request.Id,
-                Text = dosage.Text,
-                EventReferenceId = dosage.ElementId
-            };
-            var eventsGenerator = new EventsGenerator(patient, dosage.Timing, requestReference, dateFilter);
+            var eventsGenerator = EventsGenerator<MedicationRequest>.ForMedicationRequest(patient, dosage, request, dateFilter);
             events.AddRange(eventsGenerator.GetEvents());
         }
 
@@ -100,7 +81,7 @@ public static class ResourceUtils
     }
 
     /// <summary>
-    /// Creates a list of <see cref="HealthEvent"/> from a <see cref="ServiceRequest"/>. The service request's
+    /// Creates a list of <see cref="HealthEvent{ServiceRequest}"/> from a <see cref="ServiceRequest"/>. The service request's
     /// occurrence must be an instance of <see cref="Hl7.Fhir.Model.Timing"/> to have consistency between
     /// service and medication requests, and to narrow down timing use cases.
     /// </summary>
@@ -108,22 +89,15 @@ public static class ResourceUtils
     /// <param name="patient">The medication request's subject</param>
     /// <param name="dateFilter">An options date filter</param>
     /// <returns>A List of events for the medication request</returns>
-    public static List<HealthEvent> GenerateEventsFrom(ServiceRequest request,
+    public static List<HealthEvent<ServiceRequest>> GenerateEventsFrom(ServiceRequest request,
         InternalPatient patient,
         Interval? dateFilter = null)
     {
-        var events = new List<HealthEvent>();
+        var events = new List<HealthEvent<ServiceRequest>>();
         if (request.Occurrence is not Timing)
         {
             throw new InvalidOperationException($"Service request {request.Id} occurrence is not a timing instance");
         }
-        var requestReference = new ResourceReference
-        {
-            EventType = EventType.Measurement,
-            DomainResourceId = request.Id,
-            EventReferenceId = request.Id,
-            Text = request.PatientInstruction
-        };
 
         request.Contained.ForEach(resource =>
         {
@@ -132,7 +106,8 @@ public static class ResourceUtils
                 throw new ValidationException("Contained resources are not of type Service Request");
             }
 
-            events.AddRange(GenerateEventsFrom(patient, serviceRequest.Occurrence, requestReference, dateFilter));
+            var eventsGenerator = EventsGenerator<ServiceRequest>.ForServiceRequest(patient, serviceRequest, dateFilter);
+            events.AddRange(eventsGenerator.GetEvents());
         });
 
         return events;
@@ -175,19 +150,5 @@ public static class ResourceUtils
         }
 
         return resource;
-    }
-
-    private static IEnumerable<HealthEvent> GenerateEventsFrom(InternalPatient patient,
-        DataType occurrence,
-        ResourceReference requestReference,
-        Interval? dateFilter = null)
-    {
-        if (occurrence is not Timing timing)
-        {
-            throw new InvalidOperationException("ServiceRequest.Occurrence must be a Timing instance");
-        }
-
-        var eventsGenerator = new EventsGenerator(patient, timing, requestReference, dateFilter);
-        return eventsGenerator.GetEvents().ToList();
     }
 }

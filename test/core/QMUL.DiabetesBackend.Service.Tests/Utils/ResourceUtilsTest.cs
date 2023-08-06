@@ -7,8 +7,10 @@ using FluentAssertions;
 using Hl7.Fhir.Model;
 using Model;
 using Model.Enums;
+using NodaTime;
 using Service.Utils;
 using Xunit;
+using Period = Hl7.Fhir.Model.Period;
 
 public class ResourceUtilsTest
 {
@@ -102,7 +104,8 @@ public class ResourceUtilsTest
 
         // Assert
         events.Count.Should().Be(10);
-        events[0].ResourceReference.EventType.Should().Be(EventType.Measurement);
+        events.MinBy(@event => @event.ScheduledDateTime).ScheduledDateTime.Should().BeEquivalentTo(new LocalDateTime(2023, 01, 01, 10, 00));
+        events.MaxBy(@event => @event.ScheduledDateTime).ScheduledDateTime.Should().BeEquivalentTo(new LocalDateTime(2023, 01, 10, 10, 00));
     }
 
     [Fact]
@@ -127,7 +130,7 @@ public class ResourceUtilsTest
         };
 
         // Act
-        var action = new Func<IEnumerable<HealthEvent>>(() =>
+        var action = new Func<IEnumerable<HealthEvent<ServiceRequest>>>(() =>
             ResourceUtils.GenerateEventsFrom(serviceRequest, patient));
 
         // Assert
@@ -171,6 +174,7 @@ public class ResourceUtilsTest
 
         // Assert
         events.Count.Should().Be(10);
-        events[0].ResourceReference.EventType.Should().Be(EventType.MedicationDosage);
+        events.MinBy(@event => @event.ScheduledDateTime).ScheduledDateTime.Should().BeEquivalentTo(new LocalDateTime(2023, 01, 01, 10, 00));
+        events.MaxBy(@event => @event.ScheduledDateTime).ScheduledDateTime.Should().BeEquivalentTo(new LocalDateTime(2023, 01, 10, 10, 00));
     }
 }
