@@ -91,7 +91,7 @@ public class AlexaController : ControllerBase
         return this.OkOrNotFound(result);
     }
 
-    private ProblemDetails GetErrorResponse<T>(T resource, string path) where T : DomainResource => new()
+    private static ProblemDetails GetErrorResponse<T>(T resource, string path) where T : DomainResource => new()
     {
         Title = "Resource needs a start date",
         Detail = "Cannot find occurrences for the provided period because the resource needs a start date",
