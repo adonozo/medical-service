@@ -32,7 +32,7 @@ public class AlexaControllerTest
         var controller = new AlexaController(alexaService, observationsService);
 
         // Act
-        var result = await controller.GetMedicationRequest(
+        var result = await controller.GetMedicationRequests(
             idOrEmail: "test@mail.com",
             date: new LocalDate(),
             timing: CustomEventTiming.ALL_DAY);
@@ -57,7 +57,7 @@ public class AlexaControllerTest
         var controller = new AlexaController(alexaService, observationsService);
 
         // Act
-        var result = await controller.GetMedicationRequest(
+        var result = await controller.GetMedicationRequests(
             idOrEmail: "test@mail.com",
             date: null,
             timing: CustomEventTiming.ALL_DAY);
@@ -84,7 +84,7 @@ public class AlexaControllerTest
         var controller = new AlexaController(alexaService, observationsService);
 
         // Act
-        var result = await controller.GetMedicationRequest(
+        var result = await controller.GetMedicationRequests(
             idOrEmail: "test@mail.com",
             date: new LocalDate(2023, 01, 01),
             timing: CustomEventTiming.ALL_DAY);
@@ -107,11 +107,11 @@ public class AlexaControllerTest
                 Arg.Any<LocalDate>(),
                 Arg.Any<CustomEventTiming>(),
                 Arg.Any<string>())
-            .Returns(new Bundle());
+            .Returns(Task.FromResult(Result<Bundle, ServiceRequest>.Success(new Bundle())));
         var controller = new AlexaController(alexaService, observationsService);
 
         // Act
-        var result = await controller.GetGlucoseServiceRequest(
+        var result = await controller.GetServiceRequests(
             idOrEmail: "test@mail.com",
             date: new LocalDate(),
             timing: CustomEventTiming.ALL_DAY);
@@ -119,6 +119,35 @@ public class AlexaControllerTest
 
         // Assert
         status.StatusCode.Should().Be(StatusCodes.Status200OK);
+    }
+
+    [Fact]
+    public async Task GetGlucoseServiceRequest_WhenResultFails_ReturnsUnprocessableEntity()
+    {
+        // Arrange
+        var alexaService = Substitute.For<IAlexaService>();
+        var observationsService = Substitute.For<IObservationService>();
+
+        var expectedFailRequest = new ServiceRequest{ Id = Guid.NewGuid().ToString()};
+        alexaService.SearchServiceRequests(Arg.Any<string>(),
+                Arg.Any<LocalDate>(),
+                Arg.Any<CustomEventTiming>(),
+                Arg.Any<string>())
+            .Returns(Task.FromResult(Result<Bundle, ServiceRequest>.Fail(expectedFailRequest)));
+        var controller = new AlexaController(alexaService, observationsService);
+
+        // Act
+        var result = await controller.GetServiceRequests(
+            idOrEmail: "test@mail.com",
+            date: new LocalDate(),
+            timing: CustomEventTiming.ALL_DAY);
+        var status = (ObjectResult)result;
+
+        // Assert
+        status.StatusCode.Should().Be(StatusCodes.Status422UnprocessableEntity);
+        var errors = status.Value.Should().BeOfType<ProblemDetails>().Subject;
+        errors.Extensions.Should().ContainKey(AlexaController.ResourceErrorKey)
+            .WhoseValue.Should().BeEquivalentTo(expectedFailRequest.ToJObject());
     }
 
     [Fact]

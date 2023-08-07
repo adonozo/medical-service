@@ -74,11 +74,12 @@ public class AlexaService : IAlexaService
             patient.ToInternalPatient(),
             dateFilter);
 
-        return Result<Bundle, MedicationRequest>.Success(ResourceUtils.GenerateSearchBundle(results));
+        var bundle = ResourceUtils.GenerateSearchBundle(results);
+        return Result<Bundle, MedicationRequest>.Success(bundle);
     }
 
     /// <inheritdoc/>
-    public async Task<Bundle?> SearchServiceRequests(string patientEmailOrId,
+    public async Task<Result<Bundle, ServiceRequest>> SearchServiceRequests(string patientEmailOrId,
         LocalDate dateTime,
         CustomEventTiming timing,
         string timezone = "UTC")
@@ -90,7 +91,7 @@ public class AlexaService : IAlexaService
         var requestNeedStartDate = serviceRequests.Where(request => request.NeedsStartDate()).ToList();
         if (requestNeedStartDate.Any())
         {
-            return ResourceUtils.GenerateSearchBundle(requestNeedStartDate);
+            return Result<Bundle, ServiceRequest>.Fail(requestNeedStartDate.First());
         }
 
         var dateFilter = EventTimingMapper.TimingIntervalForPatient(
@@ -102,7 +103,8 @@ public class AlexaService : IAlexaService
 
         var results = serviceRequests
             .Where(request => ResourceUtils.ServiceRequestOccursInDate(request, patient.ToInternalPatient(), dateFilter));
-        return ResourceUtils.GenerateSearchBundle(results);
+        var bundle = ResourceUtils.GenerateSearchBundle(results);
+        return Result<Bundle, ServiceRequest>.Success(bundle);
     }
 
     /// <inheritdoc/>

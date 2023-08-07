@@ -54,7 +54,7 @@ public class AlexaServiceTest
     }
 
     [Fact]
-    public async Task SearchServiceRequests_WhenRequestIsSuccessful_ReturnsBundle()
+    public async Task SearchServiceRequests_WhenRequestIsSuccessful_ReturnsSuccessfulResult()
     {
         // Arrange
         var patientDao = Substitute.For<IPatientDao>();
@@ -63,8 +63,8 @@ public class AlexaServiceTest
         var logger = Substitute.For<ILogger<AlexaService>>();
         var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
 
-        var requestPeriod = new Period{ Start = "2023-01-01", End = "2023-01-10"};
-        var expectedRequest = ServiceRequestStubs.ValidPeriodAtFixedTime(requestPeriod);
+        var expectedRequest = ServiceRequestStubs.ValidPeriodAtFixedTime(
+            period: new Period{ Start = "2023-01-01", End = "2023-01-10"});
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
         serviceRequestDao.GetActiveServiceRequests(Arg.Any<string>())
             .Returns(new List<ServiceRequest> { expectedRequest });
@@ -75,10 +75,10 @@ public class AlexaServiceTest
             CustomEventTiming.ALL_DAY);
 
         // Assert
-        result.Should().BeOfType<Bundle>();
-        var entry = result?.Entry.Should().ContainSingle().Subject;
-        var returnedRequest = entry?.Resource.Should().BeOfType<ServiceRequest>().Subject;
-        returnedRequest.Should().BeEquivalentTo(expectedRequest);
+        result.IsSuccess.Should().BeTrue();
+        result.Results.Entry.Should().ContainSingle()
+            .Which.Resource.Should().BeOfType<ServiceRequest>()
+            .Which.Should().BeEquivalentTo(expectedRequest);
     }
 
     [Fact]

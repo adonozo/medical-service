@@ -55,7 +55,7 @@ public class AlexaController : ControllerBase
     }
 
     [HttpGet("alexa/{idOrEmail}/medicationRequests")]
-    public async Task<IActionResult> GetMedicationRequest([FromRoute] string idOrEmail,
+    public async Task<IActionResult> GetMedicationRequests([FromRoute] string idOrEmail,
         [FromQuery] LocalDate? date,
         [FromQuery] string? timezone = "UTC",
         [FromQuery] CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
@@ -82,13 +82,25 @@ public class AlexaController : ControllerBase
     }
 
     [HttpGet("patients/{idOrEmail}/alexa/glucoseRequest")]
-    public async Task<IActionResult> GetGlucoseServiceRequest([FromRoute] string idOrEmail,
-        [FromQuery] LocalDate date,
+    public async Task<IActionResult> GetServiceRequests([FromRoute] string idOrEmail,
+        [FromQuery] LocalDate? date,
         [FromQuery] string timezone = "UTC",
         [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
     {
-        var result = await this.alexaService.SearchServiceRequests(idOrEmail, date, timing, timezone);
-        return this.OkOrNotFound(result);
+        if (date is null)
+        {
+            ModelState.AddModelError("date", "Date is required");
+            return this.UnprocessableEntity(ModelState);
+        }
+
+        var result = await this.alexaService.SearchServiceRequests(idOrEmail, date.Value, timing, timezone);
+        if (result.IsSuccess)
+        {
+            return this.Ok(result.Results.ToJObject());
+        }
+
+        var errorResponse = GetErrorResponse(result.Error, Constants.ServiceRequestPath);
+        return this.UnprocessableEntity(errorResponse);
     }
 
     private static ProblemDetails GetErrorResponse<T>(T resource, string path) where T : DomainResource => new()
