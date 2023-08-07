@@ -1,10 +1,10 @@
 namespace QMUL.DiabetesBackend.Service.Tests.Utils;
 
-using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using Hl7.Fhir.Model;
 using Model.Enums;
+using NodaTime;
 using Service.Utils;
 using Xunit;
 using static System.Enum;
@@ -15,48 +15,45 @@ public class EventTimingMapperTest
     public void GetIntervalFromCustomEventTiming_ValidParamsMorning_ReturnsDateConsideringTimeZone()
     {
         // Arrange
-        var dateTime = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
+        var dateTime = new LocalDate(2021, 8, 1);
         var timezone = "Europe/London";
 
         // Act
-        var (start, end) =
-            EventTimingMapper.GetIntervalFromCustomEventTiming(dateTime, CustomEventTiming.MORN, timezone);
+        var interval = EventTimingMapper.GetDefaultIntervalFromEventTiming(dateTime, CustomEventTiming.MORN, timezone);
 
         // Assert
-        start.Hour.Should().Be(5, "Default morning time is 06:00, but should be 05:00 because of the timezone");
-        end.Hour.Should().Be(11, "End hour should be 6 hours from the start time");
+        interval.Start.InUtc().Hour.Should().Be(5, "Default morning time is 06:00, but should be 05:00 because of the timezone");
+        interval.End.InUtc().Hour.Should().Be(11, "End hour should be 6 hours from the start time");
     }
 
     [Fact]
     public void GetIntervalFromCustomEventTiming_ValidParamsNight_ReturnsDateConsideringTimeZone()
     {
         // Arrange
-        var dateTime = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
+        var dateTime = new LocalDate(2021, 8, 1);
         var timezone = "America/La_Paz";
 
         // Act
-        var (start, end) =
-            EventTimingMapper.GetIntervalFromCustomEventTiming(dateTime, CustomEventTiming.NIGHT, timezone);
+        var interval = EventTimingMapper.GetDefaultIntervalFromEventTiming(dateTime, CustomEventTiming.NIGHT, timezone);
 
         // Assert
-        start.Hour.Should().Be(22, "Default night time is 18:00, but should be 22:00 because of the timezone");
-        end.Hour.Should().Be(10, "End hour should be 12 hours from the start time; 10:00 AM of the next day");
+        interval.Start.InUtc().Hour.Should().Be(22, "Default night time is 18:00, but should be 22:00 because of the timezone");
+        interval.End.InUtc().Hour.Should().Be(7, "End hour should be at 03:00 AM of the next day; 07:00 AM because of the timezone");
     }
 
     [Fact]
     public void GetIntervalFromCustomEventTiming_ValidParamsDefaultTimezone_ReturnsDate()
     {
         // Arrange
-        var dateTime = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
+        var dateTime = new LocalDate(2021, 8, 1);
         var timezone = "UTC";
 
         // Act
-        var (start, end) =
-            EventTimingMapper.GetIntervalFromCustomEventTiming(dateTime, CustomEventTiming.MORN, timezone);
+        var interval = EventTimingMapper.GetDefaultIntervalFromEventTiming(dateTime, CustomEventTiming.MORN, timezone);
 
         // Assert
-        start.Hour.Should().Be(6, "Default morning time is 06:00");
-        end.Hour.Should().Be(12, "End hour should be 6 hours from the start time");
+        interval.Start.InUtc().Hour.Should().Be(6, "Default morning time is 06:00");
+        interval.End.InUtc().Hour.Should().Be(12, "End hour should be 6 hours from the start time");
     }
 
     [Fact]
@@ -102,21 +99,20 @@ public class EventTimingMapperTest
         var timingEvent = CustomEventTiming.AC;
         var timezone = "UTC";
 
-        var patientTimingRecord = new DateTime(2020, 1, 1, 12, 0, 0);
-        var timingPreferences = new Dictionary<CustomEventTiming, DateTimeOffset>
+        var patientTimingRecord = new LocalTime(12, 00, 00);
+        var timingPreferences = new Dictionary<CustomEventTiming, LocalTime>
             { { timingEvent, patientTimingRecord } };
-        var referenceDate = new DateTime(2020, 1, 1);
+        var referenceDate = new LocalDate(2020, 1, 1);
 
 
         // Act
-        var (startDate, endDate) =
-            EventTimingMapper.GetTimingInterval(timingPreferences, referenceDate, timingEvent, timezone, 30);
+        var interval = EventTimingMapper.TimingIntervalForPatient(timingPreferences, referenceDate, timingEvent, timezone, 30);
 
         // Assert
-        startDate.Hour.Should().Be(11);
-        startDate.Minute.Should().Be(30, "Start date is 30 min (default offset) before patient's timing record");
-        endDate.Hour.Should().Be(12);
-        endDate.Minute.Should().Be(30, "End date is 30 min (default offset) after patient's timing record");
+        interval.Start.InUtc().Hour.Should().Be(11);
+        interval.Start.InUtc().Minute.Should().Be(30, "Start date is 30 min (default offset) before patient's timing record");
+        interval.End.InUtc().Hour.Should().Be(12);
+        interval.End.InUtc().Minute.Should().Be(30, "End date is 30 min (default offset) after patient's timing record");
     }
 
     [Fact]
@@ -126,64 +122,14 @@ public class EventTimingMapperTest
         var timingEvent = CustomEventTiming.MORN;
         var timezone = "UTC";
 
-        var referenceDate = new DateTime(2021, 8, 1, 10, 0, 0, DateTimeKind.Utc);
-        var timingPreferences = new Dictionary<CustomEventTiming, DateTimeOffset>();
+        var referenceDate = new LocalDate(2021, 8, 1);
+        var timingPreferences = new Dictionary<CustomEventTiming, LocalTime>();
 
         // Act
-        var (startDate, endDate) =
-            EventTimingMapper.GetTimingInterval(timingPreferences, referenceDate, timingEvent, timezone, 30);
+        var interval = EventTimingMapper.TimingIntervalForPatient(timingPreferences, referenceDate, timingEvent, timezone, 30);
 
         // Assert
-        startDate.Hour.Should().Be(6, "Default morning time is 06:00");
-        endDate.Hour.Should().Be(12, "Default End hour is 6 hours from the start time");
-    }
-
-    [Fact]
-    public void GetRelativeStartOfDay_WhenDateIsUtc_ReturnsStartOfDayHourInSameTimezone()
-    {
-        // Arrange
-        var dateTime = new DateTime(2020, 1, 1, 10, 0, 0, DateTimeKind.Utc);
-        var timezone = "Europe/London";
-
-        // Act
-        var result = EventTimingMapper.GetRelativeStartOfDay(dateTime, timezone);
-
-        // Assert
-        result.Hour.Should().Be(0);
-        result.Day.Should().Be(1);
-        result.Zone.Id.Should().Be("Europe/London");
-    }
-
-    [Fact]
-    public void GetRelativeStartOfDay_WhenDateIsNotUtc_ReturnsStartOfDayHourInTimezone()
-    {
-        // Arrange
-        var dateTime = new DateTime(2020, 1, 1, 10, 0, 0, DateTimeKind.Unspecified);
-        var timezone = "Europe/London";
-
-        // Act
-        var result = EventTimingMapper.GetRelativeStartOfDay(dateTime, timezone);
-
-        // Assert
-        result.Hour.Should().Be(0);
-        result.Day.Should().Be(1);
-        result.Zone.Id.Should().Be("Europe/London");
-    }
-
-    [Fact]
-    public void GetRelativeDayInterval_WhenTimezoneIsNotUtc_ReturnsRelativeDates()
-    {
-        // Arrange
-        var dateTime = new DateTime(2020, 1, 1, 10, 0, 0);
-        var timezone = "America/La_Paz";
-        var expectedStartDate = new DateTime(2020, 1, 1, 04, 0, 0);
-        var expectedEndDate = new DateTime(2020, 1, 2, 04, 0, 0);
-
-        // Act
-        var (startDate, endDate) = EventTimingMapper.GetRelativeDayInterval(dateTime, timezone);
-
-        // Assert
-        startDate.Should().Be(expectedStartDate);
-        endDate.Should().Be(expectedEndDate);
+        interval.Start.InUtc().Hour.Should().Be(6, "Default morning time is 06:00");
+        interval.End.InUtc().Hour.Should().Be(12, "Default End hour is 6 hours from the start time");
     }
 }

@@ -13,6 +13,7 @@ using Model.Enums;
 using Model.Exceptions;
 using Models;
 using Newtonsoft.Json.Linq;
+using NodaTime;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using ServiceInterfaces;
@@ -202,7 +203,7 @@ public class PatientControllerTest
     {
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
-        alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>())
+        alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<LocalTime>())
             .Returns(true);
 
         var controller = this.GetTestPatientController(alexaService: alexaService);
@@ -220,7 +221,7 @@ public class PatientControllerTest
     {
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
-        alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>())
+        alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<LocalTime>())
             .Returns(false);
 
         var controller = this.GetTestPatientController(alexaService: alexaService);
@@ -238,7 +239,7 @@ public class PatientControllerTest
     {
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
-        alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<DateTime>())
+        alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<LocalTime>())
             .Throws(new Exception());
 
         var controller = this.GetTestPatientController(alexaService: alexaService);
@@ -256,7 +257,7 @@ public class PatientControllerTest
     {
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
-        alexaService.UpsertDosageStartDate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTime>())
+        alexaService.UpsertDosageStartDateTime(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<LocalDate>())
             .Returns(true);
 
         var controller = this.GetTestPatientController(alexaService: alexaService);
@@ -275,7 +276,7 @@ public class PatientControllerTest
     {
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
-        alexaService.UpsertDosageStartDate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTime>())
+        alexaService.UpsertDosageStartDateTime(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<LocalDate>())
             .Throws(new Exception());
 
         var controller = this.GetTestPatientController(alexaService: alexaService);

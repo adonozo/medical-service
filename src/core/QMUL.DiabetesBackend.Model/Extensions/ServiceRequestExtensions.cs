@@ -19,4 +19,14 @@ public static class ServiceRequestExtensions
             Reference = Constants.ServiceRequestPath + serviceRequest.Id
         };
     }
+
+    /// <summary>
+    /// Checks if a service request needs a start date by checking the <see cref="Timing.RepeatComponent"/> property
+    /// </summary>
+    /// <param name="serviceRequest">The <see cref="ServiceRequest"/></param>
+    /// <returns>True if the service request needs a start date</returns>
+    public static bool NeedsStartDate(this ServiceRequest serviceRequest)
+    {
+        return serviceRequest.Occurrence is Timing timing && timing.Repeat.NeedsStartDate();
+    }
 }

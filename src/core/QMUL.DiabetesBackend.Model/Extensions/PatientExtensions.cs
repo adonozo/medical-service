@@ -2,10 +2,13 @@ namespace QMUL.DiabetesBackend.Model.Extensions;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Constants;
 using Enums;
 using Hl7.Fhir.Model;
+using NodaTime;
+using NodaTime.Text;
 
 public static class PatientExtensions
 {
@@ -33,29 +36,20 @@ public static class PatientExtensions
     /// Gets a patient's timing preferences from an extension set in the <see cref="Patient"/> object
     /// </summary>
     /// <param name="patient">The <see cref="Patient"/> to get the preferences from</param>
-    /// <returns>A dictionary with <see cref="CustomEventTiming"/> as keys and <see cref="DateTimeOffset"/> as values.
+    /// <returns>A dictionary with <see cref="CustomEventTiming"/> as keys and <see cref="LocalTime"/> as values.
     /// Returns an empty dictionary if the preferences are not set</returns>
-    public static Dictionary<CustomEventTiming, DateTimeOffset> GetTimingPreference(this Patient patient)
+    public static Dictionary<CustomEventTiming, LocalTime> GetTimingPreference(this Patient patient)
     {
         var preferenceExtension = patient.GetExtension(Extensions.PatientTimingPreference);
         if (preferenceExtension is null)
         {
-            return new Dictionary<CustomEventTiming, DateTimeOffset>();
+            return new Dictionary<CustomEventTiming, LocalTime>();
         }
 
         var preferences = preferenceExtension.Extension
-            .Where(ext => Enum.TryParse<CustomEventTiming>(ext.Url, out _) && ext.Value is FhirDateTime)
-            .ToDictionary(ext => Enum.Parse<CustomEventTiming>(ext.Url),
-                ext =>
-                {
-                    var date = ext.Value as FhirDateTime;
-                    if (date != null && date.TryToDateTimeOffset(out var dateTimeOffset))
-                    {
-                        return dateTimeOffset;
-                    }
-
-                    return DateTimeOffset.UtcNow;
-                });
+            .Select(SelectFilter)
+            .Where(ext => ext is not null)
+            .ToDictionary(eventTiming => eventTiming.Value.eventTiming, eventTiming => eventTiming.Value.localTime);
         return preferences;
     }
 
@@ -64,9 +58,9 @@ public static class PatientExtensions
     /// </summary>
     /// <param name="patient">The <see cref="Patient"/> to set the timings preferences to</param>
     /// <param name="preferences">A dictionary with <see cref="CustomEventTiming"/> as keys and
-    /// <see cref="DateTimeOffset"/> as values</param>
+    /// <see cref="LocalTime"/> as values</param>
     public static void SetTimingPreferences(this Patient patient,
-        Dictionary<CustomEventTiming, DateTimeOffset> preferences)
+        Dictionary<CustomEventTiming, LocalTime> preferences)
     {
         var patientTimings = patient.GetExtension(Extensions.PatientTimingPreference);
         var timingExtension = patientTimings
@@ -75,11 +69,11 @@ public static class PatientExtensions
                                   Url = Extensions.PatientTimingPreference
                               };
 
-        foreach (var (timing, dateTimeOffset) in preferences)
+        foreach (var (timing, localTime) in preferences)
         {
             var uri = timing.ToString();
-            var dateTime = new FhirDateTime(dateTimeOffset);
-            timingExtension.SetExtension(uri, dateTime);
+            var stringTime = new FhirString(localTime.ToString("T", CultureInfo.InvariantCulture));
+            timingExtension.SetExtension(uri, stringTime);
         }
 
         patient.RemoveExtension(Extensions.PatientTimingPreference);
@@ -113,5 +107,18 @@ public static class PatientExtensions
         };
 
         return internalPatient;
+    }
+
+    private static (CustomEventTiming eventTiming, LocalTime localTime)? SelectFilter(Extension extension)
+    {
+        var pattern = LocalTimePattern.GeneralIso;
+        if (Enum.TryParse<CustomEventTiming>(extension.Url, out var customTiming)
+            && extension.Value is FhirString fhirString
+            && pattern.Parse(fhirString.Value).TryGetValue(default, out var localTime))
+        {
+            return (customTiming, localTime);
+        }
+
+        return null;
     }
 }

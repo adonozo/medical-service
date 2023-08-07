@@ -1,5 +1,6 @@
 namespace QMUL.DiabetesBackend.Model.Extensions;
 
+using System.Linq;
 using Constants;
 using Hl7.Fhir.Model;
 
@@ -41,5 +42,16 @@ public static class MedicationRequestExtensions
             Type = nameof(MedicationRequest),
             Reference = Constants.MedicationRequestPath + medicationRequest.Id
         };
+    }
+
+    /// <summary>
+    /// Check if the medication request has any dosage that needs a start date: a <see cref="Timing.RepeatComponent"/>
+    /// that has the 'needs start date' flag
+    /// </summary>
+    /// <param name="medicationRequest">The <see cref="MedicationRequest"/></param>
+    /// <returns>True if the medication request needs a start date</returns>
+    public static bool NeedsStartDate(this MedicationRequest medicationRequest)
+    {
+        return medicationRequest.DosageInstruction.Any(dosage => dosage.Timing.Repeat.NeedsStartDate());
     }
 }

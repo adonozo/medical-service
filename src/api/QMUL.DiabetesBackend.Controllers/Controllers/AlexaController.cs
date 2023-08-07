@@ -1,18 +1,22 @@
 namespace QMUL.DiabetesBackend.Controllers.Controllers;
 
-using System;
+using System.Net;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Model;
+using Model.Constants;
 using Model.Enums;
+using NodaTime;
 using ServiceInterfaces;
 using Utils;
 
 [ApiController]
 public class AlexaController : ControllerBase
 {
+    public const string ResourceErrorKey = "resource";
+
     private readonly IAlexaService alexaService;
     private readonly IObservationService observationService;
 
@@ -25,7 +29,7 @@ public class AlexaController : ControllerBase
 
     [HttpGet("alexa/{idOrEmail}/observations/")]
     public async Task<IActionResult> GetPatientObservations([FromRoute] string idOrEmail,
-        [FromQuery] DateTime? date,
+        [FromQuery] LocalDate? date,
         [FromQuery] CustomEventTiming? timing,
         [FromQuery] string? timezone = "UTC",
         [FromQuery] int? limit = null,
@@ -41,8 +45,8 @@ public class AlexaController : ControllerBase
         var paginatedResult =
             await this.observationService.GetObservationsFor(
                 patientId: idOrEmail,
-                timing ?? CustomEventTiming.ALL_DAY,
-                date.Value,
+                timing: timing ?? CustomEventTiming.ALL_DAY,
+                dateTime: date.Value,
                 paginationRequest: pagination,
                 patientTimezone: timezone!);
 
@@ -51,8 +55,8 @@ public class AlexaController : ControllerBase
     }
 
     [HttpGet("alexa/{idOrEmail}/medicationRequests")]
-    public async Task<IActionResult> GetMedicationRequest([FromRoute] string idOrEmail,
-        [FromQuery] DateTime? date,
+    public async Task<IActionResult> GetMedicationRequests([FromRoute] string idOrEmail,
+        [FromQuery] LocalDate? date,
         [FromQuery] string? timezone = "UTC",
         [FromQuery] CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
         [FromQuery] bool? onlyInsulin = false)
@@ -68,16 +72,43 @@ public class AlexaController : ControllerBase
             onlyInsulin ?? false,
             timing,
             timezone);
-        return this.Ok(result.ToJObject());
+        if (result.IsSuccess)
+        {
+            return this.Ok(result.Results.ToJObject());
+        }
+
+        var errorResponse = GetErrorResponse(result.Error, Constants.MedicationRequestPath);
+        return this.UnprocessableEntity(errorResponse);
     }
 
     [HttpGet("patients/{idOrEmail}/alexa/glucoseRequest")]
-    public async Task<IActionResult> GetGlucoseServiceRequest([FromRoute] string idOrEmail,
-        [FromQuery] DateTime date,
+    public async Task<IActionResult> GetServiceRequests([FromRoute] string idOrEmail,
+        [FromQuery] LocalDate? date,
         [FromQuery] string timezone = "UTC",
         [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
     {
-        var result = await this.alexaService.ProcessGlucoseServiceRequest(idOrEmail, date, timing, timezone);
-        return this.OkOrNotFound(result);
+        if (date is null)
+        {
+            ModelState.AddModelError("date", "Date is required");
+            return this.UnprocessableEntity(ModelState);
+        }
+
+        var result = await this.alexaService.SearchServiceRequests(idOrEmail, date.Value, timing, timezone);
+        if (result.IsSuccess)
+        {
+            return this.Ok(result.Results.ToJObject());
+        }
+
+        var errorResponse = GetErrorResponse(result.Error, Constants.ServiceRequestPath);
+        return this.UnprocessableEntity(errorResponse);
     }
+
+    private static ProblemDetails GetErrorResponse<T>(T resource, string path) where T : DomainResource => new()
+    {
+        Title = "Resource needs a start date",
+        Detail = "Cannot find occurrences for the provided period because the resource needs a start date",
+        Instance = path + resource.Id,
+        Status = (int)HttpStatusCode.UnprocessableEntity,
+        Extensions = { { ResourceErrorKey, resource.ToJObject() } }
+    };
 }
