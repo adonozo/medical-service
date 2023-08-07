@@ -154,15 +154,20 @@ public class AlexaServiceTest
                 Arg.Do<MedicationRequest>(med => medicationRequest = med))
             .Returns(Task.FromResult(true));
         var expectedDate = new LocalDate(2023, 01, 01);
+        var expectedTime = new LocalTime(10, 00);
 
         // Act
-        var result = await alexaService.UpsertDosageStartDateTime(Guid.NewGuid().ToString(), dosageId, expectedDate);
-        var dosage = medicationRequest.DosageInstruction.FirstOrDefault(dosage => dosage.ElementId == dosageId);
+        var result = await alexaService.UpsertDosageStartDateTime(Guid.NewGuid().ToString(),
+            dosageId,
+            expectedDate,
+            expectedTime);
+        var dosage = medicationRequest.DosageInstruction.Single(dosage => dosage.ElementId == dosageId);
 
         // Assert
         result.Should().Be(true);
         dosage.Should().NotBeNull();
-        dosage?.Timing.GetStartDate().Should().NotBeNull().And.Be(expectedDate);
+        dosage.Timing.GetStartDate().Should().NotBeNull().And.Be(expectedDate);
+        dosage.Timing.GetStartTime().Should().NotBeNull().And.Be(expectedTime);
     }
 
     [Fact]

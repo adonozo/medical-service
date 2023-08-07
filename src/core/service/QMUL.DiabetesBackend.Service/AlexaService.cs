@@ -113,7 +113,7 @@ public class AlexaService : IAlexaService
     {
         var patient = await ResourceUtils.GetResourceOrThrowAsync(
             () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
-            new ValidationException("PatientNotFound"));
+            new ValidationException($"The patient {patientIdOrEmail} was not found"));
 
         var timingPreferences = patient.GetTimingPreference();
         timingPreferences = SetRelatedTimings(timingPreferences, eventTiming, localTime);
@@ -132,10 +132,10 @@ public class AlexaService : IAlexaService
     {
         var patient = await ResourceUtils.GetResourceOrThrowAsync(
             () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
-            new ValidationException("PatientNotFound"));
+            new ValidationException($"The patient {patientIdOrEmail} was not found"));
 
         var internalPatient = patient.ToInternalPatient();
-        await this.SetDosageStartDate(internalPatient, dosageId, startDate);
+        await this.SetDosageStartDate(internalPatient, dosageId, startDate, localTime);
         this.logger.LogDebug("Dosage start date updated for {IdOrEmail}: {DosageId}, {DateTime}", patientIdOrEmail,
             dosageId, startDate);
         return true;
@@ -145,6 +145,10 @@ public class AlexaService : IAlexaService
     public async Task<bool> UpsertServiceRequestStartDate(string patientIdOrEmail, string serviceRequestId,
         LocalDate startDate)
     {
+        await ResourceUtils.GetResourceOrThrowAsync(
+            () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
+            new ValidationException($"The patient {patientIdOrEmail} was not found"));
+
         var serviceRequest = await ResourceUtils.GetResourceOrThrowAsync(
             () => this.serviceRequestDao.GetServiceRequest(serviceRequestId),
             new NotFoundException());
