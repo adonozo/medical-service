@@ -17,18 +17,15 @@ using Utils;
 public class ServiceRequestService : IServiceRequestService
 {
     private readonly IServiceRequestDao serviceRequestDao;
-    private readonly IEventDao eventDao;
     private readonly IDataGatherer dataGatherer;
     private readonly ILogger<ServiceRequestService> logger;
 
     public ServiceRequestService(
         IServiceRequestDao serviceRequestDao,
-        IEventDao eventDao,
         IDataGatherer dataGatherer,
         ILogger<ServiceRequestService> logger)
     {
         this.serviceRequestDao = serviceRequestDao;
-        this.eventDao = eventDao;
         this.dataGatherer = dataGatherer;
         this.logger = logger;
     }
@@ -67,19 +64,8 @@ public class ServiceRequestService : IServiceRequestService
             throw new ValidationException($"Service request {id} is part of an active care plan");
         }
 
-        var internalPatient = await this.dataGatherer.GetReferenceInternalPatientOrThrow(request.Subject);
         request.Id = id;
-        var updateResult = await this.serviceRequestDao.UpdateServiceRequest(id, request);
-        if (!updateResult)
-        {
-            return false;
-        }
-
-        await this.eventDao.DeleteRelatedEvents(id);
-        var events = ResourceUtils.GenerateEventsFrom(request, internalPatient);
-        await this.eventDao.CreateEvents(events);
-
-        return true;
+        return await this.serviceRequestDao.UpdateServiceRequest(id, request);;
     }
 
     /// <inheritdoc/>>
@@ -105,7 +91,6 @@ public class ServiceRequestService : IServiceRequestService
             throw new ValidationException($"Service request {id} is part of an active care plan");
         }
 
-        await this.eventDao.DeleteRelatedEvents(id);
         return await this.serviceRequestDao.DeleteServiceRequest(id);
     }
 }

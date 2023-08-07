@@ -6,8 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using Hl7.Fhir.Model;
 using Model.Enums;
 using NodaTime;
-using NodaTime.Extensions;
-using Duration = NodaTime.Duration;
+using Instant = NodaTime.Instant;
+using Period = NodaTime.Period;
 
 /// <summary>
 /// Helper methods to map Timing objects
@@ -70,184 +70,85 @@ public static class EventTimingMapper
     /// settings. If the patient does not have a datetime for the timing event, a default time is used, e.g., if the
     /// patient have not declared the time for breakfast before, it will use a default time. 
     /// </summary>
-    /// <param name="preferences">The patient's timing preferences in a <see cref="Dictionary{TKey,TValue}"/>.</param>
-    /// <param name="dateTime">The reference start date for the interval.</param>
+    /// <param name="patientTimingPreferences">The patient's timing preferences in a <see cref="Dictionary{TKey,TValue}"/>.</param>
+    /// <param name="localDate">The reference start date for the interval.</param>
     /// <param name="timing">The timing event.</param>
     /// <param name="timezone">The patient's timezone.</param>
     /// <param name="defaultOffset">An offset for the time interval, in minutes.</param>
-    /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
-    public static (DateTimeOffset Start, DateTimeOffset End) GetTimingInterval(
-        Dictionary<CustomEventTiming, DateTimeOffset> preferences,
-        DateTimeOffset dateTime,
+    /// <returns>An <see cref="Instant"/> Tuple with the start and end datetime.</returns>
+    public static Interval TimingIntervalForPatient(
+        Dictionary<CustomEventTiming, LocalTime> patientTimingPreferences,
+        LocalDate localDate,
         CustomEventTiming timing,
         string timezone,
         int defaultOffset)
     {
-        DateTimeOffset start;
-        DateTimeOffset end;
-
-        if (timing == CustomEventTiming.EXACT)
+        if (!patientTimingPreferences.ContainsKey(timing))
         {
-            start = dateTime.AddMinutes(defaultOffset * -1);
-            end = dateTime.AddMinutes(defaultOffset);
-            return (start, end);
+            return GetDefaultIntervalFromEventTiming(localDate, timing, timezone);
         }
 
-        if (preferences.ContainsKey(timing))
-        {
-            start = preferences[timing].AddMinutes(defaultOffset * -1);
-            start = dateTime.Date.AddHours(start.Hour).AddMinutes(start.Minute);
-            end = preferences[timing].AddMinutes(defaultOffset);
-            end = dateTime.Date.AddHours(end.Hour).AddMinutes(end.Minute);
-        }
-        else
-        {
-            return GetIntervalFromCustomEventTiming(dateTime, timing, timezone);
-        }
-
-        return (start, end);
+        var start = localDate.At(patientTimingPreferences[timing]).Plus(Period.FromMinutes(defaultOffset * -1));
+        var end = localDate.At(patientTimingPreferences[timing]).Plus(Period.FromMinutes(defaultOffset));
+        return new Interval(start.InUtc().ToInstant(), end.InUtc().ToInstant());
     }
 
     /// <summary>
     /// Gets the default interval time for a Timing event, considering the patient's timezone.
     /// </summary>
-    /// <param name="startTime">The reference start date for the interval.</param>
+    /// <param name="localDate">The reference start date for the interval.</param>
     /// <param name="timing">The timing event.</param>
     /// <param name="timezone">The patient's timezone.</param>
-    /// <returns>A <see cref="DateTime"/> Tuple with the start and end datetime.</returns>
+    /// <returns>An <see cref="Instant"/> Tuple with the start and end datetime.</returns>
     /// <exception cref="ArgumentOutOfRangeException">If there is not a default value for the timing event.</exception>
-    public static (DateTimeOffset Start, DateTimeOffset End) GetIntervalFromCustomEventTiming(DateTimeOffset startTime,
-        CustomEventTiming timing, string timezone)
+    public static Interval GetDefaultIntervalFromEventTiming(LocalDate localDate,
+        CustomEventTiming timing,
+        string timezone)
     {
-        DateTimeOffset endTime;
-        var startLocalDate = GetRelativeStartOfDay(startTime, timezone);
+        var zone = DateTimeZoneProviders.Tzdb[timezone];
+        var startLocalDate = localDate.AtStartOfDayInZone(zone);
 
         switch (timing)
         {
             case CustomEventTiming.MORN:
-                startTime = startLocalDate.Plus(Duration.FromHours(6)).ToDateTimeUtc();
-                endTime = startTime.AddHours(6);
-                break;
+                return new Interval(startLocalDate.PlusHours(6).ToInstant(), startLocalDate.PlusHours(12).ToInstant());
             case CustomEventTiming.MORN_early:
-                startTime = startLocalDate.Plus(Duration.FromHours(6)).ToDateTimeUtc();
-                endTime = startTime.AddHours(3);
-                break;
+                return new Interval(startLocalDate.PlusHours(6).ToInstant(), startLocalDate.PlusHours(9).ToInstant());
             case CustomEventTiming.MORN_late:
-                startTime = startLocalDate.Plus(Duration.FromHours(9)).ToDateTimeUtc();
-                endTime = startTime.AddHours(3);
-                break;
+                return new Interval(startLocalDate.PlusHours(9).ToInstant(), startLocalDate.PlusHours(12).ToInstant());
             case CustomEventTiming.NOON:
-                startTime = startLocalDate.Plus(Duration.FromHours(11)).PlusMinutes(30).ToDateTimeUtc();
-                endTime = startTime.AddHours(1);
-                break;
+                return new Interval(startLocalDate.PlusHours(11).PlusMinutes(30).ToInstant(),
+                    startLocalDate.PlusHours(12).PlusMinutes(30).ToInstant());
             case CustomEventTiming.AFT:
-                startTime = startLocalDate.Plus(Duration.FromHours(12)).ToDateTimeUtc();
-                endTime = startTime.AddHours(6);
-                break;
+                return new Interval(startLocalDate.PlusHours(12).ToInstant(), startLocalDate.PlusHours(18).ToInstant());
             case CustomEventTiming.AFT_early:
-                startTime = startLocalDate.Plus(Duration.FromHours(12)).ToDateTimeUtc();
-                endTime = startTime.AddHours(3);
-                break;
+                return new Interval(startLocalDate.PlusHours(12).ToInstant(), startLocalDate.PlusHours(15).ToInstant());
             case CustomEventTiming.AFT_late:
-                startTime = startLocalDate.Plus(Duration.FromHours(15)).ToDateTimeUtc();
-                endTime = startTime.AddHours(3);
-                break;
+                return new Interval(startLocalDate.PlusHours(15).ToInstant(), startLocalDate.PlusHours(18).ToInstant());
             case CustomEventTiming.EVE:
-                startTime = startLocalDate.Plus(Duration.FromHours(18)).ToDateTimeUtc();
-                endTime = startTime.AddHours(6);
-                break;
+                return new Interval(startLocalDate.PlusHours(18).ToInstant(), startLocalDate.PlusHours(24).ToInstant());
             case CustomEventTiming.EVE_early:
-                startTime = startLocalDate.Plus(Duration.FromHours(18)).ToDateTimeUtc();
-                endTime = startTime.AddHours(3);
-                break;
+                return new Interval(startLocalDate.PlusHours(18).ToInstant(), startLocalDate.PlusHours(21).ToInstant());
             case CustomEventTiming.EVE_late:
-                startTime = startLocalDate.Plus(Duration.FromHours(21)).ToDateTimeUtc();
-                endTime = startTime.AddHours(3);
-                break;
+                return new Interval(startLocalDate.PlusHours(21).ToInstant(), startLocalDate.PlusHours(24).ToInstant());
             case CustomEventTiming.NIGHT:
-                startTime = startLocalDate.Plus(Duration.FromHours(18)).ToDateTimeUtc();
-                endTime = startTime.AddHours(12);
-                break;
+                return new Interval(startLocalDate.PlusHours(18).ToInstant(), startLocalDate.PlusHours(27).ToInstant());
             case CustomEventTiming.ACM:
             case CustomEventTiming.CM:
             case CustomEventTiming.PCM:
-                startTime = startLocalDate.Plus(Duration.FromHours(6)).ToDateTimeUtc();
-                endTime = startTime.AddHours(5);
-                break;
+                return new Interval(startLocalDate.PlusHours(6).ToInstant(), startLocalDate.PlusHours(11).ToInstant());
             case CustomEventTiming.ACD:
             case CustomEventTiming.CD:
             case CustomEventTiming.PCD:
-                startTime = startLocalDate.Plus(Duration.FromHours(11)).ToDateTimeUtc();
-                endTime = startTime.AddHours(6);
-                break;
+                return new Interval(startLocalDate.PlusHours(11).ToInstant(), startLocalDate.PlusHours(17).ToInstant());
             case CustomEventTiming.ACV:
             case CustomEventTiming.CV:
             case CustomEventTiming.PCV:
-                startTime = startLocalDate.Plus(Duration.FromHours(17)).ToDateTimeUtc();
-                endTime = startTime.AddHours(7);
-                break;
+                return new Interval(startLocalDate.PlusHours(17).ToInstant(), startLocalDate.PlusHours(24).ToInstant());
             case CustomEventTiming.ALL_DAY:
-                startTime = startLocalDate.ToDateTimeUtc();
-                endTime = startTime.AddDays(1);
-                break;
+                return new Interval(startLocalDate.ToInstant(), startLocalDate.PlusHours(24).ToInstant());
             default:
                 throw new ArgumentOutOfRangeException(nameof(timing), timing, null);
         }
-
-        return (startTime, endTime);
-    }
-
-    /// <summary>
-    /// Gets the related timing events for a given event. E.g, For before-breakfast, it will get all breakfast
-    /// related events: before, during, and after breakfast.
-    /// </summary>
-    /// <param name="eventTiming">The custom timing event.</param>
-    /// <returns>An array with the related timing events. Empty if there are no related events.</returns>
-    public static CustomEventTiming[] GetRelatedTimings(CustomEventTiming eventTiming)
-    {
-        return eventTiming switch
-        {
-            CustomEventTiming.ACM => new[] { CustomEventTiming.ACM, CustomEventTiming.CM, CustomEventTiming.PCM },
-            CustomEventTiming.CM => new[] { CustomEventTiming.ACM, CustomEventTiming.CM, CustomEventTiming.PCM },
-            CustomEventTiming.PCM => new[] { CustomEventTiming.ACM, CustomEventTiming.CM, CustomEventTiming.PCM },
-            CustomEventTiming.ACD => new[] { CustomEventTiming.ACD, CustomEventTiming.CD, CustomEventTiming.PCD },
-            CustomEventTiming.CD => new[] { CustomEventTiming.ACD, CustomEventTiming.CD, CustomEventTiming.PCD },
-            CustomEventTiming.PCD => new[] { CustomEventTiming.ACD, CustomEventTiming.CD, CustomEventTiming.PCD },
-            CustomEventTiming.ACV => new[] { CustomEventTiming.ACV, CustomEventTiming.CV, CustomEventTiming.PCV },
-            CustomEventTiming.CV => new[] { CustomEventTiming.ACV, CustomEventTiming.CV, CustomEventTiming.PCV },
-            CustomEventTiming.PCV => new[] { CustomEventTiming.ACV, CustomEventTiming.CV, CustomEventTiming.PCV },
-            _ => Array.Empty<CustomEventTiming>()
-        };
-    }
-
-    /// <summary>
-    /// Gets a day interval for a date given a timezone. The result dates are calculated in UTC. For example, the
-    /// for a datetime 2020-01-01 10:00 America/La_Paz, the intervals would be 2020-01-01 04:00 & 2020-01-02 04:00
-    /// considering the timezone (UTC -4). 
-    /// </summary>
-    /// <param name="date">The reference datetime.</param>
-    /// <param name="timezone">The user's timezone.</param>
-    /// <returns>A <see cref="DateTime"/> tuple: the start and end day of the reference date in UTC.</returns>
-    public static Tuple<DateTimeOffset, DateTimeOffset> GetRelativeDayInterval(DateTimeOffset date, string timezone)
-    {
-        var startLocalDate = GetRelativeStartOfDay(date, timezone);
-        date = startLocalDate.ToDateTimeUtc();
-        var endTime = date.AddDays(1);
-        return new Tuple<DateTimeOffset, DateTimeOffset>(date, endTime);
-    }
-
-    /// <summary>
-    /// Gets the the relative start of day (datetime) given a date and timezone.
-    /// </summary>
-    /// <param name="date">The reference date for get the start date from.</param>
-    /// <param name="timezone">The user's timezone</param>
-    /// <returns>A <see cref="ZonedDateTime"/> at the same date of the reference date, but the time set to 00:00.</returns>
-    public static ZonedDateTime GetRelativeStartOfDay(DateTimeOffset date, string timezone)
-    {
-        var instant = date.ToInstant();
-        var timezoneInfo = DateTimeZoneProviders.Tzdb[timezone];
-        var startZonedDateTime = instant.InZone(timezoneInfo);
-        var startLocalDate = startZonedDateTime.Date.AtStartOfDayInZone(timezoneInfo);
-        return startLocalDate;
     }
 }

@@ -1,6 +1,7 @@
 namespace QMUL.DiabetesBackend.MongoDb;
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using DataInterfaces;
@@ -38,6 +39,7 @@ public class PatientDao : MongoDaoBase, IPatientDao
         var searchFilter = FilterDefinition<BsonDocument>.Empty;
         var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
         var results = await this.patientCollection.Find(resultsFilter)
+            .Sort(Helpers.GetDefaultOrder())
             .Limit(paginationRequest.Limit)
             .Project(document => Helpers.ToResourceAsync<Patient>(document))
             .ToListAsync();
@@ -142,7 +144,7 @@ public class PatientDao : MongoDaoBase, IPatientDao
         }
 
         oldPatient.Gender = patient.Gender ?? oldPatient.Gender;
-        oldPatient.BirthDate = patient.BirthDate?.ToString("yyyy-MM-dd") ?? oldPatient.BirthDate;
+        oldPatient.BirthDate = patient.BirthDate?.ToString("R", CultureInfo.InvariantCulture) ?? oldPatient.BirthDate;
 
         return oldPatient;
     }

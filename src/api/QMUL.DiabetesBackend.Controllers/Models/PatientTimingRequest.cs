@@ -1,7 +1,7 @@
 namespace QMUL.DiabetesBackend.Controllers.Models;
 
-using System;
 using Model.Enums;
+using NodaTime;
 
 /// <summary>
 /// The patient's request to update a timing value, e.g., breakfast 
@@ -14,7 +14,7 @@ public class PatientTimingRequest
     public CustomEventTiming Timing { get; set; }
 
     /// <summary>
-    /// The datetime for the timing event
+    /// The new time for the timing event
     /// </summary>
-    public DateTime DateTime { get; set; }
+    public LocalTime LocalTime { get; set; }
 }

@@ -11,6 +11,8 @@ public static class Extensions
 
     public const string TimingStartDate = "http://diabetes-assistant.com/fhir/StructureDefinition/TimingStartDate";
 
+    public const string TimingStartTime = "http://diabetes-assistant.com/fhir/StructureDefinition/TimingStartTime";
+
     public const string PatientTimingPreference =
         "http://diabetes-assistant.com/fhir/StructureDefinition/TimingPreference";
 
@@ -19,4 +21,6 @@ public static class Extensions
     public const string CarePlanReference = "http://diabetes-assistant.com/fhir/StructureDefinition/CarePlanReference";
 
     public const string NeedsStartDateFlag = "http://diabetes-assistant.com/fhir/StructureDefinition/NeedsStartDateFlag";
+
+    public const string NeedsStartTimeFlag = "http://diabetes-assistant.com/fhir/StructureDefinition/NeedsStartTimeFlag";
 }

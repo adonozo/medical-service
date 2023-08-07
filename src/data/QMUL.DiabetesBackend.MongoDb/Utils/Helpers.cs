@@ -8,7 +8,6 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Model;
 using Model.Constants;
-using Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -61,6 +60,8 @@ public static class Helpers
         return Builders<BsonDocument>.Filter.Eq("subject.reference", patientReference);
     }
 
+    public static SortDefinition<BsonDocument> GetDefaultOrder() => Builders<BsonDocument>.Sort.Descending("_id");
+
     /// <summary>
     /// Sets a <see cref="BsonDocument"/> field as a <see cref="BsonDateTime"/> date from a <see cref="DateTimeOffset"/>.
     /// If the dateTimeOffset is null, the document field will be removed.
@@ -70,13 +71,13 @@ public static class Helpers
     /// <param name="dateTimeOffset">The <see cref="DateTimeOffset"/> to use.</param>
     public static void SetBsonDateTimeValue(BsonDocument document, string field, DateTimeOffset? dateTimeOffset)
     {
-        if (dateTimeOffset == null)
+        if (dateTimeOffset is null)
         {
             document.Remove(field);
             return;
         }
 
-        var dateTime = ((DateTimeOffset)dateTimeOffset).UtcDateTime;
+        var dateTime = dateTimeOffset.Value.UtcDateTime;
         document[field] = new BsonDateTime(dateTime);
     }
 
@@ -149,7 +150,6 @@ public static class Helpers
     private static string GetLastCursorId<TResource>(TResource[] resources) => resources switch
     {
         Resource[] fhirResources => fhirResources[^1].Id,
-        MongoEvent[] mongoEvents => mongoEvents[^1].Id,
         _ => string.Empty
     };
 }

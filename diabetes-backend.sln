@@ -51,6 +51,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "data", "data", "{55811FA2-1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.MongoDb.Tests", "test\data\QMUL.DiabetesBackend.MongoDb.Tests\QMUL.DiabetesBackend.MongoDb.Tests.csproj", "{BBCC2D6C-E9B8-467B-8B80-6995068AC7AF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{75B87AE7-29A9-43CF-8A1D-1B10D429C6A9}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\net-ci.yml = .github\workflows\net-ci.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

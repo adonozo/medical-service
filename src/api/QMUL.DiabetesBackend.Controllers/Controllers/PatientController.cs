@@ -162,25 +162,30 @@ public class PatientController : ControllerBase
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
         {
-            var result = await this.alexaService.UpsertTimingEvent(idOrEmail, request.Timing, request.DateTime);
+            var result = await this.alexaService.UpsertTimingEvent(idOrEmail, request.Timing, request.LocalTime);
             return result ? this.NoContent() : this.BadRequest();
         }, this.logger, this);
     }
 
     [HttpPut("patients/{idOrEmail}/dosage/{dosageId}/startDate")]
     public async Task<IActionResult> UpdateDosageStartDate([FromRoute] string idOrEmail,
-        [FromRoute] string dosageId, [FromBody] PatientStartDateRequest startDate)
+        [FromRoute] string dosageId,
+        [FromBody] PatientStartDateRequest startDate)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
         {
-            await this.alexaService.UpsertDosageStartDate(idOrEmail, dosageId, startDate.StartDate);
+            await this.alexaService.UpsertDosageStartDateTime(idOrEmail,
+                dosageId,
+                startDate.StartDate,
+                startDate.StartTime);
             return this.NoContent();
         }, this.logger, this);
     }
 
     [HttpPut("patients/{idOrEmail}/serviceRequest/{serviceRequestId}/startDate")]
     public async Task<IActionResult> UpdateServiceRequestStartDate([FromRoute] string idOrEmail,
-        [FromRoute] string serviceRequestId, [FromBody] PatientStartDateRequest startDate)
+        [FromRoute] string serviceRequestId,
+        [FromBody] PatientStartDateRequest startDate)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
         {

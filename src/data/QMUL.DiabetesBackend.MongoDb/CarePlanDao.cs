@@ -44,6 +44,7 @@ public class CarePlanDao : MongoDaoBase, ICarePlanDao
 
         var results = await this.carePlanCollection.Find(resultsFilter)
             .Limit(paginationRequest.Limit)
+            .Sort(Helpers.GetDefaultOrder())
             .Project(document => Helpers.ToResourceAsync<CarePlan>(document))
             .ToListAsync();
         Resource[] carePlans = await Task.WhenAll(results);

@@ -40,6 +40,7 @@ public class MedicationDao : MongoDaoBase, IMedicationDao
         var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
         var result = await this.medicationCollection.Find(resultsFilter)
             .Limit(paginationRequest.Limit)
+            .Sort(Helpers.GetDefaultOrder())
             .Project(document => Helpers.ToResourceAsync<Medication>(document))
             .ToListAsync();
 
