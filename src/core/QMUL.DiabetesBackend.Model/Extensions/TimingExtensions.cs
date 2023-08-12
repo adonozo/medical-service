@@ -62,10 +62,10 @@ public static class TimingExtensions
     }
 
     /// <summary>
-    /// Checks if the <see cref="Timing.RepeatComponent"/> needs a start date. This is always true for <see cref="Hl7.Fhir.Model.Duration"/>
-    /// repeat components as it does not have an start date by design (e.g., a duration of 3 weeks - no start date).
+    /// Checks if the <see cref="Timing"/> needs a start date. This is always true for <see cref="Hl7.Fhir.Model.Duration"/>
+    /// repeat components as it does not have a start date by definition (e.g., a duration of 3 weeks - no start date).
     /// </summary>
-    /// <param name="timing">The resource <see cref="Timing.RepeatComponent"/></param>
+    /// <param name="timing">The resource <see cref="Timing"/></param>
     /// <returns>A boolean value to indicate if the resource needs a start date</returns>
     /// <exception cref="ArgumentException">If the repeat component is not <see cref="Hl7.Fhir.Model.Period"/> or <see cref="Hl7.Fhir.Model.Duration"/></exception>
     public static bool NeedsStartDate(this Timing timing) => timing.Repeat.Bounds switch
@@ -125,7 +125,7 @@ public static class TimingExtensions
     /// Checks if a timing needs a start time. This is true if there is no other unit of time defined in the repeat
     /// component, i.e., no TimeOfDay or When
     /// </summary>
-    /// <param name="timing">The timing's repeat component</param>
+    /// <param name="timing">The resource timing</param>
     /// <returns>True if the timing would need a start time</returns>
     /// <exception cref="InvalidOperationException">When the bounds are of type <see cref="Period"/> and the period unit
     /// is not 'day', as there is no support for other units of time yet</exception>
