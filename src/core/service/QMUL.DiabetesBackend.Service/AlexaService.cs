@@ -47,7 +47,7 @@ public class AlexaService : IAlexaService
         CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
         string? timezone = "UTC")
     {
-        var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
+        await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new NotFoundException());
 
         var activeRequestsResult = await this.medicationRequestDao.GetActiveMedicationRequests(
@@ -67,9 +67,7 @@ public class AlexaService : IAlexaService
             timing: timing ?? CustomEventTiming.ALL_DAY,
             timezone: timezone ?? "UTC");
 
-        var results = this.FindMedicationRequestsInDate(activeRequestsResult.Results,
-            patient.ToInternalPatient(),
-            dateFilter);
+        var results = this.FindMedicationRequestsInDate(activeRequestsResult.Results, dateFilter);
 
         var bundle = ResourceUtils.GenerateSearchBundle(results);
         return Result<Bundle, MedicationRequest>.Success(bundle);
@@ -81,7 +79,7 @@ public class AlexaService : IAlexaService
         CustomEventTiming timing,
         string timezone = "UTC")
     {
-        var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
+        await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new NotFoundException());
 
         var serviceRequests = await this.serviceRequestDao.GetActiveServiceRequests(patientEmailOrId);
@@ -97,7 +95,7 @@ public class AlexaService : IAlexaService
             timezone: timezone);
 
         var results = serviceRequests
-            .Where(request => ResourceUtils.ServiceRequestOccursInDate(request, patient.ToInternalPatient(), dateFilter));
+            .Where(request => ResourceUtils.ServiceRequestOccursInDate(request, dateFilter));
         var bundle = ResourceUtils.GenerateSearchBundle(results);
         return Result<Bundle, ServiceRequest>.Success(bundle);
     }
@@ -174,13 +172,12 @@ public class AlexaService : IAlexaService
 
     private IEnumerable<MedicationRequest> FindMedicationRequestsInDate(
         IEnumerable<MedicationRequest> requests,
-        InternalPatient patient,
         Interval dateFilter)
     {
         var results = new List<MedicationRequest>();
         foreach (var request in requests)
         {
-            var dosagesInFilter = ResourceUtils.FilterDosagesOutsideFilter(request, patient, dateFilter);
+            var dosagesInFilter = ResourceUtils.FilterDosagesOutsideFilter(request, dateFilter);
             if (!dosagesInFilter.Any())
             {
                 continue;

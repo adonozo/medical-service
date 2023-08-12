@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using FluentAssertions;
 using Hl7.Fhir.Model;
-using Model.Enums;
 using Model.Extensions;
 using Model.Utils;
 using NodaTime;
@@ -34,8 +33,7 @@ public class EventsGeneratorTest
                 }
             },
         };
-        var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator(patient, timing);
+        var eventsGenerator = new EventsGenerator(timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -66,8 +64,7 @@ public class EventsGeneratorTest
             }
         };
         timing.SetStartDate(medicationStartDate);
-        var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator(patient, timing);
+        var eventsGenerator = new EventsGenerator(timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -96,14 +93,13 @@ public class EventsGeneratorTest
                 }
             },
         };
-        var patient = TestUtils.GetStubInternalPatient();
 
         var filterStartDate = new LocalDate(2020, 01, 04);
         var dateFilter = new Interval(
             DateUtils.InstantFromUtcDate(filterStartDate),
             DateUtils.InstantFromUtcDate(filterStartDate.PlusDays(4)));
 
-        var eventsGenerator = new EventsGenerator(patient, timing, dateFilter);
+        var eventsGenerator = new EventsGenerator(timing, dateFilter);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -124,10 +120,9 @@ public class EventsGeneratorTest
                 Bounds = new Hl7.Fhir.Model.Range()
             }
         };
-        var patient = TestUtils.GetStubInternalPatient();
 
         // Act
-        var action = () => new EventsGenerator(patient, timing);
+        var action = () => new EventsGenerator(timing);
 
         // Assert
         action.Should().Throw<InvalidOperationException>();
@@ -156,8 +151,7 @@ public class EventsGeneratorTest
                 }
             }
         };
-        var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator(patient, timing);
+        var eventsGenerator = new EventsGenerator(timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -191,8 +185,7 @@ public class EventsGeneratorTest
         timing.SetStartDate(startDate);
         timing.SetStartTime(new LocalTime(10, 00));
 
-        var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator(patient, timing);
+        var eventsGenerator = new EventsGenerator(timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -230,9 +223,8 @@ public class EventsGeneratorTest
         timing.SetStartDate(startDate);
         timing.SetStartTime(new LocalTime(10, 00));
 
-        var patient = TestUtils.GetStubInternalPatient();
         var dateFilter = this.SameDayInterval(2023, 03, 22);
-        var eventsGenerator = new EventsGenerator(patient, timing, dateFilter);
+        var eventsGenerator = new EventsGenerator(timing, dateFilter);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -265,12 +257,8 @@ public class EventsGeneratorTest
             }
         };
 
-        var patient = TestUtils.GetStubInternalPatient();
-        patient.ExactEventTimes[CustomEventTiming.ACM] = new LocalTime(08, 00);
-        patient.ExactEventTimes[CustomEventTiming.ACV] = new LocalTime(19, 00);
-
         timing.SetStartDate(new LocalDate(2023, 01, 01));
-        var eventsGenerator = new EventsGenerator(patient, timing);
+        var eventsGenerator = new EventsGenerator(timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -301,10 +289,8 @@ public class EventsGeneratorTest
             }
         };
 
-        var patient = TestUtils.GetStubInternalPatient();
-
         // Act
-        var action = () => new EventsGenerator(patient, timing);
+        var action = () => new EventsGenerator(timing);
 
         // Assert
         action.Should().Throw<InvalidOperationException>();
@@ -323,10 +309,9 @@ public class EventsGeneratorTest
                 Frequency = 1
             }
         };
-        var patient = TestUtils.GetStubInternalPatient();
 
         // Act
-        var action = () => new EventsGenerator(patient, timing);
+        var action = () => new EventsGenerator(timing);
 
         // Assert
         action.Should().Throw<InvalidOperationException>();
@@ -350,8 +335,8 @@ public class EventsGeneratorTest
                 }
             }
         };
-        var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator(patient, timing);
+
+        var eventsGenerator = new EventsGenerator(timing);
 
         // Act
         var action = () => eventsGenerator.GetEvents();
