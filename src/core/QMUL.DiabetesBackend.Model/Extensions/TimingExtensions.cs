@@ -68,7 +68,7 @@ public static class TimingExtensions
     /// <param name="timing">The resource <see cref="Timing.RepeatComponent"/></param>
     /// <returns>A boolean value to indicate if the resource needs a start date</returns>
     /// <exception cref="ArgumentException">If the repeat component is not <see cref="Hl7.Fhir.Model.Period"/> or <see cref="Hl7.Fhir.Model.Duration"/></exception>
-    public static bool NeedsStartDate(this Timing timing) => timing.GetPatientStartDate() is null || timing.Repeat.Bounds switch
+    public static bool NeedsStartDate(this Timing timing) => timing.Repeat.Bounds switch
     {
         Period bounds => string.IsNullOrEmpty(bounds.Start),
         Duration => true,
@@ -80,7 +80,7 @@ public static class TimingExtensions
     /// </summary>
     /// <param name="timing">The resource timing</param>
     /// <returns>The resource start time as <see cref="LocalTime"/></returns>
-    public static LocalTime? GetStartTime(this Timing timing)
+    public static LocalTime? GetPatientStartTime(this Timing timing)
     {
         var extension = timing.GetExtension(Extensions.TimingStartTime);
         if (extension?.Value is not FhirString startDateString)
@@ -129,7 +129,7 @@ public static class TimingExtensions
     /// <returns>True if the timing would need a start time</returns>
     /// <exception cref="InvalidOperationException">When the bounds are of type <see cref="Period"/> and the period unit
     /// is not 'day', as there is no support for other units of time yet</exception>
-    public static bool NeedsStartTime(this Timing timing) => timing.GetStartTime() is null || timing.Repeat switch
+    public static bool NeedsStartTime(this Timing timing) => timing.Repeat switch
     {
         { Bounds: Period, PeriodUnit: not Timing.UnitsOfTime.D } =>
             throw new InvalidOperationException($"Unsupported PeriodUnit: {timing.Repeat.PeriodUnit}"),

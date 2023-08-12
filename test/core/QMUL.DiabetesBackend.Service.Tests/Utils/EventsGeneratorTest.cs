@@ -239,7 +239,7 @@ public class EventsGeneratorTest
     }
 
     [Fact]
-    public void GetEvents_WhenTiingHasTimingArrayAndStartDate_ReturnsHealthEvents()
+    public void GetEvents_WhenTimingHasTimingArrayAndStartDate_ReturnsHealthEvents()
     {
         // Arrange
         var timing = new Timing

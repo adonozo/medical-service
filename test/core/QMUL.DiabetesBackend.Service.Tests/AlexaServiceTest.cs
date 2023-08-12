@@ -116,7 +116,7 @@ public class AlexaServiceTest
         result.Should().Be(true);
         dosage.Should().NotBeNull();
         dosage.Timing.GetPatientStartDate().Should().NotBeNull().And.Be(expectedDate);
-        dosage.Timing.GetStartTime().Should().NotBeNull().And.Be(expectedTime);
+        dosage.Timing.GetPatientStartTime().Should().NotBeNull().And.Be(expectedTime);
     }
 
     [Fact]
