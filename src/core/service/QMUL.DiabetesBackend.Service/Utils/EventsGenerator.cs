@@ -23,7 +23,6 @@ using Period = Hl7.Fhir.Model.Period;
 /// </summary>
 internal class EventsGenerator
 {
-    private readonly InternalPatient patient;
     private readonly Timing timing;
     private readonly DateInterval resourcePeriod;
     private readonly Interval? datesFilter;
@@ -31,15 +30,11 @@ internal class EventsGenerator
     /// <summary>
     /// Initializes the events generator
     /// </summary>
-    /// <param name="patient">The patient associated with the resource.</param>
     /// <param name="timing">The resource's timing setting. It must have the Bounds field as an instance of <see cref="Hl7.Fhir.Model.Period"/>
     /// or <see cref="Hl7.Fhir.Model.Duration"/>. The only supported period is 1. Also, it must have the TimeOfDay or When field.</param>
     /// <param name="datesFilter">An optional filter to limit events to a start and end dates</param>
-    public EventsGenerator(InternalPatient patient,
-        Timing timing,
-        Interval? datesFilter = null)
+    public EventsGenerator(Timing timing, Interval? datesFilter = null)
     {
-        this.patient = patient;
         this.timing = timing;
         this.datesFilter = datesFilter;
         this.resourcePeriod = this.GetResourceDates();
@@ -64,14 +59,17 @@ internal class EventsGenerator
             return this.GenerateWeaklyEvents(this.timing.Repeat.DayOfWeek.ToArray());
         }
 
-        // Only a day period is supported; e.g., 3 times a day: frequency = 3, periodUnit = 'd'
-        return this.timing.Repeat.Period switch
+        if (this.timing.Repeat.When.Any() || this.timing.Repeat.TimeOfDay.Any())
         {
-            1 when this.timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D && this.timing.Repeat.Frequency > 1 =>
-                this.GenerateEventsOnMultipleFrequency(),
-            1 when this.timing.Repeat.PeriodUnit == Timing.UnitsOfTime.D => this.GenerateDailyEvents(),
-            _ => throw new InvalidOperationException("Dosage timing not supported yet. Please review the period.")
-        };
+            return this.GenerateDailyEvents();
+        }
+
+        if (this.timing.NeedsStartTime())
+        {
+            return this.GenerateEventsOnMultipleFrequency();
+        }
+
+        throw new InvalidOperationException("Dosage timing not supported yet. Review the period.");
     }
 
     private DateInterval GetResourceDates()
@@ -88,12 +86,11 @@ internal class EventsGenerator
     {
         if (duration.Value is null or < 0)
         {
-            throw new InvalidOperationException(
-                $"Duration for has an invalid value: {duration.Value}");
+            throw new InvalidOperationException($"Duration for has an invalid value: {duration.Value}");
         }
 
-        var resourceStartDate = this.timing.GetStartDate();
-        if (resourceStartDate is null)
+        var resourceStartDate = this.timing.GetPatientStartDate();
+        if (this.timing.NeedsStartDate() && resourceStartDate is null)
         {
             throw new InvalidOperationException($"Timing in request does not have a start date");
         }
@@ -101,14 +98,14 @@ internal class EventsGenerator
         var durationValue = (int)duration.Value;
         var durationDays = duration switch
         {
-           { Unit: "d" } => durationValue,
-           { Unit: "wk" } => durationValue * 7,
-           { Unit: "mo" } => (resourceStartDate.Value.PlusMonths(durationValue) - resourceStartDate.Value).Days,
-           _ => throw new InvalidOperationException("Dosage or occurrence does not have a valid timing")
+            { Unit: "d" } => durationValue,
+            { Unit: "wk" } => durationValue * 7,
+            { Unit: "mo" } => (resourceStartDate!.Value.PlusMonths(durationValue) - resourceStartDate.Value).Days,
+            _ => throw new InvalidOperationException("Dosage or occurrence does not have a valid timing")
         };
 
         // End date is already inclusive in a date interval, thus -1 day.
-        return new DateInterval(resourceStartDate.Value, resourceStartDate.Value.PlusDays(durationDays - 1));
+        return new DateInterval(resourceStartDate!.Value, resourceStartDate.Value.PlusDays(durationDays - 1));
     }
 
     private IEnumerable<HealthEvent> GenerateDailyEvents()
@@ -156,11 +153,10 @@ internal class EventsGenerator
     private IEnumerable<HealthEvent> GenerateEventsOnMultipleFrequency()
     {
         var startDate = this.resourcePeriod.Start;
-        var startTime = this.timing.GetStartTime();
+        var startTime = this.timing.GetPatientStartTime();
         if (startTime is null)
         {
-            throw new InvalidOperationException(
-                $"Timing does not have a start time");
+            throw new InvalidOperationException("Timing does not have a start time");
         }
 
         var startDateTime = startDate.At(startTime.Value);
@@ -185,17 +181,6 @@ internal class EventsGenerator
         (this.datesFilter.Value.Start > DateUtils.InstantFromUtcDate(this.resourcePeriod.End) ||
          this.datesFilter.Value.End < DateUtils.InstantFromUtcDate(this.resourcePeriod.Start));
 
-    private bool FilterIncludesDateTime(LocalDateTime dateTime)
-    {
-        if (!this.datesFilter.HasValue)
-        {
-            return true;
-        }
-
-        var instant = DateUtils.InstantFromUtcDateTime(dateTime);
-        return this.datesFilter.Value.Contains(instant);
-    }
-
     private IEnumerable<HealthEvent> EventsFromTimeOfDay(LocalDate date) => this.timing.Repeat.TimeOfDayIso()
         .Select(time =>
         {
@@ -211,17 +196,24 @@ internal class EventsGenerator
         .Select(when =>
         {
             var customTiming = when.ToCustomEventTiming();
-            var timeIsSet = patient.ExactEventTimes.ContainsKey(customTiming);
-
-            var eventDate = timeIsSet
-                ? date.At(patient.ExactEventTimes[customTiming])
-                : throw new InvalidOperationException($"Timing event {when} for patient {this.patient.Id} does not have a time");
+            var eventDate = date.AtMidnight();
 
             return this.FilterIncludesDateTime(eventDate)
                 ? CreateEventAt(eventDate, customTiming)
                 : null;
         })
         .OfType<HealthEvent>();
+
+    private bool FilterIncludesDateTime(LocalDateTime dateTime)
+    {
+        if (!this.datesFilter.HasValue)
+        {
+            return true;
+        }
+
+        var instant = DateUtils.InstantFromUtcDateTime(dateTime);
+        return this.datesFilter.Value.Contains(instant);
+    }
 
     private static HealthEvent CreateEventAt(LocalDateTime scheduleDateTime, CustomEventTiming customTiming) =>
         new()

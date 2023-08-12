@@ -156,17 +156,6 @@ public class PatientController : ControllerBase
         }, this.logger, this);
     }
 
-    [HttpPut("patients/{idOrEmail}/timing")]
-    public async Task<IActionResult> UpdatePatientTiming([FromRoute] string idOrEmail,
-        [FromBody] PatientTimingRequest request)
-    {
-        return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
-        {
-            var result = await this.alexaService.UpsertTimingEvent(idOrEmail, request.Timing, request.LocalTime);
-            return result ? this.NoContent() : this.BadRequest();
-        }, this.logger, this);
-    }
-
     [HttpPut("patients/{idOrEmail}/dosage/{dosageId}/startDate")]
     public async Task<IActionResult> UpdateDosageStartDate([FromRoute] string idOrEmail,
         [FromRoute] string dosageId,

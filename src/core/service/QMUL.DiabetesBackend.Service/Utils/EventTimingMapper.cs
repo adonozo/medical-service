@@ -1,13 +1,11 @@
 namespace QMUL.DiabetesBackend.Service.Utils;
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Hl7.Fhir.Model;
 using Model.Enums;
 using NodaTime;
 using Instant = NodaTime.Instant;
-using Period = NodaTime.Period;
 
 /// <summary>
 /// Helper methods to map Timing objects
@@ -70,27 +68,16 @@ public static class EventTimingMapper
     /// settings. If the patient does not have a datetime for the timing event, a default time is used, e.g., if the
     /// patient have not declared the time for breakfast before, it will use a default time. 
     /// </summary>
-    /// <param name="patientTimingPreferences">The patient's timing preferences in a <see cref="Dictionary{TKey,TValue}"/>.</param>
     /// <param name="localDate">The reference start date for the interval.</param>
     /// <param name="timing">The timing event.</param>
     /// <param name="timezone">The patient's timezone.</param>
-    /// <param name="defaultOffset">An offset for the time interval, in minutes.</param>
     /// <returns>An <see cref="Instant"/> Tuple with the start and end datetime.</returns>
     public static Interval TimingIntervalForPatient(
-        Dictionary<CustomEventTiming, LocalTime> patientTimingPreferences,
         LocalDate localDate,
         CustomEventTiming timing,
-        string timezone,
-        int defaultOffset)
+        string timezone)
     {
-        if (!patientTimingPreferences.ContainsKey(timing))
-        {
-            return GetDefaultIntervalFromEventTiming(localDate, timing, timezone);
-        }
-
-        var start = localDate.At(patientTimingPreferences[timing]).Plus(Period.FromMinutes(defaultOffset * -1));
-        var end = localDate.At(patientTimingPreferences[timing]).Plus(Period.FromMinutes(defaultOffset));
-        return new Interval(start.InUtc().ToInstant(), end.InUtc().ToInstant());
+        return GetDefaultIntervalFromEventTiming(localDate, timing, timezone);
     }
 
     /// <summary>

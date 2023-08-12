@@ -82,57 +82,6 @@ public class AlexaServiceTest
     }
 
     [Fact]
-    public async Task UpsertTimingEvent_WhenTimingIsMealRelated_UpdatesPatient()
-    {
-        // Arrange
-        var patientDao = Substitute.For<IPatientDao>();
-        var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
-        var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
-
-        var patient = TestUtils.GetStubPatient();
-        var expectedTimingKeys = new[] { CustomEventTiming.CM, CustomEventTiming.ACM, CustomEventTiming.PCM };
-        patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
-
-        // Act
-        var result =
-            await alexaService.UpsertTimingEvent(Guid.NewGuid().ToString(), CustomEventTiming.CM, new LocalTime(10, 00));
-        var patientTimings = patient.GetTimingPreference();
-
-        // Assert
-        result.Should().Be(true);
-        patientTimings.Should().ContainKeys(expectedTimingKeys);
-    }
-
-    [Fact]
-    public async Task UpsertTimingEvent_WhenTimingIsNotMealRelated_UpdatesPatient()
-    {
-        // Arrange
-        var patientDao = Substitute.For<IPatientDao>();
-        var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
-        var serviceRequestDao = Substitute.For<IServiceRequestDao>();
-        var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
-
-        var patient = TestUtils.GetStubPatient();
-        var patientLocalTime = new LocalTime(10, 00);
-        var expectedLocalTime = new LocalTime(10, 00);
-        patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);
-        patientDao.UpdatePatient(Arg.Any<Patient>()).Returns(Task.FromResult(true));
-
-        // Act
-        var result =
-            await alexaService.UpsertTimingEvent(Guid.NewGuid().ToString(), CustomEventTiming.SNACK, patientLocalTime);
-        var patientTimings = patient.GetTimingPreference();
-
-        // Assert
-        result.Should().Be(true);
-        patientTimings.Should().ContainKey(CustomEventTiming.SNACK).And.ContainValue(expectedLocalTime);
-    }
-
-    [Fact]
     public async Task UpsertDosageStartDate_WhenRequestIsSuccessful_ReturnsTrue()
     {
         // Arrange
@@ -166,8 +115,8 @@ public class AlexaServiceTest
         // Assert
         result.Should().Be(true);
         dosage.Should().NotBeNull();
-        dosage.Timing.GetStartDate().Should().NotBeNull().And.Be(expectedDate);
-        dosage.Timing.GetStartTime().Should().NotBeNull().And.Be(expectedTime);
+        dosage.Timing.GetPatientStartDate().Should().NotBeNull().And.Be(expectedDate);
+        dosage.Timing.GetPatientStartTime().Should().NotBeNull().And.Be(expectedTime);
     }
 
     [Fact]

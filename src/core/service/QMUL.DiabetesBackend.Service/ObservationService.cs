@@ -73,14 +73,11 @@ public class ObservationService : IObservationService
     {
         var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientId), new NotFoundException());
-        var timingPreferences = patient.GetTimingPreference();
 
         var interval = EventTimingMapper.TimingIntervalForPatient(
-            patientTimingPreferences: timingPreferences,
             localDate: dateTime,
             timing: timing,
-            timezone: patientTimezone,
-            defaultOffset: DefaultOffsetMinutes);
+            timezone: patientTimezone);
 
         var observations = await this.observationDao.GetObservationsFor(
             patient.Id,

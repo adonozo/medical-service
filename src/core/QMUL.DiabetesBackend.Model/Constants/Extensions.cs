@@ -13,9 +13,6 @@ public static class Extensions
 
     public const string TimingStartTime = "http://diabetes-assistant.com/fhir/StructureDefinition/TimingStartTime";
 
-    public const string PatientTimingPreference =
-        "http://diabetes-assistant.com/fhir/StructureDefinition/TimingPreference";
-
     public const string InsulinFlag = "http://diabetes-assistant.com/fhir/StructureDefinition/InsulinFlag";
 
     public const string CarePlanReference = "http://diabetes-assistant.com/fhir/StructureDefinition/CarePlanReference";

@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Model;
-using Model.Enums;
 using Model.Exceptions;
 using Models;
 using Newtonsoft.Json.Linq;
@@ -196,60 +195,6 @@ public class PatientControllerTest
 
         // Assert
         result.StatusCode.Should().Be(StatusCodes.Status200OK);
-    }
-
-    [Fact]
-    public async Task UpdatePatientTiming_WhenRequestIsCorrect_ReturnsNoContent()
-    {
-        // Arrange
-        var alexaService = Substitute.For<IAlexaService>();
-        alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<LocalTime>())
-            .Returns(true);
-
-        var controller = this.GetTestPatientController(alexaService: alexaService);
-
-        // Act
-        var updated = await controller.UpdatePatientTiming("john@mail.com", new PatientTimingRequest());
-        var result = (StatusCodeResult)updated;
-
-        // Assert
-        result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
-    }
-
-    [Fact]
-    public async Task UpdatePatientTiming_WhenDoesNotUpdate_ReturnsBadRequest()
-    {
-        // Arrange
-        var alexaService = Substitute.For<IAlexaService>();
-        alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<LocalTime>())
-            .Returns(false);
-
-        var controller = this.GetTestPatientController(alexaService: alexaService);
-
-        // Act
-        var updated = await controller.UpdatePatientTiming("john@mail.com", new PatientTimingRequest());
-        var result = (StatusCodeResult)updated;
-
-        // Assert
-        result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-    }
-
-    [Fact]
-    public async Task UpdatePatientTiming_WhenRequestFails_ReturnsInternalError()
-    {
-        // Arrange
-        var alexaService = Substitute.For<IAlexaService>();
-        alexaService.UpsertTimingEvent(Arg.Any<string>(), Arg.Any<CustomEventTiming>(), Arg.Any<LocalTime>())
-            .Throws(new Exception());
-
-        var controller = this.GetTestPatientController(alexaService: alexaService);
-
-        // Act
-        var updated = await controller.UpdatePatientTiming("john@mail.com", new PatientTimingRequest());
-        var result = (StatusCodeResult)updated;
-
-        // Assert
-        result.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
     }
 
     [Fact]
