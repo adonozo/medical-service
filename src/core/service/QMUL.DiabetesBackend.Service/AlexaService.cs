@@ -63,11 +63,9 @@ public class AlexaService : IAlexaService
         }
 
         var dateFilter = EventTimingMapper.TimingIntervalForPatient(
-            patientTimingPreferences: patient.GetTimingPreference(),
             localDate: date,
             timing: timing ?? CustomEventTiming.ALL_DAY,
-            timezone: timezone ?? "UTC",
-            defaultOffset: DefaultOffsetMinutes);
+            timezone: timezone ?? "UTC");
 
         var results = this.FindMedicationRequestsInDate(activeRequestsResult.Results,
             patient.ToInternalPatient(),
@@ -94,11 +92,9 @@ public class AlexaService : IAlexaService
         }
 
         var dateFilter = EventTimingMapper.TimingIntervalForPatient(
-            patientTimingPreferences: patient.GetTimingPreference(),
             localDate: dateTime,
             timing: timing,
-            timezone: timezone,
-            defaultOffset: DefaultOffsetMinutes);
+            timezone: timezone);
 
         var results = serviceRequests
             .Where(request => ResourceUtils.ServiceRequestOccursInDate(request, patient.ToInternalPatient(), dateFilter));

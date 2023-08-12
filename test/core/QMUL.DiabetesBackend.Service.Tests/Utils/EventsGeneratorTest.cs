@@ -50,7 +50,6 @@ public class EventsGeneratorTest
     {
         // Arrange
         var medicationStartDate = new LocalDate(2023, 01, 01);
-        var dosageId = Guid.NewGuid().ToString();
         var timing = new Timing
         {
             Repeat = new Timing.RepeatComponent
@@ -174,7 +173,6 @@ public class EventsGeneratorTest
     {
         // Arrange
         var startDate = new LocalDate(2023, 03, 20);
-        var dosageId = Guid.NewGuid().ToString();
         var timing = new Timing
         {
             Repeat = new Timing.RepeatComponent
@@ -214,7 +212,6 @@ public class EventsGeneratorTest
     {
         // Arrange
         var startDate = new LocalDate(2023, 03, 20);
-        var dosageId = Guid.NewGuid().ToString();
         var timing = new Timing
         {
             Repeat = new Timing.RepeatComponent
