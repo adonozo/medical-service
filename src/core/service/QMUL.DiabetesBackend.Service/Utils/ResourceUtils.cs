@@ -45,15 +45,13 @@ public static class ResourceUtils
     /// filter. It takes into account the patient's timing preferences
     /// </summary>
     /// <param name="request">The <see cref="MedicationRequest"/> that contains dosages</param>
-    /// <param name="patient">The patient for whom the request is for</param>
     /// <param name="dateFilter">The date filter as an <see cref="Interval"/></param>
     /// <returns></returns>
     public static List<Dosage> FilterDosagesOutsideFilter(MedicationRequest request,
-        InternalPatient patient,
         Interval dateFilter)
     {
         return request.DosageInstruction
-            .Where(dosage => DosageOccursInDate(dosage, patient, dateFilter))
+            .Where(dosage => DosageOccursInDate(dosage, dateFilter))
             .ToList();
     }
 
@@ -62,13 +60,10 @@ public static class ResourceUtils
     /// timing preferences
     /// </summary>
     /// <param name="request">The service request</param>
-    /// <param name="patient">The patient for whom the service request if for</param>
     /// <param name="dateFilter">The date filter as an <see cref="Interval"/></param>
     /// <returns>True is the service request has an occurrence within the interval</returns>
     /// <exception cref="InvalidOperationException">If the service request's occurrence is not a <see cref="Timing"/> instance</exception>
-    public static bool ServiceRequestOccursInDate(ServiceRequest request,
-        InternalPatient patient,
-        Interval dateFilter)
+    public static bool ServiceRequestOccursInDate(ServiceRequest request, Interval dateFilter)
     {
         var events = new List<HealthEvent>();
         request.Contained.ForEach(resource =>
@@ -78,7 +73,7 @@ public static class ResourceUtils
                 throw new ValidationException("Contained resources are not of type Service Request");
             }
 
-            var eventsGenerator = new EventsGenerator(patient,
+            var eventsGenerator = new EventsGenerator(
                 request.Occurrence as Timing ?? throw new InvalidOperationException("Invalid service request occurrence"),
                 dateFilter);
             events.AddRange(eventsGenerator.GetEvents());
@@ -127,10 +122,9 @@ public static class ResourceUtils
     }
 
     private static bool DosageOccursInDate(Dosage dosage,
-        InternalPatient patient,
         Interval dateFilter)
     {
-        var generator = new EventsGenerator(patient, dosage.Timing, dateFilter);
+        var generator = new EventsGenerator(dosage.Timing, dateFilter);
         var events = generator.GetEvents();
         return events.Any();
     }

@@ -34,8 +34,7 @@ public class EventsGeneratorTest
                 }
             },
         };
-        var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator(patient, timing);
+        var eventsGenerator = new EventsGenerator(timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -46,11 +45,10 @@ public class EventsGeneratorTest
     }
 
     [Fact]
-    public void GetEvents_WhenTimingBoundsIsDurationAndPatientHasRecords_ReturnsHealthEventsOnSetStartDate()
+    public void GetEvents_WhenTimingBoundsIsDurationWithStartDate_ReturnsHealthEventsOnSetStartDate()
     {
         // Arrange
         var medicationStartDate = new LocalDate(2023, 01, 01);
-        var dosageId = Guid.NewGuid().ToString();
         var timing = new Timing
         {
             Repeat = new Timing.RepeatComponent
@@ -67,8 +65,7 @@ public class EventsGeneratorTest
             }
         };
         timing.SetStartDate(medicationStartDate);
-        var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator(patient, timing);
+        var eventsGenerator = new EventsGenerator(timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -97,14 +94,13 @@ public class EventsGeneratorTest
                 }
             },
         };
-        var patient = TestUtils.GetStubInternalPatient();
 
         var filterStartDate = new LocalDate(2020, 01, 04);
         var dateFilter = new Interval(
             DateUtils.InstantFromUtcDate(filterStartDate),
             DateUtils.InstantFromUtcDate(filterStartDate.PlusDays(4)));
 
-        var eventsGenerator = new EventsGenerator(patient, timing, dateFilter);
+        var eventsGenerator = new EventsGenerator(timing, dateFilter);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -115,7 +111,7 @@ public class EventsGeneratorTest
     }
 
     [Fact]
-    public void GetEvents_WhenTimingIsInvalid_ThrowsException()
+    public void GetEvents_WhenTimingBoundsAreInvalid_ThrowsException()
     {
         // Arrange
         var timing = new Timing
@@ -125,10 +121,9 @@ public class EventsGeneratorTest
                 Bounds = new Hl7.Fhir.Model.Range()
             }
         };
-        var patient = TestUtils.GetStubInternalPatient();
 
         // Act
-        var action = () => new EventsGenerator(patient, timing);
+        var action = () => new EventsGenerator(timing);
 
         // Assert
         action.Should().Throw<InvalidOperationException>();
@@ -157,8 +152,7 @@ public class EventsGeneratorTest
                 }
             }
         };
-        var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator(patient, timing);
+        var eventsGenerator = new EventsGenerator(timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -174,7 +168,6 @@ public class EventsGeneratorTest
     {
         // Arrange
         var startDate = new LocalDate(2023, 03, 20);
-        var dosageId = Guid.NewGuid().ToString();
         var timing = new Timing
         {
             Repeat = new Timing.RepeatComponent
@@ -193,8 +186,7 @@ public class EventsGeneratorTest
         timing.SetStartDate(startDate);
         timing.SetStartTime(new LocalTime(10, 00));
 
-        var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator(patient, timing);
+        var eventsGenerator = new EventsGenerator(timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -214,7 +206,6 @@ public class EventsGeneratorTest
     {
         // Arrange
         var startDate = new LocalDate(2023, 03, 20);
-        var dosageId = Guid.NewGuid().ToString();
         var timing = new Timing
         {
             Repeat = new Timing.RepeatComponent
@@ -233,9 +224,8 @@ public class EventsGeneratorTest
         timing.SetStartDate(startDate);
         timing.SetStartTime(new LocalTime(10, 00));
 
-        var patient = TestUtils.GetStubInternalPatient();
         var dateFilter = this.SameDayInterval(2023, 03, 22);
-        var eventsGenerator = new EventsGenerator(patient, timing, dateFilter);
+        var eventsGenerator = new EventsGenerator(timing, dateFilter);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
@@ -249,7 +239,7 @@ public class EventsGeneratorTest
     }
 
     [Fact]
-    public void GetEvents_WhenTimingHasCustomTimings_ReturnsHealthEvents()
+    public void GetEvents_WhenTimingHasTimingArrayAndStartDate_ReturnsHealthEvents()
     {
         // Arrange
         var timing = new Timing
@@ -268,24 +258,20 @@ public class EventsGeneratorTest
             }
         };
 
-        var patient = TestUtils.GetStubInternalPatient();
-        patient.ExactEventTimes[CustomEventTiming.ACM] = new LocalTime(08, 00);
-        patient.ExactEventTimes[CustomEventTiming.ACV] = new LocalTime(19, 00);
-
         timing.SetStartDate(new LocalDate(2023, 01, 01));
-        var eventsGenerator = new EventsGenerator(patient, timing);
+        var eventsGenerator = new EventsGenerator(timing);
 
         // Act
         var events = eventsGenerator.GetEvents().ToList();
 
         // Assert
         events.Count.Should().Be(20, "This is a daily event happening twice a day (ACM and ACV) for 10 days");
-        events[0].ScheduledDateTime.Hour.Should().Be(8);
-        events[1].ScheduledDateTime.Hour.Should().Be(19);
+        events[0].EventTiming.Should().Be(CustomEventTiming.ACM);
+        events[1].EventTiming.Should().Be(CustomEventTiming.ACV);
     }
 
     [Fact]
-    public void GetEvents_WhenTimingHasCustomTimingsButPatientDoesnt_ThrowsException()
+    public void GetEvents_WhenDurationTimingMissesStartDate_ThrowsException()
     {
         // Arrange
         var timing = new Timing
@@ -304,13 +290,11 @@ public class EventsGeneratorTest
             }
         };
 
-        var patient = TestUtils.GetStubInternalPatient();
-
         // Act
-        var action = () => new EventsGenerator(patient, timing);
+        var action = () => new EventsGenerator(timing);
 
         // Assert
-        action.Should().Throw<InvalidOperationException>();
+        action.Should().Throw<InvalidOperationException>().WithMessage("*start date*");
     }
 
     [Fact]
@@ -326,10 +310,9 @@ public class EventsGeneratorTest
                 Frequency = 1
             }
         };
-        var patient = TestUtils.GetStubInternalPatient();
 
         // Act
-        var action = () => new EventsGenerator(patient, timing);
+        var action = () => new EventsGenerator(timing);
 
         // Assert
         action.Should().Throw<InvalidOperationException>();
@@ -344,7 +327,7 @@ public class EventsGeneratorTest
             Repeat = new Timing.RepeatComponent
             {
                 PeriodUnit = Timing.UnitsOfTime.D,
-                Period = 10, // Causes an exception
+                Period = 10, // Unsupported period
                 Frequency = 1,
                 Bounds = new Period
                 {
@@ -353,8 +336,8 @@ public class EventsGeneratorTest
                 }
             }
         };
-        var patient = TestUtils.GetStubInternalPatient();
-        var eventsGenerator = new EventsGenerator(patient, timing);
+
+        var eventsGenerator = new EventsGenerator(timing);
 
         // Act
         var action = () => eventsGenerator.GetEvents();

@@ -36,7 +36,7 @@ public class ServiceRequestService : IServiceRequestService
         await this.dataGatherer.GetReferencePatientOrThrow(request.Subject);
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
         request.Status = RequestStatus.Draft;
-        if (request.Occurrence is Timing timing && timing.Repeat.NeedsStartDate())
+        if (request.Occurrence is Timing timing && timing.NeedsStartDate())
         {
             timing.SetNeedsStartDateFlag();
             request.Occurrence = timing;
@@ -65,7 +65,7 @@ public class ServiceRequestService : IServiceRequestService
         }
 
         request.Id = id;
-        return await this.serviceRequestDao.UpdateServiceRequest(id, request);;
+        return await this.serviceRequestDao.UpdateServiceRequest(id, request);
     }
 
     /// <inheritdoc/>>

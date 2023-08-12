@@ -1,6 +1,5 @@
 namespace QMUL.DiabetesBackend.Service.Tests.Utils;
 
-using System.Collections.Generic;
 using FluentAssertions;
 using Hl7.Fhir.Model;
 using Model.Enums;
@@ -93,40 +92,16 @@ public class EventTimingMapperTest
     }
 
     [Fact]
-    public void GetIntervalForPatient_WhenPatientHasRecords_GetsIntervalFromRecords()
-    {
-        // Arrange
-        var timingEvent = CustomEventTiming.AC;
-        var timezone = "UTC";
-
-        var patientTimingRecord = new LocalTime(12, 00, 00);
-        var timingPreferences = new Dictionary<CustomEventTiming, LocalTime>
-            { { timingEvent, patientTimingRecord } };
-        var referenceDate = new LocalDate(2020, 1, 1);
-
-
-        // Act
-        var interval = EventTimingMapper.TimingIntervalForPatient(timingPreferences, referenceDate, timingEvent, timezone, 30);
-
-        // Assert
-        interval.Start.InUtc().Hour.Should().Be(11);
-        interval.Start.InUtc().Minute.Should().Be(30, "Start date is 30 min (default offset) before patient's timing record");
-        interval.End.InUtc().Hour.Should().Be(12);
-        interval.End.InUtc().Minute.Should().Be(30, "End date is 30 min (default offset) after patient's timing record");
-    }
-
-    [Fact]
-    public void GetIntervalForPatient_WhenPatientDoNotHaveRecords_GetsDefaultIntervals()
+    public void GetIntervalForPatient_WhenRequestIsValid_GetsDefaultIntervals()
     {
         // Arrange
         var timingEvent = CustomEventTiming.MORN;
         var timezone = "UTC";
 
         var referenceDate = new LocalDate(2021, 8, 1);
-        var timingPreferences = new Dictionary<CustomEventTiming, LocalTime>();
 
         // Act
-        var interval = EventTimingMapper.TimingIntervalForPatient(timingPreferences, referenceDate, timingEvent, timezone, 30);
+        var interval = EventTimingMapper.TimingIntervalForPatient(referenceDate, timingEvent, timezone);
 
         // Assert
         interval.Start.InUtc().Hour.Should().Be(6, "Default morning time is 06:00");

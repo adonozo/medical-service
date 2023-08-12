@@ -49,17 +49,6 @@ public interface IAlexaService
         string timezone = "UTC");
 
     /// <summary>
-    /// Updates / Adds a specific time for a event timing to the patient's list. e.g., a specific time for breakfast.
-    /// </summary>
-    /// <param name="patientIdOrEmail">The patient's ID or email.</param>
-    /// <param name="eventTiming">The event timing to set.</param>
-    /// <param name="localTime">The time for the event</param>
-    /// <returns>A boolean value to indicate is the update was successful.</returns>
-    /// <exception cref="ValidationException">If the patient was not found</exception>
-    /// <exception cref="WriteResourceException">If there is an error updating the patient's timing</exception>
-    Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming, LocalTime localTime);
-
-    /// <summary>
     /// Updates / Adds a start date for a dosage instruction. Useful when the medication doesn't have an exact start
     /// date and it has a duration rather than a period, e.g., for 7 days, for a month, etc.
     /// The associated health events are updated as well by deleting old events and creating new ones.

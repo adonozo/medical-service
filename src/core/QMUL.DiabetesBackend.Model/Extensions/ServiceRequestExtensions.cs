@@ -27,6 +27,6 @@ public static class ServiceRequestExtensions
     /// <returns>True if the service request needs a start date</returns>
     public static bool NeedsStartDate(this ServiceRequest serviceRequest)
     {
-        return serviceRequest.Occurrence is Timing timing && timing.Repeat.NeedsStartDate();
+        return serviceRequest.Occurrence is Timing timing && timing.NeedsStartDate();
     }
 }
