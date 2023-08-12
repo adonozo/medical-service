@@ -52,6 +52,6 @@ public static class MedicationRequestExtensions
     /// <returns>True if the medication request needs a start date</returns>
     public static bool NeedsStartDate(this MedicationRequest medicationRequest)
     {
-        return medicationRequest.DosageInstruction.Any(dosage => dosage.Timing.Repeat.NeedsStartDate());
+        return medicationRequest.DosageInstruction.Any(dosage => dosage.Timing.NeedsStartDate());
     }
 }

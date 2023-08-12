@@ -87,7 +87,7 @@ internal class EventsGenerator
                 $"Duration for has an invalid value: {duration.Value}");
         }
 
-        var resourceStartDate = this.timing.GetStartDate();
+        var resourceStartDate = this.timing.GetPatientStartDate();
         if (resourceStartDate is null)
         {
             throw new InvalidOperationException($"Timing in request does not have a start date");

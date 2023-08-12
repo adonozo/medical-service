@@ -48,12 +48,12 @@ public class MedicationRequestService : IMedicationRequestService
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
         request.Status = MedicationRequest.medicationrequestStatus.Draft;
 
-        foreach (var dosage in request.DosageInstruction.Where(dosage => dosage.Timing.Repeat.NeedsStartDate()))
+        foreach (var dosage in request.DosageInstruction.Where(dosage => dosage.Timing.NeedsStartDate()))
         {
             dosage.Timing.SetNeedsStartDateFlag();
         }
 
-        foreach (var dosage in request.DosageInstruction.Where(dosage => dosage.Timing.Repeat.NeedsStartTime()))
+        foreach (var dosage in request.DosageInstruction.Where(dosage => dosage.Timing.NeedsStartTime()))
         {
             dosage.Timing.SetNeedsStartTimeFlag();
         }

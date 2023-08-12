@@ -3,6 +3,7 @@ namespace QMUL.DiabetesBackend.Model.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Constants;
 using Hl7.Fhir.Model;
 using NodaTime;
@@ -18,7 +19,7 @@ public static class TimingExtensions
     /// </summary>
     /// <param name="timing">The <see cref="Timing"/> from the resource</param>
     /// <returns>The <see cref="LocalDate"/> start date, or null if the value was not found.</returns>
-    public static LocalDate? GetStartDate(this Timing timing)
+    public static LocalDate? GetPatientStartDate(this Timing timing)
     {
         var extension = timing.GetExtension(Extensions.TimingStartDate);
         if (extension?.Value is not FhirString startDateString)
@@ -64,14 +65,14 @@ public static class TimingExtensions
     /// Checks if the <see cref="Timing.RepeatComponent"/> needs a start date. This is always true for <see cref="Hl7.Fhir.Model.Duration"/>
     /// repeat components as it does not have an start date by design (e.g., a duration of 3 weeks - no start date).
     /// </summary>
-    /// <param name="repeat">The resource <see cref="Timing.RepeatComponent"/></param>
+    /// <param name="timing">The resource <see cref="Timing.RepeatComponent"/></param>
     /// <returns>A boolean value to indicate if the resource needs a start date</returns>
     /// <exception cref="ArgumentException">If the repeat component is not <see cref="Hl7.Fhir.Model.Period"/> or <see cref="Hl7.Fhir.Model.Duration"/></exception>
-    public static bool NeedsStartDate(this Timing.RepeatComponent repeat) => repeat.Bounds switch
+    public static bool NeedsStartDate(this Timing timing) => timing.GetPatientStartDate() is null || timing.Repeat.Bounds switch
     {
         Period bounds => string.IsNullOrEmpty(bounds.Start),
         Duration => true,
-        _ => throw new ArgumentException("Repeat component has not a valid bound", nameof(repeat))
+        _ => throw new ArgumentException("Repeat component has not a valid bound", nameof(timing))
     };
 
     /// <summary>
@@ -121,19 +122,18 @@ public static class TimingExtensions
     }
 
     /// <summary>
-    /// Checks if a timing needs a start time. This is true if the bounds in the repeat component is of type <see cref="Period"/>
-    /// and the frequency is greater than 1, which means that the event is repeated multiple times in the day
+    /// Checks if a timing needs a start time. This is true if there is no other unit of time defined in the repeat
+    /// component, i.e., no TimeOfDay or When
     /// </summary>
-    /// <param name="repeat">The timing's repeat component</param>
+    /// <param name="timing">The timing's repeat component</param>
     /// <returns>True if the timing would need a start time</returns>
     /// <exception cref="InvalidOperationException">When the bounds are of type <see cref="Period"/> and the period unit
     /// is not 'day', as there is no support for other units of time yet</exception>
-    public static bool NeedsStartTime(this Timing.RepeatComponent repeat) => repeat switch
+    public static bool NeedsStartTime(this Timing timing) => timing.GetStartTime() is null || timing.Repeat switch
     {
-        { Bounds: Period, PeriodUnit: Timing.UnitsOfTime.D } => repeat.Frequency is > 1,
         { Bounds: Period, PeriodUnit: not Timing.UnitsOfTime.D } =>
-            throw new InvalidOperationException($"Unsupported PeriodUnit: {repeat.PeriodUnit}"),
-        _ => false
+            throw new InvalidOperationException($"Unsupported PeriodUnit: {timing.Repeat.PeriodUnit}"),
+        _ => !timing.Repeat.TimeOfDay.Any() && !timing.Repeat.When.Any()
     };
 
     /// <summary>
@@ -146,8 +146,6 @@ public static class TimingExtensions
         var pattern = LocalDatePattern.Iso;
         var startDate = pattern.Parse(period.Start[..10]);
         var endDate = pattern.Parse(period.End[..10]);
-        // var startInstant = InstantFromUtcDate(startDate.GetValueOrThrow());
-        // var endInstant = InstantFromUtcDate(endDate.GetValueOrThrow());
         return new DateInterval(startDate.GetValueOrThrow(), endDate.GetValueOrThrow());
     }
 

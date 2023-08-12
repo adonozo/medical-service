@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using FluentAssertions;
 using Hl7.Fhir.Model;
+using Model.Enums;
 using Model.Extensions;
 using Model.Utils;
 using NodaTime;
@@ -44,7 +45,7 @@ public class EventsGeneratorTest
     }
 
     [Fact]
-    public void GetEvents_WhenTimingBoundsIsDurationAndPatientHasRecords_ReturnsHealthEventsOnSetStartDate()
+    public void GetEvents_WhenTimingBoundsIsDurationWithStartDate_ReturnsHealthEventsOnSetStartDate()
     {
         // Arrange
         var medicationStartDate = new LocalDate(2023, 01, 01);
@@ -110,7 +111,7 @@ public class EventsGeneratorTest
     }
 
     [Fact]
-    public void GetEvents_WhenTimingIsInvalid_ThrowsException()
+    public void GetEvents_WhenTimingBoundsAreInvalid_ThrowsException()
     {
         // Arrange
         var timing = new Timing
@@ -238,7 +239,7 @@ public class EventsGeneratorTest
     }
 
     [Fact]
-    public void GetEvents_WhenTimingHasCustomTimings_ReturnsHealthEvents()
+    public void GetEvents_WhenTiingHasTimingArrayAndStartDate_ReturnsHealthEvents()
     {
         // Arrange
         var timing = new Timing
@@ -265,12 +266,12 @@ public class EventsGeneratorTest
 
         // Assert
         events.Count.Should().Be(20, "This is a daily event happening twice a day (ACM and ACV) for 10 days");
-        events[0].ScheduledDateTime.Hour.Should().Be(8);
-        events[1].ScheduledDateTime.Hour.Should().Be(19);
+        events[0].EventTiming.Should().Be(CustomEventTiming.ACM);
+        events[1].EventTiming.Should().Be(CustomEventTiming.ACV);
     }
 
     [Fact]
-    public void GetEvents_WhenTimingHasCustomTimingsButPatientDoesnt_ThrowsException()
+    public void GetEvents_WhenDurationTimingMissesStartDate_ThrowsException()
     {
         // Arrange
         var timing = new Timing
@@ -293,7 +294,7 @@ public class EventsGeneratorTest
         var action = () => new EventsGenerator(timing);
 
         // Assert
-        action.Should().Throw<InvalidOperationException>();
+        action.Should().Throw<InvalidOperationException>().WithMessage("*start date*");
     }
 
     [Fact]
@@ -326,7 +327,7 @@ public class EventsGeneratorTest
             Repeat = new Timing.RepeatComponent
             {
                 PeriodUnit = Timing.UnitsOfTime.D,
-                Period = 10, // Causes an exception
+                Period = 10, // Unsupported period
                 Frequency = 1,
                 Bounds = new Period
                 {
