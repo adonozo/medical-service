@@ -28,7 +28,6 @@ public class AlexaService : IAlexaService
     private readonly ILogger<AlexaService> logger;
 
     private const int DefaultOffsetMinutes = 20;
-    private const int OffsetBetweenTimingsMinutes = 20; // For related timings. E.g., before lunch and lunch
 
     public AlexaService(IPatientDao patientDao,
         IMedicationRequestDao medicationRequestDao,
@@ -108,23 +107,6 @@ public class AlexaService : IAlexaService
     }
 
     /// <inheritdoc/>
-    public async Task<bool> UpsertTimingEvent(string patientIdOrEmail, CustomEventTiming eventTiming,
-        LocalTime localTime)
-    {
-        var patient = await ResourceUtils.GetResourceOrThrowAsync(
-            () => this.patientDao.GetPatientByIdOrEmail(patientIdOrEmail),
-            new ValidationException($"The patient {patientIdOrEmail} was not found"));
-
-        var timingPreferences = patient.GetTimingPreference();
-        timingPreferences = SetRelatedTimings(timingPreferences, eventTiming, localTime);
-        patient.SetTimingPreferences(timingPreferences);
-
-        this.logger.LogDebug("Timing event updated for {IdOrEmail}: {Timing}, {DateTime}", patientIdOrEmail,
-            eventTiming, localTime);
-        return await this.patientDao.UpdatePatient(patient);
-    }
-
-    /// <inheritdoc/>
     public async Task<bool> UpsertDosageStartDateTime(string patientIdOrEmail,
         string dosageId,
         LocalDate startDate,
@@ -165,66 +147,6 @@ public class AlexaService : IAlexaService
         return await this.serviceRequestDao.UpdateServiceRequest(serviceRequestId, serviceRequest);
     }
 
-    /// <summary>
-    /// Sets exact times for related timings i.e., breakfast, lunch and dinner timings. If there are no related timings,
-    /// it will set just the given timing.
-    /// </summary>
-    /// <param name="preferences">A dictionary with the the timing as keys and the datetime as value</param>
-    /// <param name="timing">The timing to compare</param>
-    /// <param name="localTime">The exact time of the event</param>
-    /// <returns>The updated event times for the patient.</returns>
-    private static Dictionary<CustomEventTiming, LocalTime> SetRelatedTimings(
-        Dictionary<CustomEventTiming, LocalTime> preferences,
-        CustomEventTiming timing,
-        LocalTime localTime)
-    {
-        localTime = AdjustOffsetTiming(timing, localTime);
-
-        switch (timing)
-        {
-            case CustomEventTiming.CM:
-            case CustomEventTiming.ACM:
-            case CustomEventTiming.PCM:
-                (preferences[CustomEventTiming.CM],
-                    preferences[CustomEventTiming.ACM],
-                    preferences[CustomEventTiming.PCM]) = GetTimeIntervals(localTime);
-                break;
-            case CustomEventTiming.CD:
-            case CustomEventTiming.ACD:
-            case CustomEventTiming.PCD:
-                (preferences[CustomEventTiming.CD],
-                    preferences[CustomEventTiming.ACD],
-                    preferences[CustomEventTiming.PCD]) = GetTimeIntervals(localTime);
-                break;
-            case CustomEventTiming.CV:
-            case CustomEventTiming.ACV:
-            case CustomEventTiming.PCV:
-                (preferences[CustomEventTiming.CV],
-                    preferences[CustomEventTiming.ACV],
-                    preferences[CustomEventTiming.PCV]) = GetTimeIntervals(localTime);
-                break;
-            default:
-                preferences[timing] = localTime;
-                break;
-        }
-
-        return preferences;
-    }
-
-    private static LocalTime AdjustOffsetTiming(CustomEventTiming timing, LocalTime localTime)
-    {
-        return timing switch
-        {
-            CustomEventTiming.ACM => localTime.PlusMinutes(OffsetBetweenTimingsMinutes),
-            CustomEventTiming.ACD => localTime.PlusMinutes(OffsetBetweenTimingsMinutes),
-            CustomEventTiming.ACV => localTime.PlusMinutes(OffsetBetweenTimingsMinutes),
-            CustomEventTiming.PCM => localTime.PlusMinutes(OffsetBetweenTimingsMinutes * -1),
-            CustomEventTiming.PCD => localTime.PlusMinutes(OffsetBetweenTimingsMinutes * -1),
-            CustomEventTiming.PCV => localTime.PlusMinutes(OffsetBetweenTimingsMinutes * -1),
-            _ => localTime
-        };
-    }
-
     private async Task SetDosageStartDate(InternalPatient patient,
         string dosageId,
         LocalDate startDate,
@@ -252,14 +174,6 @@ public class AlexaService : IAlexaService
         }
 
         await this.medicationRequestDao.UpdateMedicationRequest(medicationRequest.Id, medicationRequest);
-    }
-
-    private static (LocalTime middle, LocalTime before, LocalTime after) GetTimeIntervals(LocalTime localTime)
-    {
-        var before = localTime.PlusMinutes(OffsetBetweenTimingsMinutes * -1);
-        var after = localTime.PlusMinutes(OffsetBetweenTimingsMinutes);
-
-        return (localTime, before, after);
     }
 
     private IEnumerable<MedicationRequest> FindMedicationRequestsInDate(
