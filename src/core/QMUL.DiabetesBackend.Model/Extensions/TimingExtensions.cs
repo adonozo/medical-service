@@ -131,7 +131,7 @@ public static class TimingExtensions
     /// is not 'day', as there is no support for other units of time yet</exception>
     public static bool NeedsStartTime(this Timing timing) => timing.Repeat switch
     {
-        { Bounds: Period, PeriodUnit: not Timing.UnitsOfTime.D } =>
+        { PeriodUnit: not Timing.UnitsOfTime.D } =>
             throw new InvalidOperationException($"Unsupported PeriodUnit: {timing.Repeat.PeriodUnit}"),
         _ => !timing.Repeat.TimeOfDay.Any() && !timing.Repeat.When.Any()
     };

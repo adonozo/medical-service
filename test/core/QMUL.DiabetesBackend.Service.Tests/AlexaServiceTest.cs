@@ -15,6 +15,7 @@ using NSubstitute;
 using Service;
 using Stubs;
 using Xunit;
+using Duration = Hl7.Fhir.Model.Duration;
 using Period = Hl7.Fhir.Model.Period;
 using Task = System.Threading.Tasks.Task;
 
@@ -91,7 +92,8 @@ public class AlexaServiceTest
         var logger = Substitute.For<ILogger<AlexaService>>();
         var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
         var dosageId = Guid.NewGuid().ToString();
-        var medicationRequest = GetTestMedicationRequest(dosageId);
+        var medicationRequest = MedicationRequestStubs.ValidMedicationRequestAtFixedTime(dosageId: dosageId,
+            period: new Duration { Value = 10, Unit = "d" });
 
         var patient = TestUtils.GetStubPatient();
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(patient);

@@ -7,13 +7,15 @@ using Hl7.Fhir.Model;
 public static class MedicationRequestStubs
 {
     public static MedicationRequest ValidMedicationRequestAtFixedTime(string medicationRequestId = null,
-        Period period = null) => new()
+        string dosageId = null,
+        DataType period = null) => new()
     {
         Id = medicationRequestId ?? Guid.NewGuid().ToString(),
         DosageInstruction = new List<Dosage>
         {
             new()
             {
+                ElementId = dosageId ?? Guid.NewGuid().ToString(),
                 Timing = new Timing
                 {
                     Repeat = new Timing.RepeatComponent
