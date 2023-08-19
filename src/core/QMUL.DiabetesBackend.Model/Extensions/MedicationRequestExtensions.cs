@@ -45,13 +45,24 @@ public static class MedicationRequestExtensions
     }
 
     /// <summary>
-    /// Check if the medication request has any dosage that needs a start date: a <see cref="Timing.RepeatComponent"/>
-    /// that has the 'needs start date' flag
+    /// Check if the medication request has any dosage that needs a start date and hasn't the patient's start date
     /// </summary>
     /// <param name="medicationRequest">The <see cref="MedicationRequest"/></param>
     /// <returns>True if the medication request needs a start date</returns>
     public static bool NeedsStartDate(this MedicationRequest medicationRequest)
     {
-        return medicationRequest.DosageInstruction.Any(dosage => dosage.Timing.NeedsStartDate());
+        return medicationRequest.DosageInstruction
+            .Any(dosage => dosage.Timing.NeedsStartDate() && dosage.Timing.GetPatientStartDate() is null);
+    }
+
+    /// <summary>
+    /// Check if the medication request has any dosage that needs a start time and hasn't the patient's start time
+    /// </summary>
+    /// <param name="medicationRequest">The <see cref="MedicationRequest"/></param>
+    /// <returns>True if the medication request needs a start time</returns>
+    public static bool NeedsStartTime(this MedicationRequest medicationRequest)
+    {
+        return medicationRequest.DosageInstruction
+            .Any(dosage => dosage.Timing.NeedsStartTime() && dosage.Timing.GetPatientStartTime() is null);
     }
 }

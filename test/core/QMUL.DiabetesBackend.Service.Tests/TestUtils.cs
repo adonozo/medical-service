@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using Hl7.Fhir.Model;
 using Model;
-using Duration = Hl7.Fhir.Model.Duration;
 using Period = Hl7.Fhir.Model.Period;
 
 public static class TestUtils
@@ -26,21 +25,6 @@ public static class TestUtils
         };
     }
 
-    public static Timing ValidFrequencyDurationTiming(int frequency = 1, int days = 10) => new()
-    {
-        Repeat = new Timing.RepeatComponent
-        {
-            PeriodUnit = Timing.UnitsOfTime.D,
-            Period = 1,
-            Frequency = frequency,
-            Bounds = new Duration
-            {
-                Unit = "d",
-                Value = days
-            }
-        }
-    };
-
     public static Timing ValidPeriodDurationTiming(Period period) => new()
     {
         Repeat = new Timing.RepeatComponent
@@ -48,7 +32,8 @@ public static class TestUtils
             PeriodUnit = Timing.UnitsOfTime.D,
             Period = 1,
             Frequency = 1,
-            Bounds = period
+            Bounds = period,
+            TimeOfDay = new []{ "10:00" }
         }
     };
 }
