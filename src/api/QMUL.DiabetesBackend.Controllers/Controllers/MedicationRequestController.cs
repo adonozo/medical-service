@@ -26,14 +26,14 @@ public class MedicationRequestController : ControllerBase
         this.medicationRequestService = medicationRequestService;
     }
 
-    [HttpGet("medicationRequests/{id}")]
+    [HttpGet("medication-requests/{id}")]
     public async Task<IActionResult> GetMedicationRequest([FromRoute] string id)
     {
         var result = await this.medicationRequestService.GetMedicationRequest(id);
         return this.OkOrNotFound(result);
     }
 
-    [HttpPost("medicationRequests")]
+    [HttpPost("medication-requests")]
     public async Task<IActionResult> CreateMedicationRequest([FromBody] JObject request)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -44,7 +44,7 @@ public class MedicationRequestController : ControllerBase
         }, this.logger, this);
     }
 
-    [HttpPut("medicationRequests/{id}")]
+    [HttpPut("medication-requests/{id}")]
     public async Task<IActionResult> UpdateMedicationRequest([FromRoute] string id, [FromBody] JObject request)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
@@ -55,7 +55,7 @@ public class MedicationRequestController : ControllerBase
         }, this.logger, this);
     }
 
-    [HttpDelete("medicationRequests/{id}")]
+    [HttpDelete("medication-requests/{id}")]
     public async Task<IActionResult> DeleteMedicationRequest([FromRoute] string id)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>

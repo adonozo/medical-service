@@ -26,14 +26,14 @@ public class ServiceRequestController : ControllerBase
         this.logger = logger;
     }
 
-    [HttpGet("serviceRequests/{id}")]
+    [HttpGet("service-requests/{id}")]
     public async Task<IActionResult> GetServiceRequest(string id)
     {
         var serviceRequest = await this.serviceRequestService.GetServiceRequest(id);
         return this.OkOrNotFound(serviceRequest);
     }
 
-    [HttpPost("serviceRequests")]
+    [HttpPost("service-requests")]
     public async Task<IActionResult> CreateServiceRequest([FromBody] JObject request)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -44,7 +44,7 @@ public class ServiceRequestController : ControllerBase
         }, this.logger, this);
     }
 
-    [HttpPut("serviceRequests/{id}")]
+    [HttpPut("service-requests/{id}")]
     public async Task<IActionResult> UpdateServiceRequest([FromRoute] string id, [FromBody] JObject request)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
@@ -55,7 +55,7 @@ public class ServiceRequestController : ControllerBase
         }, this.logger, this);
     }
 
-    [HttpDelete("serviceRequests/{id}")]
+    [HttpDelete("service-requests/{id}")]
     public async Task<IActionResult> DeleteActionResult([FromRoute] string id)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>

@@ -54,7 +54,7 @@ public class AlexaController : ControllerBase
         return this.Ok(paginatedResult.Results.ToJObject());
     }
 
-    [HttpGet("alexa/{idOrEmail}/medicationRequests")]
+    [HttpGet("alexa/{idOrEmail}/medication-requests")]
     public async Task<IActionResult> GetMedicationRequests([FromRoute] string idOrEmail,
         [FromQuery] LocalDate? date,
         [FromQuery] string? timezone = "UTC",
@@ -81,7 +81,7 @@ public class AlexaController : ControllerBase
         return this.UnprocessableEntity(errorResponse);
     }
 
-    [HttpGet("patients/{idOrEmail}/alexa/glucoseRequest")]
+    [HttpGet("patients/{idOrEmail}/alexa/service-requests")]
     public async Task<IActionResult> GetServiceRequests([FromRoute] string idOrEmail,
         [FromQuery] LocalDate? date,
         [FromQuery] string timezone = "UTC",
