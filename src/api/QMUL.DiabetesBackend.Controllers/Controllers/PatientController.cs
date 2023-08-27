@@ -94,7 +94,7 @@ public class PatientController : ControllerBase
         return this.OkOrNotFound(patient);
     }
 
-    [HttpGet("patients/{idOrEmail}/carePlans")]
+    [HttpGet("patients/{idOrEmail}/care-plans")]
     public Task<IActionResult> GetCarePlans([FromRoute] string idOrEmail,
         [FromQuery] int? limit = null, [FromQuery] string? after = null)
     {
@@ -108,7 +108,7 @@ public class PatientController : ControllerBase
         }, this.logger, this);
     }
 
-    [HttpGet("patients/{idOrEmail}/medicationRequests/active")]
+    [HttpGet("patients/{idOrEmail}/medication-requests/active")]
     public async Task<IActionResult> GetActiveMedicationRequests([FromRoute] string idOrEmail,
         [FromQuery] int? limit = null, [FromQuery] string? after = null)
     {
@@ -121,14 +121,14 @@ public class PatientController : ControllerBase
     }
 
     // Alexa endpoint
-    [HttpGet("patients/{idOrEmail}/carePlans/active")]
+    [HttpGet("patients/{idOrEmail}/care-plans/active")]
     public async Task<IActionResult> GetActiveCarePlan([FromRoute] string idOrEmail)
     {
         var result = await this.carePlanService.GetActiveCarePlans(idOrEmail);
         return this.OkOrNotFound(result);
     }
 
-    [HttpGet("patients/{idOrEmail}/all/observations/")]
+    [HttpGet("patients/{idOrEmail}/observations/")]
     public async Task<IActionResult> GetAllPatientObservations([FromRoute] string idOrEmail,
         [FromQuery] int? limit = null,
         [FromQuery] string? after = null)
@@ -156,7 +156,7 @@ public class PatientController : ControllerBase
         }, this.logger, this);
     }
 
-    [HttpPut("patients/{idOrEmail}/dosage/{dosageId}/startDate")]
+    [HttpPut("patients/{idOrEmail}/dosage/{dosageId}/start-date")]
     public async Task<IActionResult> UpdateDosageStartDate([FromRoute] string idOrEmail,
         [FromRoute] string dosageId,
         [FromBody] PatientStartDateRequest startDate)
@@ -171,7 +171,7 @@ public class PatientController : ControllerBase
         }, this.logger, this);
     }
 
-    [HttpPut("patients/{idOrEmail}/serviceRequest/{serviceRequestId}/startDate")]
+    [HttpPut("patients/{idOrEmail}/service-request/{serviceRequestId}/start-date")]
     public async Task<IActionResult> UpdateServiceRequestStartDate([FromRoute] string idOrEmail,
         [FromRoute] string serviceRequestId,
         [FromBody] PatientStartDateRequest startDate)
