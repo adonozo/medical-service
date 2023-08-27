@@ -15,7 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api-docs", "api-docs", "{62
 		api-docs\medicationRequest.json = api-docs\medicationRequest.json
 		api-docs\patient.json = api-docs\patient.json
 		api-docs\serviceRequest.json = api-docs\serviceRequest.json
-		api-docs\swagger.yaml = api-docs\swagger.yaml
 		api-docs\timingDaily.json = api-docs\timingDaily.json
 		api-docs\timingOther.json = api-docs\timingOther.json
 		api-docs\observation.json = api-docs\observation.json

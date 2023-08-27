@@ -27,8 +27,6 @@ public class AlexaService : IAlexaService
     private readonly IServiceRequestDao serviceRequestDao;
     private readonly ILogger<AlexaService> logger;
 
-    private const int DefaultOffsetMinutes = 20;
-
     public AlexaService(IPatientDao patientDao,
         IMedicationRequestDao medicationRequestDao,
         IServiceRequestDao serviceRequestDao,
@@ -56,10 +54,13 @@ public class AlexaService : IAlexaService
             onlyInsulin);
 
         var medicationRequests = activeRequestsResult.Results.ToList();
-        var requestsNeedStartDate = medicationRequests.Where(request => request.NeedsStartDate()).ToList();
-        if (requestsNeedStartDate.Any())
+        var requestsNeedStartDateOrTime = medicationRequests
+            .Where(request => request.NeedsStartDate() || request.NeedsStartTime())
+            .ToList();
+
+        if (requestsNeedStartDateOrTime.Any())
         {
-            return Result<Bundle, MedicationRequest>.Fail(requestsNeedStartDate.First());
+            return Result<Bundle, MedicationRequest>.Fail(requestsNeedStartDateOrTime.First());
         }
 
         var dateFilter = EventTimingMapper.TimingIntervalForPatient(
@@ -83,7 +84,10 @@ public class AlexaService : IAlexaService
             await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new NotFoundException());
 
         var serviceRequests = await this.serviceRequestDao.GetActiveServiceRequests(patientEmailOrId);
-        var requestNeedStartDate = serviceRequests.Where(request => request.NeedsStartDate()).ToList();
+        var requestNeedStartDate = serviceRequests
+            .Where(request => request.NeedsStartDate() || request.NeedsStartTime())
+            .ToList();
+
         if (requestNeedStartDate.Any())
         {
             return Result<Bundle, ServiceRequest>.Fail(requestNeedStartDate.First());
@@ -158,13 +162,18 @@ public class AlexaService : IAlexaService
             throw new ValidationException($"Could not get the dosage from the medication request {dosageId}");
         }
 
-        medicationRequest.DosageInstruction[index].Timing.SetStartDate(startDate);
-        medicationRequest.DosageInstruction[index].Timing.RemoveNeedsStartDateFlag();
+        var timing = medicationRequest.DosageInstruction[index].Timing;
+
+        if (timing.NeedsStartDate())
+        {
+            timing.SetStartDate(startDate);
+            timing.RemoveNeedsStartDateFlag();
+        }
 
         if (startTime.HasValue)
         {
-            medicationRequest.DosageInstruction[index].Timing.SetStartTime(startTime.Value);
-            medicationRequest.DosageInstruction[index].Timing.RemoveNeedsStartTimeFlag();
+            timing.SetStartTime(startTime.Value);
+            timing.RemoveNeedsStartTimeFlag();
         }
 
         await this.medicationRequestDao.UpdateMedicationRequest(medicationRequest.Id, medicationRequest);

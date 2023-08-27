@@ -27,6 +27,18 @@ public static class ServiceRequestExtensions
     /// <returns>True if the service request needs a start date</returns>
     public static bool NeedsStartDate(this ServiceRequest serviceRequest)
     {
-        return serviceRequest.Occurrence is Timing timing && timing.NeedsStartDate();
+        return serviceRequest.Occurrence is Timing timing
+               && timing.NeedsStartDate() && timing.GetPatientStartDate() is null;
+    }
+
+    /// <summary>
+    /// Checks if a service request needs a start time by checking the <see cref="Timing.RepeatComponent"/> property
+    /// </summary>
+    /// <param name="serviceRequest">The <see cref="ServiceRequest"/></param>
+    /// <returns>True if the service request needs a start time</returns>
+    public static bool NeedsStartTime(this ServiceRequest serviceRequest)
+    {
+        return serviceRequest.Occurrence is Timing timing
+               && timing.NeedsStartTime() && timing.GetPatientStartTime() is null;
     }
 }

@@ -33,21 +33,21 @@ public class CarePlanController : Controller
         this.carePlanValidator = carePlanValidator;
     }
 
-    [HttpGet("carePlans/{id}")]
+    [HttpGet("care-plans/{id}")]
     public async Task<IActionResult> GetCarePlan([FromRoute] string id)
     {
         var carePlan = await this.carePlanService.GetCarePlan(id);
         return this.OkOrNotFound(carePlan);
     }
 
-    [HttpGet("carePlans/{id}/details")]
+    [HttpGet("care-plans/{id}/details")]
     public async Task<IActionResult> GetDetailedCarePlan([FromRoute] string id)
     {
         var carePlan = await this.carePlanService.GetDetailedCarePan(id);
         return this.OkOrNotFound(carePlan);
     }
 
-    [HttpPost("carePlans")]
+    [HttpPost("care-plans")]
     public async Task<IActionResult> CreateCarePlan([FromBody] JObject request)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -58,7 +58,7 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
-    [HttpPost("carePlans/{id}/serviceRequests")]
+    [HttpPost("care-plans/{id}/service-requests")]
     public async Task<IActionResult> AddServiceRequest([FromRoute] string id, [FromBody] JObject request)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
@@ -69,7 +69,7 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
-    [HttpPost("carePlans/{id}/medicationRequests")]
+    [HttpPost("care-plans/{id}/medication-requests")]
     public async Task<IActionResult> AddMedicationRequest([FromRoute] string id, [FromBody] JObject request)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync<IActionResult>(async () =>
@@ -80,7 +80,7 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
-    [HttpPut("carePlans/{id}/activate")]
+    [HttpPut("care-plans/{id}/activate")]
     public async Task<IActionResult> ActivateCarePlan([FromRoute] string id)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -90,7 +90,7 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
-    [HttpPut("carePlans/{id}/revoke")]
+    [HttpPut("care-plans/{id}/revoke")]
     public async Task<IActionResult> RevokeCarePlan([FromRoute] string id)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -100,7 +100,7 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
-    [HttpDelete("carePlans/{id}")]
+    [HttpDelete("care-plans/{id}")]
     public Task<IActionResult> DeleteCarePlan([FromRoute] string id)
     {
         return ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -110,7 +110,7 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
-    [HttpDelete("carePlans/{carePlanId}/serviceRequests/{medicationRequestId}")]
+    [HttpDelete("care-plans/{carePlanId}/service-requests/{medicationRequestId}")]
     public Task<IActionResult> DeleteServiceRequest([FromRoute] string carePlanId,
         [FromRoute] string medicationRequestId)
     {
@@ -121,7 +121,7 @@ public class CarePlanController : Controller
         }, this.logger, this);
     }
 
-    [HttpDelete("carePlans/{carePlanId}/medicationRequests/{medicationRequestId}")]
+    [HttpDelete("care-plans/{carePlanId}/medication-requests/{medicationRequestId}")]
     public Task<IActionResult> DeleteMedicationRequest([FromRoute] string carePlanId,
         [FromRoute] string medicationRequestId)
     {
