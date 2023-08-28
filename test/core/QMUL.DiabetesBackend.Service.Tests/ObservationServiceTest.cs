@@ -64,7 +64,7 @@ public class ObservationServiceTest
     }
 
     [Fact]
-    public async Task GetAllObservationsFor_WhenPatientExists_ReturnsObservations()
+    public async Task GetObservationsFor_WhenPatientExists_ReturnsObservations()
     {
         // Arrange
         var patientDao = Substitute.For<IPatientDao>();
@@ -77,7 +77,7 @@ public class ObservationServiceTest
         };
 
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
-        observationDao.GetAllObservationsFor(Arg.Any<string>(), Arg.Any<PaginationRequest>())
+        observationDao.GetObservationsFor(Arg.Any<string>(), Arg.Any<PaginationRequest>())
             .Returns(paginatedResult);
 
         // Act
@@ -85,7 +85,7 @@ public class ObservationServiceTest
             new PaginationRequest(20, null));
 
         // Assert
-        await observationDao.Received(1).GetAllObservationsFor(Arg.Any<string>(), Arg.Any<PaginationRequest>());
+        await observationDao.Received(1).GetObservationsFor(Arg.Any<string>(), Arg.Any<PaginationRequest>());
         result.Results.Should().BeOfType<Bundle>();
         result.Results.Type.Should().NotBeNull();
     }

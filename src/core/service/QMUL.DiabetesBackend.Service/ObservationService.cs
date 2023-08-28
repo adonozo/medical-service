@@ -1,5 +1,6 @@
 namespace QMUL.DiabetesBackend.Service;
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -21,7 +22,6 @@ public class ObservationService : IObservationService
     private readonly IPatientDao patientDao;
     private readonly IObservationDao observationDao;
     private readonly ILogger<ObservationService> logger;
-    private const int DefaultOffsetMinutes = 20; // The default offset in minutes for search between dates
 
     public ObservationService(IPatientDao patientDao, IObservationDao observationDao,
         ILogger<ObservationService> logger)
@@ -41,6 +41,7 @@ public class ObservationService : IObservationService
 
         newObservation.Subject.SetPatientReference(patient.Id);
         newObservation.Subject.Display = patient.Name[0].Family;
+        newObservation.Issued = DateTimeOffset.UtcNow;
 
         var observation = await this.observationDao.CreateObservation(newObservation);
         this.logger.LogDebug("Observation created with ID {Id}", observation.Id);
@@ -57,7 +58,7 @@ public class ObservationService : IObservationService
     public async Task<PaginatedResult<Bundle>> GetObservations(string patientId,
         PaginationRequest paginationRequest)
     {
-        var observations = await this.observationDao.GetAllObservationsFor(patientId, paginationRequest);
+        var observations = await this.observationDao.GetObservationsFor(patientId, paginationRequest);
         var paginateResult = observations.ToBundleResult();
 
         this.logger.LogDebug("Found {Count} observations", observations.Results.Count());

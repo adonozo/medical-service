@@ -28,9 +28,6 @@ public class ObservationValidator : ResourceValidatorBase<Observation>
         RuleFor(observation => observation.Effective)
             .NotNull();
 
-        RuleFor(observation => observation.Issued)
-            .NotNull();
-
         RuleFor(observation => observation.ReferenceRange)
             .Cascade(CascadeMode.Stop)
             .NotEmpty()
