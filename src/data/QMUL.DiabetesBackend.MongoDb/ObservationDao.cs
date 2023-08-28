@@ -36,6 +36,7 @@ public class ObservationDao : MongoDaoBase, IObservationDao
         this.logger.LogDebug("Creating observation...");
         var document = await Helpers.ToBsonDocumentAsync(observation);
         Helpers.SetBsonDateTimeValue(document, "issued", observation.Issued);
+        Helpers.SetBsonDateTimeValue(document, "effectiveDateTime", observation.Effective);
         await this.observationCollection.InsertOneAsync(document);
 
         var newId = this.GetIdFromDocument(document);
@@ -43,7 +44,7 @@ public class ObservationDao : MongoDaoBase, IObservationDao
         const string errorMessage = "Could not create observation";
         document = await this.GetSingleOrThrow(this.observationCollection.Find(Helpers.GetByIdFilter(newId)),
             new WriteResourceException(errorMessage));
-        return await this.ProjectToObservation(document);
+        return await ProjectToObservation(document);
     }
 
     /// <inheritdoc />
@@ -55,29 +56,7 @@ public class ObservationDao : MongoDaoBase, IObservationDao
             return null;
         }
 
-        return await this.ProjectToObservation(document);
-    }
-
-    /// <inheritdoc />
-    public async Task<PaginatedResult<IEnumerable<Resource>>> GetAllObservationsFor(string patientId,
-        PaginationRequest paginationRequest)
-    {
-        var searchFilter = Helpers.GetPatientReferenceFilter(patientId);
-        var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
-
-        var results = await this.observationCollection.Find(resultsFilter)
-            .Limit(paginationRequest.Limit)
-            .Sort(Helpers.GetDefaultOrder())
-            .Project(document => this.ProjectToObservation(document))
-            .ToListAsync();
-        Resource[] observations = await Task.WhenAll(results);
-
-        if (observations.Length == 0)
-        {
-            return new PaginatedResult<IEnumerable<Resource>> { Results = observations };
-        }
-
-        return await Helpers.GetPaginatedResult(this.observationCollection, searchFilter, observations);
+        return await ProjectToObservation(document);
     }
 
     /// <inheritdoc />
@@ -101,7 +80,9 @@ public class ObservationDao : MongoDaoBase, IObservationDao
         var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
         var result = await this.observationCollection.Find(resultsFilter)
             .Limit(paginationRequest.Limit)
-            .Project(document => this.ProjectToObservation(document))
+            .Sort(Builders<BsonDocument>.Sort.Descending("effectiveDateTime"))
+            .Sort(Helpers.GetDefaultOrder())
+            .Project(document => ProjectToObservation(document))
             .ToListAsync();
 
         Resource[] observations = await Task.WhenAll(result);
@@ -132,9 +113,10 @@ public class ObservationDao : MongoDaoBase, IObservationDao
         return result.IsAcknowledged;
     }
 
-    private async Task<Observation> ProjectToObservation(BsonDocument document)
+    private static async Task<Observation> ProjectToObservation(BsonDocument document)
     {
         document["issued"] = document["issued"].ToString();
+        document["effectiveDateTime"] = document["effectiveDateTime"].ToString();
         return await Helpers.ToResourceAsync<Observation>(document);
     }
 }

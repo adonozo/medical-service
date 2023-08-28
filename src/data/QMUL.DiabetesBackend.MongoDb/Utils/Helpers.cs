@@ -82,6 +82,24 @@ public static class Helpers
     }
 
     /// <summary>
+    /// Sets a <see cref="BsonDocument"/> field as a <see cref="BsonDateTime"/> date from a <see cref="FhirDateTime"/>.
+    /// If the fhirObject is not this type, the field will be removed
+    /// </summary>
+    /// <param name="document">The <see cref="BsonDocument"/> to modify.</param>
+    /// <param name="field">The document's field name.</param>
+    /// <param name="fhirObject">The resource's <see cref="DataType"/> that holds the date time</param>
+    public static void SetBsonDateTimeValue(BsonDocument document, string field, DataType? fhirObject)
+    {
+        if (fhirObject is not FhirDateTime dateTime || !dateTime.TryToDateTimeOffset(out var dateTimeOffset))
+        {
+            document.Remove(field);
+            return;
+        }
+
+        document[field] = new BsonDateTime(dateTimeOffset.UtcDateTime);
+    }
+
+    /// <summary>
     /// Converts a <see cref="BsonDocument"/> into a <see cref="Resource"/> object. It uses JSON to perform parsing.
     /// </summary>
     /// <param name="document">The <see cref="BsonDocument"/> to convert.</param>

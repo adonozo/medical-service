@@ -28,16 +28,6 @@ public interface IObservationDao
     Task<Observation?> GetObservation(string id);
 
     /// <summary>
-    /// Gets all the observations for a given patient.
-    /// </summary>
-    /// <param name="patientId">The patient ID.</param>
-    /// <param name="paginationRequest">The paginated request parameters.</param>
-    /// <returns>The patient's list of <see cref="Observation"/> in a paginated <see cref="PaginatedResult{T}"/>
-    /// object.</returns>
-    Task<PaginatedResult<IEnumerable<Resource>>> GetAllObservationsFor(string patientId,
-        PaginationRequest paginationRequest);
-
-    /// <summary>
     /// Gets the list of <see cref="Observation"/> for a given patient in a defined time range.
     /// </summary>
     /// <param name="patientId">The patient ID.</param>
