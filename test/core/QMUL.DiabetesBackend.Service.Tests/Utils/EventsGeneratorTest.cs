@@ -159,8 +159,8 @@ public class EventsGeneratorTest
 
         // Assert
         events.Count.Should().Be(9, "There are 4 Mondays and 5 Fridays in Jan 2020");
-        events[0].ScheduledDateTime.DayOfWeek.Should().Be(DayOfWeek.Friday);
-        events[1].ScheduledDateTime.DayOfWeek.Should().Be(DayOfWeek.Monday);
+        events[0].ScheduledDateTime.DayOfWeek.Should().Be(IsoDayOfWeek.Friday);
+        events[1].ScheduledDateTime.DayOfWeek.Should().Be(IsoDayOfWeek.Monday);
     }
 
     [Fact]
