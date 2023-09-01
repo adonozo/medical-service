@@ -14,8 +14,8 @@ public static class CarePlanExtensions
     /// <returns>An array of service request IDs</returns>
     public static string[] GetServiceRequestsIds(this CarePlan carePlan) =>
         carePlan.Activity
-            .Where(resource => resource.Reference.Reference.Contains(Constants.ServiceRequestPath))
-            .Select(resource => resource.Reference.GetIdFromReference())
+            .Where(resource => resource.PlannedActivityReference.Reference.Contains(Constants.ServiceRequestPath))
+            .Select(resource => resource.PlannedActivityReference.GetIdFromReference())
             .ToArray();
 
     /// <summary>
@@ -26,7 +26,7 @@ public static class CarePlanExtensions
     /// <returns>An array of medication request IDs</returns>
     public static string[] GetMedicationRequestsIds(this CarePlan carePlan) =>
         carePlan.Activity
-            .Where(resource => resource.Reference.Reference.Contains(Constants.MedicationRequestPath))
-            .Select(resource => resource.Reference.GetIdFromReference())
+            .Where(resource => resource.PlannedActivityReference.Reference.Contains(Constants.MedicationRequestPath))
+            .Select(resource => resource.PlannedActivityReference.GetIdFromReference())
             .ToArray();
 }

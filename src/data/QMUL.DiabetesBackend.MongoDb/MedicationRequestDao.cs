@@ -137,7 +137,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     {
         var searchFilter = Builders<BsonDocument>.Filter.And(
             Helpers.GetPatientReferenceFilter(patientId),
-            Builders<BsonDocument>.Filter.Eq("status", MedicationRequest.medicationrequestStatus.Active.GetLiteral()));
+            Builders<BsonDocument>.Filter.Eq("status", MedicationRequest.MedicationrequestStatus.Active.GetLiteral()));
         if (onlyInsulin)
         {
             searchFilter &= Builders<BsonDocument>.Filter.Eq("isInsulin", true);
@@ -166,7 +166,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
         var filters = Builders<BsonDocument>.Filter.And(
             Helpers.GetPatientReferenceFilter(patientId),
             Builders<BsonDocument>.Filter.Eq("status",
-                MedicationRequest.medicationrequestStatus.Active.GetLiteral()));
+                MedicationRequest.MedicationrequestStatus.Active.GetLiteral()));
 
         var results = await this.medicationRequestCollection.Find(filters)
             .Project(document => Helpers.ToResourceAsync<MedicationRequest>(document))
