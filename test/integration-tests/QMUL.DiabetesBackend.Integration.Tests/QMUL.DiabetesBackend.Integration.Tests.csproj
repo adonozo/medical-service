@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="FluentAssertions" Version="6.12.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.21" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
         <PackageReference Include="NSubstitute" Version="5.0.0" />
         <PackageReference Include="xunit" Version="2.5.0" />
@@ -16,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\src\data\QMUL.DiabetesBackend.MongoDb\QMUL.DiabetesBackend.MongoDb.csproj" />
+      <ProjectReference Include="..\..\..\src\api\QMUL.DiabetesBackend.Controllers\QMUL.DiabetesBackend.Controllers.csproj" />
     </ItemGroup>
 
 </Project>
