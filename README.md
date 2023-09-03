@@ -3,30 +3,26 @@
 This is the backend service for the voice assistant.
 
 ---
+
 ## REST API Service
-This project was built with [.NET 5.0](https://devblogs.microsoft.com/dotnet/announcing-net-5-0/) and written in C#.
 
-The initial folder structure was created from the .NET Web API template.
+This project runs on [.NET 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0).
 
-Besides Microsoft's built-in libraries, this projects uses the following libraries:
- 
- - The official library of the HL7 FHIR for .NET: [Hl7.Fhir.R4](https://github.com/FirelyTeam/firely-net-sdk)
- - The official .NET driver for MongoDB: [MongoDB.Driver](https://www.nuget.org/packages/MongoDB.Driver)
- - Noda Time, a date and time API: [NodaTime](https://www.nuget.org/packages/NodaTime)
+Models built with the HL7 FHIR package: [Hl7.Fhir.R5](https://github.com/FirelyTeam/firely-net-sdk)
 
-Unit tests were created with [XUnit](https://xunit.net) and [FluentAssertions](https://fluentassertions.com)
+Unit tests created with [XUnit](https://xunit.net) and [FluentAssertions](https://fluentassertions.com)
 
 ### Requirements
 
-The .NET 5.0 SDK or later must be installed. More information in the [official documentation](https://docs.microsoft.com/en-us/dotnet/core/install/windows?tabs=net50).
+The .NET 6.0 SDK or later must be installed. More information in the [official documentation](https://docs.microsoft.com/en-us/dotnet/core/install/windows?tabs=net60).
 
-It is important to connect to a MongoDB database instance. To do so, add the connection string to the `appsettings.json` and/or `appsettings.Development.json` files. They are located in:
+A running MongoDB instance. The connection string must be set on `appsettings.json`, or `appsettings.Development.json` when running locally. These are located in:
 
 ```
 ./src/api/QMUL.DiabetesBackend.Controllers
 ```
 
-You must change the `MongoDatabaseSettings` property with proper values:
+Update the `MongoDatabaseSettings` property with the connection string and database nam:
 
 ```json
 {
