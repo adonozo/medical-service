@@ -1,6 +1,7 @@
 namespace QMUL.DiabetesBackend.MongoDb;
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DataInterfaces;
 using Hl7.Fhir.Model;
@@ -42,11 +43,12 @@ public class CarePlanDao : MongoDaoBase, ICarePlanDao
         var searchFilter = Helpers.GetPatientReferenceFilter(patientId);
         var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
 
-        var results = await this.carePlanCollection.Find(resultsFilter)
+        var documents = await this.carePlanCollection.Find(resultsFilter)
             .Limit(paginationRequest.Limit)
             .Sort(Helpers.GetDefaultOrder())
-            .Project(document => Helpers.ToResourceAsync<CarePlan>(document))
             .ToListAsync();
+
+        var results = documents.Select(Helpers.ToResourceAsync<CarePlan>);
         Resource[] carePlans = await Task.WhenAll(results);
 
         if (carePlans.Length == 0)

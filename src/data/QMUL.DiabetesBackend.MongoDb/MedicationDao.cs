@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.MongoDb;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using MongoDB.Bson;
@@ -38,13 +39,13 @@ public class MedicationDao : MongoDaoBase, IMedicationDao
             ? FilterDefinition<BsonDocument>.Empty
             : Builders<BsonDocument>.Filter.Regex("code.coding.display", new BsonRegularExpression(name, "i"));
         var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
-        var result = await this.medicationCollection.Find(resultsFilter)
+        var documents = await this.medicationCollection.Find(resultsFilter)
             .Limit(paginationRequest.Limit)
             .Sort(Helpers.GetDefaultOrder())
-            .Project(document => Helpers.ToResourceAsync<Medication>(document))
             .ToListAsync();
 
-        Resource[] medications = await Task.WhenAll(result);
+        var results = documents.Select(Helpers.ToResourceAsync<Medication>);
+        Resource[] medications = await Task.WhenAll(results);
         this.logger.LogTrace("Found {Count} medications", medications.Length);
         if (medications.Length == 0)
         {

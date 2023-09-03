@@ -43,7 +43,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
         var newId = this.GetIdFromDocument(document);
 
         this.logger.LogDebug("Medication request created with ID {Id}", newId);
-        var errorMessage = $"The medication request was not created";
+        var errorMessage = "The medication request was not created";
         return await this.GetSingleMedicationRequestOrThrow(newId, new WriteResourceException(errorMessage));
     }
 
@@ -84,9 +84,9 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     /// <inheritdoc />
     public async Task<IList<MedicationRequest>> GetMedicationRequestsByIds(string[] ids)
     {
-        var results = await this.medicationRequestCollection.Find(Helpers.GetInIdsFilter(ids))
-            .Project(document => Helpers.ToResourceAsync<MedicationRequest>(document))
+        var documents = await this.medicationRequestCollection.Find(Helpers.GetInIdsFilter(ids))
             .ToListAsync();
+        var results = documents.Select(Helpers.ToResourceAsync<MedicationRequest>);
         return await Task.WhenAll(results);
     }
 
@@ -94,9 +94,10 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     public async Task<IList<MedicationRequest>> GetMedicationRequestFor(string patientId)
     {
         var filter = Helpers.GetPatientReferenceFilter(patientId);
-        var results = await this.medicationRequestCollection.Find(filter)
-            .Project(document => Helpers.ToResourceAsync<MedicationRequest>(document))
+        var documents = await this.medicationRequestCollection.Find(filter)
             .ToListAsync();
+        var results = documents.Select(Helpers.ToResourceAsync<MedicationRequest>);
+
         return await Task.WhenAll(results);
     }
 
@@ -145,11 +146,11 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
 
         var resultFilters = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
 
-        var results = await this.medicationRequestCollection.Find(resultFilters)
+        var documents = await this.medicationRequestCollection.Find(resultFilters)
             .Limit(paginationRequest.Limit)
             .Sort(Helpers.GetDefaultOrder())
-            .Project(document => Helpers.ToResourceAsync<MedicationRequest>(document))
             .ToListAsync();
+        var results = documents.Select(Helpers.ToResourceAsync<MedicationRequest>);
         var medicationRequests = await Task.WhenAll(results);
         this.logger.LogTrace("Found {Count} medications", medicationRequests.Length);
         if (medicationRequests.Length == 0)
@@ -168,9 +169,10 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
             Builders<BsonDocument>.Filter.Eq("status",
                 MedicationRequest.MedicationrequestStatus.Active.GetLiteral()));
 
-        var results = await this.medicationRequestCollection.Find(filters)
-            .Project(document => Helpers.ToResourceAsync<MedicationRequest>(document))
+        var documents = await this.medicationRequestCollection.Find(filters)
             .ToListAsync();
+        var results = documents.Select(Helpers.ToResourceAsync<MedicationRequest>);
+
         return await Task.WhenAll(results);
     }
 
