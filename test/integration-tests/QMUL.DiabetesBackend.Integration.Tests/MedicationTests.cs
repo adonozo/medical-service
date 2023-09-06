@@ -1,11 +1,11 @@
 namespace QMUL.DiabetesBackend.Integration.Tests;
 
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using FluentAssertions;
 using Hl7.Fhir.Model;
 using Microsoft.Extensions.DependencyInjection;
+using Stubs;
 using Utils;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
@@ -43,7 +43,7 @@ public class MedicationTests : IClassFixture<TestFixture>, IAsyncLifetime
     public async Task CreateMedication_ReturnsObject()
     {
         // Arrange
-        var medication = this.GetTestMedication();
+        var medication = MedicationStubs.GetTestMedication();
 
         // Act
         var createResponse = await this.httpClient.PostResource("medications", medication);
@@ -59,68 +59,4 @@ public class MedicationTests : IClassFixture<TestFixture>, IAsyncLifetime
         savedMedication.DoseForm.Should().BeEquivalentTo(medication.DoseForm);
         savedMedication.Ingredient.Should().BeEquivalentTo(medication.Ingredient);
     }
-
-    private Medication GetTestMedication() => new()
-    {
-        Code = new CodeableConcept
-        {
-            Coding = new List<Coding>
-            {
-                new()
-                {
-                    Code = "400621001",
-                    System = "http://snomed.info/sct",
-                    Display = "Lorazepam 2mg/ml injection solution 1ml vial (product)"
-                }
-            }
-        },
-        DoseForm = new CodeableConcept
-        {
-            Coding = new List<Coding>
-            {
-                new()
-                {
-                    Code = "385219001",
-                    System = "http://snomed.info/sct",
-                    Display = "Injection solution (qualifier value)"
-                }
-            }
-        },
-        Ingredient = new List<Medication.IngredientComponent>
-        {
-            new()
-            {
-                Item = new CodeableReference
-                {
-                    Concept = new CodeableConcept
-                    {
-                        Coding = new List<Coding>
-                        {
-                            new()
-                            {
-                                Code = "387106007",
-                                System = "http://snomed.info/sct",
-                                Display = "Lorazepam (substance)"
-                            }
-                        }
-                    }
-                },
-                Strength = new Ratio
-                {
-                    Numerator = new Quantity
-                    {
-                        Code = "mg",
-                        Value = 2,
-                        System = "http://unitsofmeasure.org"
-                    },
-                    Denominator = new Quantity
-                    {
-                        Code = "mL",
-                        Value = 1,
-                        System = "http://unitsofmeasure.org"
-                    }
-                }
-            }
-        }
-    };
 }
