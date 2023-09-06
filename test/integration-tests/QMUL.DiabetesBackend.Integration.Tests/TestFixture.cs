@@ -9,6 +9,7 @@ using Utils;
 
 public class TestFixture : WebApplicationFactory<Startup>
 {
+    public const string IntegrationTestCollection = "Tests-Collection";
     public const string TestDatabase = "diabetes-test";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
