@@ -1,9 +1,11 @@
 namespace QMUL.DiabetesBackend.Integration.Tests;
 
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using Model;
 using NodaTime;
 using Stubs;
@@ -48,7 +50,7 @@ public class PatientTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task AmendPatientName_StoresDataCorrectly()
+    public async Task AmendPatientData_StoresDataCorrectly()
     {
         // Arrange
         var patient = PatientStubs.Patient;
@@ -60,7 +62,8 @@ public class PatientTests : IntegrationTestBase
         {
             FirstName = "John Updated",
             LastName = "Doe Updated",
-            BirthDate = new LocalDate(1980, 01, 01)
+            BirthDate = new LocalDate(1980, 01, 01),
+            Gender = AdministrativeGender.Female
         };
 
         // Act
@@ -72,6 +75,40 @@ public class PatientTests : IntegrationTestBase
         patient.Name[0].Family.Should().Be(updatedPatient.LastName);
         string.Join(' ', patient.Name[0].Given) .Should().Be(updatedPatient.FirstName);
         patient.BirthDate.Should().Be("1980-01-01");
+        patient.Gender.Should().Be(AdministrativeGender.Female);
+    }
+
+    [Fact]
+    public async Task UpdatePatient_StoresDataCorrectly()
+    {
+        // Arrange
+        var patient = PatientStubs.Patient;
+        var createResponse = await this.HttpClient.PostResource("patients", patient);
+        var parsedResponse = await HttpUtils.ParseResult<Patient>(createResponse.Content);
+        parsedResponse.Id.Should().NotBeNull();
+
+        patient.Id = parsedResponse.Id;
+        patient.BirthDate = "1970-01-01";
+        patient.Gender = AdministrativeGender.Unknown;
+        patient.Telecom = new List<ContactPoint>
+        {
+            new()
+            {
+                System = ContactPoint.ContactPointSystem.Phone,
+                Use = ContactPoint.ContactPointUse.Work,
+                Rank = 0,
+                Value = "+44 020990874481"
+            }
+        };
+
+        // Act
+        var updatedResponse = await this.HttpClient.PutResource($"patients/{parsedResponse.Id}", patient);
+
+        // Assert
+        updatedResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+
+        var updatePatient = await this.GetPatient(parsedResponse.Id);
+        updatePatient.ToJObject().Should().BeEquivalentTo(patient.ToJObject());
     }
 
     private async Task<Patient> GetPatient(string id)

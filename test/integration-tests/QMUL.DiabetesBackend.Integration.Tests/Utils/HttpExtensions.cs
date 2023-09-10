@@ -24,9 +24,14 @@ public static class HttpExtensions
 
     public static async Task<HttpResponseMessage> PostResource(this HttpClient client, string uri, Resource resource)
     {
-        var json = await resource.ToJsonAsync();
-        var data = new StringContent(json, Encoding.UTF8, "application/json");
-        return await client.PostAsync(uri, data);
+        var requestContent = await ResourceToJsonContent(resource);
+        return await client.PostAsync(uri, requestContent);
+    }
+
+    public static async Task<HttpResponseMessage> PutResource(this HttpClient client, string uri, Resource resource)
+    {
+        var requestContent = await ResourceToJsonContent(resource);
+        return await client.PutAsync(uri, requestContent);
     }
 
     public static async Task<HttpResponseMessage> Patch<T>(this HttpClient client, string uri, T @object)
@@ -34,5 +39,11 @@ public static class HttpExtensions
         var json = JsonSerializer.Serialize(@object, DefaultSerializer);
         var data = new StringContent(json, Encoding.UTF8, "application/json");
         return await client.PatchAsync(uri, data);
+    }
+
+    private static async Task<StringContent> ResourceToJsonContent(Resource resource)
+    {
+        var json = await resource.ToJsonAsync();
+        return new StringContent(json, Encoding.UTF8, "application/json");
     }
 }

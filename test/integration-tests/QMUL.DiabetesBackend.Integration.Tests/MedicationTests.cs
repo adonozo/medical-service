@@ -26,7 +26,7 @@ public class MedicationTests : IntegrationTestBase
     public async Task CreateMedication_ReturnsObject()
     {
         // Arrange
-        var medication = MedicationStubs.GetTestMedication();
+        var medication = MedicationStubs.Lorazepam;
 
         // Act
         var createResponse = await this.HttpClient.PostResource("medications", medication);

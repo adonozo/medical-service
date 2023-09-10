@@ -5,7 +5,7 @@ using Hl7.Fhir.Model;
 
 public static class MedicationStubs
 {
-    public static Medication GetTestMedication() => new()
+    public static readonly Medication Lorazepam = new()
     {
         Code = new CodeableConcept
         {
