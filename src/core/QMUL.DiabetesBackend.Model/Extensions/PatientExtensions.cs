@@ -1,5 +1,7 @@
 namespace QMUL.DiabetesBackend.Model.Extensions;
 
+using System;
+using System.Linq;
 using Constants;
 using Hl7.Fhir.Model;
 
@@ -51,5 +53,23 @@ public static class PatientExtensions
         };
 
         return internalPatient;
+    }
+
+    /// <summary>
+    /// Gets the patient's full name
+    /// </summary>
+    /// <param name="patient">The <see cref="Patient"/> instance</param>
+    /// <returns>The patient's given names and family names</returns>
+    /// <exception cref="InvalidOperationException">If the patient does not have any name registered</exception>
+    public static string GetDisplayName(this Patient patient)
+    {
+        if (!patient.Name.Any())
+        {
+            throw new InvalidOperationException($"Patient {patient.Id} does not have a valid Name");
+        }
+
+        var surname = patient.Name[0].Family;
+        var name = string.Join(' ', patient.Name[0].Given);
+        return string.Join(' ', name, surname);
     }
 }

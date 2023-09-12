@@ -36,11 +36,11 @@ public class PatientTests : IntegrationTestBase
         // Act
         var createResponse = await this.HttpClient.PostResource("patients", patient);
         var parsedResponse = await HttpUtils.ParseResult<Patient>(createResponse.Content);
-        parsedResponse.Id.Should().NotBeNull();
 
         // Assert
+        parsedResponse.Id.Should().NotBeNull();
         createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var newPatient = await GetPatient(parsedResponse.Id);
+        var newPatient = await this.GetPatient(parsedResponse.Id);
 
         newPatient.Active.Should().BeTrue();
         newPatient.Gender.Should().Be(AdministrativeGender.Male);
@@ -71,9 +71,9 @@ public class PatientTests : IntegrationTestBase
 
         // Assert
         updateResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
-        patient = await GetPatient(parsedResponse.Id);
+        patient = await this.GetPatient(parsedResponse.Id);
         patient.Name[0].Family.Should().Be(updatedPatient.LastName);
-        string.Join(' ', patient.Name[0].Given) .Should().Be(updatedPatient.FirstName);
+        string.Join(' ', patient.Name[0].Given).Should().Be(updatedPatient.FirstName);
         patient.BirthDate.Should().Be("1980-01-01");
         patient.Gender.Should().Be(AdministrativeGender.Female);
     }
