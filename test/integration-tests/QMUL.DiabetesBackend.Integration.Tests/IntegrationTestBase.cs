@@ -2,9 +2,12 @@ namespace QMUL.DiabetesBackend.Integration.Tests;
 
 using System.Net.Http;
 using System.Threading.Tasks;
+using Hl7.Fhir.Model;
 using Microsoft.Extensions.DependencyInjection;
+using Stubs;
 using Utils;
 using Xunit;
+using Task = System.Threading.Tasks.Task;
 
 public abstract class IntegrationTestBase : IClassFixture<TestFixture>, IAsyncLifetime
 {
@@ -26,5 +29,13 @@ public abstract class IntegrationTestBase : IClassFixture<TestFixture>, IAsyncLi
     public async Task DisposeAsync()
     {
         await this.mongoDbTest.ResetDatabase(TestFixture.TestDatabase);
+    }
+
+    protected async Task<string> CreatePatient()
+    {
+        var patient = PatientStubs.Patient;
+        var createResponse = await this.HttpClient.PostResource("patients", patient);
+        var parsedResponse = await HttpUtils.ParseResult<Patient>(createResponse.Content);
+        return parsedResponse.Id;
     }
 }

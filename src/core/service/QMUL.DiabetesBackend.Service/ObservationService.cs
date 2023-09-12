@@ -21,7 +21,6 @@ public class ObservationService : IObservationService
     private readonly IPatientDao patientDao;
     private readonly IObservationDao observationDao;
     private readonly ILogger<ObservationService> logger;
-    private const int DefaultOffsetMinutes = 20; // The default offset in minutes for search between dates
 
     public ObservationService(IPatientDao patientDao, IObservationDao observationDao,
         ILogger<ObservationService> logger)
@@ -40,7 +39,7 @@ public class ObservationService : IObservationService
             await this.patientDao.GetPatientByIdOrEmail(patientId), patientNotFoundException);
 
         newObservation.Subject.SetPatientReference(patient.Id);
-        newObservation.Subject.Display = patient.Name[0].Family;
+        newObservation.Subject.Display = patient.GetDisplayName();
 
         var observation = await this.observationDao.CreateObservation(newObservation);
         this.logger.LogDebug("Observation created with ID {Id}", observation.Id);
