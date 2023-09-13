@@ -111,9 +111,28 @@ public class ObservationTests : IntegrationTestBase
         observation.Value.Should().BeEquivalentTo(newValue.Value);
     }
 
+    [Fact]
+    public async Task DeleteObservation_SavesChanges()
+    {
+        // Arrange
+        var patientId = await this.CreatePatient();
+        var initialObservation = ObservationStubs.BloodGlucoseReading(patientId);
+        var createResponse = await this.HttpClient.PostResource("observations", initialObservation);
+        var parsedResponse = await HttpUtils.ParseResult<Observation>(createResponse.Content);
+        var observationId = parsedResponse.Id;
+
+        // Act
+        var deleteResponse = await this.HttpClient.DeleteAsync($"observations/{observationId}");
+
+        // Assert
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var observationResponse = await this.HttpClient.GetAsync($"observations/{observationId}");
+        observationResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     private async Task<Observation> GetObservation(string observationId)
     {
-        var observation = await this.HttpClient.GetAsync($"observations/{observationId}");
-        return await HttpUtils.ParseResult<Observation>(observation.Content);
+        var observationResponse = await this.HttpClient.GetAsync($"observations/{observationId}");
+        return await HttpUtils.ParseResult<Observation>(observationResponse.Content);
     }
 }
