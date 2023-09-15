@@ -85,10 +85,4 @@ public class ServiceRequestsTests : IntegrationTestBase
         var createResponse = await this.HttpClient.PostResource("service-requests/", serviceRequest);
         return await HttpUtils.ParseResult<ServiceRequest>(createResponse.Content);
     }
-
-    private async Task<ServiceRequest> GetServiceRequest(string id)
-    {
-        var resourceJson = await this.HttpClient.GetStringAsync($"service-requests/{id}");
-        return await HttpUtils.ParseJson<ServiceRequest>(resourceJson);
-    }
 }
