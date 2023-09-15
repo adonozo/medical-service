@@ -38,4 +38,12 @@ public abstract class IntegrationTestBase : IClassFixture<TestFixture>, IAsyncLi
         var parsedResponse = await HttpUtils.ParseResult<Patient>(createResponse.Content);
         return parsedResponse.Id;
     }
+
+    protected async Task<string> CreateLorazepamMedication()
+    {
+        var medication = MedicationStubs.Lorazepam;
+        var createResponse = await this.HttpClient.PostResource("medications", medication);
+        var createResult = await HttpUtils.ParseResult<Medication>(createResponse.Content);
+        return createResult.Id;
+    }
 }

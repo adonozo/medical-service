@@ -113,7 +113,7 @@ public class PatientTests : IntegrationTestBase
 
     private async Task<Patient> GetPatient(string id)
     {
-        var newPatientJson = await this.HttpClient.GetStringAsync($"patients/{id}");
-        return await HttpUtils.ParseJson<Patient>(newPatientJson);
+        var patientJson = await this.HttpClient.GetStringAsync($"patients/{id}");
+        return await HttpUtils.ParseJson<Patient>(patientJson);
     }
 }
