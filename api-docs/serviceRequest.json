@@ -4,7 +4,46 @@
   "status": "active",
   "intent": "plan",
   "contained": [
-    {}
+    {
+      "resourceType": "ServiceRequest",
+      "status": "active",
+      "intent": "plan",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "36048009",
+            "display": "Glucose measurement"
+          }
+        ]
+      },
+      "subject": {
+        "reference": "Patient/fb85c38d-5ea5-4263-ba00-3b9528d4c4b3",
+        "display": "Doe"
+      },
+      "occurrenceTiming": {
+        "repeat": {
+          "boundsDuration": {
+            "value": 14,
+            "unit": "d"
+          },
+          "period": 1,
+          "periodUnit": "d",
+          "frequency": 1,
+          "when": [
+            "ACM"
+          ],
+          "dayOfWeek": [
+            "mon",
+            "sun"
+          ]
+        }
+      },
+      "requester": {
+        "reference": "Practitioner/60fb0a79c055e8c0d3f853d0",
+        "display": "Dr. Steven"
+      }
+    }
   ],
   "code": {
     "coding": [
@@ -37,11 +76,5 @@
       ]
     }
   },
-  "patientInstruction": "Measure your blood glucose before meals.",
-  "extension": [
-    {
-      "url": "http://diabetes-assistant.com/fhir/StructureDefinition/ServiceRequestStartDate",
-      "valueDateTime": "2021-08-02T19:30:00.000+00:00"
-    }
-  ]
+  "patientInstruction": "Measure your blood glucose before meals."
 }
