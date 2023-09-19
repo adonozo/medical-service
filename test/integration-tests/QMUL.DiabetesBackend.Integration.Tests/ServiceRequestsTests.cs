@@ -10,6 +10,7 @@ using Utils;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
+[Collection(TestFixture.IntegrationTestCollection)]
 public class ServiceRequestsTests : IntegrationTestBase
 {
     public ServiceRequestsTests(TestFixture fixture) : base(fixture)

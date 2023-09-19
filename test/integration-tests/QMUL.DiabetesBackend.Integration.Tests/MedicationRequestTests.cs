@@ -10,6 +10,7 @@ using Utils;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
+[Collection(TestFixture.IntegrationTestCollection)]
 public class MedicationRequestTests : IntegrationTestBase
 {
     public MedicationRequestTests(TestFixture fixture) : base(fixture)
@@ -84,11 +85,5 @@ public class MedicationRequestTests : IntegrationTestBase
         var medicationRequest = MedicationRequestStubs.MetforminRequest(patientId, medicationId);
         var createResponse = await this.HttpClient.PostResource($"medication-requests", medicationRequest);
         return await HttpUtils.ParseResult<MedicationRequest>(createResponse.Content);
-    }
-
-    private async Task<MedicationRequest> GetMedicationRequest(string id)
-    {
-        var resourceJson = await this.HttpClient.GetStringAsync($"medication-requests/{id}");
-        return await HttpUtils.ParseJson<MedicationRequest>(resourceJson);
     }
 }

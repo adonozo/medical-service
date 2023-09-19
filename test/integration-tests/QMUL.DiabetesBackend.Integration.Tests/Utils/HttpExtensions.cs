@@ -37,13 +37,21 @@ public static class HttpExtensions
     public static async Task<HttpResponseMessage> Patch<T>(this HttpClient client, string uri, T @object)
     {
         var json = JsonSerializer.Serialize(@object, DefaultSerializer);
-        var data = new StringContent(json, Encoding.UTF8, "application/json");
-        return await client.PatchAsync(uri, data);
+        var content = DefaultStringContent(json);
+        return await client.PatchAsync(uri, content);
+    }
+
+    public static async Task<HttpResponseMessage> PutEmpty(this HttpClient client, string uri)
+    {
+        return await client.PutAsync(uri, DefaultStringContent(string.Empty));
     }
 
     private static async Task<StringContent> ResourceToJsonContent(Resource resource)
     {
         var json = await resource.ToJsonAsync();
-        return new StringContent(json, Encoding.UTF8, "application/json");
+        return DefaultStringContent(json);
     }
+
+    private static StringContent DefaultStringContent(string content) =>
+        new(content, Encoding.UTF8, "application/json");
 }

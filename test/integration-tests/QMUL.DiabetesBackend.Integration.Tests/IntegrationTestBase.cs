@@ -52,4 +52,10 @@ public abstract class IntegrationTestBase : IClassFixture<TestFixture>, IAsyncLi
         var resourceJson = await this.HttpClient.GetStringAsync($"service-requests/{id}");
         return await HttpUtils.ParseJson<ServiceRequest>(resourceJson);
     }
+
+    protected async Task<MedicationRequest> GetMedicationRequest(string id)
+    {
+        var resourceJson = await this.HttpClient.GetStringAsync($"medication-requests/{id}");
+        return await HttpUtils.ParseJson<MedicationRequest>(resourceJson);
+    }
 }
