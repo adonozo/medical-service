@@ -26,13 +26,6 @@ public interface IServiceRequestDao
     Task<ServiceRequest?> GetServiceRequest(string id);
 
     /// <summary>
-    /// Gets the list of all <see cref="ServiceRequest"/> for a given patient.
-    /// </summary>
-    /// <param name="patientId">The patient ID</param>
-    /// <returns>A list of <see cref="ServiceRequest"/>.</returns>
-    Task<IList<ServiceRequest>> GetServiceRequestsFor(string patientId);
-
-    /// <summary>
     /// Gets the <see cref="ServiceRequest"/> list with a active status for a given patient.
     /// </summary>
     /// <param name="patientId">The patient ID.</param>

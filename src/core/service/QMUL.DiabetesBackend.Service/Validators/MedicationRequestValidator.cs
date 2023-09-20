@@ -20,7 +20,7 @@ public class MedicationRequestValidator : ResourceValidatorBase<MedicationReques
         RuleFor(request => request.Medication)
             .Cascade(CascadeMode.Stop)
             .NotNull()
-            .Must(medication => medication is ResourceReference { Reference: { } })
+            .Must(medication => medication is { Reference: { } })
             .WithMessage("Medication field is not a Medication Reference");
 
         RuleFor(request => request.Contained)
@@ -30,22 +30,21 @@ public class MedicationRequestValidator : ResourceValidatorBase<MedicationReques
                 .WithMessage("Contained elements must be of type Medication"))
             .Must((request, _) =>
             {
-                var reference = request.Medication as ResourceReference;
+                var reference = request.Medication;
                 var medicationFound = request.FindContainedResource(reference?.Reference);
                 return medicationFound != null;
             })
             .WithMessage("The medication reference refers to a contained medication, but no match was found.")
             .When(request =>
-                request.Medication is ResourceReference { Reference: { } } reference &&
-                reference.Reference.StartsWith("#"));
+                request.Medication is { Reference: { } } reference &&
+                reference.Reference.Reference.StartsWith("#"));
 
         RuleFor(request => request.Medication)
             .MustAsync(async (requestMedication, _) =>
             {
-                var reference = requestMedication as ResourceReference;
                 try
                 {
-                    await medicationService.GetMedication(reference?.Reference ?? string.Empty);
+                    await medicationService.GetMedication(requestMedication.Reference.Reference ?? string.Empty);
                 }
                 catch (Exception)
                 {
@@ -56,8 +55,8 @@ public class MedicationRequestValidator : ResourceValidatorBase<MedicationReques
             })
             .WithMessage("The medication reference refers to a medication in the system, but it was not found.")
             .When(request =>
-                request.Medication is ResourceReference { Reference: { } } reference &&
-                !reference.Reference.StartsWith("#"));
+                request.Medication is { Reference: { } } reference &&
+                !reference.Reference.Reference.StartsWith("#"));
 
         RuleFor(request => request.DosageInstruction)
             .NotEmpty()

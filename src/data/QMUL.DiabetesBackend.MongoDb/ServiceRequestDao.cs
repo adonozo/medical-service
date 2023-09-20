@@ -2,6 +2,7 @@ namespace QMUL.DiabetesBackend.MongoDb;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DataInterfaces;
 using Hl7.Fhir.Model;
@@ -55,40 +56,27 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     }
 
     /// <inheritdoc />
-    public async Task<IList<ServiceRequest>> GetServiceRequestsFor(string patientId)
-    {
-        this.logger.LogTrace("Getting service requests for {PatientId}", patientId);
-        var results = await this.serviceRequestCollection.Find(Helpers.GetPatientReferenceFilter(patientId))
-            .Project(document => Helpers.ToResourceAsync<ServiceRequest>(document))
-            .ToListAsync();
-
-        var serviceRequests = await Task.WhenAll(results);
-        this.logger.LogTrace("Found {Count} service request(s) for {Id}", serviceRequests.Length, patientId);
-        return serviceRequests;
-    }
-
-    /// <inheritdoc />
     public async Task<IList<ServiceRequest>> GetActiveServiceRequests(string patientId)
     {
-        this.logger.LogTrace("Getting service active service requests for {PatientId}", patientId);
+        this.logger.LogDebug("Getting service active service requests for {PatientId}", patientId);
         var filters = Builders<BsonDocument>.Filter.And(
             Helpers.GetPatientReferenceFilter(patientId),
             Builders<BsonDocument>.Filter.Eq("status", RequestStatus.Active.GetLiteral()));
-        var results = await this.serviceRequestCollection.Find(filters)
-            .Project(document => Helpers.ToResourceAsync<ServiceRequest>(document))
+        var documents = await this.serviceRequestCollection.Find(filters)
             .ToListAsync();
+        var results = documents.Select(Helpers.ToResourceAsync<ServiceRequest>);
 
         var serviceRequests = await Task.WhenAll(results);
-        this.logger.LogTrace("Found {Count} service request(s) for {Id}", serviceRequests.Length, patientId);
+        this.logger.LogDebug("Found {Count} service request(s) for {Id}", serviceRequests.Length, patientId);
         return serviceRequests;
     }
 
     /// <inheritdoc />
     public async Task<IList<ServiceRequest>> GetServiceRequestsByIds(string[] ids)
     {
-        var results = await this.serviceRequestCollection.Find(Helpers.GetInIdsFilter(ids))
-            .Project(document => Helpers.ToResourceAsync<ServiceRequest>(document))
+        var documents = await this.serviceRequestCollection.Find(Helpers.GetInIdsFilter(ids))
             .ToListAsync();
+        var results = documents.Select(Helpers.ToResourceAsync<ServiceRequest>);
         return await Task.WhenAll(results);
     }
 

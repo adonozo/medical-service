@@ -190,9 +190,9 @@ public class MedicationRequestServiceTest
         medicationDao.GetSingleMedication(Arg.Any<string>()).Returns(medication);
 
         var request = this.GetTestMedicationRequest(Guid.NewGuid().ToString());
-        request.Medication = new ResourceReference
+        request.Medication = new CodeableReference
         {
-            Reference = Constants.MedicationPath + medicationId
+            Reference = new ResourceReference(Constants.MedicationPath + medicationId)
         };
 
         // Act
@@ -234,7 +234,10 @@ public class MedicationRequestServiceTest
                     }
                 }
             },
-            Medication = new ResourceReference("#medication-id"),
+            Medication = new CodeableReference
+            {
+                Reference = new ResourceReference("#medication-id")
+            },
             Contained = new List<Resource> { this.GetMedicationTest() }
         };
     }
