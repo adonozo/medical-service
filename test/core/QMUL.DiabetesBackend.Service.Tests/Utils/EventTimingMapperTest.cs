@@ -56,42 +56,6 @@ public class EventTimingMapperTest
     }
 
     [Fact]
-    public void ParseTimingFromValidExtension_ShouldParse()
-    {
-        // Arrange
-        var extension = new Extension("http://localhost/observationTiming", new Code("ACM"));
-        var observationTiming = CustomEventTiming.EXACT;
-
-        // Act
-        if (extension.Url.Contains("Timing") && extension.Value is Code code &&
-            TryParse<CustomEventTiming>(code.ToString(), out var temp))
-        {
-            observationTiming = temp;
-        }
-
-        // Assert
-        observationTiming.Should().Be(CustomEventTiming.ACM);
-    }
-
-    [Fact]
-    public void ParseTimingFromInvalidExtension_ShouldNotParse()
-    {
-        // Arrange
-        var extension = new Extension("http://localhost/observationTiming", new Code("INVALID"));
-        var observationTiming = CustomEventTiming.EXACT;
-
-        // Act
-        if (extension.Url.Contains("Timing") && extension.Value is Code code &&
-            TryParse<CustomEventTiming>(code.ToString(), out var temp))
-        {
-            observationTiming = temp;
-        }
-
-        // Assert
-        observationTiming.Should().Be(CustomEventTiming.EXACT);
-    }
-
-    [Fact]
     public void GetIntervalForPatient_WhenRequestIsValid_GetsDefaultIntervals()
     {
         // Arrange
