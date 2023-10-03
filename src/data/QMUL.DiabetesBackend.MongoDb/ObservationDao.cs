@@ -136,6 +136,7 @@ public class ObservationDao : MongoDaoBase, IObservationDao
     private async Task<Observation> ProjectToObservation(BsonDocument document)
     {
         document["issued"] = document["issued"].ToString();
+        document["effectiveDateTime"] = document["effectiveDateTime"].ToString();
         return await Helpers.ToResourceAsync<Observation>(document);
     }
 }
