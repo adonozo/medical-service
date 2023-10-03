@@ -87,13 +87,13 @@ public class MedicationRequestService : IMedicationRequestService
     /// <inheritdoc/>>
     public Task<bool> ActivateMedicationRequestsStatus(string[] ids)
     {
-        return this.medicationRequestDao.UpdateMedicationRequestsStatus(ids, RequestStatus.Active);
+        return this.medicationRequestDao.UpdateMedicationRequestsStatus(ids, MedicationRequest.MedicationrequestStatus.Active);
     }
 
     /// <inheritdoc/>>
     public Task<bool> RevokeMedicationRequestsStatus(string[] ids)
     {
-        return this.medicationRequestDao.UpdateMedicationRequestsStatus(ids, RequestStatus.Revoked);
+        return this.medicationRequestDao.UpdateMedicationRequestsStatus(ids, MedicationRequest.MedicationrequestStatus.Stopped);
     }
 
     /// <inheritdoc/>>

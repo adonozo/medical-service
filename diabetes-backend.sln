@@ -55,6 +55,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{75B87AE7
 		.github\workflows\net-ci.yml = .github\workflows\net-ci.yml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration-tests", "integration-tests", "{6595A0E6-0FE4-44B7-AA5E-62D13BA34745}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.Integration.Tests", "test\integration-tests\QMUL.DiabetesBackend.Integration.Tests\QMUL.DiabetesBackend.Integration.Tests.csproj", "{83B29CDF-FE71-4419-808E-9CE8C911D849}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +101,10 @@ Global
 		{BBCC2D6C-E9B8-467B-8B80-6995068AC7AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BBCC2D6C-E9B8-467B-8B80-6995068AC7AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BBCC2D6C-E9B8-467B-8B80-6995068AC7AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83B29CDF-FE71-4419-808E-9CE8C911D849}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83B29CDF-FE71-4419-808E-9CE8C911D849}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83B29CDF-FE71-4419-808E-9CE8C911D849}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83B29CDF-FE71-4419-808E-9CE8C911D849}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -117,6 +125,8 @@ Global
 		{9E90735C-91D2-44AA-8045-C6E2C0D4CD71} = {584D014C-B66E-4434-B5F8-EC9E96ED4FBC}
 		{55811FA2-1F40-45EB-A10C-6A50E23D2499} = {3723FF2D-06A0-41AC-B6ED-4D0B49B3C7BC}
 		{BBCC2D6C-E9B8-467B-8B80-6995068AC7AF} = {55811FA2-1F40-45EB-A10C-6A50E23D2499}
+		{6595A0E6-0FE4-44B7-AA5E-62D13BA34745} = {3723FF2D-06A0-41AC-B6ED-4D0B49B3C7BC}
+		{83B29CDF-FE71-4419-808E-9CE8C911D849} = {6595A0E6-0FE4-44B7-AA5E-62D13BA34745}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AFB29E41-36A7-4D62-BDF0-63DC00B1E467}

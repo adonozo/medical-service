@@ -10,7 +10,7 @@
       }
     ]
   },
-  "form": {
+  "doseForm": {
     "coding": [
       {
         "system": "http://snomed.info/sct",
@@ -19,31 +19,26 @@
       }
     ]
   },
-  "amount": {
-    "numerator": {
-      "value": 1,
-      "unit": "ml",
-      "system": "http://unitsofmeasure.org",
-      "code": "ml"
-    },
-    "denominator": {
-      "value": 1,
-      "system": "http://terminology.hl7.org/CodeSystem/medicationknowledge-package-type",
-      "code": "vial"
-    }
+  "totalVolume": {
+    "value": 1,
+    "unit": "ml",
+    "system": "http://unitsofmeasure.org",
+    "code": "ml"
   },
   "ingredient": [
     {
-      "itemCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "387106007",
-            "display": "Lorazepam (substance)"
-          }
-        ]
+      "item": {
+        "concept": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "387106007",
+              "display": "Lorazepam (substance)"
+            }
+          ]
+        }
       },
-      "strength": {
+      "strengthRatio": {
         "numerator": {
           "value": 2,
           "system": "http://unitsofmeasure.org",

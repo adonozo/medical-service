@@ -33,7 +33,7 @@ public interface IMedicationRequestDao
     /// <param name="ids">The IDs of the medication requests to update</param>
     /// <param name="status">The new <see cref="RequestStatus"/></param>
     /// <returns>A bool indicating the result.</returns>
-    Task<bool> UpdateMedicationRequestsStatus(string[] ids, RequestStatus status);
+    Task<bool> UpdateMedicationRequestsStatus(string[] ids, MedicationRequest.MedicationrequestStatus status);
 
     /// <summary>
     /// Gets a <see cref="MedicationRequest"/> based on the ID.

@@ -110,7 +110,13 @@ public class PatientDao : MongoDaoBase, IPatientDao
     private async Task<BsonDocument> PatientToBsonDocument(Patient patient)
     {
         var bson = await Helpers.ToBsonDocumentAsync(patient);
-        bson.Add("email", patient.GetEmailExtension());
+        var email = patient.GetEmailExtension();
+        if (string.IsNullOrEmpty(email))
+        {
+            return bson;
+        }
+
+        bson.Add("email", email);
         return bson;
     }
 
