@@ -55,7 +55,7 @@ public class MedicationRequestValidator : ResourceValidatorBase<MedicationReques
             })
             .WithMessage("The medication reference refers to a medication in the system, but it was not found.")
             .When(request =>
-                request.Medication is { Reference: { } } reference &&
+                request.Medication is { Reference: not null } reference &&
                 !reference.Reference.Reference.StartsWith("#"));
 
         RuleFor(request => request.DosageInstruction)
