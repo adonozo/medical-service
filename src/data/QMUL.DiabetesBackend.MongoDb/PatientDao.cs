@@ -38,11 +38,11 @@ public class PatientDao : MongoDaoBase, IPatientDao
     {
         var searchFilter = FilterDefinition<BsonDocument>.Empty;
         var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
-        var results = await this.patientCollection.Find(resultsFilter)
+        var documents = await this.patientCollection.Find(resultsFilter)
             .Sort(Helpers.GetDefaultOrder())
             .Limit(paginationRequest.Limit)
-            .Project(document => Helpers.ToResourceAsync<Patient>(document))
             .ToListAsync();
+        var results = documents.Select(Helpers.ToResourceAsync<Patient>);
         Resource[] patients = await Task.WhenAll(results);
         if (patients.Length == 0)
         {
@@ -110,7 +110,13 @@ public class PatientDao : MongoDaoBase, IPatientDao
     private async Task<BsonDocument> PatientToBsonDocument(Patient patient)
     {
         var bson = await Helpers.ToBsonDocumentAsync(patient);
-        bson.Add("email", patient.GetEmailExtension());
+        var email = patient.GetEmailExtension();
+        if (string.IsNullOrEmpty(email))
+        {
+            return bson;
+        }
+
+        bson.Add("email", email);
         return bson;
     }
 

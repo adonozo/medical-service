@@ -101,7 +101,7 @@ public class CarePlanService : ICarePlanService
 
         var activity = new CarePlan.ActivityComponent
         {
-            Reference = newRequest.CreateReference()
+            PlannedActivityReference = newRequest.CreateReference()
         };
 
         carePlan.Activity ??= new List<CarePlan.ActivityComponent>();
@@ -128,7 +128,7 @@ public class CarePlanService : ICarePlanService
 
         var activity = new CarePlan.ActivityComponent
         {
-            Reference = newRequest.CreateReference()
+            PlannedActivityReference = newRequest.CreateReference()
         };
 
         carePlan.Activity ??= new List<CarePlan.ActivityComponent>();
@@ -202,7 +202,7 @@ public class CarePlanService : ICarePlanService
         await this.serviceRequestService.DeleteServiceRequest(serviceRequestId);
 
         carePlan.Activity ??= new List<CarePlan.ActivityComponent>();
-        carePlan.Activity.RemoveAll(activity => activity.Reference.Reference.Contains(serviceRequestId));
+        carePlan.Activity.RemoveAll(activity => activity.PlannedActivityReference.Reference.Contains(serviceRequestId));
         return await this.carePlanDao.UpdateCarePlan(carePlanId, carePlan);
     }
 
@@ -215,7 +215,7 @@ public class CarePlanService : ICarePlanService
         await this.medicationRequestService.DeleteMedicationRequest(medicationRequestId);
 
         carePlan.Activity ??= new List<CarePlan.ActivityComponent>();
-        carePlan.Activity.RemoveAll(activity => activity.Reference.Reference.Contains(medicationRequestId));
+        carePlan.Activity.RemoveAll(activity => activity.PlannedActivityReference.Reference.Contains(medicationRequestId));
         return await this.carePlanDao.UpdateCarePlan(carePlanId, carePlan);
     }
 
@@ -271,13 +271,13 @@ public class CarePlanService : ICarePlanService
 
         foreach (var activity in carePlan.Activity)
         {
-            switch (activity.Reference.Type)
+            switch (activity.PlannedActivityReference.Type)
             {
                 case nameof(ServiceRequest):
-                    serviceRequestsReferences.Add(activity.Reference);
+                    serviceRequestsReferences.Add(activity.PlannedActivityReference);
                     break;
                 case nameof(MedicationRequest):
-                    medicationRequestsReferences.Add(activity.Reference);
+                    medicationRequestsReferences.Add(activity.PlannedActivityReference);
                     break;
             }
         }

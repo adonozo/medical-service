@@ -12,7 +12,6 @@ using Model.Extensions;
 using ServiceInterfaces;
 using ServiceInterfaces.Utils;
 using Utils;
-using ResourceReference = Hl7.Fhir.Model.ResourceReference;
 using Task = System.Threading.Tasks.Task;
 
 /// <summary>
@@ -46,7 +45,7 @@ public class MedicationRequestService : IMedicationRequestService
         await this.dataGatherer.GetReferencePatientOrThrow(request.Subject);
         await this.SetInsulinRequest(request);
         request.AuthoredOn = DateTime.UtcNow.ToString("O");
-        request.Status = MedicationRequest.medicationrequestStatus.Draft;
+        request.Status = MedicationRequest.MedicationrequestStatus.Draft;
 
         foreach (var dosage in request.DosageInstruction.Where(dosage => dosage.Timing.NeedsStartDate()))
         {
@@ -88,13 +87,13 @@ public class MedicationRequestService : IMedicationRequestService
     /// <inheritdoc/>>
     public Task<bool> ActivateMedicationRequestsStatus(string[] ids)
     {
-        return this.medicationRequestDao.UpdateMedicationRequestsStatus(ids, RequestStatus.Active);
+        return this.medicationRequestDao.UpdateMedicationRequestsStatus(ids, MedicationRequest.MedicationrequestStatus.Active);
     }
 
     /// <inheritdoc/>>
     public Task<bool> RevokeMedicationRequestsStatus(string[] ids)
     {
-        return this.medicationRequestDao.UpdateMedicationRequestsStatus(ids, RequestStatus.Revoked);
+        return this.medicationRequestDao.UpdateMedicationRequestsStatus(ids, MedicationRequest.MedicationrequestStatus.Stopped);
     }
 
     /// <inheritdoc/>>
@@ -135,16 +134,16 @@ public class MedicationRequestService : IMedicationRequestService
     public async Task SetInsulinRequest(MedicationRequest request)
     {
         var medicationReference = request.Medication;
-        if (medicationReference is not ResourceReference reference || string.IsNullOrWhiteSpace(reference.Reference))
+        if (medicationReference is null || string.IsNullOrWhiteSpace(medicationReference.Reference.Reference))
         {
             return;
         }
 
-        var resource = request.FindContainedResource(reference.Reference);
+        var resource = request.FindContainedResource(medicationReference.Reference.Reference);
         Medication? medication;
         if (resource is not Medication)
         {
-            var medicationId = reference.GetIdFromReference();
+            var medicationId = medicationReference.Reference.GetIdFromReference();
             medication = await this.medicationDao.GetSingleMedication(medicationId);
         }
         else

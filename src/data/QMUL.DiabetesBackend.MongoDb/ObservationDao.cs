@@ -1,6 +1,7 @@
 namespace QMUL.DiabetesBackend.MongoDb;
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DataInterfaces;
 using Hl7.Fhir.Model;
@@ -65,11 +66,11 @@ public class ObservationDao : MongoDaoBase, IObservationDao
         var searchFilter = Helpers.GetPatientReferenceFilter(patientId);
         var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
 
-        var results = await this.observationCollection.Find(resultsFilter)
+        var documents = await this.observationCollection.Find(resultsFilter)
             .Limit(paginationRequest.Limit)
             .Sort(Helpers.GetDefaultOrder())
-            .Project(document => this.ProjectToObservation(document))
             .ToListAsync();
+        var results = documents.Select(this.ProjectToObservation);
         Resource[] observations = await Task.WhenAll(results);
 
         if (observations.Length == 0)
@@ -99,12 +100,12 @@ public class ObservationDao : MongoDaoBase, IObservationDao
         }
 
         var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
-        var result = await this.observationCollection.Find(resultsFilter)
+        var documents = await this.observationCollection.Find(resultsFilter)
             .Limit(paginationRequest.Limit)
-            .Project(document => this.ProjectToObservation(document))
             .ToListAsync();
 
-        Resource[] observations = await Task.WhenAll(result);
+        var results = documents.Select(this.ProjectToObservation);
+        Resource[] observations = await Task.WhenAll(results);
         if (observations.Length == 0)
         {
             return new PaginatedResult<IEnumerable<Resource>> { Results = observations };
@@ -135,6 +136,7 @@ public class ObservationDao : MongoDaoBase, IObservationDao
     private async Task<Observation> ProjectToObservation(BsonDocument document)
     {
         document["issued"] = document["issued"].ToString();
+        document["effectiveDateTime"] = document["effectiveDateTime"].ToString();
         return await Helpers.ToResourceAsync<Observation>(document);
     }
 }

@@ -43,11 +43,5 @@
         "code": "mmol/L"
       }
     }
-  ],
-  "extension": [
-    {
-      "url": "http://www.diabetesreminder.com/observationTiming",
-      "valueCode": "ACM"
-    }
   ]
 }
