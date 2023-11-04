@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using MongoDb;
 using MongoDB.Driver;
+using NodaTime;
 using Service;
 using Service.Utils;
 using Service.Validators;
@@ -44,6 +45,7 @@ public class Startup
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "QMUL.DiabetesBackend.Controllers", Version = "v1" });
         });
 
+        services.AddSingleton<IClock>(SystemClock.Instance);
         services.Configure<MongoDatabaseSettings>(Configuration.GetSection(nameof(MongoDatabaseSettings)));
         services.AddSingleton(sp =>
         {
@@ -57,6 +59,7 @@ public class Startup
         services.AddSingleton<IServiceRequestDao, ServiceRequestDao>();
         services.AddSingleton<IObservationDao, ObservationDao>();
         services.AddSingleton<ICarePlanDao, CarePlanDao>();
+        services.AddSingleton<IAlexaDao, AlexaDao>();
 
         services.AddSingleton<IDataGatherer, DataGatherer>();
         services.AddSingleton<IMedicationService, MedicationService>();
