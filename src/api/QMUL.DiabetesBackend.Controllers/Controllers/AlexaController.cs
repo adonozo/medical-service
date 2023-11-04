@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Model;
 using Model.Constants;
@@ -103,6 +104,24 @@ public class AlexaController : ControllerBase
         return this.UnprocessableEntity(errorResponse);
     }
 
+    [HttpGet("alexa/{idOrEmail}/requests")]
+    public async Task<IActionResult> GetLastRequest([FromRoute] string idOrEmail, [FromQuery] string deviceId)
+    {
+        if (string.IsNullOrEmpty(deviceId))
+        {
+            ModelState.AddModelError("deviceId", "The Alexa Device ID is required");
+            return this.UnprocessableEntity(ModelState);
+        }
+
+        var result = await this.alexaService.GetLastRequest(idOrEmail, deviceId);
+        return result switch
+        {
+            {IsSuccess: true, Results: null} => this.NotFound(GetErrorResponse(deviceId)),
+            {IsSuccess: true, Results: not null} => this.Ok(result.Results),
+            {IsSuccess: false} => this.StatusCode(StatusCodes.Status500InternalServerError)
+        };
+    }
+
     private static ProblemDetails GetErrorResponse<T>(T resource, string path) where T : DomainResource => new()
     {
         Title = "Resource needs a start date",
@@ -110,5 +129,13 @@ public class AlexaController : ControllerBase
         Instance = path + resource.Id,
         Status = (int)HttpStatusCode.UnprocessableEntity,
         Extensions = { { ResourceErrorKey, resource.ToJObject() } }
+    };
+
+    private static ProblemDetails GetErrorResponse(string deviceId) => new()
+    {
+        Title = "Not found",
+        Detail = $"Device ID {deviceId} did not have a previous request",
+        Instance = deviceId,
+        Status = (int)HttpStatusCode.NotFound
     };
 }
