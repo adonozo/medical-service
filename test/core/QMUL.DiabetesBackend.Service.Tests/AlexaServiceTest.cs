@@ -11,16 +11,20 @@ using Model;
 using Model.Enums;
 using Model.Extensions;
 using NodaTime;
+using NodaTime.Testing;
 using NSubstitute;
 using Service;
 using Stubs;
 using Xunit;
 using Duration = Hl7.Fhir.Model.Duration;
+using Instant = NodaTime.Instant;
 using Period = Hl7.Fhir.Model.Period;
 using Task = System.Threading.Tasks.Task;
 
 public class AlexaServiceTest
 {
+    private readonly Instant testDate = Instant.FromDateTimeUtc(new DateTime(2023, 10, 10));
+
     [Fact]
     public async Task SearchMedicationRequests_WhenRequestIsSuccessful_ReturnsSuccessResult()
     {
@@ -28,8 +32,16 @@ public class AlexaServiceTest
         var patientDao = Substitute.For<IPatientDao>();
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
+        var alexaDao = Substitute.For<IAlexaDao>();
+        var clock = new FakeClock(this.testDate);
+
         var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
+        var alexaService = new AlexaService(patientDao,
+            medicationRequestDao,
+            serviceRequestDao,
+            alexaDao,
+            logger,
+            clock);
 
         var expectedRequest = MedicationRequestStubs.ValidMedicationRequestAtFixedTime(
             period: new Period { Start = "2023-01-01", End = "2023-01-10" });
@@ -61,8 +73,16 @@ public class AlexaServiceTest
         var patientDao = Substitute.For<IPatientDao>();
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
+        var alexaDao = Substitute.For<IAlexaDao>();
+        var clock = new FakeClock(this.testDate);
+
         var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
+        var alexaService = new AlexaService(patientDao,
+            medicationRequestDao,
+            serviceRequestDao,
+            alexaDao,
+            logger,
+            clock);
 
         var expectedRequest = ServiceRequestStubs.ValidPeriodAtFixedTime(
             period: new Period{ Start = "2023-01-01", End = "2023-01-10"});
@@ -89,8 +109,17 @@ public class AlexaServiceTest
         var patientDao = Substitute.For<IPatientDao>();
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
+        var alexaDao = Substitute.For<IAlexaDao>();
+        var clock = new FakeClock(this.testDate);
+
         var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
+        var alexaService = new AlexaService(patientDao,
+            medicationRequestDao,
+            serviceRequestDao,
+            alexaDao,
+            logger,
+            clock);
+
         var dosageId = Guid.NewGuid().ToString();
         var medicationRequest = MedicationRequestStubs.ValidMedicationRequestAtFixedTime(dosageId: dosageId,
             period: new Duration { Value = 10, Unit = "d" });
@@ -128,8 +157,16 @@ public class AlexaServiceTest
         var patientDao = Substitute.For<IPatientDao>();
         var medicationRequestDao = Substitute.For<IMedicationRequestDao>();
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
+        var alexaDao = Substitute.For<IAlexaDao>();
+        var clock = new FakeClock(this.testDate);
+
         var logger = Substitute.For<ILogger<AlexaService>>();
-        var alexaService = new AlexaService(patientDao, medicationRequestDao, serviceRequestDao, logger);
+        var alexaService = new AlexaService(patientDao,
+            medicationRequestDao,
+            serviceRequestDao,
+            alexaDao,
+            logger,
+            clock);
 
         patientDao.GetPatientByIdOrEmail(Arg.Any<string>()).Returns(TestUtils.GetStubPatient());
 

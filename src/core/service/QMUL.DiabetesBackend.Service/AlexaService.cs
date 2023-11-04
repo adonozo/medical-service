@@ -8,6 +8,7 @@ using DataInterfaces;
 using Hl7.Fhir.Model;
 using Microsoft.Extensions.Logging;
 using Model;
+using Model.Alexa;
 using Model.Enums;
 using Model.Exceptions;
 using Model.Extensions;
@@ -25,17 +26,23 @@ public class AlexaService : IAlexaService
     private readonly IPatientDao patientDao;
     private readonly IMedicationRequestDao medicationRequestDao;
     private readonly IServiceRequestDao serviceRequestDao;
+    private readonly IAlexaDao alexaDao;
+    private readonly IClock clock;
     private readonly ILogger<AlexaService> logger;
 
     public AlexaService(IPatientDao patientDao,
         IMedicationRequestDao medicationRequestDao,
         IServiceRequestDao serviceRequestDao,
-        ILogger<AlexaService> logger)
+        IAlexaDao alexaDao,
+        ILogger<AlexaService> logger,
+        IClock clock)
     {
         this.patientDao = patientDao;
         this.medicationRequestDao = medicationRequestDao;
         this.serviceRequestDao = serviceRequestDao;
+        this.alexaDao = alexaDao;
         this.logger = logger;
+        this.clock = clock;
     }
 
     /// <inheritdoc/>
@@ -145,6 +152,27 @@ public class AlexaService : IAlexaService
         return await this.serviceRequestDao.UpdateServiceRequest(serviceRequestId, serviceRequest);
     }
 
+    /// <inheritdoc/>
+    public async Task<Result<AlexaRequest?, string>> GetLastRequest(string patientIdOrEmail, string deviceId)
+    {
+        var lastRequestResult = await this.GetLastRequest(deviceId);
+        if (!lastRequestResult.Succeded)
+        {
+            return Result<AlexaRequest?, string>.Fail("Could not retrieve the last request");
+        }
+
+        var isRequestInserted = await this.alexaDao.InsertRequest(new AlexaRequest
+        {
+            DeviceId = deviceId,
+            Timestamp = this.clock.GetCurrentInstant(),
+            UserId = patientIdOrEmail
+        });
+
+        return !isRequestInserted
+            ? Result<AlexaRequest?, string>.Fail("Could not insert the request")
+            : Result<AlexaRequest?, string>.Success(lastRequestResult.AlexaRequest);
+    }
+
     private async Task SetDosageStartDate(InternalPatient patient,
         string dosageId,
         LocalDate startDate,
@@ -197,5 +225,19 @@ public class AlexaService : IAlexaService
         }
 
         return results;
+    }
+
+    private async Task<(bool Succeded, AlexaRequest? AlexaRequest)> GetLastRequest(string deviceId)
+    {
+        try
+        {
+            var lastRequest = await this.alexaDao.GetLastRequest(deviceId);
+            return (true, lastRequest);
+        }
+        catch (Exception e)
+        {
+            this.logger.LogError(e, $"Could not retrieve the last request for");
+            return (false, null);
+        }
     }
 }

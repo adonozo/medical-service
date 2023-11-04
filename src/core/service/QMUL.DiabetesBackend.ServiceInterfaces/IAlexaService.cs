@@ -3,6 +3,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
+using Model.Alexa;
 using Model.Enums;
 using Model.Exceptions;
 using NodaTime;
@@ -76,4 +77,12 @@ public interface IAlexaService
     /// <returns>A boolean value to indicate is the update was successful.</returns>
     /// <exception cref="ValidationException">If the patient was not found</exception>
     Task<bool> UpsertServiceRequestStartDate(string patientIdOrEmail, string serviceRequestId, LocalDate startDate);
+
+    /// <summary>
+    /// Gets the last Alexa request that a patient has made. A call to this method is recorded as an Alexa Request.
+    /// </summary>
+    /// <param name="patientIdOrEmail">The patient's ID or email.</param>
+    /// <param name="deviceId">The patient's Alexa device ID</param>
+    /// <returns>The last <see cref="AlexaRequest"/> for the patient, or null if the patient never made a reqest before</returns>
+    Task<Result<AlexaRequest?, string>> GetLastRequest(string patientIdOrEmail, string deviceId);
 }
