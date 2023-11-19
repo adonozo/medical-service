@@ -82,19 +82,12 @@ public class AlexaController : ControllerBase
         return this.UnprocessableEntity(errorResponse);
     }
 
-    [HttpGet("patients/{idOrEmail}/alexa/service-requests")]
+    [HttpGet("alexa/{idOrEmail}/service-requests")]
     public async Task<IActionResult> GetServiceRequests([FromRoute] string idOrEmail,
-        [FromQuery] LocalDate? date,
-        [FromQuery] string timezone = "UTC",
-        [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
+        [FromQuery] LocalDate? startDate = null,
+        [FromQuery] LocalDate? endDate = null)
     {
-        if (date is null)
-        {
-            ModelState.AddModelError("date", "Date is required");
-            return this.UnprocessableEntity(ModelState);
-        }
-
-        var result = await this.alexaService.SearchServiceRequests(idOrEmail, date.Value, timing, timezone);
+        var result = await this.alexaService.GetActiveSearchRequests(idOrEmail, startDate, endDate);
         if (result.IsSuccess)
         {
             return this.Ok(result.Results.ToJObject());
