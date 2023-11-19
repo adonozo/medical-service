@@ -1,5 +1,6 @@
 namespace QMUL.DiabetesBackend.ServiceInterfaces;
 
+using System;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
@@ -43,11 +44,25 @@ public interface IAlexaService
     /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
     /// <param name="timezone">The user's timezone. Defaults to UTC</param>
     /// <returns>A search <see cref="Bundle"/> with the matching medication results, or the service request that
-    /// needs a start date.</returns>
+    /// needs a start date</returns>
+    [Obsolete("CustomEventTimings are not flexible and error prone. Use GetActiveSearchRequests instead")]
     Task<Result<Bundle, ServiceRequest>> SearchServiceRequests(string patientEmailOrId,
         LocalDate dateTime,
         CustomEventTiming timing,
         string timezone = "UTC");
+
+    /// <summary>
+    /// Searches the service requests that occur within the specified interval. If any active service request needs a
+    /// start date, the result will fail
+    /// </summary>
+    /// <param name="patientEmailOrId">The patient's unique email or ID</param>
+    /// <param name="startDate">The start date interval</param>
+    /// <param name="endDate">Then end date interval</param>
+    /// <returns>A search <see cref="Bundle"/> with the service requests that occur within the interval, or the service
+    /// request that needs a start date</returns>
+    Task<Result<Bundle, ServiceRequest>> GetActiveSearchRequests(string patientEmailOrId,
+        LocalDate? startDate = null,
+        LocalDate? endDate = null);
 
     /// <summary>
     /// Updates / Adds a start date for a dosage instruction. Useful when the medication doesn't have an exact start

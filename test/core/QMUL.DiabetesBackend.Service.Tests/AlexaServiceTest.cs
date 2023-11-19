@@ -23,7 +23,7 @@ using Task = System.Threading.Tasks.Task;
 
 public class AlexaServiceTest
 {
-    private readonly Instant testDate = Instant.FromDateTimeUtc(new DateTime(2023, 10, 10));
+    private readonly Instant testDate = Instant.FromUtc(2023, 10, 10, 10, 00, 00);
 
     [Fact]
     public async Task SearchMedicationRequests_WhenRequestIsSuccessful_ReturnsSuccessResult()

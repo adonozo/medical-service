@@ -103,18 +103,12 @@ public class AlexaControllerTest
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
         var observationsService = Substitute.For<IObservationService>();
-        alexaService.SearchServiceRequests(Arg.Any<string>(),
-                Arg.Any<LocalDate>(),
-                Arg.Any<CustomEventTiming>(),
-                Arg.Any<string>())
+        alexaService.GetActiveSearchRequests(Arg.Any<string>())
             .Returns(Task.FromResult(Result<Bundle, ServiceRequest>.Success(new Bundle())));
         var controller = new AlexaController(alexaService, observationsService);
 
         // Act
-        var result = await controller.GetServiceRequests(
-            idOrEmail: "test@mail.com",
-            date: new LocalDate(),
-            timing: CustomEventTiming.ALL_DAY);
+        var result = await controller.GetServiceRequests(idOrEmail: "test@mail.com");
         var status = (ObjectResult)result;
 
         // Assert
@@ -129,18 +123,12 @@ public class AlexaControllerTest
         var observationsService = Substitute.For<IObservationService>();
 
         var expectedFailRequest = new ServiceRequest{ Id = Guid.NewGuid().ToString()};
-        alexaService.SearchServiceRequests(Arg.Any<string>(),
-                Arg.Any<LocalDate>(),
-                Arg.Any<CustomEventTiming>(),
-                Arg.Any<string>())
+        alexaService.GetActiveSearchRequests(Arg.Any<string>())
             .Returns(Task.FromResult(Result<Bundle, ServiceRequest>.Fail(expectedFailRequest)));
         var controller = new AlexaController(alexaService, observationsService);
 
         // Act
-        var result = await controller.GetServiceRequests(
-            idOrEmail: "test@mail.com",
-            date: new LocalDate(),
-            timing: CustomEventTiming.ALL_DAY);
+        var result = await controller.GetServiceRequests(idOrEmail: "test@mail.com");
         var status = (ObjectResult)result;
 
         // Assert

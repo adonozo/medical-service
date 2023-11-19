@@ -27,6 +27,24 @@ public static class Helpers
     }
 
     /// <summary>
+    /// Converts an array of <see cref="DataType"/> into a <see cref="BsonArray"/> containing <see cref="BsonDocument"/>
+    /// </summary>
+    /// <param name="elements">The array of <see cref="DataType"/> from a FHIR object</param>
+    /// <returns>A BsonArray of BsonDocuments</returns>
+    /// <exception cref="ArgumentException">If any element cannot be serialized into JSON or returns an invalid BSON
+    /// object</exception>
+    public static BsonArray ToBsonArray(IEnumerable<DataType> elements)
+    {
+        var json = elements.Select(source =>
+        {
+            var extensionJson= PocoSerializationExtensions.ToJson(source);
+            return BsonDocument.Parse(extensionJson);
+        });
+        var bson = BsonArray.Create(json);
+        return bson ?? throw new ArgumentException("Invalid element", nameof(elements));
+    }
+
+    /// <summary>
     /// Gets a <see cref="FilterDefinition{TDocument}"/> with an "eq" operator for the ID.
     /// </summary>
     /// <param name="id">The string ID to look for. This should be a <see cref="ObjectId"/> string equivalent.</param>

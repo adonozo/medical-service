@@ -12,9 +12,11 @@ using Model.Alexa;
 using Model.Enums;
 using Model.Exceptions;
 using Model.Extensions;
+using Model.Utils;
 using NodaTime;
 using ServiceInterfaces;
 using Utils;
+using Instant = NodaTime.Instant;
 using Task = System.Threading.Tasks.Task;
 
 /// <summary>
@@ -52,11 +54,11 @@ public class AlexaService : IAlexaService
         CustomEventTiming? timing = CustomEventTiming.ALL_DAY,
         string? timezone = "UTC")
     {
-        await ResourceUtils.GetResourceOrThrowAsync(async () =>
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
             await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new NotFoundException());
 
         var activeRequestsResult = await this.medicationRequestDao.GetActiveMedicationRequests(
-            patientEmailOrId,
+            patient.Id,
             PaginationRequest.FirstPaginatedResults,
             onlyInsulin);
 
@@ -107,6 +109,39 @@ public class AlexaService : IAlexaService
 
         var results = serviceRequests
             .Where(request => ResourceUtils.ServiceRequestOccursInDate(request, dateFilter));
+        var bundle = ResourceUtils.GenerateSearchBundle(results);
+        return Result<Bundle, ServiceRequest>.Success(bundle);
+    }
+
+    /// <inheritdoc/>>
+    public async Task<Result<Bundle, ServiceRequest>> GetActiveSearchRequests(string patientEmailOrId,
+        LocalDate? startDate = null,
+        LocalDate? endDate = null)
+    {
+        var patient = await ResourceUtils.GetResourceOrThrowAsync(async () =>
+            await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new NotFoundException());
+
+        var serviceRequests = await this.serviceRequestDao.GetActiveServiceRequests(patient.Id);
+        var requestNeedStartDate = serviceRequests
+            .Where(request => request.NeedsStartDate() || request.NeedsStartTime())
+            .ToList();
+
+        if (requestNeedStartDate.Any())
+        {
+            return Result<Bundle, ServiceRequest>.Fail(requestNeedStartDate.First());
+        }
+
+        var startInterval = startDate is null
+            ? this.clock.GetCurrentInstant()
+            : DateUtils.InstantFromUtcDate(startDate.Value);
+        Instant? endInterval = endDate is null
+            ? null
+            : DateUtils.InstantFromUtcDate(endDate.Value);
+        var interval = new Interval(startInterval, endInterval);
+
+        var results = serviceRequests
+            .Where(request => ResourceUtils.ServiceRequestOccursInDate(request, interval));
+
         var bundle = ResourceUtils.GenerateSearchBundle(results);
         return Result<Bundle, ServiceRequest>.Success(bundle);
     }

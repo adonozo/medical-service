@@ -7,6 +7,7 @@ using Hl7.Fhir.Model;
 using Microsoft.Extensions.Logging;
 using Model.Exceptions;
 using Model.Extensions;
+using NodaTime;
 using ServiceInterfaces;
 using ServiceInterfaces.Utils;
 using Utils;
@@ -19,14 +20,17 @@ public class ServiceRequestService : IServiceRequestService
     private readonly IServiceRequestDao serviceRequestDao;
     private readonly IDataGatherer dataGatherer;
     private readonly ILogger<ServiceRequestService> logger;
+    private readonly IClock clock;
 
     public ServiceRequestService(
         IServiceRequestDao serviceRequestDao,
         IDataGatherer dataGatherer,
+        IClock clock,
         ILogger<ServiceRequestService> logger)
     {
         this.serviceRequestDao = serviceRequestDao;
         this.dataGatherer = dataGatherer;
+        this.clock = clock;
         this.logger = logger;
     }
 
@@ -69,9 +73,11 @@ public class ServiceRequestService : IServiceRequestService
     }
 
     /// <inheritdoc/>>
-    public Task<bool> ActivateServiceRequests(string[] ids)
+    public async Task<bool> ActivateServiceRequests(string[] ids)
     {
-        return this.serviceRequestDao.UpdateServiceRequestsStatus(ids, RequestStatus.Active);
+        var now = this.clock.GetCurrentInstant();
+        return await this.serviceRequestDao.UpdateServiceRequestsStatus(ids, RequestStatus.Active)
+            && await this.serviceRequestDao.UpdateServiceRequestsStartDate(ids, now.InUtc().Date);
     }
 
     /// <inheritdoc/>>

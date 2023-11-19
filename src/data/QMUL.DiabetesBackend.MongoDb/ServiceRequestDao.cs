@@ -2,15 +2,18 @@ namespace QMUL.DiabetesBackend.MongoDb;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using DataInterfaces;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Utility;
 using Microsoft.Extensions.Logging;
+using Model.Constants;
 using Model.Exceptions;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using NodaTime;
 using Utils;
 using Task = System.Threading.Tasks.Task;
 
@@ -46,7 +49,7 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     /// <inheritdoc />
     public async Task<ServiceRequest?> GetServiceRequest(string id)
     {
-        var document = await this.serviceRequestCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
+        var document = await this.serviceRequestCollection.Find(Helpers.ByIdFilter(id)).FirstOrDefaultAsync();
         if (document is null)
         {
             return null;
@@ -60,7 +63,7 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     {
         this.logger.LogDebug("Getting service active service requests for {PatientId}", patientId);
         var filters = Builders<BsonDocument>.Filter.And(
-            Helpers.GetPatientReferenceFilter(patientId),
+            Helpers.PatientReferenceFilter(patientId),
             Builders<BsonDocument>.Filter.Eq("status", RequestStatus.Active.GetLiteral()));
         var documents = await this.serviceRequestCollection.Find(filters)
             .ToListAsync();
@@ -74,7 +77,7 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     /// <inheritdoc />
     public async Task<IList<ServiceRequest>> GetServiceRequestsByIds(string[] ids)
     {
-        var documents = await this.serviceRequestCollection.Find(Helpers.GetInIdsFilter(ids))
+        var documents = await this.serviceRequestCollection.Find(Helpers.InIdsFilter(ids))
             .ToListAsync();
         var results = documents.Select(Helpers.ToResourceAsync<ServiceRequest>);
         return await Task.WhenAll(results);
@@ -85,7 +88,7 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     {
         logger.LogDebug("Updating service request {Id}", id);
         var document = await Helpers.ToBsonDocumentAsync(actualRequest);
-        var result = await this.serviceRequestCollection.ReplaceOneAsync(Helpers.GetByIdFilter(id), document);
+        var result = await this.serviceRequestCollection.ReplaceOneAsync(Helpers.ByIdFilter(id), document);
 
         return result.IsAcknowledged;
     }
@@ -93,8 +96,19 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     /// <inheritdoc />
     public async Task<bool> UpdateServiceRequestsStatus(string[] ids, RequestStatus status)
     {
-        var filter = Helpers.GetInIdsFilter(ids);
+        var filter = Helpers.InIdsFilter(ids);
         var update = Builders<BsonDocument>.Update.Set("status", status.ToString().ToLowerInvariant());
+        var result = await this.serviceRequestCollection.UpdateManyAsync(filter, update);
+        return result.IsAcknowledged;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> UpdateServiceRequestsStartDate(string[] ids, LocalDate date)
+    {
+        var filter = Helpers.InIdsFilter(ids);
+        var extension = CreateStartDateExtension(date);
+        var document = Helpers.ToBsonArray(new[] { extension });
+        var update = Builders<BsonDocument>.Update.Set("occurrenceTiming.extension", document);
         var result = await this.serviceRequestCollection.UpdateManyAsync(filter, update);
         return result.IsAcknowledged;
     }
@@ -103,21 +117,27 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     public async Task<bool> DeleteServiceRequest(string id)
     {
         this.logger.LogDebug("Deleting service requests with ID: {Id}", id);
-        var result = await this.serviceRequestCollection.DeleteOneAsync(Helpers.GetByIdFilter(id));
+        var result = await this.serviceRequestCollection.DeleteOneAsync(Helpers.ByIdFilter(id));
         return result.IsAcknowledged;
     }
     
     /// <inheritdoc />
     public async Task<bool> DeleteServiceRequests(string[] ids)
     {
-        var result = await this.serviceRequestCollection.DeleteManyAsync(Helpers.GetInIdsFilter(ids));
+        var result = await this.serviceRequestCollection.DeleteManyAsync(Helpers.InIdsFilter(ids));
         return result.IsAcknowledged;
     }
 
     private async Task<ServiceRequest> GetSingleRequestOrThrow(string id, Exception exception)
     {
-        var cursor = this.serviceRequestCollection.Find(Helpers.GetByIdFilter(id));
+        var cursor = this.serviceRequestCollection.Find(Helpers.ByIdFilter(id));
         var document = await this.GetSingleOrThrow(cursor, exception);
         return await Helpers.ToResourceAsync<ServiceRequest>(document);
+    }
+
+    private static Extension CreateStartDateExtension(LocalDate date)
+    {
+        var fhirString = new FhirString(date.ToString("R", CultureInfo.InvariantCulture));
+        return new Extension(Extensions.TimingStartDate, fhirString);
     }
 }
