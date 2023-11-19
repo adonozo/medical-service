@@ -55,7 +55,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
 
         var document = await RequestToBsonDocument(actualRequest);
         var result = await this.medicationRequestCollection
-            .ReplaceOneAsync(Helpers.GetByIdFilter(id), document);
+            .ReplaceOneAsync(Helpers.ByIdFilter(id), document);
 
         return result.IsAcknowledged;
     }
@@ -64,7 +64,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     public async Task<bool> UpdateMedicationRequestsStatus(string[] ids,
         MedicationRequest.MedicationrequestStatus status)
     {
-        var filter = Helpers.GetInIdsFilter(ids);
+        var filter = Helpers.InIdsFilter(ids);
         var update = Builders<BsonDocument>.Update.Set("status", status.ToString().ToLowerInvariant());
         var result = await this.medicationRequestCollection.UpdateManyAsync(filter, update);
         return result.IsAcknowledged;
@@ -73,7 +73,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     /// <inheritdoc />
     public async Task<MedicationRequest?> GetMedicationRequest(string id)
     {
-        var document = await this.medicationRequestCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
+        var document = await this.medicationRequestCollection.Find(Helpers.ByIdFilter(id)).FirstOrDefaultAsync();
         if (document is null)
         {
             return null;
@@ -85,7 +85,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     /// <inheritdoc />
     public async Task<IList<MedicationRequest>> GetMedicationRequestsByIds(string[] ids)
     {
-        var documents = await this.medicationRequestCollection.Find(Helpers.GetInIdsFilter(ids))
+        var documents = await this.medicationRequestCollection.Find(Helpers.InIdsFilter(ids))
             .ToListAsync();
         var results = documents.Select(Helpers.ToResourceAsync<MedicationRequest>);
         return await Task.WhenAll(results);
@@ -94,7 +94,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     /// <inheritdoc />
     public async Task<IList<MedicationRequest>> GetMedicationRequestFor(string patientId)
     {
-        var filter = Helpers.GetPatientReferenceFilter(patientId);
+        var filter = Helpers.PatientReferenceFilter(patientId);
         var documents = await this.medicationRequestCollection.Find(filter)
             .ToListAsync();
         var results = documents.Select(Helpers.ToResourceAsync<MedicationRequest>);
@@ -106,14 +106,14 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     public async Task<bool> DeleteMedicationRequest(string id)
     {
         this.logger.LogDebug("Deleting medication request with ID: {Id}", id);
-        var result = await this.medicationRequestCollection.DeleteOneAsync(Helpers.GetByIdFilter(id));
+        var result = await this.medicationRequestCollection.DeleteOneAsync(Helpers.ByIdFilter(id));
         return result.IsAcknowledged;
     }
 
     /// <inheritdoc />
     public async Task<bool> DeleteMedicationRequests(string[] ids)
     {
-        var result = await this.medicationRequestCollection.DeleteManyAsync(Helpers.GetInIdsFilter(ids));
+        var result = await this.medicationRequestCollection.DeleteManyAsync(Helpers.InIdsFilter(ids));
         return result.IsAcknowledged;
     }
 
@@ -121,7 +121,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     public async Task<MedicationRequest?> GetMedicationRequestForDosage(string patientId, string dosageId)
     {
         var filters = Builders<BsonDocument>.Filter.And(
-            Helpers.GetPatientReferenceFilter(patientId),
+            Helpers.PatientReferenceFilter(patientId),
             Builders<BsonDocument>.Filter.Eq("dosageInstruction.id", dosageId));
         var document = await this.medicationRequestCollection.Find(filters).FirstOrDefaultAsync();
         if (document is null)
@@ -138,7 +138,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
         bool onlyInsulin)
     {
         var searchFilter = Builders<BsonDocument>.Filter.And(
-            Helpers.GetPatientReferenceFilter(patientId),
+            Helpers.PatientReferenceFilter(patientId),
             Builders<BsonDocument>.Filter.Eq("status", MedicationRequest.MedicationrequestStatus.Active.GetLiteral()));
         if (onlyInsulin)
         {
@@ -149,7 +149,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
 
         var documents = await this.medicationRequestCollection.Find(resultFilters)
             .Limit(paginationRequest.Limit)
-            .Sort(Helpers.GetDefaultOrder())
+            .Sort(Helpers.DefaultOrder())
             .ToListAsync();
         var results = documents.Select(Helpers.ToResourceAsync<MedicationRequest>);
         var medicationRequests = await Task.WhenAll(results);
@@ -166,7 +166,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     public async Task<IList<MedicationRequest>> GetAllActiveMedicationRequests(string patientId)
     {
         var filters = Builders<BsonDocument>.Filter.And(
-            Helpers.GetPatientReferenceFilter(patientId),
+            Helpers.PatientReferenceFilter(patientId),
             Builders<BsonDocument>.Filter.Eq("status",
                 MedicationRequest.MedicationrequestStatus.Active.GetLiteral()));
 
@@ -179,7 +179,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
 
     private async Task<MedicationRequest> GetSingleMedicationRequestOrThrow(string id, Exception exception)
     {
-        var cursor = this.medicationRequestCollection.Find(Helpers.GetByIdFilter(id));
+        var cursor = this.medicationRequestCollection.Find(Helpers.ByIdFilter(id));
         var document = await this.GetSingleOrThrow(cursor, exception);
         return await Helpers.ToResourceAsync<MedicationRequest>(document);
     }
