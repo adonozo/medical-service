@@ -83,38 +83,8 @@ public class AlexaService : IAlexaService
         return Result<Bundle, MedicationRequest>.Success(bundle);
     }
 
-    /// <inheritdoc/>
-    public async Task<Result<Bundle, ServiceRequest>> SearchServiceRequests(string patientEmailOrId,
-        LocalDate dateTime,
-        CustomEventTiming timing,
-        string timezone = "UTC")
-    {
-        await ResourceUtils.GetResourceOrThrowAsync(async () =>
-            await this.patientDao.GetPatientByIdOrEmail(patientEmailOrId), new NotFoundException());
-
-        var serviceRequests = await this.serviceRequestDao.GetActiveServiceRequests(patientEmailOrId);
-        var requestNeedStartDate = serviceRequests
-            .Where(request => request.NeedsStartDate() || request.NeedsStartTime())
-            .ToList();
-
-        if (requestNeedStartDate.Any())
-        {
-            return Result<Bundle, ServiceRequest>.Fail(requestNeedStartDate.First());
-        }
-
-        var dateFilter = EventTimingMapper.TimingIntervalForPatient(
-            localDate: dateTime,
-            timing: timing,
-            timezone: timezone);
-
-        var results = serviceRequests
-            .Where(request => ResourceUtils.ServiceRequestOccursInDate(request, dateFilter));
-        var bundle = ResourceUtils.GenerateSearchBundle(results);
-        return Result<Bundle, ServiceRequest>.Success(bundle);
-    }
-
     /// <inheritdoc/>>
-    public async Task<Result<Bundle, ServiceRequest>> GetActiveSearchRequests(string patientEmailOrId,
+    public async Task<Result<Bundle, ServiceRequest>> SearchActiveServiceRequests(string patientEmailOrId,
         LocalDate? startDate = null,
         LocalDate? endDate = null)
     {

@@ -87,7 +87,7 @@ public class AlexaController : ControllerBase
         [FromQuery] LocalDate? startDate = null,
         [FromQuery] LocalDate? endDate = null)
     {
-        var result = await this.alexaService.GetActiveSearchRequests(idOrEmail, startDate, endDate);
+        var result = await this.alexaService.SearchActiveServiceRequests(idOrEmail, startDate, endDate);
         if (result.IsSuccess)
         {
             return this.Ok(result.Results.ToJObject());

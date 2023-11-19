@@ -103,7 +103,7 @@ public class AlexaControllerTest
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
         var observationsService = Substitute.For<IObservationService>();
-        alexaService.GetActiveSearchRequests(Arg.Any<string>())
+        alexaService.SearchActiveServiceRequests(Arg.Any<string>())
             .Returns(Task.FromResult(Result<Bundle, ServiceRequest>.Success(new Bundle())));
         var controller = new AlexaController(alexaService, observationsService);
 
@@ -123,7 +123,7 @@ public class AlexaControllerTest
         var observationsService = Substitute.For<IObservationService>();
 
         var expectedFailRequest = new ServiceRequest{ Id = Guid.NewGuid().ToString()};
-        alexaService.GetActiveSearchRequests(Arg.Any<string>())
+        alexaService.SearchActiveServiceRequests(Arg.Any<string>())
             .Returns(Task.FromResult(Result<Bundle, ServiceRequest>.Fail(expectedFailRequest)));
         var controller = new AlexaController(alexaService, observationsService);
 

@@ -1,6 +1,5 @@
 namespace QMUL.DiabetesBackend.ServiceInterfaces;
 
-using System;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
@@ -36,22 +35,6 @@ public interface IAlexaService
         string? timezone = "UTC");
 
     /// <summary>
-    /// Gets the glucose service requests for a given patient based on a date, timing, and the user's timezone.
-    /// The results are limited to a single day timespan due to CustomEventTiming.
-    /// </summary>
-    /// <param name="patientEmailOrId">The patient's unique email or ID</param>
-    /// <param name="dateTime">The date and time to get the results from</param>
-    /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
-    /// <param name="timezone">The user's timezone. Defaults to UTC</param>
-    /// <returns>A search <see cref="Bundle"/> with the matching medication results, or the service request that
-    /// needs a start date</returns>
-    [Obsolete("CustomEventTimings are not flexible and error prone. Use GetActiveSearchRequests instead")]
-    Task<Result<Bundle, ServiceRequest>> SearchServiceRequests(string patientEmailOrId,
-        LocalDate dateTime,
-        CustomEventTiming timing,
-        string timezone = "UTC");
-
-    /// <summary>
     /// Searches the service requests that occur within the specified interval. If any active service request needs a
     /// start date, the result will fail
     /// </summary>
@@ -60,7 +43,7 @@ public interface IAlexaService
     /// <param name="endDate">Then end date interval</param>
     /// <returns>A search <see cref="Bundle"/> with the service requests that occur within the interval, or the service
     /// request that needs a start date</returns>
-    Task<Result<Bundle, ServiceRequest>> GetActiveSearchRequests(string patientEmailOrId,
+    Task<Result<Bundle, ServiceRequest>> SearchActiveServiceRequests(string patientEmailOrId,
         LocalDate? startDate = null,
         LocalDate? endDate = null);
 
