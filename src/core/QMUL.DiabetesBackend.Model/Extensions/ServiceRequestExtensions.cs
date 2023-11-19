@@ -1,5 +1,6 @@
 namespace QMUL.DiabetesBackend.Model.Extensions;
 
+using System.Linq;
 using Constants;
 using Hl7.Fhir.Model;
 
@@ -35,10 +36,18 @@ public static class ServiceRequestExtensions
     /// Checks if a service request needs a start time by checking the <see cref="Timing.RepeatComponent"/> property
     /// </summary>
     /// <param name="serviceRequest">The <see cref="ServiceRequest"/></param>
+    /// <param name="accumulator">The accumulator value used for recursive calls</param>
     /// <returns>True if the service request needs a start time</returns>
-    public static bool NeedsStartTime(this ServiceRequest serviceRequest)
+    public static bool NeedsStartTime(this ServiceRequest serviceRequest, bool accumulator = false)
     {
-        return serviceRequest.Occurrence is Timing timing
-               && timing.NeedsStartTime() && timing.GetPatientStartTime() is null;
+        if (accumulator || !serviceRequest.Contained.Any())
+        {
+            return serviceRequest.Occurrence is Timing timing && timing.NeedsStartTime();
+        }
+
+        return serviceRequest.Contained
+            .Where(contained => contained is ServiceRequest)
+            .Cast<ServiceRequest>()
+            .Aggregate(false, (current, request) => request.NeedsStartTime(current));
     }
 }
