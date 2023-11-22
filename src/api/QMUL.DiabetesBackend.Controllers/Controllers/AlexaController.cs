@@ -20,12 +20,15 @@ public class AlexaController : ControllerBase
 
     private readonly IAlexaService alexaService;
     private readonly IObservationService observationService;
+    private readonly ICarePlanService carePlanService;
 
     public AlexaController(IAlexaService alexaService,
-        IObservationService observationService)
+        IObservationService observationService,
+        ICarePlanService carePlanService)
     {
         this.alexaService = alexaService;
         this.observationService = observationService;
+        this.carePlanService = carePlanService;
     }
 
     [HttpGet("alexa/{idOrEmail}/observations/")]
@@ -95,6 +98,13 @@ public class AlexaController : ControllerBase
 
         var errorResponse = GetErrorResponse(result.Error, Constants.ServiceRequestPath);
         return this.UnprocessableEntity(errorResponse);
+    }
+
+    [HttpGet("alexa/{idOrEmail}/care-plans/active")]
+    public async Task<IActionResult> GetActiveCarePlan([FromRoute] string idOrEmail)
+    {
+        var result = await this.carePlanService.GetActiveCarePlans(idOrEmail);
+        return this.OkOrNotFound(result);
     }
 
     [HttpGet("alexa/{idOrEmail}/requests")]

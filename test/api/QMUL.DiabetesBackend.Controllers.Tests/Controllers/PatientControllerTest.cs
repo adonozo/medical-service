@@ -137,45 +137,6 @@ public class PatientControllerTest
     }
 
     [Fact]
-    public async Task GetActiveMedicationRequests_WhenRequestIsCorrect_ReturnsStatusOk()
-    {
-        // Arrange
-        var medicationRequestService = Substitute.For<IMedicationRequestService>();
-        var paginatedResult = new PaginatedResult<Bundle>
-        {
-            Results = new Bundle()
-        };
-        medicationRequestService.GetActiveMedicationRequests(Arg.Any<string>(), Arg.Any<PaginationRequest>())
-            .Returns(paginatedResult);
-
-        var controller = this.GetTestPatientController(medicationRequestService: medicationRequestService);
-
-        // Act
-        var medicationRequests = await controller.GetActiveMedicationRequests("john@mail.com");
-        var result = (ObjectResult)medicationRequests;
-
-        // Assert
-        result.StatusCode.Should().Be(StatusCodes.Status200OK);
-    }
-
-    [Fact]
-    public async Task GetActiveCarePlan_WhenRequestIsCorrect_ReturnsStatusOk()
-    {
-        // Arrange
-        var carePlanService = Substitute.For<ICarePlanService>();
-        carePlanService.GetActiveCarePlans(Arg.Any<string>()).Returns(new Bundle());
-
-        var controller = this.GetTestPatientController(carePlanService: carePlanService);
-
-        // Act
-        var carePlan = await controller.GetActiveCarePlan("john@mail.com");
-        var result = (ObjectResult)carePlan;
-
-        // Assert
-        result.StatusCode.Should().Be(StatusCodes.Status200OK);
-    }
-
-    [Fact]
     public async Task GetAllPatientObservations_WhenRequestIsCorrect_ReturnsStatusOk()
     {
         // Arrange
@@ -256,7 +217,6 @@ public class PatientControllerTest
         IAlexaService alexaService = null,
         ICarePlanService carePlanService = null,
         IObservationService observationService = null,
-        IMedicationRequestService medicationRequestService = null,
         IResourceValidator<Observation> observationValidator = null,
         IResourceValidator<Patient> patientValidator = null)
     {
@@ -264,13 +224,17 @@ public class PatientControllerTest
         alexaService ??= Substitute.For<IAlexaService>();
         carePlanService ??= Substitute.For<ICarePlanService>();
         observationService ??= Substitute.For<IObservationService>();
-        medicationRequestService ??= Substitute.For<IMedicationRequestService>();
         observationValidator ??= Substitute.For<IResourceValidator<Observation>>();
         patientValidator ??= Substitute.For<IResourceValidator<Patient>>();
         var logger = Substitute.For<ILogger<PatientController>>();
 
-        return new PatientController(patientService, alexaService, carePlanService, observationService,
-            medicationRequestService, observationValidator, patientValidator, logger)
+        return new PatientController(patientService,
+            alexaService,
+            carePlanService,
+            observationService,
+            observationValidator,
+            patientValidator,
+            logger)
         {
             ControllerContext = new ControllerContext
             {
