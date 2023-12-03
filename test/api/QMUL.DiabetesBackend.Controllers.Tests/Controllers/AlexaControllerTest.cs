@@ -23,13 +23,14 @@ public class AlexaControllerTest
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
         var observationsService = Substitute.For<IObservationService>();
+        var carePlanService = Substitute.For<ICarePlanService>();
         alexaService.SearchMedicationRequests(Arg.Any<string>(),
                 Arg.Any<LocalDate>(),
                 false,
                 Arg.Any<CustomEventTiming>(),
                 Arg.Any<string>())
             .Returns(Task.FromResult(Result<Bundle, MedicationRequest>.Success(new Bundle())));
-        var controller = new AlexaController(alexaService, observationsService);
+        var controller = new AlexaController(alexaService, observationsService, carePlanService);
 
         // Act
         var result = await controller.GetMedicationRequests(
@@ -48,13 +49,14 @@ public class AlexaControllerTest
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
         var observationsService = Substitute.For<IObservationService>();
+        var carePlanService = Substitute.For<ICarePlanService>();
         alexaService.SearchMedicationRequests(Arg.Any<string>(),
                 Arg.Any<LocalDate>(),
                 false,
                 Arg.Any<CustomEventTiming>(),
                 Arg.Any<string>())
             .Returns(Task.FromResult(Result<Bundle, MedicationRequest>.Success(new Bundle())));
-        var controller = new AlexaController(alexaService, observationsService);
+        var controller = new AlexaController(alexaService, observationsService, carePlanService);
 
         // Act
         var result = await controller.GetMedicationRequests(
@@ -73,6 +75,7 @@ public class AlexaControllerTest
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
         var observationsService = Substitute.For<IObservationService>();
+        var carePlanService = Substitute.For<ICarePlanService>();
 
         var expectedRequest = new MedicationRequest{ Id = Guid.NewGuid().ToString() };
         alexaService.SearchMedicationRequests(Arg.Any<string>(),
@@ -81,7 +84,7 @@ public class AlexaControllerTest
                 Arg.Any<CustomEventTiming>(),
                 Arg.Any<string>())
             .Returns(Task.FromResult(Result<Bundle, MedicationRequest>.Fail(expectedRequest)));
-        var controller = new AlexaController(alexaService, observationsService);
+        var controller = new AlexaController(alexaService, observationsService, carePlanService);
 
         // Act
         var result = await controller.GetMedicationRequests(
@@ -103,18 +106,13 @@ public class AlexaControllerTest
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
         var observationsService = Substitute.For<IObservationService>();
-        alexaService.SearchServiceRequests(Arg.Any<string>(),
-                Arg.Any<LocalDate>(),
-                Arg.Any<CustomEventTiming>(),
-                Arg.Any<string>())
+        var carePlanService = Substitute.For<ICarePlanService>();
+        alexaService.SearchActiveServiceRequests(Arg.Any<string>())
             .Returns(Task.FromResult(Result<Bundle, ServiceRequest>.Success(new Bundle())));
-        var controller = new AlexaController(alexaService, observationsService);
+        var controller = new AlexaController(alexaService, observationsService, carePlanService);
 
         // Act
-        var result = await controller.GetServiceRequests(
-            idOrEmail: "test@mail.com",
-            date: new LocalDate(),
-            timing: CustomEventTiming.ALL_DAY);
+        var result = await controller.GetServiceRequests(idOrEmail: "test@mail.com");
         var status = (ObjectResult)result;
 
         // Assert
@@ -127,20 +125,15 @@ public class AlexaControllerTest
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
         var observationsService = Substitute.For<IObservationService>();
+        var carePlanService = Substitute.For<ICarePlanService>();
 
         var expectedFailRequest = new ServiceRequest{ Id = Guid.NewGuid().ToString()};
-        alexaService.SearchServiceRequests(Arg.Any<string>(),
-                Arg.Any<LocalDate>(),
-                Arg.Any<CustomEventTiming>(),
-                Arg.Any<string>())
+        alexaService.SearchActiveServiceRequests(Arg.Any<string>())
             .Returns(Task.FromResult(Result<Bundle, ServiceRequest>.Fail(expectedFailRequest)));
-        var controller = new AlexaController(alexaService, observationsService);
+        var controller = new AlexaController(alexaService, observationsService, carePlanService);
 
         // Act
-        var result = await controller.GetServiceRequests(
-            idOrEmail: "test@mail.com",
-            date: new LocalDate(),
-            timing: CustomEventTiming.ALL_DAY);
+        var result = await controller.GetServiceRequests(idOrEmail: "test@mail.com");
         var status = (ObjectResult)result;
 
         // Assert
@@ -156,6 +149,7 @@ public class AlexaControllerTest
         // Arrange
         var alexaService = Substitute.For<IAlexaService>();
         var observationsService = Substitute.For<IObservationService>();
+        var carePlanService = Substitute.For<ICarePlanService>();
         var paginatedResult = new PaginatedResult<Bundle>
         {
             Results = new Bundle()
@@ -168,7 +162,7 @@ public class AlexaControllerTest
                 Arg.Any<string>())
             .Returns(paginatedResult);
 
-        var controller = new AlexaController(alexaService, observationsService)
+        var controller = new AlexaController(alexaService, observationsService, carePlanService)
         {
             ControllerContext = new ControllerContext
             {

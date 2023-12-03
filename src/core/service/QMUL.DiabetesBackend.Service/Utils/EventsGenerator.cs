@@ -177,9 +177,10 @@ internal class EventsGenerator
     }
 
     private bool DatesFilterIsOutsideResourceDates() =>
-        this.datesFilter is not null &&
-        (this.datesFilter.Value.Start > DateUtils.InstantFromUtcDate(this.resourcePeriod.End) ||
-         this.datesFilter.Value.End < DateUtils.InstantFromUtcDate(this.resourcePeriod.Start));
+        this.datesFilter is not null
+        && (this.datesFilter.Value.Start > DateUtils.InstantFromUtcDate(this.resourcePeriod.End)
+            || this.datesFilter.Value.HasEnd &&
+            this.datesFilter.Value.End < DateUtils.InstantFromUtcDate(this.resourcePeriod.Start));
 
     private IEnumerable<HealthEvent> EventsFromTimeOfDay(LocalDate date) => this.timing.Repeat.TimeOfDayIso()
         .Select(time =>

@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Model;
 using Model.Constants;
@@ -19,12 +20,15 @@ public class AlexaController : ControllerBase
 
     private readonly IAlexaService alexaService;
     private readonly IObservationService observationService;
+    private readonly ICarePlanService carePlanService;
 
     public AlexaController(IAlexaService alexaService,
-        IObservationService observationService)
+        IObservationService observationService,
+        ICarePlanService carePlanService)
     {
         this.alexaService = alexaService;
         this.observationService = observationService;
+        this.carePlanService = carePlanService;
     }
 
     [HttpGet("alexa/{idOrEmail}/observations/")]
@@ -81,19 +85,12 @@ public class AlexaController : ControllerBase
         return this.UnprocessableEntity(errorResponse);
     }
 
-    [HttpGet("patients/{idOrEmail}/alexa/service-requests")]
+    [HttpGet("alexa/{idOrEmail}/service-requests")]
     public async Task<IActionResult> GetServiceRequests([FromRoute] string idOrEmail,
-        [FromQuery] LocalDate? date,
-        [FromQuery] string timezone = "UTC",
-        [FromQuery] CustomEventTiming timing = CustomEventTiming.EXACT)
+        [FromQuery] LocalDate? startDate = null,
+        [FromQuery] LocalDate? endDate = null)
     {
-        if (date is null)
-        {
-            ModelState.AddModelError("date", "Date is required");
-            return this.UnprocessableEntity(ModelState);
-        }
-
-        var result = await this.alexaService.SearchServiceRequests(idOrEmail, date.Value, timing, timezone);
+        var result = await this.alexaService.SearchActiveServiceRequests(idOrEmail, startDate, endDate);
         if (result.IsSuccess)
         {
             return this.Ok(result.Results.ToJObject());
@@ -103,6 +100,31 @@ public class AlexaController : ControllerBase
         return this.UnprocessableEntity(errorResponse);
     }
 
+    [HttpGet("alexa/{idOrEmail}/care-plans/active")]
+    public async Task<IActionResult> GetActiveCarePlan([FromRoute] string idOrEmail)
+    {
+        var result = await this.carePlanService.GetActiveCarePlans(idOrEmail);
+        return this.OkOrNotFound(result);
+    }
+
+    [HttpGet("alexa/{idOrEmail}/requests")]
+    public async Task<IActionResult> GetLastRequest([FromRoute] string idOrEmail, [FromQuery] string deviceId)
+    {
+        if (string.IsNullOrEmpty(deviceId))
+        {
+            ModelState.AddModelError("deviceId", "The Alexa Device ID is required");
+            return this.UnprocessableEntity(ModelState);
+        }
+
+        var result = await this.alexaService.GetLastRequest(idOrEmail, deviceId);
+        return result switch
+        {
+            {IsSuccess: true, Results: null} => this.NotFound(GetErrorResponse(deviceId)),
+            {IsSuccess: true, Results: not null} => this.Ok(result.Results),
+            {IsSuccess: false} => this.StatusCode(StatusCodes.Status500InternalServerError)
+        };
+    }
+
     private static ProblemDetails GetErrorResponse<T>(T resource, string path) where T : DomainResource => new()
     {
         Title = "Resource needs a start date",
@@ -110,5 +132,13 @@ public class AlexaController : ControllerBase
         Instance = path + resource.Id,
         Status = (int)HttpStatusCode.UnprocessableEntity,
         Extensions = { { ResourceErrorKey, resource.ToJObject() } }
+    };
+
+    private static ProblemDetails GetErrorResponse(string deviceId) => new()
+    {
+        Title = "Not found",
+        Detail = $"Device ID {deviceId} did not have a previous request",
+        Instance = deviceId,
+        Status = (int)HttpStatusCode.NotFound
     };
 }

@@ -68,13 +68,17 @@ public static class ResourceUtils
         var events = new List<HealthEvent>();
         request.Contained.ForEach(resource =>
         {
-            if (resource is not ServiceRequest)
+            if (resource is not ServiceRequest serviceRequest)
             {
                 throw new ValidationException("Contained resources are not of type Service Request");
             }
 
+            var containedTiming = serviceRequest.Occurrence as Timing ??
+                                  throw new InvalidOperationException("Invalid service request occurrence");
+            containedTiming.Extension = request.Occurrence.Extension; // copy parent's start date extension flags
+
             var eventsGenerator = new EventsGenerator(
-                request.Occurrence as Timing ?? throw new InvalidOperationException("Invalid service request occurrence"),
+                containedTiming,
                 dateFilter);
             events.AddRange(eventsGenerator.GetEvents());
         });

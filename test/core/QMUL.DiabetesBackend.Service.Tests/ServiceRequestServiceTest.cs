@@ -5,15 +5,19 @@ using DataInterfaces;
 using FluentAssertions;
 using Hl7.Fhir.Model;
 using Microsoft.Extensions.Logging;
+using NodaTime.Testing;
 using NSubstitute;
 using Service;
 using ServiceInterfaces.Utils;
 using Xunit;
+using Instant = NodaTime.Instant;
 using ResourceReference = Hl7.Fhir.Model.ResourceReference;
 using Task = System.Threading.Tasks.Task;
 
 public class ServiceRequestServiceTest
 {
+    private readonly Instant testDate = Instant.FromUtc(2023, 10, 10, 10, 00, 00);
+
     [Fact]
     public async Task CreateServiceRequest_WhenRequestIsSuccessful_ReturnsServiceRequest()
     {
@@ -21,7 +25,9 @@ public class ServiceRequestServiceTest
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
-        var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, logger);
+        var clock = new FakeClock(this.testDate);
+
+        var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, clock, logger);
 
         var patient = TestUtils.GetStubInternalPatient();
         var serviceRequest = this.GetTestServiceRequest(patient.Id);
@@ -43,7 +49,9 @@ public class ServiceRequestServiceTest
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
-        var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, logger);
+        var clock = new FakeClock(this.testDate);
+
+        var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, clock, logger);
 
         serviceRequestDao.GetServiceRequest(Arg.Any<string>()).Returns(new ServiceRequest());
 
@@ -62,11 +70,12 @@ public class ServiceRequestServiceTest
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
+        var clock = new FakeClock(this.testDate);
 
         var patient = TestUtils.GetStubInternalPatient();
         var serviceRequest = this.GetTestServiceRequest(patient.Id);
 
-        var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, logger);
+        var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, clock, logger);
         dataGatherer.GetReferenceInternalPatientOrThrow(Arg.Any<ResourceReference>()).Returns(patient);
         serviceRequestDao.GetServiceRequest(Arg.Any<string>()).Returns(new ServiceRequest());
         serviceRequestDao.UpdateServiceRequest(Arg.Any<string>(), Arg.Any<ServiceRequest>())
@@ -88,8 +97,9 @@ public class ServiceRequestServiceTest
         var serviceRequestDao = Substitute.For<IServiceRequestDao>();
         var dataGatherer = Substitute.For<IDataGatherer>();
         var logger = Substitute.For<ILogger<ServiceRequestService>>();
+        var clock = new FakeClock(this.testDate);
 
-        var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, logger);
+        var serviceRequestService = new ServiceRequestService(serviceRequestDao, dataGatherer, clock, logger);
 
         serviceRequestDao.GetServiceRequest(Arg.Any<string>()).Returns(new ServiceRequest());
         serviceRequestDao.DeleteServiceRequest(Arg.Any<string>()).Returns(true);

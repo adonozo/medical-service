@@ -42,7 +42,7 @@ public class ObservationDao : MongoDaoBase, IObservationDao
         var newId = this.GetIdFromDocument(document);
         this.logger.LogDebug("Observation created with ID: {Id}", newId);
         const string errorMessage = "Could not create observation";
-        document = await this.GetSingleOrThrow(this.observationCollection.Find(Helpers.GetByIdFilter(newId)),
+        document = await this.GetSingleOrThrow(this.observationCollection.Find(Helpers.ByIdFilter(newId)),
             new WriteResourceException(errorMessage));
         return await this.ProjectToObservation(document);
     }
@@ -50,7 +50,7 @@ public class ObservationDao : MongoDaoBase, IObservationDao
     /// <inheritdoc />
     public async Task<Observation?> GetObservation(string id)
     {
-        var document = await this.observationCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
+        var document = await this.observationCollection.Find(Helpers.ByIdFilter(id)).FirstOrDefaultAsync();
         if (document is null)
         {
             return null;
@@ -63,12 +63,12 @@ public class ObservationDao : MongoDaoBase, IObservationDao
     public async Task<PaginatedResult<IEnumerable<Resource>>> GetAllObservationsFor(string patientId,
         PaginationRequest paginationRequest)
     {
-        var searchFilter = Helpers.GetPatientReferenceFilter(patientId);
+        var searchFilter = Helpers.PatientReferenceFilter(patientId);
         var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
 
         var documents = await this.observationCollection.Find(resultsFilter)
             .Limit(paginationRequest.Limit)
-            .Sort(Helpers.GetDefaultOrder())
+            .Sort(Helpers.DefaultOrder())
             .ToListAsync();
         var results = documents.Select(this.ProjectToObservation);
         Resource[] observations = await Task.WhenAll(results);
@@ -87,7 +87,7 @@ public class ObservationDao : MongoDaoBase, IObservationDao
         Instant? start = null,
         Instant? end = null)
     {
-        var searchFilter = Builders<BsonDocument>.Filter.And(Helpers.GetPatientReferenceFilter(patientId));
+        var searchFilter = Builders<BsonDocument>.Filter.And(Helpers.PatientReferenceFilter(patientId));
 
         if (start.HasValue)
         {
@@ -120,7 +120,7 @@ public class ObservationDao : MongoDaoBase, IObservationDao
         this.logger.LogDebug("Updating Observation with ID {Id}", id);
         var document = await Helpers.ToBsonDocumentAsync(observation);
         var result = await this.observationCollection
-            .ReplaceOneAsync(Helpers.GetByIdFilter(id), document);
+            .ReplaceOneAsync(Helpers.ByIdFilter(id), document);
 
         return result.IsAcknowledged;
     }
@@ -129,7 +129,7 @@ public class ObservationDao : MongoDaoBase, IObservationDao
     public async Task<bool> DeleteObservation(string id)
     {
         this.logger.LogDebug("Deleting Observation with ID: {Id}", id);
-        var result = await this.observationCollection.DeleteOneAsync(Helpers.GetByIdFilter(id));
+        var result = await this.observationCollection.DeleteOneAsync(Helpers.ByIdFilter(id));
         return result.IsAcknowledged;
     }
 
