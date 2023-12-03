@@ -41,7 +41,7 @@ public class MedicationDao : MongoDaoBase, IMedicationDao
         var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
         var documents = await this.medicationCollection.Find(resultsFilter)
             .Limit(paginationRequest.Limit)
-            .Sort(Helpers.GetDefaultOrder())
+            .Sort(Helpers.DefaultOrder())
             .ToListAsync();
 
         var results = documents.Select(Helpers.ToResourceAsync<Medication>);
@@ -58,7 +58,7 @@ public class MedicationDao : MongoDaoBase, IMedicationDao
     /// <inheritdoc />
     public async Task<Medication?> GetSingleMedication(string id)
     {
-        var result = await this.medicationCollection.Find(Helpers.GetByIdFilter(id)).FirstOrDefaultAsync();
+        var result = await this.medicationCollection.Find(Helpers.ByIdFilter(id)).FirstOrDefaultAsync();
         if (result is null)
         {
             return null;
@@ -82,7 +82,7 @@ public class MedicationDao : MongoDaoBase, IMedicationDao
 
     private async Task<Medication> GetSingleMedicationOrThrow(string id, Exception exception)
     {
-        var result = this.medicationCollection.Find(Helpers.GetByIdFilter(id));
+        var result = this.medicationCollection.Find(Helpers.ByIdFilter(id));
         var document = await this.GetSingleOrThrow(result, exception);
         return await Helpers.ToResourceAsync<Medication>(document);
     }

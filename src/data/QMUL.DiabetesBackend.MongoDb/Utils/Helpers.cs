@@ -23,8 +23,25 @@ public static class Helpers
     {
         var json = await resource.ToJsonAsync();
         var bson = BsonDocument.Parse(json);
-
         return bson ?? throw new ArgumentException("Invalid resource", nameof(resource));
+    }
+
+    /// <summary>
+    /// Converts an array of <see cref="DataType"/> into a <see cref="BsonArray"/> containing <see cref="BsonDocument"/>
+    /// </summary>
+    /// <param name="elements">The array of <see cref="DataType"/> from a FHIR object</param>
+    /// <returns>A BsonArray of BsonDocuments</returns>
+    /// <exception cref="ArgumentException">If any element cannot be serialized into JSON or returns an invalid BSON
+    /// object</exception>
+    public static BsonArray ToBsonArray(IEnumerable<DataType> elements)
+    {
+        var json = elements.Select(source =>
+        {
+            var extensionJson= PocoSerializationExtensions.ToJson(source);
+            return BsonDocument.Parse(extensionJson);
+        });
+        var bson = BsonArray.Create(json);
+        return bson ?? throw new ArgumentException("Invalid element", nameof(elements));
     }
 
     /// <summary>
@@ -32,7 +49,7 @@ public static class Helpers
     /// </summary>
     /// <param name="id">The string ID to look for. This should be a <see cref="ObjectId"/> string equivalent.</param>
     /// <returns>The ID's "eq" filter definition.</returns>
-    public static FilterDefinition<BsonDocument> GetByIdFilter(string id)
+    public static FilterDefinition<BsonDocument> ByIdFilter(string id)
     {
         var objectId = ObjectId.TryParse(id, out var parsedId) ? parsedId : ObjectId.Empty;
         return Builders<BsonDocument>.Filter.Eq("_id", objectId);
@@ -43,7 +60,7 @@ public static class Helpers
     /// </summary>
     /// <param name="ids">The list of IDs to folter</param>
     /// <returns>A <see cref="FilterDefinition{TDocument}"/> to use in a query</returns>
-    public static FilterDefinition<BsonDocument> GetInIdsFilter(string[] ids)
+    public static FilterDefinition<BsonDocument> InIdsFilter(string[] ids)
     {
         var objectIds = ids.Select(id => new ObjectId(id));
         return Builders<BsonDocument>.Filter.In("_id", objectIds);
@@ -54,13 +71,13 @@ public static class Helpers
     /// </summary>
     /// <param name="patientId">The patient ID.</param>
     /// <returns>The subject reference filter definition.</returns>
-    public static FilterDefinition<BsonDocument> GetPatientReferenceFilter(string patientId)
+    public static FilterDefinition<BsonDocument> PatientReferenceFilter(string patientId)
     {
         var patientReference = Constants.PatientPath + patientId;
         return Builders<BsonDocument>.Filter.Eq("subject.reference", patientReference);
     }
 
-    public static SortDefinition<BsonDocument> GetDefaultOrder() => Builders<BsonDocument>.Sort.Descending("_id");
+    public static SortDefinition<BsonDocument> DefaultOrder() => Builders<BsonDocument>.Sort.Descending("_id");
 
     /// <summary>
     /// Sets a <see cref="BsonDocument"/> field as a <see cref="BsonDateTime"/> date from a <see cref="DateTimeOffset"/>.

@@ -39,7 +39,7 @@ public class PatientDao : MongoDaoBase, IPatientDao
         var searchFilter = FilterDefinition<BsonDocument>.Empty;
         var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
         var documents = await this.patientCollection.Find(resultsFilter)
-            .Sort(Helpers.GetDefaultOrder())
+            .Sort(Helpers.DefaultOrder())
             .Limit(paginationRequest.Limit)
             .ToListAsync();
         var results = documents.Select(Helpers.ToResourceAsync<Patient>);
@@ -68,7 +68,7 @@ public class PatientDao : MongoDaoBase, IPatientDao
     public async Task<Patient?> GetPatientByIdOrEmail(string idOrEmail)
     {
         var filter = ObjectId.TryParse(idOrEmail, out _)
-            ? Helpers.GetByIdFilter(idOrEmail)
+            ? Helpers.ByIdFilter(idOrEmail)
             : Builders<BsonDocument>.Filter.Eq("email", idOrEmail);
         var bsonPatient = await this.patientCollection.Find(filter).FirstOrDefaultAsync();
         if (bsonPatient is null)
@@ -84,7 +84,7 @@ public class PatientDao : MongoDaoBase, IPatientDao
     {
         logger.LogInformation("Updating patient with ID: {Id}", actualPatient.Id);
         var bson = await this.PatientToBsonDocument(actualPatient);
-        var result = await this.patientCollection.ReplaceOneAsync(Helpers.GetByIdFilter(actualPatient.Id),
+        var result = await this.patientCollection.ReplaceOneAsync(Helpers.ByIdFilter(actualPatient.Id),
             bson, new ReplaceOptions { IsUpsert = true });
 
         return result.IsAcknowledged;
@@ -100,7 +100,7 @@ public class PatientDao : MongoDaoBase, IPatientDao
 
     private async Task<Patient> GetSinglePatientOrThrow(string id)
     {
-        var cursor = this.patientCollection.Find(Helpers.GetByIdFilter(id));
+        var cursor = this.patientCollection.Find(Helpers.ByIdFilter(id));
         const string errorMessage = "Could not create or update the patient";
         var bsonDocument = await this.GetSingleOrThrow(cursor, new WriteResourceException(errorMessage),
             () => this.logger.LogWarning("{ErrorMessage}", errorMessage));

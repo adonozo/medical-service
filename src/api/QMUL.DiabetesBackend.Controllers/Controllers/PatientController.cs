@@ -20,7 +20,6 @@ public class PatientController : ControllerBase
     private readonly IAlexaService alexaService;
     private readonly ICarePlanService carePlanService;
     private readonly IObservationService observationService;
-    private readonly IMedicationRequestService medicationRequestService;
     private readonly IResourceValidator<Observation> observationValidator;
     private readonly IResourceValidator<Patient> patientValidator;
     private readonly ILogger<PatientController> logger;
@@ -29,7 +28,6 @@ public class PatientController : ControllerBase
         IAlexaService alexaService,
         ICarePlanService carePlanService,
         IObservationService observationService,
-        IMedicationRequestService medicationRequestService,
         IResourceValidator<Observation> observationValidator,
         IResourceValidator<Patient> patientValidator,
         ILogger<PatientController> logger)
@@ -41,7 +39,6 @@ public class PatientController : ControllerBase
         this.observationValidator = observationValidator;
         this.carePlanService = carePlanService;
         this.observationService = observationService;
-        this.medicationRequestService = medicationRequestService;
     }
 
     #region POST
@@ -106,26 +103,6 @@ public class PatientController : ControllerBase
             this.HttpContext.SetPaginatedResult(paginatedResult);
             return this.Ok(paginatedResult.Results.ToJObject());
         }, this.logger, this);
-    }
-
-    [HttpGet("patients/{idOrEmail}/medication-requests/active")]
-    public async Task<IActionResult> GetActiveMedicationRequests([FromRoute] string idOrEmail,
-        [FromQuery] int? limit = null, [FromQuery] string? after = null)
-    {
-        var paginationRequest = new PaginationRequest(limit, after);
-        var paginatedResult =
-            await this.medicationRequestService.GetActiveMedicationRequests(idOrEmail, paginationRequest);
-
-        this.HttpContext.SetPaginatedResult(paginatedResult);
-        return this.Ok(paginatedResult.Results.ToJObject());
-    }
-
-    // Alexa endpoint
-    [HttpGet("patients/{idOrEmail}/care-plans/active")]
-    public async Task<IActionResult> GetActiveCarePlan([FromRoute] string idOrEmail)
-    {
-        var result = await this.carePlanService.GetActiveCarePlans(idOrEmail);
-        return this.OkOrNotFound(result);
     }
 
     [HttpGet("patients/{idOrEmail}/observations/")]

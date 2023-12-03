@@ -3,6 +3,7 @@ namespace QMUL.DiabetesBackend.ServiceInterfaces;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
+using Model.Alexa;
 using Model.Enums;
 using Model.Exceptions;
 using NodaTime;
@@ -34,19 +35,17 @@ public interface IAlexaService
         string? timezone = "UTC");
 
     /// <summary>
-    /// Gets the glucose service requests for a given patient based on a date, timing, and the user's timezone.
-    /// The results are limited to a single day timespan due to CustomEventTiming.
+    /// Searches the service requests that occur within the specified interval. If any active service request needs a
+    /// start date, the result will fail
     /// </summary>
     /// <param name="patientEmailOrId">The patient's unique email or ID</param>
-    /// <param name="dateTime">The date and time to get the results from</param>
-    /// <param name="timing">A <see cref="CustomEventTiming"/> to limit the results to a timing in the day</param>
-    /// <param name="timezone">The user's timezone. Defaults to UTC</param>
-    /// <returns>A search <see cref="Bundle"/> with the matching medication results, or the service request that
-    /// needs a start date.</returns>
-    Task<Result<Bundle, ServiceRequest>> SearchServiceRequests(string patientEmailOrId,
-        LocalDate dateTime,
-        CustomEventTiming timing,
-        string timezone = "UTC");
+    /// <param name="startDate">The start date interval</param>
+    /// <param name="endDate">Then end date interval</param>
+    /// <returns>A search <see cref="Bundle"/> with the service requests that occur within the interval, or the service
+    /// request that needs a start date</returns>
+    Task<Result<Bundle, ServiceRequest>> SearchActiveServiceRequests(string patientEmailOrId,
+        LocalDate? startDate = null,
+        LocalDate? endDate = null);
 
     /// <summary>
     /// Updates / Adds a start date for a dosage instruction. Useful when the medication doesn't have an exact start
@@ -76,4 +75,12 @@ public interface IAlexaService
     /// <returns>A boolean value to indicate is the update was successful.</returns>
     /// <exception cref="ValidationException">If the patient was not found</exception>
     Task<bool> UpsertServiceRequestStartDate(string patientIdOrEmail, string serviceRequestId, LocalDate startDate);
+
+    /// <summary>
+    /// Gets the last Alexa request that a patient has made. A call to this method is recorded as an Alexa Request.
+    /// </summary>
+    /// <param name="patientIdOrEmail">The patient's ID or email.</param>
+    /// <param name="deviceId">The patient's Alexa device ID</param>
+    /// <returns>The last <see cref="AlexaRequest"/> for the patient, or null if the patient never made a reqest before</returns>
+    Task<Result<AlexaRequest?, string>> GetLastRequest(string patientIdOrEmail, string deviceId);
 }

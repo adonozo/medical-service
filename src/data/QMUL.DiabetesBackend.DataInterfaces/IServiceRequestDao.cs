@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model.Exceptions;
+using NodaTime;
 
 /// <summary>
 /// The Service Request Dao interface.
@@ -47,6 +48,16 @@ public interface IServiceRequestDao
     /// <param name="status">The new <see cref="RequestStatus"/></param>
     /// <returns>A bool indicating the result.</returns>
     Task<bool> UpdateServiceRequestsStatus(string[] ids, RequestStatus status);
+
+    /// <summary>
+    /// Sets the start date for a number of service requests. It will replace the OccurrenceTiming Extensions with a
+    /// single extension containing the start date, meaning that `NeedsStartDateFlag` or `NeedsStartTimeFlag` will be
+    /// overriden.
+    /// </summary>
+    /// <param name="ids">The list of service request IDs to update</param>
+    /// <param name="date">The local date in ISO format</param>
+    /// <returns>A bool indicating the result.</returns>
+    Task<bool> UpdateServiceRequestsStartDate(string[] ids, LocalDate date);
 
     /// <summary>
     /// Deletes a service request from the database.
