@@ -20,7 +20,7 @@ using Task = System.Threading.Tasks.Task;
 /// <summary>
 /// The Service Request Dao
 /// </summary>
-public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
+public class ServiceRequestDao : MongoMultiLingualBase, IServiceRequestDao
 {
     private const string CollectionName = "serviceRequest";
 
@@ -30,7 +30,7 @@ public class ServiceRequestDao : MongoDaoBase, IServiceRequestDao
     public ServiceRequestDao(IMongoDatabase database, ILogger<ServiceRequestDao> logger) : base(database)
     {
         this.logger = logger;
-        this.serviceRequestCollection = this.Database.GetCollection<BsonDocument>(CollectionName);
+        this.serviceRequestCollection = this.GetLocalizedCollection(CollectionName);
     }
 
     /// <inheritdoc />
