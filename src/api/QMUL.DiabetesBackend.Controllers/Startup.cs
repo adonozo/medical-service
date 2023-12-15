@@ -8,11 +8,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Middlewares;
 using MongoDb;
-using MongoDB.Driver;
 using NodaTime;
 using Service;
 using Service.Utils;
@@ -48,12 +46,7 @@ public class Startup
 
         services.AddSingleton<IClock>(SystemClock.Instance);
         services.Configure<MongoDatabaseSettings>(this.configuration.GetSection(nameof(MongoDatabaseSettings)));
-        services.AddSingleton(sp =>
-        {
-            var databaseSettings = sp.GetRequiredService<IOptions<MongoDatabaseSettings>>().Value;
-            var client = new MongoClient(databaseSettings.DatabaseConnectionString);
-            return client.GetDatabase(databaseSettings.DatabaseName);
-        });
+        services.AddMongoDB();
         services.AddSingleton<IMedicationRequestDao, MedicationRequestDao>();
         services.AddSingleton<IMedicationDao, MedicationDao>();
         services.AddSingleton<IPatientDao, PatientDao>();
