@@ -17,7 +17,7 @@ using Task = System.Threading.Tasks.Task;
 /// <summary>
 /// The Mongo Medication Dao
 /// </summary>
-public class MedicationDao : MongoDaoBase, IMedicationDao
+public class MedicationDao : MongoMultiLingualBase, IMedicationDao
 {
     private const string CollectionName = "medication";
 
@@ -27,7 +27,7 @@ public class MedicationDao : MongoDaoBase, IMedicationDao
     public MedicationDao(IMongoDatabase database, ILogger<MedicationDao> logger) : base(database)
     {
         this.logger = logger;
-        this.medicationCollection = this.Database.GetCollection<BsonDocument>(CollectionName);
+        this.medicationCollection = this.GetLocalizedCollection(CollectionName);
     }
 
     /// <inheritdoc />

@@ -8,10 +8,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using Middlewares;
 using MongoDb;
-using MongoDB.Driver;
 using NodaTime;
 using Service;
 using Service.Utils;
@@ -25,12 +24,12 @@ using MongoDatabaseSettings = Model.MongoDatabaseSettings;
 [ExcludeFromCodeCoverage]
 public class Startup
 {
+    private readonly IConfiguration configuration;
+
     public Startup(IConfiguration configuration)
     {
-        Configuration = configuration;
+        this.configuration = configuration;
     }
-
-    public IConfiguration Configuration { get; }
 
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
@@ -46,13 +45,8 @@ public class Startup
         });
 
         services.AddSingleton<IClock>(SystemClock.Instance);
-        services.Configure<MongoDatabaseSettings>(Configuration.GetSection(nameof(MongoDatabaseSettings)));
-        services.AddSingleton(sp =>
-        {
-            var databaseSettings = sp.GetRequiredService<IOptions<MongoDatabaseSettings>>().Value;
-            var client = new MongoClient(databaseSettings.DatabaseConnectionString);
-            return client.GetDatabase(databaseSettings.DatabaseName);
-        });
+        services.Configure<MongoDatabaseSettings>(this.configuration.GetSection(nameof(MongoDatabaseSettings)));
+        services.AddMongoDB();
         services.AddSingleton<IMedicationRequestDao, MedicationRequestDao>();
         services.AddSingleton<IMedicationDao, MedicationDao>();
         services.AddSingleton<IPatientDao, PatientDao>();
@@ -91,6 +85,8 @@ public class Startup
         }
 
         app.UseRouting();
+
+        app.UseRequestCulture();
 
         app.UseCors(options => options.AllowAnyOrigin()
             .AllowAnyMethod()

@@ -17,7 +17,7 @@ using Task = System.Threading.Tasks.Task;
 /// <summary>
 /// The Observation Dao
 /// </summary>
-public class ObservationDao : MongoDaoBase, IObservationDao
+public class ObservationDao : MongoMultiLingualBase, IObservationDao
 {
     private const string CollectionName = "observation";
 
@@ -28,7 +28,7 @@ public class ObservationDao : MongoDaoBase, IObservationDao
     public ObservationDao(IMongoDatabase database, ILogger<ObservationDao> logger) : base(database)
     {
         this.logger = logger;
-        this.observationCollection = this.Database.GetCollection<BsonDocument>(CollectionName);
+        this.observationCollection = this.GetLocalizedCollection(CollectionName);
     }
 
     /// <inheritdoc />
