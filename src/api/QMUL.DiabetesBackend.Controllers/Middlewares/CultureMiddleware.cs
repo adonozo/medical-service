@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("QMUL.DiabetesBackend.Controllers.Tests")]
 namespace QMUL.DiabetesBackend.Controllers.Middlewares;
 
 using System.Collections.Generic;
@@ -7,10 +10,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
+/// <summary>
+/// Sets the application culture from the Accept-Language header. The default culture is neutral 'es'
+/// </summary>
 public class CultureMiddleware
 {
+    internal const string DefaultCulture = "en";
+
     private readonly RequestDelegate next;
-    private const string DefaultCulture = "en";
     private readonly List<string> supportedCultures = new() { DefaultCulture, "es" };
 
     public CultureMiddleware(RequestDelegate next)
@@ -22,21 +29,39 @@ public class CultureMiddleware
     {
         var cultures = context.Request.Headers.AcceptLanguage;
         var culture = cultures.ToString()?.Split(',').FirstOrDefault() ?? DefaultCulture;
-        if (!supportedCultures.Contains(culture))
+        var cultureInfo = new CultureInfo(culture);
+
+        if (cultureInfo.IsNeutralCulture && supportedCultures.Contains(cultureInfo.Name))
         {
-            culture = DefaultCulture;
+            ApplyCulture(context, cultureInfo);
+        }
+        else if (supportedCultures.Contains(cultureInfo.Parent.Name))
+        {
+            ApplyCulture(context, cultureInfo.Parent);
+        }
+        else
+        {
+            ApplyCulture(context, new CultureInfo(DefaultCulture));
         }
 
-        var cultureInfo = new CultureInfo(culture);
+        await next(context);
+    }
+
+    private void ApplyCulture(HttpContext context, CultureInfo cultureInfo)
+    {
         CultureInfo.CurrentCulture = cultureInfo;
         CultureInfo.CurrentUICulture = cultureInfo;
 
-        await next(context);
+        context.Response.Headers.AcceptLanguage = cultureInfo.Name;
     }
 }
 
 public static class CultureMiddlewareExtensions
 {
+    /// <summary>
+    /// Adds the <see cref="CultureMiddleware"/> to set the application culture
+    /// </summary>
+    /// <param name="builder">The <see cref="IApplicationBuilder"/></param>
     public static void UseRequestCulture(this IApplicationBuilder builder)
     {
         builder.UseMiddleware<CultureMiddleware>();
