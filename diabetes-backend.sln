@@ -18,6 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api-docs", "api-docs", "{62
 		api-docs\timingDaily.json = api-docs\timingDaily.json
 		api-docs\timingOther.json = api-docs\timingOther.json
 		api-docs\observation.json = api-docs\observation.json
+		api-docs\observation-config.json = api-docs\observation-config.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.Model", "src\core\QMUL.DiabetesBackend.Model\QMUL.DiabetesBackend.Model.csproj", "{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C}"
