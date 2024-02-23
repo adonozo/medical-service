@@ -1,7 +1,7 @@
 namespace QMUL.DiabetesBackend.Integration.Tests.Utils;
 
 using System.Threading.Tasks;
-using global::MongoDB.Driver;
+using MongoDB.Driver;
 using MongoDb;
 
 public class MongoDBTest : MongoDaoBase
