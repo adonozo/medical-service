@@ -19,7 +19,7 @@ using Task = System.Threading.Tasks.Task;
 /// <summary>
 /// The Medication Request Dao
 /// </summary>
-public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
+public class MedicationRequestDao : MongoMultiLingualBase, IMedicationRequestDao
 {
     private const string CollectionName = "medicationRequest";
 
@@ -29,7 +29,7 @@ public class MedicationRequestDao : MongoDaoBase, IMedicationRequestDao
     public MedicationRequestDao(IMongoDatabase database, ILogger<MedicationRequestDao> logger) : base(database)
     {
         this.logger = logger;
-        this.medicationRequestCollection = this.Database.GetCollection<BsonDocument>(CollectionName);
+        this.medicationRequestCollection = this.GetLocalizedCollection(CollectionName);
     }
 
     /// <inheritdoc />
