@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Middlewares;
+using Model;
 using MongoDb;
 using NodaTime;
 using Service;
@@ -69,6 +70,7 @@ public class Startup
         services.AddSingleton<IResourceValidator<MedicationRequest>, MedicationRequestValidator>();
         services.AddSingleton<IResourceValidator<ServiceRequest>, ServiceRequestValidator>();
         services.AddSingleton<IResourceValidator<Observation>, ObservationValidator>();
+        services.AddSingleton<ValidatorBase<ObservationTemplate>, ObservationTemplateValidator>();
         services.AddSingleton<IResourceValidator<Patient>, PatientValidator>();
         services.AddSingleton<IDataTypeValidator, DataTypeValidator>();
     }

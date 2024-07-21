@@ -37,4 +37,14 @@ public static class HttpExtensions
 
         return controller.Ok(result.ToJObject());
     }
+
+    public static IActionResult OkOrNotFound(this ControllerBase controller, object? result)
+    {
+        if (result is null)
+        {
+            return controller.NotFound();
+        }
+
+        return controller.Ok(result);
+    }
 }
