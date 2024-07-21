@@ -1,10 +1,11 @@
 namespace QMUL.DiabetesBackend.ServiceInterfaces;
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Model;
 
-public interface IObservationsTemplatesService
+public interface IObservationTemplateService
 {
     /// <summary>
     /// Adds an observation config
@@ -25,5 +26,5 @@ public interface IObservationsTemplatesService
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    Task<Bundle> SearchTemplate(string? type = null);
+    Task<PaginatedResult<IEnumerable<ObservationTemplate>>> SearchTemplate(string? type = null);
 }

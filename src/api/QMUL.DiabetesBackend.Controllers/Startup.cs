@@ -64,6 +64,7 @@ public class Startup
         services.AddSingleton<ICarePlanService, CarePlanService>();
         services.AddSingleton<IAlexaService, AlexaService>();
         services.AddSingleton<IObservationService, ObservationService>();
+        services.AddSingleton<IObservationTemplateService, ObservationTemplateService>();
 
         services.AddSingleton<IResourceValidator<Medication>, MedicationValidator>();
         services.AddSingleton<IResourceValidator<CarePlan>, CarePlanValidator>();

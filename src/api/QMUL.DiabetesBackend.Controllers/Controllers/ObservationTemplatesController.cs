@@ -1,7 +1,6 @@
 namespace QMUL.DiabetesBackend.Controllers.Controllers;
 
 using System.Threading.Tasks;
-using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Model;
@@ -12,16 +11,16 @@ using Utils;
 [ApiController]
 public class ObservationTemplatesController : ControllerBase
 {
-    private readonly IObservationsTemplatesService observationsTemplatesService;
+    private readonly IObservationTemplateService observationTemplateService;
     private readonly ValidatorBase<ObservationTemplate> templateValidator;
     private readonly ILogger<ObservationTemplatesController> logger;
 
     public ObservationTemplatesController(
-        IObservationsTemplatesService observationsTemplatesService,
+        IObservationTemplateService observationTemplateService,
         ILogger<ObservationTemplatesController> logger,
         ValidatorBase<ObservationTemplate> templateValidator)
     {
-        this.observationsTemplatesService = observationsTemplatesService;
+        this.observationTemplateService = observationTemplateService;
         this.logger = logger;
         this.templateValidator = templateValidator;
     }
@@ -33,7 +32,7 @@ public class ObservationTemplatesController : ControllerBase
         {
             this.templateValidator.ValidateResource(template);
 
-            var newTemplate = await this.observationsTemplatesService.AddTemplate(template);
+            var newTemplate = await this.observationTemplateService.AddTemplate(template);
             return Ok(newTemplate);
         }, this.logger, this);
     }
@@ -41,14 +40,14 @@ public class ObservationTemplatesController : ControllerBase
     [HttpGet("observations/config/{id}")]
     public async Task<IActionResult> GetConfig([FromRoute] string id)
     {
-        var template = await this.observationsTemplatesService.GetTemplate(id);
+        var template = await this.observationTemplateService.GetTemplate(id);
         return this.OkOrNotFound(template);
     }
 
     [HttpGet("observations/config")]
     public async Task<IActionResult> SearchConfig([FromQuery] string? type = null)
     {
-        var configBundle = await this.observationsTemplatesService.SearchTemplate(type);
-        return Ok(configBundle.ToJObject());
+        var templates = await this.observationTemplateService.SearchTemplate(type);
+        return Ok(templates);
     }
 }
