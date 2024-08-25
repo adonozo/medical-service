@@ -1,6 +1,5 @@
 namespace QMUL.DiabetesBackend.Service;
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using DataInterfaces;
 using Microsoft.Extensions.Logging;
@@ -24,13 +23,14 @@ public class ObservationTemplateService : IObservationTemplateService
         return await this.templateDao.CreateObservationTemplate(template);
     }
 
-    public async Task<ObservationTemplate> GetTemplate(string id)
+    public async Task<ObservationTemplate?> GetTemplate(string id)
     {
         return await this.templateDao.GetObservationTemplate(id);
     }
 
-    public async Task<PaginatedResult<IEnumerable<ObservationTemplate>>> SearchTemplate(string? type = null)
+    // TODO add pagination
+    public async Task<PaginatedResults<ObservationTemplate>> SearchTemplate(string? type = null)
     {
-        return await this.templateDao.SearchObservationTemplates(type);
+        return await this.templateDao.SearchObservationTemplates(PaginationRequest.FirstPaginatedResults, type);
     }
 }

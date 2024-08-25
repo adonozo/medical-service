@@ -1,7 +1,6 @@
 namespace QMUL.DiabetesBackend.MongoDb;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DataInterfaces;
@@ -32,7 +31,7 @@ public class ObservationTemplateDao : MongoMultiLingualBase, IObservationTemplat
         return template.ToObservationTemplate();
     }
 
-    public async Task<PaginatedResult<IEnumerable<ObservationTemplate>>> SearchObservationTemplates(
+    public async Task<PaginatedResults<ObservationTemplate>> SearchObservationTemplates(
         PaginationRequest paginationRequest,
         string? type = null)
     {
@@ -49,7 +48,7 @@ public class ObservationTemplateDao : MongoMultiLingualBase, IObservationTemplat
             .Where(result => result is not null)
             .Select(result => result.ToObservationTemplate()!);
 
-        return await Helpers.GetPaginatedResult(this.templateCollection, searchFilter, mappedTemplates.ToArray());
+        return await Helpers.GetPaginatedResults(this.templateCollection, searchFilter, mappedTemplates.ToArray());
     }
 
     public async Task<ObservationTemplate> CreateObservationTemplate(ObservationTemplate template)

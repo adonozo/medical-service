@@ -1,8 +1,6 @@
 namespace QMUL.DiabetesBackend.ServiceInterfaces;
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Hl7.Fhir.Model;
 using Model;
 
 public interface IObservationTemplateService
@@ -19,12 +17,12 @@ public interface IObservationTemplateService
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    Task<ObservationTemplate> GetTemplate(string id);
+    Task<ObservationTemplate?> GetTemplate(string id);
 
     /// <summary>
-    /// Gets a collection of observations. Can be filtered out by type // TODO does it need to have filters?
+    /// Gets a collection of observations. Can be filtered out by type
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    Task<PaginatedResult<IEnumerable<ObservationTemplate>>> SearchTemplate(string? type = null);
+    Task<PaginatedResults<ObservationTemplate>> SearchTemplate(string? type = null);
 }

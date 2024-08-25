@@ -1,6 +1,5 @@
 namespace QMUL.DiabetesBackend.DataInterfaces;
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Model;
 
@@ -8,7 +7,7 @@ public interface IObservationTemplateDao
 {
     Task<ObservationTemplate?> GetObservationTemplate(string id);
 
-    Task<PaginatedResult<IEnumerable<ObservationTemplate>>> SearchObservationTemplates(
+    Task<PaginatedResults<ObservationTemplate>> SearchObservationTemplates(
         PaginationRequest paginationRequest,
         string? type = null);
 

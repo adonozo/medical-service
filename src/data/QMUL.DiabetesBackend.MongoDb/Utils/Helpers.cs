@@ -169,6 +169,28 @@ public static class Helpers
         };
     }
 
+    public static async Task<PaginatedResults<TResource>> GetPaginatedResults<TResource, TDocument>(
+        IMongoCollection<TDocument> collection,
+        FilterDefinition<TDocument> searchFilter,
+        TResource[] results)
+    {
+        var updatedLastCursorId = GetLastCursorId(results);
+        var count = await collection.Find(searchFilter)
+            .CountDocumentsAsync();
+
+        var remainingResults = await collection
+            .Find(GetPaginationFilter(searchFilter, updatedLastCursorId))
+            .CountDocumentsAsync();
+
+        return new PaginatedResults<TResource>
+        {
+            Results = results,
+            TotalResults = count,
+            LastDataCursor = updatedLastCursorId,
+            RemainingCount = remainingResults
+        };
+    }
+
     private static string GetLastCursorId<TResource>(TResource[] resources) => resources switch
     {
         Resource[] fhirResources => fhirResources[^1].Id,
