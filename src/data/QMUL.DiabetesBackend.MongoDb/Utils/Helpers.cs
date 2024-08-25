@@ -51,8 +51,13 @@ public static class Helpers
     /// <returns>The ID's "eq" filter definition.</returns>
     public static FilterDefinition<BsonDocument> ByIdFilter(string id)
     {
+        return ByIdFilter<BsonDocument>(id);
+    }
+
+    public static FilterDefinition<T> ByIdFilter<T>(string id)
+    {
         var objectId = ObjectId.TryParse(id, out var parsedId) ? parsedId : ObjectId.Empty;
-        return Builders<BsonDocument>.Filter.Eq("_id", objectId);
+        return Builders<T>.Filter.Eq("_id", objectId);
     }
 
     /// <summary>

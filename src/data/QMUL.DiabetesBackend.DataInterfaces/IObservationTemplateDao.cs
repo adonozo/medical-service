@@ -6,9 +6,11 @@ using Model;
 
 public interface IObservationTemplateDao
 {
-    Task<ObservationTemplate> GetObservationTemplate(string id);
+    Task<ObservationTemplate?> GetObservationTemplate(string id);
 
-    Task<PaginatedResult<IEnumerable<ObservationTemplate>>> SearchObservationTemplates(string? type = null);
+    Task<PaginatedResult<IEnumerable<ObservationTemplate>>> SearchObservationTemplates(
+        PaginationRequest paginationRequest,
+        string? type = null);
 
     Task<ObservationTemplate> CreateObservationTemplate(ObservationTemplate template);
 }

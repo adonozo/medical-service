@@ -6,6 +6,8 @@ using Code = FHIR.Code;
 
 public class ObservationTemplate
 {
+    public string Id { get; set; }
+
     public Code Code { get; init; }
 
     #nullable enable
