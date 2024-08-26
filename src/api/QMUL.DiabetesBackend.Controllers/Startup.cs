@@ -55,6 +55,7 @@ public class Startup
         services.AddSingleton<IObservationDao, ObservationDao>();
         services.AddSingleton<ICarePlanDao, CarePlanDao>();
         services.AddSingleton<IAlexaDao, AlexaDao>();
+        services.AddSingleton<IObservationTemplateDao, ObservationTemplateDao>();
 
         services.AddSingleton<IDataGatherer, DataGatherer>();
         services.AddSingleton<IMedicationService, MedicationService>();

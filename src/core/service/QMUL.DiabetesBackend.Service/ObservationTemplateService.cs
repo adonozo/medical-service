@@ -28,9 +28,10 @@ public class ObservationTemplateService : IObservationTemplateService
         return await this.templateDao.GetObservationTemplate(id);
     }
 
-    // TODO add pagination
-    public async Task<PaginatedResults<ObservationTemplate>> SearchTemplate(string? type = null)
+    public async Task<PaginatedResults<ObservationTemplate>> SearchTemplate(
+        PaginationRequest paginationRequest,
+        string? type = null)
     {
-        return await this.templateDao.SearchObservationTemplates(PaginationRequest.FirstPaginatedResults, type);
+        return await this.templateDao.SearchObservationTemplates(paginationRequest, type);
     }
 }

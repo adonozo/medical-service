@@ -22,7 +22,10 @@ public interface IObservationTemplateService
     /// <summary>
     /// Gets a collection of observations. Can be filtered out by type
     /// </summary>
+    /// <param name="paginationRequest"></param>
     /// <param name="type"></param>
     /// <returns></returns>
-    Task<PaginatedResults<ObservationTemplate>> SearchTemplate(string? type = null);
+    Task<PaginatedResults<ObservationTemplate>> SearchTemplate(
+        PaginationRequest paginationRequest,
+        string? type = null);
 }

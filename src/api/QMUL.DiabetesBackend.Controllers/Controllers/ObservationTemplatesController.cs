@@ -25,7 +25,7 @@ public class ObservationTemplatesController : ControllerBase
         this.templateValidator = templateValidator;
     }
 
-    [HttpPost("observations/config")]
+    [HttpPost("observation-templates")]
     public async Task<IActionResult> CreateConfig(ObservationTemplate template)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
@@ -37,17 +37,21 @@ public class ObservationTemplatesController : ControllerBase
         }, this.logger, this);
     }
 
-    [HttpGet("observations/config/{id}")]
+    [HttpGet("observation-templates/{id}")]
     public async Task<IActionResult> GetConfig([FromRoute] string id)
     {
         var template = await this.observationTemplateService.GetTemplate(id);
         return this.OkOrNotFound(template);
     }
 
-    [HttpGet("observations/config")]
-    public async Task<IActionResult> SearchConfig([FromQuery] string? type = null)
+    [HttpGet("observation-templates")]
+    public async Task<IActionResult> SearchConfig(
+        [FromQuery] string? type = null,
+        [FromQuery] int? limit = null,
+        [FromQuery] string? after = null)
     {
-        var templates = await this.observationTemplateService.SearchTemplate(type);
-        return Ok(templates);
+        var pagination = new PaginationRequest(limit, after);
+        var paginatedTemplates = await this.observationTemplateService.SearchTemplate(pagination, type);
+        return Ok(paginatedTemplates);
     }
 }
