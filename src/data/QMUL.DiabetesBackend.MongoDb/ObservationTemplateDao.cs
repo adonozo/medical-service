@@ -59,9 +59,10 @@ public class ObservationTemplateDao : MongoMultiLingualBase, IObservationTemplat
             throw new ArgumentNullException(nameof(template));
         }
 
-        await this.templateCollection.InsertOneAsync(template.ToMongoObservationTemplate()!);
+        var mongoTemplate = template.ToMongoObservationTemplate()!;
+        await this.templateCollection.InsertOneAsync(mongoTemplate);
 
-        var savedTemplate = await this.GetObservationTemplate(template.Id);
+        var savedTemplate = await this.GetObservationTemplate(mongoTemplate.Id?.ToString() ?? string.Empty);
         if (savedTemplate is null)
         {
             throw new WriteResourceException("Could not create template");

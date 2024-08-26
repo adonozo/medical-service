@@ -35,7 +35,7 @@ public abstract class IntegrationTestBase : IClassFixture<TestFixture>, IAsyncLi
     {
         var patient = PatientStubs.Patient;
         var createResponse = await this.HttpClient.PostResource("patients", patient);
-        var parsedResponse = await HttpUtils.ParseResult<Patient>(createResponse.Content);
+        var parsedResponse = await HttpUtils.ParseResourceResult<Patient>(createResponse.Content);
         return parsedResponse.Id;
     }
 
@@ -43,19 +43,19 @@ public abstract class IntegrationTestBase : IClassFixture<TestFixture>, IAsyncLi
     {
         var medication = MedicationStubs.Lorazepam;
         var createResponse = await this.HttpClient.PostResource("medications", medication);
-        var createResult = await HttpUtils.ParseResult<Medication>(createResponse.Content);
+        var createResult = await HttpUtils.ParseResourceResult<Medication>(createResponse.Content);
         return createResult.Id;
     }
 
     protected async Task<ServiceRequest> GetServiceRequest(string id)
     {
         var resourceJson = await this.HttpClient.GetStringAsync($"service-requests/{id}");
-        return await HttpUtils.ParseJson<ServiceRequest>(resourceJson);
+        return await HttpUtils.ParseJsonResource<ServiceRequest>(resourceJson);
     }
 
     protected async Task<MedicationRequest> GetMedicationRequest(string id)
     {
         var resourceJson = await this.HttpClient.GetStringAsync($"medication-requests/{id}");
-        return await HttpUtils.ParseJson<MedicationRequest>(resourceJson);
+        return await HttpUtils.ParseJsonResource<MedicationRequest>(resourceJson);
     }
 }

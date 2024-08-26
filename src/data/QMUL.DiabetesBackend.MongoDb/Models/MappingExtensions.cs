@@ -21,7 +21,7 @@ public static class MappingExtensions
             ? null
             : new()
             {
-                Id = ObjectId.Parse(template.Id),
+                Id = template.Id is null ? null : ObjectId.Parse(template.Id),
                 Code = template.Code,
                 ValueTemplate = template.ValueTemplate,
                 ReferenceRange = template.ReferenceRange

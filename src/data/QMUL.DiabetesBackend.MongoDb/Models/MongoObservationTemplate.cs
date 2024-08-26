@@ -3,10 +3,13 @@ namespace QMUL.DiabetesBackend.MongoDb.Models;
 using System.Collections.Generic;
 using Model.FHIR;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.IdGenerators;
 
 public class MongoObservationTemplate
 {
-    public ObjectId Id { get; set; }
+    [BsonId(IdGenerator = typeof(ObjectIdGenerator))]
+    public ObjectId? Id { get; set; }
 
     public Code Code { get; set; }
 

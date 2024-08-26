@@ -35,7 +35,7 @@ public class PatientTests : IntegrationTestBase
 
         // Act
         var createResponse = await this.HttpClient.PostResource("patients", patient);
-        var parsedResponse = await HttpUtils.ParseResult<Patient>(createResponse.Content);
+        var parsedResponse = await HttpUtils.ParseResourceResult<Patient>(createResponse.Content);
 
         // Assert
         parsedResponse.Id.Should().NotBeNull();
@@ -55,7 +55,7 @@ public class PatientTests : IntegrationTestBase
         // Arrange
         var patient = PatientStubs.Patient;
         var createResponse = await this.HttpClient.PostResource("patients", patient);
-        var parsedResponse = await HttpUtils.ParseResult<Patient>(createResponse.Content);
+        var parsedResponse = await HttpUtils.ParseResourceResult<Patient>(createResponse.Content);
         parsedResponse.Id.Should().NotBeNull();
 
         var updatedPatient = new InternalPatient
@@ -84,7 +84,7 @@ public class PatientTests : IntegrationTestBase
         // Arrange
         var patient = PatientStubs.Patient;
         var createResponse = await this.HttpClient.PostResource("patients", patient);
-        var parsedResponse = await HttpUtils.ParseResult<Patient>(createResponse.Content);
+        var parsedResponse = await HttpUtils.ParseResourceResult<Patient>(createResponse.Content);
         parsedResponse.Id.Should().NotBeNull();
 
         patient.Id = parsedResponse.Id;
@@ -114,6 +114,6 @@ public class PatientTests : IntegrationTestBase
     private async Task<Patient> GetPatient(string id)
     {
         var patientJson = await this.HttpClient.GetStringAsync($"patients/{id}");
-        return await HttpUtils.ParseJson<Patient>(patientJson);
+        return await HttpUtils.ParseJsonResource<Patient>(patientJson);
     }
 }
