@@ -38,13 +38,23 @@ public class ObservationTemplateService : IObservationTemplateService
 
     public async Task<bool> UpdateObservationTemplate(string id, ObservationTemplate template)
     {
-        var templateExists = await this.templateDao.GetObservationTemplate(id) is not null;
+        await this.AssertTemplateExists(id);
+        template.Id = id;
+        return await this.templateDao.UpdateObservationTemplate(template);
+    }
+
+    public async Task<bool> DeleteObservationTemplate(string id)
+    {
+        await this.AssertTemplateExists(id);
+        return await this.templateDao.DeleteObservationTemplate(id);
+    }
+
+    private async Task AssertTemplateExists(string observationTemplateId)
+    {
+        var templateExists = await this.templateDao.GetObservationTemplate(observationTemplateId) is not null;
         if (!templateExists)
         {
             throw new NotFoundException();
         }
-
-        template.Id = id;
-        return await this.templateDao.UpdateObservationTemplate(template);
     }
 }

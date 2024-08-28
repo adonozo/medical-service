@@ -78,4 +78,11 @@ public class ObservationTemplateDao : MongoMultiLingualBase, IObservationTemplat
         var result = await this.templateCollection.ReplaceOneAsync(filter, mongoTemplate);
         return result.IsAcknowledged;
     }
+
+    public async Task<bool> DeleteObservationTemplate(string id)
+    {
+        var filter = Helpers.ByIdFilter<MongoObservationTemplate>(id);
+        var result = await this.templateCollection.DeleteOneAsync(filter);
+        return result.IsAcknowledged;
+    }
 }

@@ -14,4 +14,6 @@ public interface IObservationTemplateDao
     Task<ObservationTemplate> CreateObservationTemplate(ObservationTemplate template);
 
     Task<bool> UpdateObservationTemplate(ObservationTemplate template);
+
+    Task<bool> DeleteObservationTemplate(string id);
 }

@@ -74,4 +74,27 @@ public class ObservationTemplateTests : IntegrationTestBase
         var updatedTemplate = await getResponse.Content.Parse<ObservationTemplate>();
         updatedTemplate.Should().BeEquivalentTo(savedTemplate);
     }
+
+    [Fact]
+    public async Task DeleteObservationTemplate_ReturnsOkOnce()
+    {
+        // Arrange
+        var template = ObservationTemplateStubs.GlucoseTemplate;
+        var createResponse = await this.HttpClient.PostJson("observation-templates", template);
+        var createdTemplate = await createResponse.Content.Parse<ObservationTemplate>();
+        var getResponse = await this.HttpClient.GetAsync($"observation-templates/{createdTemplate.Id}");
+        var savedTemplate = await getResponse.Content.Parse<ObservationTemplate>();
+
+        // Act
+        var deleteResponse = await this.HttpClient.DeleteAsync($"observation-templates/{savedTemplate.Id}");
+
+        // Assert
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        getResponse = await this.HttpClient.GetAsync($"observation-templates/{createdTemplate.Id}");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        // Second delete request
+        deleteResponse = await this.HttpClient.DeleteAsync($"observation-templates/{savedTemplate.Id}");
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }

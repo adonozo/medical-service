@@ -66,4 +66,14 @@ public class ObservationTemplatesController : ControllerBase
             return resultSuccessful ? this.Ok() : (IActionResult)this.BadRequest();
         }, this.logger, this);
     }
+
+    [HttpDelete("observation-templates/{id}")]
+    public async Task<IActionResult> DeleteObservationTemplate([FromRoute] string id)
+    {
+        return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+        {
+            var resultSuccessful = await this.observationTemplateService.DeleteObservationTemplate(id);
+            return resultSuccessful ? this.Ok() : (IActionResult)this.BadRequest();
+        }, this.logger, this);
+    }
 }
