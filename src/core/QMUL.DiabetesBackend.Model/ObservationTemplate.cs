@@ -8,11 +8,11 @@ public class ObservationTemplate
 {
     public string Id { get; set; }
 
-    public Code Code { get; init; }
+    public Code Code { get; set; }
 
     #nullable enable
-    public ValueQuantity? ValueTemplate { get; init; }
+    public ValueQuantity? ValueTemplate { get; set; }
     #nullable disable
 
-    public IEnumerable<Reference> ReferenceRange { get; init; }
+    public IEnumerable<Reference> ReferenceRange { get; set; }
 }

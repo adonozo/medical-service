@@ -28,4 +28,6 @@ public interface IObservationTemplateService
     Task<PaginatedResults<ObservationTemplate>> SearchTemplate(
         PaginationRequest paginationRequest,
         string? type = null);
+
+    Task<bool> UpdateObservationTemplate(string id, ObservationTemplate template);
 }

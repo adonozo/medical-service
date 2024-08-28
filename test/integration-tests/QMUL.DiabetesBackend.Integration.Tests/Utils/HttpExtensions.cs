@@ -41,6 +41,12 @@ public static class HttpExtensions
         return await client.PutAsync(uri, requestContent);
     }
 
+    public static async Task<HttpResponseMessage> PutJson<T>(this HttpClient client, string uri, T resource) where T : class
+    {
+        var requestContent = ObjectToJsonContent(resource);
+        return await client.PutAsync(uri, requestContent);
+    }
+
     public static async Task<HttpResponseMessage> Patch<T>(this HttpClient client, string uri, T @object)
     {
         var json = JsonSerializer.Serialize(@object, DefaultSerializer);

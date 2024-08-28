@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using DataInterfaces;
 using Microsoft.Extensions.Logging;
 using Model;
+using Model.Exceptions;
 using ServiceInterfaces;
 
 public class ObservationTemplateService : IObservationTemplateService
@@ -33,5 +34,17 @@ public class ObservationTemplateService : IObservationTemplateService
         string? type = null)
     {
         return await this.templateDao.SearchObservationTemplates(paginationRequest, type);
+    }
+
+    public async Task<bool> UpdateObservationTemplate(string id, ObservationTemplate template)
+    {
+        var templateExists = await this.templateDao.GetObservationTemplate(id) is not null;
+        if (!templateExists)
+        {
+            throw new NotFoundException();
+        }
+
+        template.Id = id;
+        return await this.templateDao.UpdateObservationTemplate(template);
     }
 }

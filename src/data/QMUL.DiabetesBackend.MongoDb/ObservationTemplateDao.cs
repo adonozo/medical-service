@@ -70,4 +70,12 @@ public class ObservationTemplateDao : MongoMultiLingualBase, IObservationTemplat
 
         return savedTemplate;
     }
+
+    public async Task<bool> UpdateObservationTemplate(ObservationTemplate template)
+    {
+        var mongoTemplate = template.ToMongoObservationTemplate()!;
+        var filter = Helpers.ByIdFilter<MongoObservationTemplate>(template.Id);
+        var result = await this.templateCollection.ReplaceOneAsync(filter, mongoTemplate);
+        return result.IsAcknowledged;
+    }
 }

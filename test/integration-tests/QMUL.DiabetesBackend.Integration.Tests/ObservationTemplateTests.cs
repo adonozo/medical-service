@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Model;
+using Model.FHIR;
 using Stubs;
 using Utils;
 using Xunit;
@@ -42,5 +43,35 @@ public class ObservationTemplateTests : IntegrationTestBase
         var getResponse = await this.HttpClient.GetAsync($"observation-templates/{createdTemplate.Id}");
         var savedTemplate = await getResponse.Content.Parse<ObservationTemplate>();
         savedTemplate.Should().BeEquivalentTo(createdTemplate);
+    }
+
+    [Fact]
+    public async Task UpdateObservationTemplate_ReturnsOk()
+    {
+        // Arrange
+        var template = ObservationTemplateStubs.GlucoseTemplate;
+        var createResponse = await this.HttpClient.PostJson("observation-templates", template);
+        var createdTemplate = await createResponse.Content.Parse<ObservationTemplate>();
+        var getResponse = await this.HttpClient.GetAsync($"observation-templates/{createdTemplate.Id}");
+        var savedTemplate = await getResponse.Content.Parse<ObservationTemplate>();
+        savedTemplate.ValueTemplate = new ValueQuantity(
+            Unit: "updated",
+            System: "updated",
+            Code: "updated");
+        savedTemplate.Code = new Code(
+            Coding: new Coding(
+                System: "updated",
+                Code: "updated",
+                Display: "updated"));
+
+        //  Act
+        var updateResponse = await this.HttpClient.PutJson($"observation-templates/{savedTemplate.Id}",
+            savedTemplate);
+
+        // Assert
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        getResponse = await this.HttpClient.GetAsync($"observation-templates/{createdTemplate.Id}");
+        var updatedTemplate = await getResponse.Content.Parse<ObservationTemplate>();
+        updatedTemplate.Should().BeEquivalentTo(savedTemplate);
     }
 }

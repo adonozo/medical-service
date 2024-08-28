@@ -26,7 +26,7 @@ public class ObservationTemplatesController : ControllerBase
     }
 
     [HttpPost("observation-templates")]
-    public async Task<IActionResult> CreateConfig(ObservationTemplate template)
+    public async Task<IActionResult> CreateObservationTemplate(ObservationTemplate template)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
         {
@@ -38,14 +38,14 @@ public class ObservationTemplatesController : ControllerBase
     }
 
     [HttpGet("observation-templates/{id}")]
-    public async Task<IActionResult> GetConfig([FromRoute] string id)
+    public async Task<IActionResult> GetObservationTemplate([FromRoute] string id)
     {
         var template = await this.observationTemplateService.GetTemplate(id);
         return this.OkOrNotFound(template);
     }
 
     [HttpGet("observation-templates")]
-    public async Task<IActionResult> SearchConfig(
+    public async Task<IActionResult> SearchObservationTemplates(
         [FromQuery] string? type = null,
         [FromQuery] int? limit = null,
         [FromQuery] string? after = null)
@@ -53,5 +53,17 @@ public class ObservationTemplatesController : ControllerBase
         var pagination = new PaginationRequest(limit, after);
         var paginatedTemplates = await this.observationTemplateService.SearchTemplate(pagination, type);
         return Ok(paginatedTemplates);
+    }
+
+    [HttpPut("observation-templates/{id}")]
+    public async Task<IActionResult> UpdateObservationTemplate([FromRoute] string id,
+        [FromBody] ObservationTemplate template)
+    {
+        return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+        {
+            this.templateValidator.ValidateResource(template);
+            var resultSuccessful = await this.observationTemplateService.UpdateObservationTemplate(id, template);
+            return resultSuccessful ? this.Ok() : (IActionResult)this.BadRequest();
+        }, this.logger, this);
     }
 }
