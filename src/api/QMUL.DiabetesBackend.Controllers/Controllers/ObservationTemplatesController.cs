@@ -61,6 +61,7 @@ public class ObservationTemplatesController : ControllerBase
     {
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
         {
+            // TODO validation shouldn't throw but return a result object
             this.templateValidator.ValidateResource(template);
             var resultSuccessful = await this.observationTemplateService.UpdateObservationTemplate(id, template);
             return resultSuccessful ? this.Ok() : (IActionResult)this.BadRequest();

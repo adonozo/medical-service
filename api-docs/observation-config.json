@@ -1,6 +1,4 @@
 {
-  "resourceType": "Observation",
-  "status": "final",
   "code": {
     "coding": [
       {
@@ -10,10 +8,6 @@
       }
     ]
   },
-  "subject": null,
-  "effectiveDateTime": "2013-04-03T15:30:10+01:00",
-  "issued": "2013-04-03T15:30:10+01:00",
-  "performer": null,
   "valueQuantity": {
     "value": null,
     "unit": "mmol/l",
@@ -39,7 +33,7 @@
   "extension": [
     {
       "url": "http://localhost/fhir/config-categoru",
-      "value": "hemogram - TODO define this"
+      "value": "hemogram - TODO add something to map observations to categories (an observation 'type')"
     }
   ]
 }
