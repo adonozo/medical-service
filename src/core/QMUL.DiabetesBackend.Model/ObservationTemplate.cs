@@ -16,6 +16,5 @@ public class ObservationTemplate
 
     public IEnumerable<Reference> ReferenceRange { get; set; }
 
-    // TODO add metadata
-    // TODO add type (should be shared with observations too)
+    public ObservationMetadata Metadata { get; set; }
 }

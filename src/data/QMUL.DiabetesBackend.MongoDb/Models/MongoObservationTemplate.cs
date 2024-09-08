@@ -1,6 +1,7 @@
 namespace QMUL.DiabetesBackend.MongoDb.Models;
 
 using System.Collections.Generic;
+using Model;
 using Model.FHIR;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
@@ -16,4 +17,6 @@ public class MongoObservationTemplate
     public ValueQuantity? ValueTemplate { get; set; }
 
     public IEnumerable<Reference> ReferenceRange { get; set; }
+
+    public ObservationMetadata Metadata { get; set; }
 }

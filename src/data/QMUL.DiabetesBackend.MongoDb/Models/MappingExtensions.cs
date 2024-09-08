@@ -13,7 +13,8 @@ public static class MappingExtensions
                 Id = template.Id.ToString(),
                 Code = template.Code,
                 ValueTemplate = template.ValueTemplate,
-                ReferenceRange = template.ReferenceRange
+                ReferenceRange = template.ReferenceRange,
+                Metadata = template.Metadata
             };
 
     public static MongoObservationTemplate? ToMongoObservationTemplate(this ObservationTemplate? template) =>
@@ -24,6 +25,7 @@ public static class MappingExtensions
                 Id = template.Id is null ? null : ObjectId.Parse(template.Id),
                 Code = template.Code,
                 ValueTemplate = template.ValueTemplate,
-                ReferenceRange = template.ReferenceRange
+                ReferenceRange = template.ReferenceRange,
+                Metadata = template.Metadata
             };
 }
