@@ -20,11 +20,10 @@ public class ObservationTemplateValidator : ValidatorBase<ObservationTemplate>
 
         RuleFor(observation => observation.ReferenceRange)
             .Cascade(CascadeMode.Stop)
-            .NotEmpty()
-            .NotNull()
             .ForEach(referenceRules => referenceRules
                 .Must(referenceRange => referenceRange.Low != null
                                         || referenceRange.High != null)
-                .WithMessage("The reference value must have a low or a high value"));
+                .WithMessage("The reference value must have a low or a high value"))
+            .When(template => template.ReferenceRange is not null);
     }
 }

@@ -78,7 +78,7 @@ public class ObservationTemplatesController : ControllerBase
         }, this.logger, this);
     }
 
-    [HttpPut]
+    [HttpPut("observation-templates")]
     public async Task<IActionResult> SeedObservationTemplate([FromBody] ObservationTemplate template)
     {
         return await ExceptionHandler.ExecuteAndHandleAsync(async () =>

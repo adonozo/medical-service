@@ -4,18 +4,18 @@ using Model;
 using Model.Enums;
 using Model.FHIR;
 
-public class HemogramTemplateData
+public static class HemogramTemplateData
 {
-    public readonly ICollection<ObservationTemplate> ObservationTemplates = new List<ObservationTemplate>();
+    public static readonly ICollection<ObservationTemplate> ObservationTemplates = new List<ObservationTemplate>();
 
-    public HemogramTemplateData()
+    static HemogramTemplateData()
     {
         AddData();
     }
 
-    private void AddData()
+    private static void AddData()
     {
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
                 code: "HM0001",
@@ -60,7 +60,7 @@ public class HemogramTemplateData
                     }))
             .Build());
 
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
                 code: "HM0002",
@@ -86,7 +86,7 @@ public class HemogramTemplateData
                 }))
             .Build());
 
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
                 code: "HM0003",
@@ -130,7 +130,7 @@ public class HemogramTemplateData
                     }))
             .Build());
 
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
                 code: "HM0004",
@@ -174,7 +174,7 @@ public class HemogramTemplateData
                     }))
             .Build());
 
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
                 code: "HM0005",
@@ -182,22 +182,22 @@ public class HemogramTemplateData
             .SetMmhQuantity()
             .Build());
 
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
-                code: "HM006",
+                code: "HM0006",
                 display: "VES 2a Hora")
             .SetMmhQuantity()
             .Build());
 
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
                 code: "HM0007",
                 display: "Indice de Kats")
             .Build());
 
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
                 code: "HM0008",
@@ -216,7 +216,7 @@ public class HemogramTemplateData
                         Value: 1)))
             .Build());
 
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
                 code: "HM0009",
@@ -235,7 +235,7 @@ public class HemogramTemplateData
                     Value: 4)))
             .Build());
 
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
                 code: "HM0010",
@@ -254,7 +254,7 @@ public class HemogramTemplateData
                     Value: 3)))
             .Build());
 
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
                 code: "HM0011",
@@ -273,7 +273,7 @@ public class HemogramTemplateData
                     Value: 65)))
             .Build());
 
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
                 code: "HM0012",
@@ -292,7 +292,7 @@ public class HemogramTemplateData
                     Value: 35)))
             .Build());
 
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
                 code: "HM0013",
@@ -311,7 +311,7 @@ public class HemogramTemplateData
                     Value: 6)))
             .Build());
 
-        this.ObservationTemplates.Add(new ObservationTemplateBuilder()
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
             .SetType(ObservationType.Hemogram)
             .AddCode(
                 code: "HM0014",
