@@ -7,6 +7,8 @@ public interface IObservationTemplateDao
 {
     Task<ObservationTemplate?> GetObservationTemplate(string id);
 
+    Task<ObservationTemplate?> GetObservationTemplateByCode(string code, string system);
+
     Task<PaginatedResults<ObservationTemplate>> SearchObservationTemplates(
         PaginationRequest paginationRequest,
         string? type = null);

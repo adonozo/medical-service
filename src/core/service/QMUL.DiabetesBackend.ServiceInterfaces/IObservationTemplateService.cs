@@ -32,4 +32,6 @@ public interface IObservationTemplateService
     Task<bool> UpdateObservationTemplate(string id, ObservationTemplate template);
 
     Task<bool> DeleteObservationTemplate(string id);
+
+    Task<ObservationTemplate> InsertSeededTemplate(ObservationTemplate template);
 }

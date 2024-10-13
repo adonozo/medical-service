@@ -49,6 +49,18 @@ public class ObservationTemplateService : IObservationTemplateService
         return await this.templateDao.DeleteObservationTemplate(id);
     }
 
+    public async Task<ObservationTemplate> InsertSeededTemplate(ObservationTemplate template)
+    {
+        var existingTemplate = await this.templateDao.GetObservationTemplateByCode(template.Code.Coding.Code,
+            template.Code.Coding.System);
+        if (existingTemplate is not null)
+        {
+            return existingTemplate;
+        }
+
+        return await this.AddTemplate(template);
+    }
+
     private async Task AssertTemplateExists(string observationTemplateId)
     {
         var templateExists = await this.templateDao.GetObservationTemplate(observationTemplateId) is not null;

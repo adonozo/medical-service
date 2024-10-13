@@ -77,4 +77,16 @@ public class ObservationTemplatesController : ControllerBase
             return resultSuccessful ? this.Ok() : (IActionResult)this.BadRequest();
         }, this.logger, this);
     }
+
+    [HttpPut]
+    public async Task<IActionResult> SeedObservationTemplate([FromBody] ObservationTemplate template)
+    {
+        return await ExceptionHandler.ExecuteAndHandleAsync(async () =>
+        {
+            this.templateValidator.ValidateResource(template);
+
+            var createdTemplate = await this.observationTemplateService.InsertSeededTemplate(template);
+            return this.Ok(createdTemplate);
+        }, this.logger, this);
+    }
 }

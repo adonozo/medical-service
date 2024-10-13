@@ -31,6 +31,19 @@ public class ObservationTemplateDao : MongoMultiLingualBase, IObservationTemplat
         return template.ToObservationTemplate();
     }
 
+    public async Task<ObservationTemplate?> GetObservationTemplateByCode(string code, string system)
+    {
+        var filter = Builders<MongoObservationTemplate>.Filter
+            .And(
+                Builders<MongoObservationTemplate>.Filter.Eq(template => template.Code.Coding.Code, code),
+                Builders<MongoObservationTemplate>.Filter.Eq(template => template.Code.Coding.System, system));
+        var mongoTemplate = await this.templateCollection.Find(filter)
+            .Limit(1)
+            .FirstOrDefaultAsync();
+
+        return mongoTemplate.ToObservationTemplate();
+    }
+
     public async Task<PaginatedResults<ObservationTemplate>> SearchObservationTemplates(
         PaginationRequest paginationRequest,
         string? type = null)
@@ -39,8 +52,7 @@ public class ObservationTemplateDao : MongoMultiLingualBase, IObservationTemplat
             ? Builders<MongoObservationTemplate>.Filter.Empty
             : Builders<MongoObservationTemplate>.Filter.Eq(template => template.Code.Coding.System, type);
 
-        var resultsFilter =
-            Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
+        var resultsFilter = Helpers.GetPaginationFilter(searchFilter, paginationRequest.LastCursorId);
         var results = await this.templateCollection.Find(resultsFilter)
             .Limit(paginationRequest.Limit)
             .ToListAsync();
