@@ -2,7 +2,6 @@ namespace QMUL.DiabetesBackend.SeedData.observations;
 
 using Model;
 using Model.Enums;
-using Model.FHIR;
 
 public static class HemogramTemplateData
 {
@@ -21,43 +20,18 @@ public static class HemogramTemplateData
                 code: "HM0001",
                 display: "Globulos Rojos")
             .SetMm3ValueQuantity()
-            .AddReferences(
-                new Reference(
-                    Low: new DecimalValueQuantity(
-                        Unit: "mm3",
-                        System: "",
-                        Code: "",
-                        Value: 5_390_000),
-                    High: new DecimalValueQuantity(
-                        Unit: "mm3",
-                        System: "",
-                        Code: "",
-                        Value: 6_270_000),
-                    AppliesTo: new List<Code>
-                    {
-                        new(new Coding(
-                            System: "",
-                            Code: "",
-                            Display: "Varon"))
-                    }),
-                new Reference(
-                    Low: new DecimalValueQuantity(
-                        Unit: "mm3",
-                        System: "",
-                        Code: "",
-                        Value: 4_800_000),
-                    High: new DecimalValueQuantity(
-                        Unit: "mm3",
-                        System: "",
-                        Code: "",
-                        Value: 5_900_000),
-                    AppliesTo: new List<Code>
-                    {
-                        new(new Coding(
-                            System: "",
-                            Code: "",
-                            Display: "Mujer"))
-                    }))
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(5_390_000)
+                    .High(6_270_000)
+                    .AppliesToMen()
+                    .Build())
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(4_800_000)
+                    .High(5_900_000)
+                    .AppliesToWomen()
+                    .Build())
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
@@ -66,24 +40,13 @@ public static class HemogramTemplateData
                 code: "HM0002",
                 display: "Globulos Blancos")
             .SetMm3ValueQuantity()
-            .AddReferences(new Reference(
-                Low: new DecimalValueQuantity(
-                    Unit: "mm3",
-                    System: "",
-                    Code: "",
-                    Value: 5_000),
-                High: new DecimalValueQuantity(
-                    Unit: "mm3",
-                    System: "",
-                    Code: "",
-                    Value: 8_000),
-                AppliesTo: new List<Code>
-                {
-                    new(new Coding(
-                        System: "",
-                        Code: "",
-                        Display: "Varon y Mujer"))
-                }))
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(5_000)
+                    .High(8_000)
+                    .AppliesToMen()
+                    .AppliesToWomen()
+                    .Build())
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
@@ -92,42 +55,18 @@ public static class HemogramTemplateData
                 code: "HM0003",
                 display: "Hematocrito")
             .SetPercentageQuantity()
-            .AddReferences(new Reference(
-                    Low: new DecimalValueQuantity(
-                        Unit: "%",
-                        System: "",
-                        Code: "",
-                        Value: 47),
-                    High: new DecimalValueQuantity(
-                        Unit: "%",
-                        System: "",
-                        Code: "",
-                        Value: 49),
-                    AppliesTo: new List<Code>
-                    {
-                        new(new Coding(
-                            System: "",
-                            Code: "",
-                            Display: "Varon"))
-                    }),
-                new Reference(
-                    Low: new DecimalValueQuantity(
-                        Unit: "%",
-                        System: "",
-                        Code: "",
-                        Value: 44),
-                    High: new DecimalValueQuantity(
-                        Unit: "%",
-                        System: "",
-                        Code: "",
-                        Value: 53),
-                    AppliesTo: new List<Code>
-                    {
-                        new(new Coding(
-                            System: "",
-                            Code: "",
-                            Display: "Mujer"))
-                    }))
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(47)
+                    .High(49)
+                    .AppliesToMen()
+                    .Build())
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(44)
+                    .High(53)
+                    .AppliesToWomen()
+                    .Build())
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
@@ -136,42 +75,18 @@ public static class HemogramTemplateData
                 code: "HM0004",
                 display: "Hemoglobina")
             .SetGPerDlQuantity()
-            .AddReferences(new Reference(
-                    Low: new DecimalValueQuantity(
-                        Unit: "g/dL",
-                        System: "",
-                        Code: "",
-                        Value: 16.9M),
-                    High: new DecimalValueQuantity(
-                        Unit: "g/dL",
-                        System: "",
-                        Code: "",
-                        Value: 18.4M),
-                    AppliesTo: new List<Code>
-                    {
-                        new(new Coding(
-                            System: "",
-                            Code: "",
-                            Display: "Varon"))
-                    }),
-                new Reference(
-                    Low: new DecimalValueQuantity(
-                        Unit: "g/dL",
-                        System: "",
-                        Code: "",
-                        Value: 14.4M),
-                    High: new DecimalValueQuantity(
-                        Unit: "g/dL",
-                        System: "",
-                        Code: "",
-                        Value: 17.4M),
-                    AppliesTo: new List<Code>
-                    {
-                        new(new Coding(
-                            System: "",
-                            Code: "",
-                            Display: "Mujer"))
-                    }))
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(16.9M)
+                    .High(18.4M)
+                    .AppliesToMen()
+                    .Build())
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(14.4M)
+                    .High(17.4M)
+                    .AppliesToWomen()
+                    .Build())
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
@@ -203,17 +118,11 @@ public static class HemogramTemplateData
                 code: "HM0008",
                 display: "Basinofilos")
             .SetPercentageQuantity()
-            .AddReferences(new Reference(
-                    Low: new DecimalValueQuantity(
-                        Unit: "%",
-                        System: "",
-                        Code: "",
-                        Value: 0),
-                    High: new DecimalValueQuantity(
-                        Unit: "%",
-                        System: "",
-                        Code: "",
-                        Value: 1)))
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(0)
+                    .High(1)
+                    .Build())
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
@@ -222,17 +131,11 @@ public static class HemogramTemplateData
                 code: "HM0009",
                 display: "Eosinofilos")
             .SetPercentageQuantity()
-            .AddReferences(new Reference(
-                Low: new DecimalValueQuantity(
-                    Unit: "%",
-                    System: "",
-                    Code: "",
-                    Value: 0),
-                High: new DecimalValueQuantity(
-                    Unit: "%",
-                    System: "",
-                    Code: "",
-                    Value: 4)))
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(0)
+                    .High(4)
+                    .Build())
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
@@ -241,17 +144,11 @@ public static class HemogramTemplateData
                 code: "HM0010",
                 display: "Cayados")
             .SetPercentageQuantity()
-            .AddReferences(new Reference(
-                Low: new DecimalValueQuantity(
-                    Unit: "%",
-                    System: "",
-                    Code: "",
-                    Value: 0),
-                High: new DecimalValueQuantity(
-                    Unit: "%",
-                    System: "",
-                    Code: "",
-                    Value: 3)))
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(0)
+                    .High(3)
+                    .Build())
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
@@ -260,17 +157,11 @@ public static class HemogramTemplateData
                 code: "HM0011",
                 display: "Segmentados")
             .SetPercentageQuantity()
-            .AddReferences(new Reference(
-                Low: new DecimalValueQuantity(
-                    Unit: "%",
-                    System: "",
-                    Code: "",
-                    Value: 55),
-                High: new DecimalValueQuantity(
-                    Unit: "%",
-                    System: "",
-                    Code: "",
-                    Value: 65)))
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(55)
+                    .High(65)
+                    .Build())
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
@@ -279,17 +170,11 @@ public static class HemogramTemplateData
                 code: "HM0012",
                 display: "Linfocitos")
             .SetPercentageQuantity()
-            .AddReferences(new Reference(
-                Low: new DecimalValueQuantity(
-                    Unit: "%",
-                    System: "",
-                    Code: "",
-                    Value: 25),
-                High: new DecimalValueQuantity(
-                    Unit: "%",
-                    System: "",
-                    Code: "",
-                    Value: 35)))
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(25)
+                    .High(35)
+                    .Build())
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
@@ -298,28 +183,11 @@ public static class HemogramTemplateData
                 code: "HM0013",
                 display: "Monocitos")
             .SetPercentageQuantity()
-            .AddReferences(new Reference(
-                Low: new DecimalValueQuantity(
-                    Unit: "%",
-                    System: "",
-                    Code: "",
-                    Value: 2),
-                High: new DecimalValueQuantity(
-                    Unit: "%",
-                    System: "",
-                    Code: "",
-                    Value: 6)))
-            .Build());
-
-        ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
-            .AddCode(
-                code: "HM0014",
-                display: "Otros")
-            .SetValueQuantity(new ValueQuantity(
-                Unit: "",
-                System: "",
-                Code: ""))
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(2)
+                    .High(6)
+                    .Build())
             .Build());
     }
 }

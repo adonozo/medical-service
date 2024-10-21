@@ -14,7 +14,7 @@ public class ObservationTemplate
     public ValueQuantity? ValueTemplate { get; set; }
     #nullable disable
 
-    public IEnumerable<Reference> ReferenceRange { get; set; }
+    public IList<Reference> ReferenceRange { get; set; }
 
     public ObservationMetadata Metadata { get; set; }
 }

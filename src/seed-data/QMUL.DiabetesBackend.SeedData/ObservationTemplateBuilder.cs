@@ -1,4 +1,4 @@
-namespace QMUL.DiabetesBackend.SeedData.observations;
+namespace QMUL.DiabetesBackend.SeedData;
 
 using Model;
 using Model.Enums;
@@ -74,9 +74,11 @@ public class ObservationTemplateBuilder
         return this;
     }
 
-    public ObservationTemplateBuilder AddReferences(params Reference[] references)
+    public ObservationTemplateBuilder AddReferenceRange(Func<string, string, Reference> referenceFunc)
     {
-        this.template.ReferenceRange = references;
+        ArgumentNullException.ThrowIfNull(this.template.ValueTemplate);
+        this.template.ReferenceRange.Add(
+            referenceFunc.Invoke(this.template.ValueTemplate.Unit, this.template.ValueTemplate.Code));
         return this;
     }
 
