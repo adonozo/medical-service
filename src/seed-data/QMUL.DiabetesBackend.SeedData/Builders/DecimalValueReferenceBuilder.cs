@@ -1,4 +1,4 @@
-namespace QMUL.DiabetesBackend.SeedData;
+namespace QMUL.DiabetesBackend.SeedData.Builders;
 
 using Model.FHIR;
 
@@ -12,15 +12,15 @@ public class DecimalValueReferenceBuilder : ReferenceBuilderBase
     {
         return new Reference(
             Low: new DecimalValueQuantity(
-                Unit: this.valueUnit,
+                Unit: this.ValueUnit,
                 System: CustomCodes.UnitsSystem,
-                Code: this.valueCode,
-                Value: this.low),
+                Code: this.ValueCode,
+                Value: this.LowValue),
             High: new DecimalValueQuantity(
-                Unit: this.valueUnit,
+                Unit: this.ValueUnit,
                 System: CustomCodes.UnitsSystem,
-                Code: this.valueCode,
-                Value: this.high),
+                Code: this.ValueCode,
+                Value: this.HighValue),
             AppliesTo: this.AppliesTo);
     }
 }

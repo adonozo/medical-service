@@ -1,32 +1,32 @@
-namespace QMUL.DiabetesBackend.SeedData;
+namespace QMUL.DiabetesBackend.SeedData.Builders;
 
 using Model.FHIR;
 
 public abstract class ReferenceBuilderBase
 {
-    protected readonly string valueUnit;
-    protected readonly string valueCode;
+    protected readonly string ValueUnit;
+    protected readonly string ValueCode;
     protected readonly List<Code> AppliesTo;
 
-    protected decimal high;
-    protected decimal low;
+    protected decimal HighValue;
+    protected decimal LowValue;
 
     public ReferenceBuilderBase(string valueUnit, string valueCode)
     {
-        this.valueUnit = valueUnit;
-        this.valueCode = valueCode;
+        this.ValueUnit = valueUnit;
+        this.ValueCode = valueCode;
         AppliesTo = new List<Code>();
     }
 
     public ReferenceBuilderBase High(decimal value)
     {
-        this.high = value;
+        this.HighValue = value;
         return this;
     }
 
     public ReferenceBuilderBase Low(decimal value)
     {
-        this.low = value;
+        this.LowValue = value;
         return this;
     }
 

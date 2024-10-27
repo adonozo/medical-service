@@ -1,5 +1,6 @@
-namespace QMUL.DiabetesBackend.SeedData.observations;
+namespace QMUL.DiabetesBackend.SeedData.Observations;
 
+using Builders;
 using Model;
 using Model.Enums;
 
@@ -188,6 +189,158 @@ public static class HemogramTemplateData
                     .Low(2)
                     .High(6)
                     .Build())
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0020",
+                display: "V.C.M.")
+            .SetFLQuantity()
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(79)
+                    .High(83)
+                    .Build())
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0021",
+                display: "H.C.M.")
+            .SetPGQuantity()
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(27)
+                    .High(31)
+                    .Build())
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0022",
+                display: "C.H.C.M.")
+            .SetGPerDlQuantity()
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(32)
+                    .High(36)
+                    .Build())
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0023",
+                display: "Recuento de Plaquetas")
+            .SetPerMm3Quantity()
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(150_000)
+                    .High(400_000)
+                    .Build())
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0024",
+                display: "Recuento de Reticulocitos")
+            .SetPercentageQuantity()
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(0.5M)
+                    .High(2.0M)
+                    .Build())
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0025",
+                display: "Tiempo de sangría")
+            .SetMinutesQuantity()
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(1)
+                    .High(3)
+                    .Build())
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0026",
+                display: "Tiempo de coagulación")
+            .SetMinutesQuantity()
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(5)
+                    .High(10)
+                    .Build())
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0027",
+                display: "Tiempo de protombina")
+            .SetSecondsQuantity()
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(12)
+                    .High(12)
+                    .Build())
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0028",
+                display: "Tiempo de protombina")
+            .SetSecondsQuantity()
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(12)
+                    .High(12)
+                    .Build())
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0029",
+                display: "Actividad")
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0030",
+                display: "INR")
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0031",
+                display: "TPA")
+            .SetSecondsQuantity()
+            .AddReferenceRange((valueUnit, valueCode) =>
+                new DecimalValueReferenceBuilder(valueUnit, valueCode)
+                    .Low(33)
+                    .High(48)
+                    .Build())
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0040",
+                display: "Grupo Sanguieno")
+            .SetSecondsQuantity()
             .Build());
     }
 }

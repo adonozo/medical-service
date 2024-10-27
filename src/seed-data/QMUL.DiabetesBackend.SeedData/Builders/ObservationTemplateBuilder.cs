@@ -1,4 +1,4 @@
-namespace QMUL.DiabetesBackend.SeedData;
+namespace QMUL.DiabetesBackend.SeedData.Builders;
 
 using Model;
 using Model.Enums;
@@ -32,17 +32,11 @@ public class ObservationTemplateBuilder
         return this;
     }
 
-    public ObservationTemplateBuilder SetValueQuantity(ValueQuantity valueQuantity)
-    {
-        this.template.ValueTemplate = valueQuantity;
-        return this;
-    }
-
     public ObservationTemplateBuilder SetMm3ValueQuantity()
     {
         this.template.ValueTemplate = new ValueQuantity(
             Unit: "mm3",
-            System: "",
+            System: CustomCodes.UnitsSystem,
             Code: "");
         return this;
     }
@@ -51,7 +45,7 @@ public class ObservationTemplateBuilder
     {
         this.template.ValueTemplate = new ValueQuantity(
             Unit: "%",
-            System: "",
+            System: CustomCodes.UnitsSystem,
             Code: "");
         return this;
     }
@@ -60,7 +54,7 @@ public class ObservationTemplateBuilder
     {
         this.template.ValueTemplate = new ValueQuantity(
             Unit: "g/dL",
-            System: "",
+            System: CustomCodes.UnitsSystem,
             Code: "");
         return this;
     }
@@ -69,7 +63,52 @@ public class ObservationTemplateBuilder
     {
         this.template.ValueTemplate = new ValueQuantity(
             Unit: "mm/H",
-            System: "",
+            System: CustomCodes.UnitsSystem,
+            Code: "");
+        return this;
+    }
+
+    public ObservationTemplateBuilder SetPerMm3Quantity()
+    {
+        this.template.ValueTemplate = new ValueQuantity(
+            Unit: "/mm3",
+            System: CustomCodes.UnitsSystem,
+            Code: "");
+        return this;
+    }
+
+    public ObservationTemplateBuilder SetFLQuantity()
+    {
+        this.template.ValueTemplate = new ValueQuantity(
+            Unit: "fL",
+            System: CustomCodes.UnitsSystem,
+            Code: "");
+        return this;
+    }
+
+    public ObservationTemplateBuilder SetPGQuantity()
+    {
+        this.template.ValueTemplate = new ValueQuantity(
+            Unit: "pg",
+            System: CustomCodes.UnitsSystem,
+            Code: "");
+        return this;
+    }
+
+    public ObservationTemplateBuilder SetMinutesQuantity()
+    {
+        this.template.ValueTemplate = new ValueQuantity(
+            Unit: "min",
+            System: CustomCodes.UnitsSystem,
+            Code: "");
+        return this;
+    }
+
+    public ObservationTemplateBuilder SetSecondsQuantity()
+    {
+        this.template.ValueTemplate = new ValueQuantity(
+            Unit: "sec",
+            System: CustomCodes.UnitsSystem,
             Code: "");
         return this;
     }
