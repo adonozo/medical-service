@@ -11,7 +11,11 @@ public class ObservationTemplate
     public Code Code { get; set; }
 
     #nullable enable
+
     public ValueQuantity? ValueTemplate { get; set; }
+
+    public Coding? CodeValue { get; set; }
+
     #nullable disable
 
     public IList<Reference> ReferenceRange { get; set; }

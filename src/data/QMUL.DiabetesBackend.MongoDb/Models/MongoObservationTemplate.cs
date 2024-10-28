@@ -16,6 +16,8 @@ public class MongoObservationTemplate
 
     public ValueQuantity? ValueTemplate { get; set; }
 
+    public Coding? CodeValue { get; set; }
+
     public IList<Reference> ReferenceRange { get; set; }
 
     public ObservationMetadata Metadata { get; set; }

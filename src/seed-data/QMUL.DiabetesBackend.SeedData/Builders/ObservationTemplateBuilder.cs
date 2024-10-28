@@ -10,7 +10,10 @@ public class ObservationTemplateBuilder
 
     public ObservationTemplateBuilder()
     {
-        this.template = new ObservationTemplate();
+        this.template = new ObservationTemplate
+        {
+            ReferenceRange = new List<Reference>()
+        };
     }
 
     public ObservationTemplateBuilder SetType(ObservationType type)

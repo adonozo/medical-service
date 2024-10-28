@@ -340,7 +340,13 @@ public static class HemogramTemplateData
             .AddCode(
                 code: "HM0040",
                 display: "Grupo Sanguieno")
-            .SetSecondsQuantity()
+            .Build());
+
+        ObservationTemplates.Add(new ObservationTemplateBuilder()
+            .SetType(ObservationType.Hemogram)
+            .AddCode(
+                code: "HM0041",
+                display: "Factor RH")
             .Build());
     }
 }
