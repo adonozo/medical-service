@@ -2,6 +2,7 @@
 
 using System.Text;
 using System.Text.Json;
+using Model;
 using SeedData.Observations;
 
 class Program
@@ -14,7 +15,10 @@ class Program
         var httpClient = new HttpClient();
         httpClient.BaseAddress = new Uri(SeedUri);
 
-        var templates = HemogramTemplateData.ObservationTemplates;
+        var templates = new List<ObservationTemplate>();
+        templates.AddRange(HemogramTemplateData.ObservationTemplates);
+        templates.AddRange(BloodChemistryTemplateData.ObservationTemplates);
+
         foreach (var template in templates)
         {
             var result = await PutJson(httpClient, SeedEndpoint, template);

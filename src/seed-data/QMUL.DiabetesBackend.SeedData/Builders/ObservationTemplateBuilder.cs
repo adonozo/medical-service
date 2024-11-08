@@ -62,6 +62,15 @@ public class ObservationTemplateBuilder
         return this;
     }
 
+    public ObservationTemplateBuilder SetMgPerDlQuantity()
+    {
+        this.template.ValueTemplate = new ValueQuantity(
+            Unit: "mg/dL",
+            System: CustomCodes.UnitsSystem,
+            Code: "");
+        return this;
+    }
+
     public ObservationTemplateBuilder SetMmhQuantity()
     {
         this.template.ValueTemplate = new ValueQuantity(
@@ -75,6 +84,15 @@ public class ObservationTemplateBuilder
     {
         this.template.ValueTemplate = new ValueQuantity(
             Unit: "/mm3",
+            System: CustomCodes.UnitsSystem,
+            Code: "");
+        return this;
+    }
+
+    public ObservationTemplateBuilder SetUPerLQuantity()
+    {
+        this.template.ValueTemplate = new ValueQuantity(
+            Unit: "U/L",
             System: CustomCodes.UnitsSystem,
             Code: "");
         return this;
