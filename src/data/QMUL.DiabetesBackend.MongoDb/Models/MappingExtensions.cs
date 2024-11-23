@@ -15,7 +15,7 @@ public static class MappingExtensions
                 ValueTemplate = template.ValueTemplate,
                 CodeValue = template.CodeValue,
                 ReferenceRange = template.ReferenceRange,
-                Metadata = template.Metadata
+                Metadata = template.Metadata.ToObservationMetadata()
             };
 
     public static MongoObservationTemplate? ToMongoObservationTemplate(this ObservationTemplate? template) =>
@@ -28,6 +28,12 @@ public static class MappingExtensions
                 ValueTemplate = template.ValueTemplate,
                 CodeValue = template.CodeValue,
                 ReferenceRange = template.ReferenceRange,
-                Metadata = template.Metadata
+                Metadata = template.Metadata.ToMongoObservationMetadata()
             };
+
+    public static MongoObservationMetadata ToMongoObservationMetadata(this ObservationMetadata metadata) =>
+        new() { ObservationType = metadata.ObservationType };
+
+    public static ObservationMetadata ToObservationMetadata(this MongoObservationMetadata metadata) =>
+        new() { ObservationType = metadata.ObservationType };
 }

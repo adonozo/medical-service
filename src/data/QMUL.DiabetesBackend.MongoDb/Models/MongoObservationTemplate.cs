@@ -20,5 +20,5 @@ public class MongoObservationTemplate
 
     public IList<Reference> ReferenceRange { get; set; }
 
-    public ObservationMetadata Metadata { get; set; }
+    public MongoObservationMetadata Metadata { get; set; }
 }
