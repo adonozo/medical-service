@@ -12,17 +12,14 @@ public class ObservationTemplateBuilder
     {
         this.template = new ObservationTemplate
         {
-            ReferenceRange = new List<Reference>()
+            ReferenceRange = new List<Reference>(),
+            Metadata = new ObservationMetadata()
         };
     }
 
     public ObservationTemplateBuilder SetType(ObservationType type)
     {
-        this.template.Metadata = new ObservationMetadata
-        {
-            ObservationType = type
-        };
-
+        this.template.Metadata.ObservationType = type;
         return this;
     }
 

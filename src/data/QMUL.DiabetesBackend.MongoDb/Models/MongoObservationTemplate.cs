@@ -1,7 +1,6 @@
 namespace QMUL.DiabetesBackend.MongoDb.Models;
 
 using System.Collections.Generic;
-using Model;
 using Model.FHIR;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;

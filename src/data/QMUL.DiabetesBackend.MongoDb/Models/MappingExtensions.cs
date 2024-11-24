@@ -31,9 +31,9 @@ public static class MappingExtensions
                 Metadata = template.Metadata.ToMongoObservationMetadata()
             };
 
-    public static MongoObservationMetadata ToMongoObservationMetadata(this ObservationMetadata metadata) =>
+    private static MongoObservationMetadata ToMongoObservationMetadata(this ObservationMetadata metadata) =>
         new() { ObservationType = metadata.ObservationType };
 
-    public static ObservationMetadata ToObservationMetadata(this MongoObservationMetadata metadata) =>
+    private static ObservationMetadata ToObservationMetadata(this MongoObservationMetadata metadata) =>
         new() { ObservationType = metadata.ObservationType };
 }
