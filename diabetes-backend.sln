@@ -18,6 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api-docs", "api-docs", "{62
 		api-docs\timingDaily.json = api-docs\timingDaily.json
 		api-docs\timingOther.json = api-docs\timingOther.json
 		api-docs\observation.json = api-docs\observation.json
+		api-docs\observation-config.json = api-docs\observation-config.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMUL.DiabetesBackend.Model", "src\core\QMUL.DiabetesBackend.Model\QMUL.DiabetesBackend.Model.csproj", "{21513D3A-7E7D-4AA3-9F54-E91B23CBD19C}"
@@ -58,6 +59,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration-tests", "integration-tests", "{6595A0E6-0FE4-44B7-AA5E-62D13BA34745}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.Integration.Tests", "test\integration-tests\QMUL.DiabetesBackend.Integration.Tests\QMUL.DiabetesBackend.Integration.Tests.csproj", "{83B29CDF-FE71-4419-808E-9CE8C911D849}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "seed-data", "seed-data", "{9723FC3E-0042-4C4E-A401-1271813F1AB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.SeedData", "src\seed-data\QMUL.DiabetesBackend.SeedData\QMUL.DiabetesBackend.SeedData.csproj", "{FDAA99C6-EF90-43A7-BF24-879F36E12A23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMUL.DiabetesBackend.Seed", "src\seed-data\QMUL.DiabetesBackend.Seed\QMUL.DiabetesBackend.Seed.csproj", "{12ED54BE-0FC8-4729-BE8F-94E417A7059E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -105,6 +112,14 @@ Global
 		{83B29CDF-FE71-4419-808E-9CE8C911D849}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83B29CDF-FE71-4419-808E-9CE8C911D849}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83B29CDF-FE71-4419-808E-9CE8C911D849}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDAA99C6-EF90-43A7-BF24-879F36E12A23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDAA99C6-EF90-43A7-BF24-879F36E12A23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDAA99C6-EF90-43A7-BF24-879F36E12A23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDAA99C6-EF90-43A7-BF24-879F36E12A23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12ED54BE-0FC8-4729-BE8F-94E417A7059E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12ED54BE-0FC8-4729-BE8F-94E417A7059E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12ED54BE-0FC8-4729-BE8F-94E417A7059E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12ED54BE-0FC8-4729-BE8F-94E417A7059E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,6 +142,9 @@ Global
 		{BBCC2D6C-E9B8-467B-8B80-6995068AC7AF} = {55811FA2-1F40-45EB-A10C-6A50E23D2499}
 		{6595A0E6-0FE4-44B7-AA5E-62D13BA34745} = {3723FF2D-06A0-41AC-B6ED-4D0B49B3C7BC}
 		{83B29CDF-FE71-4419-808E-9CE8C911D849} = {6595A0E6-0FE4-44B7-AA5E-62D13BA34745}
+		{9723FC3E-0042-4C4E-A401-1271813F1AB3} = {D793EBE0-6B1F-4E7E-BA99-30FAE42055FE}
+		{FDAA99C6-EF90-43A7-BF24-879F36E12A23} = {9723FC3E-0042-4C4E-A401-1271813F1AB3}
+		{12ED54BE-0FC8-4729-BE8F-94E417A7059E} = {9723FC3E-0042-4C4E-A401-1271813F1AB3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AFB29E41-36A7-4D62-BDF0-63DC00B1E467}

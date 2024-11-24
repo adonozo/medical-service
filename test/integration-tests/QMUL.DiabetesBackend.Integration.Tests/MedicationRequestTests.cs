@@ -30,7 +30,7 @@ public class MedicationRequestTests : IntegrationTestBase
 
         // Assert
         createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var parsedResponse = await HttpUtils.ParseResult<MedicationRequest>(createResponse.Content);
+        var parsedResponse = await HttpUtils.ParseResourceResult<MedicationRequest>(createResponse.Content);
         parsedResponse.Id.Should().NotBeNull();
 
         var resource = await this.GetMedicationRequest(parsedResponse.Id);
@@ -84,6 +84,6 @@ public class MedicationRequestTests : IntegrationTestBase
         var medicationId = await this.CreateLorazepamMedication();
         var medicationRequest = MedicationRequestStubs.MetforminRequest(patientId, medicationId);
         var createResponse = await this.HttpClient.PostResource($"medication-requests", medicationRequest);
-        return await HttpUtils.ParseResult<MedicationRequest>(createResponse.Content);
+        return await HttpUtils.ParseResourceResult<MedicationRequest>(createResponse.Content);
     }
 }

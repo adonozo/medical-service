@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Middlewares;
+using Model;
 using MongoDb;
 using NodaTime;
 using Service;
@@ -54,6 +55,7 @@ public class Startup
         services.AddSingleton<IObservationDao, ObservationDao>();
         services.AddSingleton<ICarePlanDao, CarePlanDao>();
         services.AddSingleton<IAlexaDao, AlexaDao>();
+        services.AddSingleton<IObservationTemplateDao, ObservationTemplateDao>();
 
         services.AddSingleton<IDataGatherer, DataGatherer>();
         services.AddSingleton<IMedicationService, MedicationService>();
@@ -63,12 +65,14 @@ public class Startup
         services.AddSingleton<ICarePlanService, CarePlanService>();
         services.AddSingleton<IAlexaService, AlexaService>();
         services.AddSingleton<IObservationService, ObservationService>();
+        services.AddSingleton<IObservationTemplateService, ObservationTemplateService>();
 
         services.AddSingleton<IResourceValidator<Medication>, MedicationValidator>();
         services.AddSingleton<IResourceValidator<CarePlan>, CarePlanValidator>();
         services.AddSingleton<IResourceValidator<MedicationRequest>, MedicationRequestValidator>();
         services.AddSingleton<IResourceValidator<ServiceRequest>, ServiceRequestValidator>();
         services.AddSingleton<IResourceValidator<Observation>, ObservationValidator>();
+        services.AddSingleton<ValidatorBase<ObservationTemplate>, ObservationTemplateValidator>();
         services.AddSingleton<IResourceValidator<Patient>, PatientValidator>();
         services.AddSingleton<IDataTypeValidator, DataTypeValidator>();
     }

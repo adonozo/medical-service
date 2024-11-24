@@ -40,7 +40,7 @@ public class ObservationTests : IntegrationTestBase
 
         // Act
         var createResponse = await this.HttpClient.PostResource("observations", observation);
-        var parsedResponse = await HttpUtils.ParseResult<Observation>(createResponse.Content);
+        var parsedResponse = await HttpUtils.ParseResourceResult<Observation>(createResponse.Content);
 
         // Assert
         parsedResponse.Id.Should().NotBeNull();
@@ -62,7 +62,7 @@ public class ObservationTests : IntegrationTestBase
         var patientId = await this.CreatePatient();
         var initialObservation = ObservationStubs.BloodGlucoseReading(patientId);
         var createResponse = await this.HttpClient.PostResource("observations", initialObservation);
-        var parsedResponse = await HttpUtils.ParseResult<Observation>(createResponse.Content);
+        var parsedResponse = await HttpUtils.ParseResourceResult<Observation>(createResponse.Content);
         var observationId = parsedResponse.Id;
 
         var updatedObservation = initialObservation;
@@ -87,7 +87,7 @@ public class ObservationTests : IntegrationTestBase
         var patientId = await this.CreatePatient();
         var initialObservation = ObservationStubs.BloodGlucoseReading(patientId);
         var createResponse = await this.HttpClient.PostResource("observations", initialObservation);
-        var parsedResponse = await HttpUtils.ParseResult<Observation>(createResponse.Content);
+        var parsedResponse = await HttpUtils.ParseResourceResult<Observation>(createResponse.Content);
         var observationId = parsedResponse.Id;
 
         var newValue = new DataTypeWrapper
@@ -118,7 +118,7 @@ public class ObservationTests : IntegrationTestBase
         var patientId = await this.CreatePatient();
         var initialObservation = ObservationStubs.BloodGlucoseReading(patientId);
         var createResponse = await this.HttpClient.PostResource("observations", initialObservation);
-        var parsedResponse = await HttpUtils.ParseResult<Observation>(createResponse.Content);
+        var parsedResponse = await HttpUtils.ParseResourceResult<Observation>(createResponse.Content);
         var observationId = parsedResponse.Id;
 
         // Act
@@ -133,6 +133,6 @@ public class ObservationTests : IntegrationTestBase
     private async Task<Observation> GetObservation(string observationId)
     {
         var observationResponse = await this.HttpClient.GetAsync($"observations/{observationId}");
-        return await HttpUtils.ParseResult<Observation>(observationResponse.Content);
+        return await HttpUtils.ParseResourceResult<Observation>(observationResponse.Content);
     }
 }
