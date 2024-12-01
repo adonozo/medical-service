@@ -2,7 +2,6 @@ namespace QMUL.DiabetesBackend.SeedData.Observations;
 
 using Builders;
 using Model;
-using Model.Enums;
 
 public static class HemogramTemplateData
 {
@@ -16,7 +15,7 @@ public static class HemogramTemplateData
     private static void AddData()
     {
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0001",
                 display: "Globulos Rojos")
@@ -36,7 +35,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0002",
                 display: "Globulos Blancos")
@@ -51,7 +50,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0003",
                 display: "Hematocrito")
@@ -71,7 +70,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0004",
                 display: "Hemoglobina")
@@ -91,7 +90,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0005",
                 display: "VES 1a Hora")
@@ -99,7 +98,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0006",
                 display: "VES 2a Hora")
@@ -107,14 +106,14 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0007",
                 display: "Indice de Kats")
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0008",
                 display: "Basinofilos")
@@ -127,7 +126,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0009",
                 display: "Eosinofilos")
@@ -140,7 +139,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0010",
                 display: "Cayados")
@@ -153,7 +152,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0011",
                 display: "Segmentados")
@@ -166,7 +165,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0012",
                 display: "Linfocitos")
@@ -179,7 +178,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0013",
                 display: "Monocitos")
@@ -192,7 +191,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0020",
                 display: "V.C.M.")
@@ -205,7 +204,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0021",
                 display: "H.C.M.")
@@ -218,7 +217,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0022",
                 display: "C.H.C.M.")
@@ -231,7 +230,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0023",
                 display: "Recuento de Plaquetas")
@@ -244,7 +243,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0024",
                 display: "Recuento de Reticulocitos")
@@ -257,7 +256,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0025",
                 display: "Tiempo de sangría")
@@ -270,7 +269,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0026",
                 display: "Tiempo de coagulación")
@@ -283,7 +282,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0027",
                 display: "Tiempo de protombina")
@@ -296,7 +295,7 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0028",
                 display: "Tiempo de protombina")
@@ -309,21 +308,21 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0029",
                 display: "Actividad")
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0030",
                 display: "INR")
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0031",
                 display: "TPA")
@@ -336,14 +335,14 @@ public static class HemogramTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0040",
                 display: "Grupo Sanguieno")
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.Hemogram)
+            .InitialVersion()
             .AddCode(
                 code: "HM0041",
                 display: "Factor RH")

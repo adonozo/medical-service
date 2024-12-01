@@ -1,7 +1,6 @@
 namespace QMUL.DiabetesBackend.SeedData.Builders;
 
 using Model;
-using Model.Enums;
 using Model.FHIR;
 
 public class ObservationTemplateBuilder
@@ -17,9 +16,9 @@ public class ObservationTemplateBuilder
         };
     }
 
-    public ObservationTemplateBuilder SetType(ObservationType type)
+    public ObservationTemplateBuilder InitialVersion()
     {
-        this.template.Metadata.ObservationType = type;
+        this.template.Metadata.Version = 1;
         return this;
     }
 

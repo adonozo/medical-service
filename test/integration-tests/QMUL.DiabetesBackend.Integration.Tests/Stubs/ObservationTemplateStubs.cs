@@ -1,7 +1,6 @@
 namespace QMUL.DiabetesBackend.Integration.Tests.Stubs;
 
 using Model;
-using Model.Enums;
 using Model.FHIR;
 
 public static class ObservationTemplateStubs
@@ -31,7 +30,7 @@ public static class ObservationTemplateStubs
             Code: "mmol/L"),
         Metadata = new ObservationMetadata
         {
-            ObservationType = ObservationType.BloodChemistry,
+            Version = 1,
         }
     };
 }

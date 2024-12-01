@@ -32,8 +32,8 @@ public static class MappingExtensions
             };
 
     private static MongoObservationMetadata ToMongoObservationMetadata(this ObservationMetadata metadata) =>
-        new() { ObservationType = metadata.ObservationType };
+        new() { Version = metadata.Version };
 
     private static ObservationMetadata ToObservationMetadata(this MongoObservationMetadata metadata) =>
-        new() { ObservationType = metadata.ObservationType };
+        new() { Version = metadata.Version };
 }
