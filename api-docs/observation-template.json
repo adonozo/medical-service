@@ -9,7 +9,6 @@
     ]
   },
   "valueQuantity": {
-    "value": null,
     "unit": "mmol/l",
     "system": "http://unitsofmeasure.org",
     "code": "mmol/L"
@@ -28,12 +27,6 @@
         "system": "http://unitsofmeasure.org",
         "code": "mmol/L"
       }
-    }
-  ],
-  "extension": [
-    {
-      "url": "http://localhost/fhir/config-categoru",
-      "value": "hemogram - TODO add something to map observations to categories (an observation 'type')"
     }
   ]
 }
