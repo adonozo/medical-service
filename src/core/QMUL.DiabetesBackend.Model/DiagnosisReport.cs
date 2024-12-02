@@ -15,6 +15,8 @@ public class DiagnosisReport
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public DiagnosisCategory Category { get; set; }
 
+    public Code Code { get; set; }
+
     public Instant EffectiveTimestamp { get; set; }
 
     public Instant Issued { get; set; }
