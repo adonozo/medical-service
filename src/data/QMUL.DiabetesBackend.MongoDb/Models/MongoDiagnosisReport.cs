@@ -1,25 +1,28 @@
-namespace QMUL.DiabetesBackend.Model;
+namespace QMUL.DiabetesBackend.MongoDb.Models;
 
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using Enums;
-using FHIR;
+using Model.Enums;
+using Model.FHIR;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.IdGenerators;
 using NodaTime;
 
-public class DiagnosisReport
+public class MongoDiagnosisReport
 {
-    public string Id { get; set; }
+    [BsonId(IdGenerator = typeof(ObjectIdGenerator))]
+    public ObjectId? Id { get; set; }
 
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public Status Status { get; set; }
 
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public DiagnosisCategory Category { get; set; }
 
     public Code Code { get; set; }
 
+    [BsonSerializer(typeof(InstantSerializer))]
     public Instant EffectiveTimestamp { get; set; }
 
+    [BsonSerializer(typeof(InstantSerializer))]
     public Instant Issued { get; set; }
 
     public Reference Subject { get; set; }

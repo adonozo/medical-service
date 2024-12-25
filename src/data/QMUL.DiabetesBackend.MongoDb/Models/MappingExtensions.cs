@@ -10,7 +10,7 @@ public static class MappingExtensions
             ? null
             : new ObservationTemplate
             {
-                Id = template.Id.ToString(),
+                Id = template.Id?.ToString(),
                 Code = template.Code,
                 ValueTemplate = template.ValueTemplate,
                 CodeValue = template.CodeValue,
@@ -29,6 +29,40 @@ public static class MappingExtensions
                 CodeValue = template.CodeValue,
                 ReferenceRange = template.ReferenceRange,
                 Metadata = template.Metadata.ToMongoObservationMetadata()
+            };
+
+    public static DiagnosisReport? ToDiagnosisReport(this MongoDiagnosisReport? report) =>
+        report is null
+            ? null
+            : new DiagnosisReport
+            {
+                Id = report.Id?.ToString(),
+                Status = report.Status,
+                Category = report.Category,
+                Code = report.Code,
+                EffectiveTimestamp = report.EffectiveTimestamp,
+                Issued = report.Issued,
+                Subject = report.Subject,
+                ResultsInterpreter = report.ResultsInterpreter,
+                Results = report.Results,
+                Conclusion = report.Conclusion
+            };
+
+    public static MongoDiagnosisReport? ToMongoDiagnosisReport(this DiagnosisReport? report) =>
+        report is null
+            ? null
+            : new MongoDiagnosisReport
+            {
+                Id = report.Id is null ? null : ObjectId.Parse(report.Id),
+                Status = report.Status,
+                Category = report.Category,
+                Code = report.Code,
+                EffectiveTimestamp = report.EffectiveTimestamp,
+                Issued = report.Issued,
+                Subject = report.Subject,
+                ResultsInterpreter = report.ResultsInterpreter,
+                Results = report.Results,
+                Conclusion = report.Conclusion
             };
 
     private static MongoObservationMetadata ToMongoObservationMetadata(this ObservationMetadata metadata) =>
