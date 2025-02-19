@@ -18,7 +18,7 @@ public class ObservationTemplate
 
     #nullable disable
 
-    public IList<Reference> ReferenceRange { get; set; }
+    public IList<ReferenceValueRange> ReferenceRange { get; set; }
 
     public ObservationMetadata Metadata { get; set; }
 }

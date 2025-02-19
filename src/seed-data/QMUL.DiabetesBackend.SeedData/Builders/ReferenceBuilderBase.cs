@@ -50,5 +50,5 @@ public abstract class ReferenceBuilderBase
         return this;
     }
 
-    public abstract Reference Build();
+    public abstract ReferenceValueRange Build();
 }

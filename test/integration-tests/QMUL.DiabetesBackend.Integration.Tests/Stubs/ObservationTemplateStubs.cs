@@ -14,7 +14,7 @@ public static class ObservationTemplateStubs
                 Display: "Glucose [Moles/volume] in Blood")),
         ReferenceRange = new []
         {
-            new Reference(
+            new ReferenceValueRange(
                 Low: new ValueQuantity(
                     Unit: "mmol/l",
                     System: "http://unitsofmeasure.org",

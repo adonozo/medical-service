@@ -17,5 +17,5 @@ public class ObservationInternal // TODO rename
 
 #nullable disable
 
-    public IList<Reference> ReferenceRange { get; set; }
+    public IList<ReferenceValueRange> ReferenceRange { get; set; }
 }

@@ -11,7 +11,7 @@ public class ObservationTemplateBuilder
     {
         this.template = new ObservationTemplate
         {
-            ReferenceRange = new List<Reference>(),
+            ReferenceRange = new List<ReferenceValueRange>(),
             Metadata = new ObservationMetadata()
         };
     }
@@ -130,7 +130,7 @@ public class ObservationTemplateBuilder
         return this;
     }
 
-    public ObservationTemplateBuilder AddReferenceRange(Func<string, string, Reference> referenceFunc)
+    public ObservationTemplateBuilder AddReferenceRange(Func<string, string, ReferenceValueRange> referenceFunc)
     {
         ArgumentNullException.ThrowIfNull(this.template.ValueTemplate);
         this.template.ReferenceRange.Add(
