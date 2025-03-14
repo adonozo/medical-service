@@ -22,11 +22,11 @@ public class DiagnosisReport
 
     public Instant Issued { get; set; }
 
-    public ReferenceValueRange Subject { get; set; }
+    public ResourceReference Subject { get; set; }
 
-    public ReferenceValueRange ResultsInterpreter { get; set; } // TODO 'interpreters service'
+    public ResourceReference ResultsInterpreter { get; set; } // TODO 'interpreters service'
 
-    public IReadOnlyList<ReferenceValueRange> Results { get; set; }
+    public IReadOnlyList<ResourceReference> Results { get; set; }
 
     public string Conclusion { get; set; }
 }
