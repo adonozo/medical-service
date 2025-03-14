@@ -56,6 +56,7 @@ public class Startup
         services.AddSingleton<ICarePlanDao, CarePlanDao>();
         services.AddSingleton<IAlexaDao, AlexaDao>();
         services.AddSingleton<IObservationTemplateDao, ObservationTemplateDao>();
+        services.AddSingleton<IReportDao, ReportDao>();
 
         services.AddSingleton<IDataGatherer, DataGatherer>();
         services.AddSingleton<IMedicationService, MedicationService>();
@@ -66,6 +67,7 @@ public class Startup
         services.AddSingleton<IAlexaService, AlexaService>();
         services.AddSingleton<IObservationService, ObservationService>();
         services.AddSingleton<IObservationTemplateService, ObservationTemplateService>();
+        services.AddSingleton<IReportService, ReportsService>();
 
         services.AddSingleton<IResourceValidator<Medication>, MedicationValidator>();
         services.AddSingleton<IResourceValidator<CarePlan>, CarePlanValidator>();
