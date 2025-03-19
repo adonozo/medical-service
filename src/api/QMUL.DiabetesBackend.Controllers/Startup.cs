@@ -13,6 +13,7 @@ using Middlewares;
 using Model;
 using MongoDb;
 using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 using Service;
 using Service.Utils;
 using Service.Validators;
@@ -39,7 +40,9 @@ public class Startup
         {
             options.AddDefaultPolicy(builder => { builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(); });
         });
-        services.AddControllers().AddNewtonsoftJson();
+        services.AddControllers()
+            .AddNewtonsoftJson() // TODO remove Newtonsoft dependencies
+            .AddJsonOptions(options => options.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb));
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "QMUL.DiabetesBackend.Controllers", Version = "v1" });

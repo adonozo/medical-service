@@ -70,7 +70,6 @@ public static class HttpExtensions
         return DefaultStringContent(json);
     }
 
-    // TODO serialize nodatime into ISO format
     private static StringContent ObjectToJsonContent<T>(T @object) where T : class
     {
         var objectString = JsonSerializer.Serialize(@object, DefaultSerializer);
