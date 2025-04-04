@@ -20,7 +20,8 @@ public static class HttpExtensions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
-        DefaultSerializer.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
+
+        DefaultSerializer.ConfigureForNodaTime(new NodaJsonSettings(DateTimeZoneProviders.Tzdb));
     }
 
     public static async Task<HttpResponseMessage> PostResource(this HttpClient client, string uri, Resource resource)

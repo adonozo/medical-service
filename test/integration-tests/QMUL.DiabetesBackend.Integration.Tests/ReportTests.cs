@@ -15,6 +15,7 @@ using Instant = NodaTime.Instant;
 using ResourceReference = Model.FHIR.ResourceReference;
 using Task = System.Threading.Tasks.Task;
 
+[Collection(TestFixture.IntegrationTestCollection)]
 public class ReportTests : IntegrationTestBase
 {
     public ReportTests(TestFixture fixture) : base(fixture)
@@ -42,6 +43,7 @@ public class ReportTests : IntegrationTestBase
 
         // Act
         var reportResponse = await this.HttpClient.PostJson("reports", report);
+        reportResponse.StatusCode.Should().Be(HttpStatusCode.OK, $"report response: {await reportResponse.Content.ReadAsStringAsync()}");
         var parsedResult = await reportResponse.Content.Parse<DiagnosisReport>();
 
         // Assert
