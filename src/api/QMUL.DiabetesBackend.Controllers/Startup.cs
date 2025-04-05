@@ -13,6 +13,7 @@ using Middlewares;
 using Model;
 using MongoDb;
 using NodaTime;
+using NodaTime.Serialization.JsonNet;
 using Service;
 using Service.Utils;
 using Service.Validators;
@@ -39,7 +40,8 @@ public class Startup
         {
             options.AddDefaultPolicy(builder => { builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(); });
         });
-        services.AddControllers().AddNewtonsoftJson();
+        services.AddControllers()
+            .AddNewtonsoftJson(options => options.SerializerSettings.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb));
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "QMUL.DiabetesBackend.Controllers", Version = "v1" });
@@ -56,6 +58,7 @@ public class Startup
         services.AddSingleton<ICarePlanDao, CarePlanDao>();
         services.AddSingleton<IAlexaDao, AlexaDao>();
         services.AddSingleton<IObservationTemplateDao, ObservationTemplateDao>();
+        services.AddSingleton<IReportDao, ReportDao>();
 
         services.AddSingleton<IDataGatherer, DataGatherer>();
         services.AddSingleton<IMedicationService, MedicationService>();
@@ -66,6 +69,7 @@ public class Startup
         services.AddSingleton<IAlexaService, AlexaService>();
         services.AddSingleton<IObservationService, ObservationService>();
         services.AddSingleton<IObservationTemplateService, ObservationTemplateService>();
+        services.AddSingleton<IReportService, ReportsService>();
 
         services.AddSingleton<IResourceValidator<Medication>, MedicationValidator>();
         services.AddSingleton<IResourceValidator<CarePlan>, CarePlanValidator>();

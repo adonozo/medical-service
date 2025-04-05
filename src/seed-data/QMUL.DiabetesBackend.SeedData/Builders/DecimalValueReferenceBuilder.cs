@@ -8,9 +8,9 @@ public class DecimalValueReferenceBuilder : ReferenceBuilderBase
     {
     }
 
-    public override Reference Build()
+    public override ReferenceValueRange Build()
     {
-        return new Reference(
+        return new ReferenceValueRange(
             Low: new DecimalValueQuantity(
                 Unit: this.ValueUnit,
                 System: CustomCodes.UnitsSystem,

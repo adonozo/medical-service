@@ -1,6 +1,6 @@
 namespace QMUL.DiabetesBackend.Model.Enums;
 
-public enum ObservationType
+public enum DiagnosisCategory
 {
     Hemogram,
     BloodChemistry,

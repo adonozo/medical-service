@@ -5,7 +5,7 @@ using System.Linq;
 using Hl7.Fhir.Model;
 
 #nullable enable
-public record Reference(ValueQuantity Low, ValueQuantity High, IList<Code>? AppliesTo = null)
+public record ReferenceValueRange(ValueQuantity Low, ValueQuantity High, IList<Code>? AppliesTo = null)
 {
     public Observation.ReferenceRangeComponent ToFhirReferenceRangeComponent() =>
         new()

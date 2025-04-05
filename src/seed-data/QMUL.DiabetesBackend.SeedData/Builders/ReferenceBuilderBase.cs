@@ -1,5 +1,6 @@
 namespace QMUL.DiabetesBackend.SeedData.Builders;
 
+using System.Collections.Generic;
 using Model.FHIR;
 
 public abstract class ReferenceBuilderBase
@@ -50,5 +51,5 @@ public abstract class ReferenceBuilderBase
         return this;
     }
 
-    public abstract Reference Build();
+    public abstract ReferenceValueRange Build();
 }

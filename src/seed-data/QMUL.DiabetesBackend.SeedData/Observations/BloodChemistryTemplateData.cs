@@ -1,8 +1,8 @@
 namespace QMUL.DiabetesBackend.SeedData.Observations;
 
+using System.Collections.Generic;
 using Builders;
 using Model;
-using Model.Enums;
 
 public static class BloodChemistryTemplateData
 {
@@ -16,7 +16,7 @@ public static class BloodChemistryTemplateData
     private static void AddData()
     {
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0001",
                 display: "Glicemia")
@@ -29,7 +29,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0002",
                 display: "Urea")
@@ -42,7 +42,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0003",
                 display: "Nitrogeno Ureico (N.U.S.")
@@ -55,7 +55,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0004",
                 display: "Creatinina")
@@ -68,7 +68,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0005",
                 display: "Acido Urico")
@@ -88,7 +88,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0006",
                 display: "Proteinas Totales")
@@ -101,7 +101,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0007",
                 display: "Albumina")
@@ -114,7 +114,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0008",
                 display: "Globulinas")
@@ -127,7 +127,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0009",
                 display: "Relacion Albumina/Globulinas")
@@ -140,7 +140,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0010",
                 display: "G.O.T.")
@@ -153,7 +153,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0011",
                 display: "G.P.T.")
@@ -166,7 +166,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0012",
                 display: "G.G.T.")
@@ -186,7 +186,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0013",
                 display: "L.D.H.")
@@ -206,7 +206,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0014",
                 display: "Bilirrubina Total")
@@ -219,7 +219,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0015",
                 display: "Bilirrubina Directa")
@@ -232,7 +232,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0016",
                 display: "Bilirrubina Indirecta")
@@ -245,7 +245,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0017",
                 display: "Fosfatasa Alcalina")
@@ -258,7 +258,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0018",
                 display: "Amilasa")
@@ -271,7 +271,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0019",
                 display: "Colesterol Total")
@@ -284,7 +284,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0020",
                 display: "HDL Colesterol")
@@ -297,7 +297,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0021",
                 display: "LDL Colesterol")
@@ -310,7 +310,7 @@ public static class BloodChemistryTemplateData
             .Build());
 
         ObservationTemplates.Add(new ObservationTemplateBuilder()
-            .SetType(ObservationType.BloodChemistry)
+            .InitialVersion()
             .AddCode(
                 code: "BC0022",
                 display: "Trigliceridos")
