@@ -29,7 +29,7 @@ public class ServiceRequestsTests : IntegrationTestBase
 
         // Assert
         createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var createdResource = await HttpUtils.ParseResult<ServiceRequest>(createResponse.Content);
+        var createdResource = await HttpUtils.ParseResourceResult<ServiceRequest>(createResponse.Content);
         createdResource.Id.Should().NotBeNull();
         var resource = await this.GetServiceRequest(createdResource.Id);
 
@@ -84,6 +84,6 @@ public class ServiceRequestsTests : IntegrationTestBase
         var patientId = await this.CreatePatient();
         var serviceRequest = ServiceRequestStubs.GlucoseMeasureRequest(patientId);
         var createResponse = await this.HttpClient.PostResource("service-requests/", serviceRequest);
-        return await HttpUtils.ParseResult<ServiceRequest>(createResponse.Content);
+        return await HttpUtils.ParseResourceResult<ServiceRequest>(createResponse.Content);
     }
 }

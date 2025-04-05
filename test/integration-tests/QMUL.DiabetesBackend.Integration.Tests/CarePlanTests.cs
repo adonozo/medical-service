@@ -30,7 +30,7 @@ public class CarePlanTests : IntegrationTestBase
 
         // Assert
         createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var createdResource = await HttpUtils.ParseResult<CarePlan>(createResponse.Content);
+        var createdResource = await HttpUtils.ParseResourceResult<CarePlan>(createResponse.Content);
         createdResource.Id.Should().NotBeNull();
 
         var carePlanCreated = await this.GetCarePlan(createdResource.Id);
@@ -240,18 +240,18 @@ public class CarePlanTests : IntegrationTestBase
         var patientId = await this.CreatePatient();
         var carePlan = CarePlanStubs.CarePlan(patientId);
         var createResponse = await this.HttpClient.PostResource("care-plans", carePlan);
-        return await HttpUtils.ParseResult<CarePlan>(createResponse.Content);
+        return await HttpUtils.ParseResourceResult<CarePlan>(createResponse.Content);
     }
 
     private async Task<CarePlan> GetCarePlan(string id)
     {
         var getResponse = await this.HttpClient.GetStringAsync($"care-plans/{id}");
-        return await HttpUtils.ParseJson<CarePlan>(getResponse);
+        return await HttpUtils.ParseJsonResource<CarePlan>(getResponse);
     }
 
     private async Task<Bundle> GetDetailedCarePlan(string id)
     {
         var getResponse = await this.HttpClient.GetStringAsync($"care-plans/{id}/details");
-        return await HttpUtils.ParseJson<Bundle>(getResponse);
+        return await HttpUtils.ParseJsonResource<Bundle>(getResponse);
     }
 }

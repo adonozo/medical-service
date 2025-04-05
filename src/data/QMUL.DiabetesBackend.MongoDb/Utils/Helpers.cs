@@ -51,8 +51,13 @@ public static class Helpers
     /// <returns>The ID's "eq" filter definition.</returns>
     public static FilterDefinition<BsonDocument> ByIdFilter(string id)
     {
+        return ByIdFilter<BsonDocument>(id);
+    }
+
+    public static FilterDefinition<T> ByIdFilter<T>(string id)
+    {
         var objectId = ObjectId.TryParse(id, out var parsedId) ? parsedId : ObjectId.Empty;
-        return Builders<BsonDocument>.Filter.Eq("_id", objectId);
+        return Builders<T>.Filter.Eq("_id", objectId);
     }
 
     /// <summary>
@@ -156,6 +161,28 @@ public static class Helpers
             .CountDocumentsAsync();
 
         return new PaginatedResult<IEnumerable<TResource>>
+        {
+            Results = results,
+            TotalResults = count,
+            LastDataCursor = updatedLastCursorId,
+            RemainingCount = remainingResults
+        };
+    }
+
+    public static async Task<PaginatedResults<TResource>> GetPaginatedResults<TResource, TDocument>(
+        IMongoCollection<TDocument> collection,
+        FilterDefinition<TDocument> searchFilter,
+        TResource[] results)
+    {
+        var updatedLastCursorId = GetLastCursorId(results);
+        var count = await collection.Find(searchFilter)
+            .CountDocumentsAsync();
+
+        var remainingResults = await collection
+            .Find(GetPaginationFilter(searchFilter, updatedLastCursorId))
+            .CountDocumentsAsync();
+
+        return new PaginatedResults<TResource>
         {
             Results = results,
             TotalResults = count,

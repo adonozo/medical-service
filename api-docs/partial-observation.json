@@ -1,0 +1,14 @@
+{
+  "id": "101",
+  "status": "final",
+  "templateCode": "HM0001",
+  "valueQuantity": {
+    "value": 6.3,
+    "unit": "mmol/l",
+    "system": "http://unitsofmeasure.org",
+    "code": "mmol/L"
+  },
+  "meta": {
+    "templateVersion": 1
+  }
+}

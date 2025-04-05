@@ -10,8 +10,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Middlewares;
+using Model;
 using MongoDb;
 using NodaTime;
+using NodaTime.Serialization.JsonNet;
 using Service;
 using Service.Utils;
 using Service.Validators;
@@ -38,7 +40,8 @@ public class Startup
         {
             options.AddDefaultPolicy(builder => { builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(); });
         });
-        services.AddControllers().AddNewtonsoftJson();
+        services.AddControllers()
+            .AddNewtonsoftJson(options => options.SerializerSettings.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb));
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "QMUL.DiabetesBackend.Controllers", Version = "v1" });
@@ -54,6 +57,8 @@ public class Startup
         services.AddSingleton<IObservationDao, ObservationDao>();
         services.AddSingleton<ICarePlanDao, CarePlanDao>();
         services.AddSingleton<IAlexaDao, AlexaDao>();
+        services.AddSingleton<IObservationTemplateDao, ObservationTemplateDao>();
+        services.AddSingleton<IReportDao, ReportDao>();
 
         services.AddSingleton<IDataGatherer, DataGatherer>();
         services.AddSingleton<IMedicationService, MedicationService>();
@@ -63,12 +68,15 @@ public class Startup
         services.AddSingleton<ICarePlanService, CarePlanService>();
         services.AddSingleton<IAlexaService, AlexaService>();
         services.AddSingleton<IObservationService, ObservationService>();
+        services.AddSingleton<IObservationTemplateService, ObservationTemplateService>();
+        services.AddSingleton<IReportService, ReportsService>();
 
         services.AddSingleton<IResourceValidator<Medication>, MedicationValidator>();
         services.AddSingleton<IResourceValidator<CarePlan>, CarePlanValidator>();
         services.AddSingleton<IResourceValidator<MedicationRequest>, MedicationRequestValidator>();
         services.AddSingleton<IResourceValidator<ServiceRequest>, ServiceRequestValidator>();
         services.AddSingleton<IResourceValidator<Observation>, ObservationValidator>();
+        services.AddSingleton<ValidatorBase<ObservationTemplate>, ObservationTemplateValidator>();
         services.AddSingleton<IResourceValidator<Patient>, PatientValidator>();
         services.AddSingleton<IDataTypeValidator, DataTypeValidator>();
     }

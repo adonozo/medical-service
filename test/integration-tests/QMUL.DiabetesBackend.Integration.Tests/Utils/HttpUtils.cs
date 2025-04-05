@@ -8,13 +8,13 @@ using Newtonsoft.Json.Linq;
 
 public static class HttpUtils
 {
-    public static async Task<T> ParseResult<T>(HttpContent content) where T : Resource
+    public static async Task<T> ParseResourceResult<T>(HttpContent content) where T : Resource
     {
         var json = await content.ReadAsStringAsync();
-        return await ParseJson<T>(json);
+        return await ParseJsonResource<T>(json);
     }
 
-    public static async Task<T> ParseJson<T>(string json) where T : Resource
+    public static async Task<T> ParseJsonResource<T>(string json) where T : Resource
     {
         var jObject = JObject.Parse(json);
         return await Converter.ParseResourceAsync<T>(jObject);

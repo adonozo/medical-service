@@ -33,11 +33,11 @@ public class MedicationTests : IntegrationTestBase
 
         // Assert
         createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var createResult = await HttpUtils.ParseResult<Medication>(createResponse.Content);
+        var createResult = await HttpUtils.ParseResourceResult<Medication>(createResponse.Content);
         createResult.Id.Should().NotBeNull();
 
         var getResponse = await this.HttpClient.GetStringAsync($"medications/{createResult.Id}");
-        var savedMedication = await HttpUtils.ParseJson<Medication>(getResponse);
+        var savedMedication = await HttpUtils.ParseJsonResource<Medication>(getResponse);
         savedMedication.Code.Should().BeEquivalentTo(medication.Code);
         savedMedication.DoseForm.Should().BeEquivalentTo(medication.DoseForm);
         savedMedication.Ingredient.Should().BeEquivalentTo(medication.Ingredient);
