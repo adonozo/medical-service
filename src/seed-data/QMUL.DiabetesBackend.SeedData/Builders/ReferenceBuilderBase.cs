@@ -1,5 +1,6 @@
 namespace QMUL.DiabetesBackend.SeedData.Builders;
 
+using System.Collections.Generic;
 using Model.FHIR;
 
 public abstract class ReferenceBuilderBase

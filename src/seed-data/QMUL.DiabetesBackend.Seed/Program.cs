@@ -1,7 +1,11 @@
 ﻿namespace QMUL.DiabetesBackend.Seed;
 
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Model;
 using SeedData.Observations;
 
